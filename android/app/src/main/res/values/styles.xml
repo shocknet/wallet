@@ -1,0 +1,15 @@
+<resources>
+
+  <!-- Base application theme -->
+  <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+    <!-- Your base theme customization -->
+  </style>
+
+  <!-- Add the following lines -->
+  <!-- BootTheme should inherit from AppTheme -->
+  <style name="BootTheme" parent="AppTheme">
+    <!-- set bootsplash.xml as activity background -->
+    <item name="android:background">@drawable/bootsplash</item>
+  </style>
+
+</resources>
