@@ -4,7 +4,10 @@ Lightning Wallet that connects to a remote node and leverages GUN for a decentra
 
 Requires [Shock API](https://github.com/shocknet/api) backend, and [LND](https://github.com/lightningnetwork/lnd)
 
+[Download Android APK](https://github.com/shocknet/wallet/releases/download/pre1/APK-RELEASE.apk)
+
 _Node installer available at [shocknet/Wizard](https://github.com/shocknet/wizard)_
+
 
 ### Build from source
 
