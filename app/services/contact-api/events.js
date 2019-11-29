@@ -6,6 +6,7 @@ import once from 'lodash/once'
 import Action from './action'
 import Event from './event'
 import * as Socket from './socket'
+// eslint-disable-next-line no-unused-vars
 import * as Schema from './schema'
 
 ////////////////////////////////////////////////////////////////////////////////

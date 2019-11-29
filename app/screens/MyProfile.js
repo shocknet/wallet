@@ -68,7 +68,9 @@ export default class MyProfile extends React.PureComponent {
   }
 
   onAuthDataUnsub = () => {}
+
   onDisplayNameUnsub = () => {}
+
   onHandshakeAddressUnsub = () => {}
 
   componentDidMount() {
@@ -230,7 +232,7 @@ export default class MyProfile extends React.PureComponent {
 
 const styles = StyleSheet.create({
   bodyText: {
-    color: CSS.Colors.TEXT_LIGHT_GRAY,
+    color: CSS.Colors.TEXT_GRAY_LIGHT,
     fontFamily: 'Montserrat-400',
     fontSize: 12,
     marginLeft: 90,

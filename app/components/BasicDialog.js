@@ -9,6 +9,8 @@ import {
   TouchableWithoutFeedback,
 } from 'react-native'
 
+import * as CSS from '../css'
+
 /**
  * @typedef {object} Props
  * @prop {React.ReactNode} children
@@ -41,13 +43,13 @@ const _BasicDialog = ({ children, onRequestClose, title, visible }) => {
 
 const styles = StyleSheet.create({
   backdrop: {
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    backgroundColor: CSS.Colors.BACKDROP,
     flex: 1,
     justifyContent: 'center',
   },
 
   container: {
-    backgroundColor: 'white',
+    backgroundColor: CSS.Colors.BACKGROUND_WHITE,
     marginBottom: 100,
     marginLeft: 30,
     marginRight: 30,

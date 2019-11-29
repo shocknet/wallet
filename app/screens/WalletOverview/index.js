@@ -30,6 +30,7 @@ import UserDetail from '../../components/UserDetail'
 
 import btcConvert from '../../services/convertBitcoin'
 import * as ContactAPI from '../../services/contact-api'
+import * as CSS from '../../css'
 import * as Wallet from '../../services/wallet'
 
 import { CHATS_ROUTE } from '../../screens/Chats'
@@ -87,8 +88,6 @@ import UnifiedTrx from './UnifiedTrx'
  * @prop {boolean} displayingBTCAddress
  * @prop {boolean} displayingBTCAddressQR
  * @prop {boolean} displayingCreateInvoiceDialog
- * @prop {string} displayingCreateInvoiceDialogMemo
- * @prop {number} displayingCreateInvoiceDialogExpiryTimestamp
  * @prop {boolean} displayingCreateInvoiceResultDialog
  * @prop {boolean} displayingInvoiceQR
  * @prop {boolean} displayingOlderFormatBTCAddress
@@ -175,8 +174,6 @@ export default class WalletOverview extends React.PureComponent {
     displayingBTCAddress: false,
     displayingBTCAddressQR: false,
     displayingCreateInvoiceDialog: false,
-    displayingCreateInvoiceDialogExpiryTimestamp: 0,
-    displayingCreateInvoiceDialogMemo: '',
     displayingCreateInvoiceResultDialog: false,
     displayingInvoiceQR: false,
     displayingOlderFormatBTCAddress: false,
@@ -230,8 +227,6 @@ export default class WalletOverview extends React.PureComponent {
       displayingBTCAddressQR: false,
       displayingCreateInvoiceDialog: false,
       displayingCreateInvoiceResultDialog: false,
-      displayingCreateInvoiceDialogExpiryTimestamp: 0,
-      displayingCreateInvoiceDialogMemo: '',
       displayingOlderFormatBTCAddress: false,
       displayingOlderFormatBTCAddressQR: false,
       displayingInvoiceQR: false,
@@ -560,7 +555,9 @@ export default class WalletOverview extends React.PureComponent {
 
     this.setState(
       {
+        // eslint-disable-next-line react/no-access-state-in-setstate
         createInvoiceMemo: this.state.createInvoiceMemo,
+        // eslint-disable-next-line react/no-access-state-in-setstate
         createInvoiceAmount: this.state.createInvoiceAmount,
         displayingCreateInvoiceResultDialog: true,
         fetchingInvoice: true,
@@ -1114,53 +1111,42 @@ export default class WalletOverview extends React.PureComponent {
     const { USDExchangeRate, balance } = this.state
 
     return (
-      <View
-        style={{
-          flex: 2,
-          margin: 25,
-          backgroundColor: '#56688D',
-          borderColor: '#56688D',
-          borderWidth: 0.5,
-          borderRadius: 10,
-        }}
-      >
+      <View style={styles.balanceContainer}>
         {balance === null ? (
-          <View style={{ flex: 1 }}>
+          <View style={CSS.styles.flex}>
             <ActivityIndicator size="large" />
           </View>
         ) : (
-          <View style={{ flex: 1 }}>
+          <View style={CSS.styles.flex}>
             <View
-              style={{
-                flex: 1,
-                backgroundColor: '#56688D',
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}
+              style={[
+                CSS.styles.flex,
+                CSS.styles.backgroundBlueGray,
+                CSS.styles.deadCenter,
+              ]}
             >
-              <Text style={{ color: 'white', fontWeight: 'bold' }}>
+              <Text style={[CSS.styles.textWhite, CSS.styles.textBold]}>
                 BALANCE
               </Text>
               <Text
-                style={{
-                  color: 'white',
-                  fontWeight: 'bold',
-                  fontSize: 24,
-                }}
+                style={[
+                  CSS.styles.textWhite,
+                  CSS.styles.textBold,
+                  CSS.styles.fontSize24,
+                ]}
               >
                 {balance.toFixed(0).toString()} sats
               </Text>
             </View>
 
             <View
-              style={{
-                flex: 1,
-                backgroundColor: '#56688D',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
+              style={[
+                CSS.styles.flex,
+                CSS.styles.backgroundBlueGray,
+                CSS.styles.deadCenter,
+              ]}
             >
-              <Text style={{ color: 'white', fontWeight: 'bold' }}>
+              <Text style={[CSS.styles.textWhite, CSS.styles.textBold]}>
                 USD VALUE
               </Text>
 
@@ -1168,11 +1154,11 @@ export default class WalletOverview extends React.PureComponent {
                 <ActivityIndicator />
               ) : (
                 <Text
-                  style={{
-                    color: 'white',
-                    fontWeight: 'bold',
-                    fontSize: 24,
-                  }}
+                  style={[
+                    CSS.styles.textWhite,
+                    CSS.styles.textBold,
+                    CSS.styles.fontSize24,
+                  ]}
                 >
                   {'$' +
                     (
@@ -1271,68 +1257,30 @@ export default class WalletOverview extends React.PureComponent {
 
     return (
       <View style={styles.container}>
-        <View
-          style={{
-            height: height / 2,
-            width: width,
-            backgroundColor: '#2E4674',
-          }}
-        >
+        <View style={styles.overview}>
           {this.renderBalance()}
 
-          <View
-            style={{
-              flex: 1,
-              flexDirection: 'row',
-              justifyContent: 'space-around',
-              alignItems: 'center',
-              width: width,
-              backgroundColor: '#2E4674',
-            }}
-          >
+          <View style={styles.sendRequestsButtons}>
             <TouchableHighlight
-              underlayColor={'transparent'}
+              underlayColor="transparent"
               onPress={this.onPressSend}
             >
               <View style={styles.sendButton}>
-                <Text
-                  style={{
-                    color: '#ffffff',
-                    fontWeight: 'bold',
-                    fontSize: 18,
-                  }}
-                >
-                  Send
-                </Text>
+                <Text style={styles.sendReceiveText}>Send</Text>
               </View>
             </TouchableHighlight>
             <TouchableHighlight
-              underlayColor={'transparent'}
+              underlayColor="transparent"
               onPress={this.onPressRequest}
             >
               <View style={styles.requestButton}>
-                <Text
-                  style={{
-                    color: '#ffffff',
-                    fontWeight: 'bold',
-                    fontSize: 18,
-                  }}
-                >
-                  Request
-                </Text>
+                <Text style={styles.sendReceiveText}>Request</Text>
               </View>
             </TouchableHighlight>
           </View>
         </View>
 
-        <View
-          style={{
-            backgroundColor: 'white',
-            height: height,
-            flex: 1,
-            width: width,
-          }}
-        >
+        <View style={styles.trxContainer}>
           <UnifiedTrx unifiedTrx={unifiedTrx} />
         </View>
         <ShockDialog
@@ -1497,20 +1445,28 @@ export default class WalletOverview extends React.PureComponent {
         </BasicDialog>
 
         <ShockDialog
-          message={
-            sendingBTC
-              ? 'Processing...'
-              : !!sentBTCErr
-              ? `Error: ${sentBTCErr}`
-              : 'Payment Sent'
-          }
-          choiceToHandler={
-            sendingBTC
-              ? {}
-              : sentBTCErr === null
-              ? this.sentBTCResultChoiceToHandler
-              : this.sentBTCErrChoiceToHandler
-          }
+          message={(() => {
+            if (sendingBTC) {
+              return 'Processing...'
+            }
+
+            if (sentBTCErr !== null) {
+              return `Error: ${sentBTCErr}`
+            }
+
+            return 'Payment Sent'
+          })()}
+          choiceToHandler={(() => {
+            if (sendingBTC) {
+              return EMPTY_OBJECT
+            }
+
+            if (sentBTCErr === null) {
+              return this.sentBTCResultChoiceToHandler
+            }
+
+            return this.sentBTCErrChoiceToHandler
+          })()}
           onRequestClose={
             sentBTCErr === null
               ? this.closeAllSendDialogs
@@ -1599,7 +1555,7 @@ export default class WalletOverview extends React.PureComponent {
           onRequestClose={this.closeAllReceiveDialogs}
           title="Confirm"
         >
-          <View style={[styles.alignItemsCenter, { width: '100%' }]}>
+          <View style={[styles.alignItemsCenter, CSS.styles.width100]}>
             <Text>Sending an Invoice To: </Text>
 
             <Pad amount={10} />
@@ -1631,7 +1587,7 @@ export default class WalletOverview extends React.PureComponent {
                   OK: this.closeAllReceiveDialogs,
                 }
           }
-        ></ShockDialog>
+        />
       </View>
     )
   }
@@ -1641,39 +1597,44 @@ const styles = StyleSheet.create({
   alignItemsCenter: {
     alignItems: 'center',
   },
+  balanceContainer: {
+    flex: 2,
+    margin: 25,
+    backgroundColor: CSS.Colors.BLUE_GRAY,
+    borderColor: CSS.Colors.BLUE_GRAY,
+    borderWidth: 0.5,
+    borderRadius: 10,
+  },
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: CSS.Colors.BACKGROUND_WHITE,
     justifyContent: 'flex-start',
     alignItems: 'center',
     margin: 0,
-    // paddingBottom: height / 10
   },
-  shockWalletLogoContainer: {
+  overview: {
+    height: height / 2,
+    width,
+    backgroundColor: CSS.Colors.BLUE_DARK,
+  },
+  sendRequestsButtons: {
     flex: 1,
-    backgroundColor: '#2E4674',
-    justifyContent: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
     alignItems: 'center',
+    width,
+    backgroundColor: CSS.Colors.BLUE_DARK,
   },
-  enabledSubmitBtn: {
-    height: 25,
-    width: width / 2,
-    borderWidth: 0.5,
-    backgroundColor: '#eba844',
-    borderColor: '#eba844',
-    borderRadius: 5,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  submitBtnText: {
-    color: 'white',
+  sendReceiveText: {
+    color: CSS.Colors.TEXT_WHITE,
     fontWeight: 'bold',
+    fontSize: 18,
   },
   sendButton: {
     height: 50,
     width: width / 2.5,
-    backgroundColor: '#F5A623',
-    borderColor: '#F5A623',
+    backgroundColor: CSS.Colors.ORANGE,
+    borderColor: CSS.Colors.ORANGE,
     borderWidth: 0.5,
     borderRadius: 5,
     justifyContent: 'center',
@@ -1685,12 +1646,20 @@ const styles = StyleSheet.create({
     height: 50,
     width: width / 2.5,
     borderWidth: 0.5,
-    backgroundColor: '#3B7BD4',
-    borderColor: '#3B7BD4',
+    backgroundColor: CSS.Colors.BLUE_LIGHT,
+    borderColor: CSS.Colors.BLUE_LIGHT,
     borderRadius: 5,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 15,
     marginRight: 20,
   },
+  trxContainer: {
+    backgroundColor: CSS.Colors.BACKGROUND_WHITE,
+    height,
+    flex: 1,
+    width,
+  },
 })
+
+const EMPTY_OBJECT = {}

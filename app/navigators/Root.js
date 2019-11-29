@@ -113,7 +113,7 @@ const MainSwitch = createSwitchNavigator(
   },
 )
 
-export const setup = async () => {
+export const setup = () => {
   try {
     ContactAPI.Events.onAuth(
       debounce(async ad => {

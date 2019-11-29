@@ -2,7 +2,7 @@
  * @prettier
  */
 import React from 'react'
-import { ToastAndroid } from 'react-native'
+import { ToastAndroid, StyleSheet } from 'react-native'
 import MaterialIcons from 'react-native-vector-icons/MaterialCommunityIcons'
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}, Params>} Navigation
@@ -20,6 +20,11 @@ import { WALLET_OVERVIEW } from '../WalletOverview'
 import ChatView from './View'
 
 export const CHAT_ROUTE = 'CHAT_ROUTE'
+
+const sendInvoiceIconStyle = StyleSheet.create({
+  // eslint-disable-next-line react-native/no-unused-styles
+  s: { marginRight: 16 },
+}).s
 
 /**
  * @typedef {object} Params
@@ -88,7 +93,7 @@ export default class Chat extends React.PureComponent {
           name="file-send"
           onPress={onPressSendInvoice}
           size={28}
-          style={{ marginRight: 16 }}
+          style={sendInvoiceIconStyle}
         />
       ),
       headerStyle: {
@@ -307,8 +312,6 @@ export default class Chat extends React.PureComponent {
       this.decodeIncomingInvoices()
     }
 
-    // TODO: If someone sets their display name to their public key, app will
-    // crash
     if (oldTitle === recipientPK && recipientDisplayName) {
       navigation.setParams({
         _title: recipientDisplayName,
@@ -353,7 +356,9 @@ export default class Chat extends React.PureComponent {
   }
 
   authUnsub = () => {}
+
   chatsUnsub = () => {}
+
   displayNameUnsub = () => {}
 
   /**

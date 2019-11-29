@@ -14,6 +14,7 @@ import SocketIO from 'socket.io-client'
 /**
  * @type {SimpleSocket}
  */
+// eslint-disable-next-line init-declarations
 export let socket
 
 export const disconnect = () => {

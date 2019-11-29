@@ -47,6 +47,7 @@ const ShockInput = ({
     paddingLeft: INPUT_PADDING_LEFT,
   }
 
+  // eslint-disable-next-line react/jsx-props-no-spreading
   return (<TextInput {...props} />)
 }
 

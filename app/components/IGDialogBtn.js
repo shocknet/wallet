@@ -4,6 +4,8 @@ import React from 'react'
 import { View, StyleSheet, TouchableHighlight } from 'react-native'
 import { Text } from 'react-native-elements'
 
+import * as CSS from '../css'
+
 /**
  * @typedef {object} Props
  * @prop {boolean=} disabled
@@ -37,7 +39,7 @@ const styles = StyleSheet.create({
   },
 
   textDisabled: {
-    color: 'grey',
+    color: CSS.Colors.TEXT_GRAY,
   },
 })
 

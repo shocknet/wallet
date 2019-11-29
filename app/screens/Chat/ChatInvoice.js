@@ -117,7 +117,7 @@ export default class ChatMessage extends React.PureComponent {
         return (
           <View>
             <Text style={styles.body}>{amount + ' sats'}</Text>
-            {<Text>Unknown payment status</Text>}
+            <Text>Unknown payment status</Text>
           </View>
         )
       }

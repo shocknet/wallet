@@ -29,6 +29,7 @@ const LOGO = {
 /** @type {React.FC<Props>} */
 const _QR = ({ logoToShow, ...otherProps }) => ((
   <QRCode
+    // eslint-disable-next-line react/jsx-props-no-spreading
     {...otherProps}
     logo={{
       uri: LOGO[logoToShow],

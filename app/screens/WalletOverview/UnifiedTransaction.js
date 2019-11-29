@@ -98,7 +98,7 @@ export default class UnifiedTransaction extends React.PureComponent {
           <View style={styles.memo}>
             <Text style={styles.memoText}>{description}</Text>
           </View>
-          <View style={{ alignSelf: 'flex-end' }}>
+          <View style={CSS.styles.alignSelfEnd}>
             <Text style={styles.timestamp}>{formattedTimestamp + ' ago'}</Text>
             <Text style={styles.value}>{value}</Text>
           </View>
