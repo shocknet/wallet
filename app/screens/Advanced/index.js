@@ -435,6 +435,15 @@ export default class AdvancedScreen extends Component {
       nodeInfoModal: false,
     })
   }
+  /**
+   * @param {string} pubKey
+   */
+  openChannelPeer = pubKey =>{
+    this.setState({
+      addChannelOpen:true,
+      channelPublicKey:pubKey
+    })
+  }
 
   render() {
     const {
@@ -580,6 +589,7 @@ export default class AdvancedScreen extends Component {
             ]}
             toggleAccordion={() => this.toggleAccordion('peers')}
             keyExtractor={p => p.pub_key}
+            onPressItem = {this.openChannelPeer}
           />
           {/* <AccordionItem
             fetchNextPage={() => this.fetchNextPage('invoices', 'invoices')}
