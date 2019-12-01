@@ -11,7 +11,9 @@ _Node installer available at [shocknet/Wizard](https://github.com/shocknet/wizar
 
 ### Build from source
 
-#### Android: Requires Android Studio and React-Native CLI
+#### Android: 
+
+Requires Android Studio and React-Native CLI
 
 ```
 git clone https://github.com/shocknet/wallet
@@ -23,7 +25,7 @@ npm run build:release //to build APK
 
 #### iOS:
 
-help wanted
+Help Wanted
 
 <hr></hr>
 
