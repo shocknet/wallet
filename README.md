@@ -25,10 +25,6 @@ npm run build:release //to build APK
 
 help wanted
 
-#### build apk
-
-`yarn build:release`
-
 <hr></hr>
 
 **If you find any issues with this project, or would like to suggest an enhancement, please [tell us](https://github.com/shocknet/Wizard/issues).**
