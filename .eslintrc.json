@@ -76,6 +76,8 @@
     "react/forbid-component-props": "off",
     "react/destructuring-assignment": "off",
     "react/state-in-constructor": "off",
+    // React docs say this is ok
+    "react/no-did-mount-set-state": "off",
     // we don't abuse this rule
     "react/no-multi-comp": "off",
     "react/require-optimization": "off",
