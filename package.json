@@ -79,7 +79,9 @@
     "eslint-plugin-react": "^7.16.0",
     "eslint-plugin-react-native": "^3.8.1",
     "flow-bin": "^0.78.0",
+    "husky": "^3.1.0",
     "jest": "23.1.0",
+    "lint-staged": "^9.5.0",
     "prettier": "^1.17.1",
     "react-test-renderer": "16.3.1",
     "typescript": "^3.5.2"
