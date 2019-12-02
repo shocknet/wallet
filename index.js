@@ -1,7 +1,7 @@
 /**
  * @format
  */
-import { AppRegistry, View, StyleSheet } from 'react-native'
+import { AppRegistry, View, StyleSheet, ToastAndroid } from 'react-native'
 import moment from 'moment'
 import Http from 'axios'
 
@@ -48,7 +48,6 @@ AppRegistry.registerComponent('shockwallet', () => ShockWallet)
 
 /**
  * @typedef {object} State
- * @prop {string} err
  * @prop {boolean} fetchingCache
  * @prop {boolean} nodeIPSet
  * @prop {string|null} tryingIP
@@ -61,7 +60,6 @@ AppRegistry.registerComponent('shockwallet', () => ShockWallet)
 export default class ShockWallet extends Component {
   /** @type {State} */
   state = {
-    err: '',
     fetchingCache: true,
     nodeIPSet: false,
     tryingIP: null,
@@ -139,7 +137,6 @@ export default class ShockWallet extends Component {
 
           this.setState({
             tryingIP: null,
-            err: 'Could not connect',
           })
         }
       })
@@ -150,11 +147,14 @@ export default class ShockWallet extends Component {
 
         this.setState({
           tryingIP: null,
-          err:
-            typeof e === 'object' && e !== null
-              ? `Could not connect: ${e.message}`
-              : 'Could not connect (unknown error)',
         })
+
+        ToastAndroid.show(
+          typeof e === 'object' && e !== null
+            ? `Could not connect: ${e.message}`
+            : 'Could not connect (unknown error)',
+          800,
+        )
       })
   }
 
@@ -224,6 +224,7 @@ export default class ShockWallet extends Component {
    * @returns {void}
    */
   getCurrentRouteName = navStateOrNavRoute => {
+    // eslint-disable-next-line no-prototype-builtins
     if (navStateOrNavRoute.hasOwnProperty('index')) {
       this.getCurrentRouteName(
         navStateOrNavRoute.routes[navStateOrNavRoute.index],
@@ -231,7 +232,7 @@ export default class ShockWallet extends Component {
     } else {
       const currentRoute =
         // @ts-ignore
-        /** @type {string} */ (navStateOrNavRoute['routeName'])
+        /** @type {string} */ (navStateOrNavRoute.routeName)
 
       NavigationService.setCurrentRoute(currentRoute)
     }
@@ -244,15 +245,6 @@ export default class ShockWallet extends Component {
    */
   onRef = ref => {
     NavigationService.setTopLevelNavigator(ref)
-  }
-
-  /**
-   * @private
-   */
-  dismissDialog = () => {
-    this.setState({
-      err: '',
-    })
   }
 
   /**
