@@ -96,5 +96,22 @@
     "assets": [
       "./app/assets/fonts/"
     ]
+  },
+  "lint-staged": {
+    "app/**/*.js": [
+      "prettier --write",
+      "eslint --fix",
+      "git add"
+    ],
+    "index.js": [
+      "prettier --write",
+      "eslint --fix",
+      "git add"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "yarn typecheck && yarn lint-staged"
+    }
   }
 }
