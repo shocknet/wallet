@@ -7,6 +7,8 @@ import LinearGradient from 'react-native-linear-gradient'
 import QRCodeScanner from 'react-native-qrcode-scanner'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 
+import * as CSS from '../css'
+
 /**
  * @typedef {object} Props
  * @prop {(ip: string, port: number) => void} connectToNodeIP
@@ -14,40 +16,42 @@ import Ionicons from 'react-native-vector-icons/Ionicons'
  */
 
 /**
- * @augments React.PureComponent<Props, { nodeIP: string}>
+ * @augments React.PureComponent<Props>
  */
 export default class QRScanner extends React.PureComponent {
   static navigationOptions = {
     header: null,
   }
 
-  state = {
-    nodeIP: '',
-  }
-
   /**
-   * @param {string} nodeIP
+   * @param {{ data: string }} e
    */
-  onChangeNodeIP = nodeIP => {
-    this.setState({
-      nodeIP,
-    })
+  onQRRead = e => {
+    const { connectToNodeIP } = this.props
+    console.log('Scanning...', e)
+    const parsedData = JSON.parse(e.data)
+    console.log('parsedData', parsedData, e)
+    try {
+      connectToNodeIP(parsedData.internalIP, parsedData.walletPort)
+    } catch (err) {
+      connectToNodeIP(parsedData.externalIP, parsedData.walletPort)
+    }
   }
 
   render() {
     return (
       <View style={styles.container}>
-        <View style={{ position: 'relative', width: '100%', flexShrink: 0 }}>
+        <View style={styles.toolbar}>
           <LinearGradient
-            start={{ x: 0, y: 0 }}
-            end={{ x: 0, y: 0.9 }}
-            colors={['black', 'transparent']}
+            start={GRADIENT_ZERO_ZERO}
+            end={GRADIENT_ZERO_POINT_NINE}
+            colors={GRADIENT_COLORS}
             style={styles.topSection}
           />
           <LinearGradient
-            start={{ x: 0, y: 0 }}
-            end={{ x: 0, y: 0.9 }}
-            colors={['black', 'transparent']}
+            start={GRADIENT_ZERO_ZERO}
+            end={GRADIENT_ZERO_POINT_NINE}
+            colors={GRADIENT_COLORS}
             style={styles.topSection}
           />
           <TouchableOpacity
@@ -62,33 +66,26 @@ export default class QRScanner extends React.PureComponent {
             />
           </TouchableOpacity>
         </View>
+
         <View style={styles.targetSquare} />
+
         <QRCodeScanner
-          onRead={e => {
-            const { connectToNodeIP } = this.props
-            console.log('Scanning...', e)
-            const parsedData = JSON.parse(e.data)
-            console.log('parsedData', parsedData, e)
-            try {
-              connectToNodeIP(parsedData.internalIP, parsedData.walletPort)
-            } catch (err) {
-              connectToNodeIP(parsedData.externalIP, parsedData.walletPort)
-            }
-          }}
-          cameraProps={{ ratio: '16:9' }}
-          cameraStyle={{ opacity: 0.8 }}
+          onRead={this.onQRRead}
+          cameraProps={CAMERA_PROPS}
+          cameraStyle={styles.cameraStyle}
         />
-        <View style={{ position: 'relative', width: '100%' }}>
+
+        <View style={styles.explanation}>
           <LinearGradient
-            start={{ x: 0, y: 0.9 }}
-            end={{ x: 0, y: 0 }}
-            colors={['black', 'transparent']}
+            start={GRADIENT_ZERO_POINT_NINE}
+            end={GRADIENT_ZERO_ZERO}
+            colors={GRADIENT_COLORS}
             style={styles.bottomSection}
           />
           <LinearGradient
-            start={{ x: 0, y: 0.9 }}
-            end={{ x: 0, y: 0 }}
-            colors={['black', 'transparent']}
+            start={GRADIENT_ZERO_POINT_NINE}
+            end={GRADIENT_ZERO_ZERO}
+            colors={GRADIENT_COLORS}
             style={styles.bottomSection}
           />
           <View
@@ -111,15 +108,28 @@ export default class QRScanner extends React.PureComponent {
   }
 }
 
+const GRADIENT_ZERO_ZERO = { x: 0, y: 0 }
+const GRADIENT_ZERO_POINT_NINE = { x: 0, y: 0.9 }
+const GRADIENT_COLORS = ['black', 'transparent']
+
+const CAMERA_PROPS = { ratio: '16:9' }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'black',
+    backgroundColor: CSS.Colors.BACKGROUND_BLACK,
   },
-  shockLogo: {
-    width: 70,
-    height: 70,
-    marginBottom: 17,
+  cameraStyle: {
+    opacity: 0.8,
+  },
+  explanation: {
+    position: 'relative',
+    width: '100%',
+  },
+  toolbar: {
+    position: 'relative',
+    width: '100%',
+    flexShrink: 0,
   },
   targetSquare: {
     position: 'absolute',
@@ -129,7 +139,7 @@ const styles = StyleSheet.create({
     height: 200,
     borderWidth: 2,
     borderStyle: 'solid',
-    borderColor: '#f5a623',
+    borderColor: CSS.Colors.ORANGE,
     borderRadius: 5,
     transform: [{ translateX: -90 }, { translateY: -100 }],
     zIndex: 100,
@@ -161,14 +171,14 @@ const styles = StyleSheet.create({
   },
   bottomSectionTextHead: {
     fontFamily: 'Montserrat-700',
-    color: 'white',
+    color: CSS.Colors.TEXT_WHITE,
     fontSize: 20,
   },
   bottomSectionTextDescription: {
     width: '75%',
     marginTop: 10,
     fontFamily: 'Montserrat-600',
-    color: 'white',
+    color: CSS.Colors.TEXT_WHITE,
     fontSize: 14,
     opacity: 0.6,
     textAlign: 'center',
@@ -176,89 +186,14 @@ const styles = StyleSheet.create({
   bottomSectionCancelBtn: {
     paddingHorizontal: 50,
     paddingVertical: 15,
-    backgroundColor: 'white',
+    backgroundColor: CSS.Colors.TEXT_WHITE,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 100,
     marginTop: 20,
   },
   bottomSectionCancelBtnText: {
-    color: '#274f94',
+    color: CSS.Colors.BLUE_DARK,
     fontFamily: 'Montserrat-700',
-  },
-  shockWalletLogoContainer: {
-    alignItems: 'center',
-  },
-  shockWalletCallToActionContainer: {
-    alignItems: 'center',
-  },
-  textInputFieldContainer: {
-    flexDirection: 'row',
-    backgroundColor: '#ffffff',
-    height: 60,
-    borderRadius: 100,
-    paddingLeft: 25,
-    marginBottom: 25,
-    elevation: 3,
-    alignItems: 'center',
-  },
-  textInputField: {
-    fontSize: 14,
-    fontFamily: 'Montserrat-600',
-    flex: 1,
-  },
-  scanBtn: {
-    width: 35,
-    height: 35,
-    flexShrink: 0,
-    backgroundColor: '#505050',
-    borderRadius: 100,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 10,
-  },
-  logoText: {
-    color: '#ffffff',
-    fontFamily: 'Montserrat-700',
-    fontSize: 18,
-    letterSpacing: 2.5,
-  },
-  callToAction: {
-    color: '#ffffff',
-    fontFamily: 'Montserrat-900',
-    fontSize: 28,
-    textAlign: 'center',
-    marginBottom: 30,
-  },
-  connectBtn: {
-    height: 60,
-    backgroundColor: '#f8a61e',
-    borderRadius: 100,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 20,
-  },
-  connectBtnText: {
-    fontSize: 15,
-    letterSpacing: 1.25,
-    color: 'white',
-    fontFamily: 'Montserrat-700',
-  },
-  shockBtn: {
-    flexDirection: 'row',
-    height: 60,
-    backgroundColor: '#ffffff',
-    borderRadius: 100,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 60,
-    opacity: 0.7,
-  },
-  shockBtnText: {
-    fontSize: 15,
-    letterSpacing: 1,
-    color: '#274f94',
-    fontFamily: 'Montserrat-700',
-    marginLeft: 10,
   },
 })

@@ -137,9 +137,8 @@ export const writeNodeIP = ip =>
     () => {
       if (ip === null) {
         return AsyncStorage.removeItem(NODE_IP)
-      } else {
-        return AsyncStorage.setItem(NODE_IP, ip)
       }
+      return AsyncStorage.setItem(NODE_IP, ip)
     },
     {
       jitter: JitterTypes.Full,
@@ -159,9 +158,8 @@ export const getStoredAuthData = () =>
   AsyncStorage.getItem(STORED_AUTH_DATA).then(sad => {
     if (sad === null) {
       return null
-    } else {
-      return JSON.parse(sad)
     }
+    return JSON.parse(sad)
   })
 
 /**
@@ -174,38 +172,35 @@ export const writeStoredAuthData = authData =>
   backOff(() => {
     if (authData === null) {
       return AsyncStorage.removeItem(STORED_AUTH_DATA)
-    } else {
-      return getNodeIP().then(nodeIP => {
-        if (nodeIP === null) {
-          throw new Error()
-        } else {
-          /** @type {StoredAuthData} */
-          const sad = {
-            authData,
-            nodeIP,
-          }
-
-          return backOff(
-            () =>
-              Promise.all([
-                AsyncStorage.setItem(STORED_AUTH_DATA, JSON.stringify(sad)),
-                AsyncStorage.setItem(AUTHENTICATED_NODE, nodeIP),
-              ]),
-            {
-              jitter: JitterTypes.Full,
-              retry(_, attemptNumber) {
-                console.warn(
-                  `retry getItem(STORED_AUTH_DATA): ${attemptNumber}`,
-                )
-                return true
-              },
-            },
-          ).then(() => {
-            notifySADListeners()
-          })
-        }
-      })
     }
+    return getNodeIP().then(nodeIP => {
+      if (nodeIP === null) {
+        throw new Error()
+      }
+
+      /** @type {StoredAuthData} */
+      const sad = {
+        authData,
+        nodeIP,
+      }
+
+      return backOff(
+        () =>
+          Promise.all([
+            AsyncStorage.setItem(STORED_AUTH_DATA, JSON.stringify(sad)),
+            AsyncStorage.setItem(AUTHENTICATED_NODE, nodeIP),
+          ]),
+        {
+          jitter: JitterTypes.Full,
+          retry(_, attemptNumber) {
+            console.warn(`retry getItem(STORED_AUTH_DATA): ${attemptNumber}`)
+            return true
+          },
+        },
+      ).then(() => {
+        notifySADListeners()
+      })
+    })
   })
 
 /**

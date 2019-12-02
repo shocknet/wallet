@@ -18,7 +18,9 @@ import {
 
 import * as API from '../services/contact-api'
 import * as Auth from '../services/auth'
+import * as CSS from '../css'
 import { REGISTER } from './Register'
+import ShockDialog from '../components/ShockDialog'
 
 export const LOGIN = 'LOGIN'
 
@@ -65,11 +67,6 @@ export default class Login extends React.PureComponent {
     pass: '',
   }
 
-  connUnsubscribe = () => {}
-  willFocusSub = {
-    remove() {},
-  }
-
   componentDidMount() {
     this.connUnsubscribe = API.Events.onConnection(this.onConn)
     this.willFocusSub = this.props.navigation.addListener('didFocus', () => {
@@ -82,6 +79,12 @@ export default class Login extends React.PureComponent {
   componentWillUnmount() {
     this.connUnsubscribe()
     this.willFocusSub.remove()
+  }
+
+  connUnsubscribe = () => {}
+
+  willFocusSub = {
+    remove() {},
   }
 
   /**
@@ -208,7 +211,7 @@ export default class Login extends React.PureComponent {
                 editable={connected}
                 onChangeText={this.onChangePass}
                 style={styles.textInputField}
-                secureTextEntry={true}
+                secureTextEntry
                 value={pass}
               />
             </View>
@@ -221,19 +224,12 @@ export default class Login extends React.PureComponent {
               <Text style={styles.connectBtnText}>Connect</Text>
             </TouchableOpacity>
             <View style={styles.createContainer}>
-              <Text
-                style={{
-                  textAlign: 'center',
-                  width: '100%',
-                  color: 'white',
-                  fontFamily: 'Montserrat-700',
-                }}
-              >
+              <Text style={styles.dontHaveAccountText}>
                 Don't have an account?
               </Text>
               <TouchableOpacity
                 onPress={this.goToCreateWallet}
-                style={{ width: '100%' }}
+                style={styles.width100}
               >
                 <Text style={styles.createBtnText}>Create a wallet</Text>
               </TouchableOpacity>
@@ -241,11 +237,11 @@ export default class Login extends React.PureComponent {
           </View>
         ) : null}
 
-        {/* <ShockDialog
+        <ShockDialog
           message={this.state.err}
           onRequestClose={this.dismissDialog}
           visible={!!this.state.err}
-        /> */}
+        />
       </ImageBackground>
     )
   }
@@ -254,11 +250,17 @@ export default class Login extends React.PureComponent {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#2E4674',
+    backgroundColor: CSS.Colors.BLUE_DARK,
     justifyContent: 'space-around',
     minHeight: 600,
     paddingLeft: 30,
     paddingRight: 30,
+  },
+  dontHaveAccountText: {
+    textAlign: 'center',
+    width: '100%',
+    color: CSS.Colors.TEXT_WHITE,
+    fontFamily: 'Montserrat-700',
   },
   shockWalletLogoContainer: {
     alignItems: 'center',
@@ -271,7 +273,7 @@ const styles = StyleSheet.create({
   },
   connectBtn: {
     height: 60,
-    backgroundColor: '#f8a61e',
+    backgroundColor: CSS.Colors.ORANGE,
     borderRadius: 100,
     alignItems: 'center',
     justifyContent: 'center',
@@ -280,18 +282,18 @@ const styles = StyleSheet.create({
   connectBtnText: {
     fontSize: 15,
     letterSpacing: 1.25,
-    color: 'white',
+    color: CSS.Colors.TEXT_WHITE,
     fontFamily: 'Montserrat-700',
   },
   textInputFieldLabel: {
     marginBottom: 10,
     marginLeft: 15,
-    color: 'white',
+    color: CSS.Colors.TEXT_WHITE,
     fontFamily: 'Montserrat-600',
   },
   textInputFieldContainer: {
     flexDirection: 'row',
-    backgroundColor: '#ffffff',
+    backgroundColor: CSS.Colors.TEXT_WHITE,
     height: 50,
     borderRadius: 100,
     paddingLeft: 25,
@@ -305,13 +307,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   logoText: {
-    color: '#ffffff',
+    color: CSS.Colors.TEXT_WHITE,
     fontWeight: 'bold',
     fontSize: 20,
     marginTop: 10,
   },
   callToAction: {
-    color: '#ffffff',
+    color: CSS.Colors.TEXT_WHITE,
     fontFamily: 'Montserrat-700',
     fontSize: 28,
   },
@@ -320,8 +322,10 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   createBtnText: {
-    color: '#f8a61e',
+    color: CSS.Colors.ORANGE,
     fontFamily: 'Montserrat-700',
     textAlign: 'center',
   },
+
+  width100: { width: '100%' },
 })

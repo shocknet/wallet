@@ -1,58 +1,56 @@
-import React, { Component } from 'react'
+import React from 'react'
 import { View, Text, StyleSheet, Image } from 'react-native'
 import Moment from 'moment'
+
+import * as CSS from '../../../css'
+/**
+ * @typedef {import('../../../services/wallet').Transaction} ITransaction
+ */
 /** @type {number} */
 //@ts-ignore
 const paymentIcon = require('../../../assets/images/payment-icon.png')
 
-export default class Transaction extends Component {
-  state = {
-    open: false,
-  }
+/**
+ * @typedef {object} Props
+ * @prop {ITransaction} data
+ */
 
-  componentDidMount() {
-    const { open } = this.props
-    this.setState({
-      open,
-    })
-  }
-
-  render() {
-    const { data = {} } = this.props
-    return (
-      <View style={styles.transactionItem}>
-        <View style={styles.transactionDetails}>
-          <Image
-            style={styles.transactionIcon}
-            source={paymentIcon}
-            resizeMode="contain"
-          />
-          <View>
-            <Text
-              ellipsizeMode="tail"
-              numberOfLines={1}
-              style={styles.transactionHashText}
-            >
-              {data.tx_hash}
-            </Text>
-            <Text>Payment</Text>
-          </View>
-        </View>
-        <View>
-          <Text style={styles.transactionValueText}>{data.amount}</Text>
-          <Text style={styles.transactionTime}>
-            {Moment(data.timestamp).fromNow()}
-          </Text>
-        </View>
+/**
+ * @type {React.FC<Props>}
+ */
+const _Transaction = ({ data }) => ((
+  <View style={styles.transactionItem}>
+    <View style={styles.transactionDetails}>
+      <Image
+        style={styles.transactionIcon}
+        source={paymentIcon}
+        resizeMode="contain"
+      />
+      <View>
+        <Text
+          ellipsizeMode="tail"
+          numberOfLines={1}
+          style={styles.transactionHashText}
+        >
+          {data.tx_hash}
+        </Text>
+        <Text>Payment</Text>
       </View>
-    )
-  }
-}
+    </View>
+    <View>
+      <Text style={styles.transactionValueText}>{data.amount}</Text>
+      <Text style={styles.transactionTime}>
+        {Moment(data.time_stamp).fromNow()}
+      </Text>
+    </View>
+  </View>
+))
+
+const Transaction = React.memo(_Transaction)
+
+export default Transaction
 
 const styles = StyleSheet.create({
-  accordionItem: {
-    width: '100%',
-  },
   transactionItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -60,7 +58,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     borderBottomWidth: 1,
     borderStyle: 'solid',
-    borderColor: '#ddd',
+    borderColor: CSS.Colors.BORDER_NEAR_WHITE,
   },
   transactionDetails: {
     flexDirection: 'row',
@@ -74,12 +72,12 @@ const styles = StyleSheet.create({
   transactionHashText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#999999',
+    color: CSS.Colors.TEXT_LIGHTEST,
   },
   transactionValueText: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#6b6b6b',
+    color: CSS.Colors.TEXT_LIGHT,
   },
   transactionTime: {
     textAlign: 'right',

@@ -304,11 +304,10 @@ export const USDExchangeRate = () => {
 
   return fetch(endpoint, payload)
     .then(res => {
-      if (res.status == 200) {
+      if (res.status === 200) {
         return res.json()
-      } else {
-        throw new Error('Status not 200')
       }
+      throw new Error('Status not 200')
     })
     .then(res => {
       const er = res.bpi.USD.rate_float
@@ -325,13 +324,6 @@ export const USDExchangeRate = () => {
  * @returns {Promise<WalletBalanceResponse>}
  */
 export const balance = async () => {
-  {
-    // return {
-    //   confirmed_balance: 200,
-    //   total_balance: 100,
-    //   unconfirmed_balance: 100,
-    // }
-  }
   const { nodeIP, token } = await Cache.getNodeIPTokenPair()
 
   if (typeof token !== 'string') {
@@ -353,9 +345,8 @@ export const balance = async () => {
 
   if (res.ok) {
     return body
-  } else {
-    throw new Error(body.errorMessage || body.message)
   }
+  throw new Error(body.errorMessage || body.message)
 }
 
 /**
@@ -389,9 +380,8 @@ export const getTransactions = async request => {
 
   if (res.ok) {
     return body
-  } else {
-    throw new Error(body.errorMessage || body.message)
   }
+  throw new Error(body.errorMessage || body.message)
 }
 
 /**
@@ -432,9 +422,8 @@ export const listPayments = async request => {
 
   if (res.ok) {
     return body
-  } else {
-    throw new Error(body.errorMessage || body.message)
   }
+  throw new Error(body.errorMessage || body.message)
 }
 
 /**
@@ -473,9 +462,8 @@ export const listInvoices = async request => {
 
   if (res.ok) {
     return body
-  } else {
-    throw new Error(body.errorMessage || body.message)
   }
+  throw new Error(body.errorMessage || body.message)
 }
 
 /**
@@ -529,9 +517,8 @@ export const newAddress = async useOlderFormat => {
 
   if (res.ok) {
     return /** @type {NewAddressResponse} */ (body).address
-  } else {
-    throw new Error(body.errorMessage || body.message)
   }
+  throw new Error(body.errorMessage || body.message)
 }
 
 /**
@@ -564,19 +551,6 @@ export const newAddress = async useOlderFormat => {
  * @returns {Promise<AddInvoiceResponse>}
  */
 export const addInvoice = async request => {
-  {
-    // return new Promise(res => {
-    //   setTimeout(() => {
-    //     res({
-    //       add_index: 0,
-    //       payment_request:
-    //         'lntb1u1pwz5w78pp5e8w8cr5c30xzws92v36sk45znhjn098rtc4pea6ertnmvu25ng3sdpywd6hyetyvf5hgueqv3jk6meqd9h8vmmfvdjsxqrrssy29mzkzjfq27u67evzu893heqex737dhcapvcuantkztg6pnk77nrm72y7z0rs47wzc09vcnugk2ve6sr2ewvcrtqnh3yttv847qqvqpvv398',
-    //       r_hash: 'r_hash',
-    //     })
-    //   }, 1500)
-    // })
-  }
-
   const { nodeIP, token } = await Cache.getNodeIPTokenPair()
 
   if (typeof token !== 'string') {
@@ -601,9 +575,8 @@ export const addInvoice = async request => {
 
   if (res.ok) {
     return body
-  } else {
-    throw new Error(body.errorMessage || body.message)
   }
+  throw new Error(body.errorMessage || body.message)
 }
 
 /**
@@ -626,14 +599,6 @@ export const addInvoice = async request => {
  * @returns {Promise<string>}
  */
 export const sendCoins = async request => {
-  {
-    // return new Promise((_, rej) => {
-    //   setTimeout(() => {
-    //     rej(new Error('Error Message Goes Here'))
-    //   }, 1000)
-    // })
-  }
-
   const { nodeIP, token } = await Cache.getNodeIPTokenPair()
   if (typeof token !== 'string') {
     throw new TypeError(NO_CACHED_TOKEN)
@@ -657,9 +622,8 @@ export const sendCoins = async request => {
 
   if (res.ok) {
     return body
-  } else {
-    throw new Error(body.errorMessage || body.message)
   }
+  throw new Error(body.errorMessage || body.message)
 }
 
 /**
@@ -732,9 +696,8 @@ export const CAUTION_payInvoice = async ({ amt, payreq }) => {
 
   if (res.ok) {
     return body
-  } else {
-    throw new Error(body.errorMessage || body.message)
   }
+  throw new Error(body.errorMessage || body.message)
 }
 
 /**
@@ -792,9 +755,8 @@ export const decodeInvoice = async ({ payReq }) => {
 
   if (res.ok) {
     return body
-  } else {
-    throw new Error(body.errorMessage || body.message)
   }
+  throw new Error(body.errorMessage || body.message)
 }
 
 /**
@@ -802,6 +764,8 @@ export const decodeInvoice = async ({ payReq }) => {
  * @typedef {object} Peer
  * @prop {string} address
  * @prop {string} pub_key
+ * @prop {Int64} sat_sent
+ * @prop {Int64} sat_recv
  */
 
 /**
@@ -834,9 +798,9 @@ export const listPeers = async () => {
     }
 
     return body.peers
-  } else {
-    throw new Error(body.errorMessage || body.message)
   }
+
+  throw new Error(body.errorMessage || body.message)
 }
 
 /**
@@ -875,10 +839,7 @@ export const listChannels = async () => {
   const body = await res.json()
 
   if (res.ok) {
-    /**
-     * @type {Omit<Channel, 'ip'>[]}
-     */
-    const channels = body.channels
+    const { channels } = body
 
     if (!Array.isArray(channels)) {
       throw new Error('Wallet.listChannels() -> body.channels not an array.')
@@ -896,7 +857,6 @@ export const listChannels = async () => {
         ip: matchingPeer ? matchingPeer.address : '???.???.???.???',
       }
     })
-  } else {
-    throw new Error('listChannels() -> ' + body.errorMessage || body.message)
   }
+  throw new Error('listChannels() -> ' + body.errorMessage || body.message)
 }

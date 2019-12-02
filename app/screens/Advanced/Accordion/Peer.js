@@ -1,64 +1,65 @@
-import React, { Component } from 'react'
+import React from 'react'
 import { View, Text, StyleSheet, Image } from 'react-native'
+
+import * as CSS from '../../../css'
+/**
+ * @typedef {import('../../../services/wallet').Peer} IPeer
+ */
 /** @type {number} */
 //@ts-ignore
 const paymentIcon = require('../../../assets/images/payment-icon.png')
 
-export default class Transaction extends Component {
-  state = {
-    open: false,
-  }
+/**
+ * @typedef {object} Props
+ * @prop {IPeer} data
+ */
 
-  componentDidMount() {
-    const { open } = this.props
-    this.setState({
-      open,
-    })
-  }
-
-  render() {
-    const { data = {} } = this.props
-    return (
-      <View style={styles.transactionItem}>
-        <View style={styles.transactionDetails}>
-          <Image
-            style={styles.transactionIcon}
-            source={paymentIcon}
-            resizeMode="contain"
-          />
-          <View>
-            <Text
-              ellipsizeMode="tail"
-              numberOfLines={1}
-              style={styles.transactionHashText}
-            >
-              {data.address}
-            </Text>
-            <Text
-              ellipsizeMode="middle"
-              numberOfLines={1}
-              style={{ fontSize: 10, opacity: 0.7 }}
-            >
-              {data.pub_key}
-            </Text>
-          </View>
-        </View>
-        <View>
-          <Text style={styles.transactionTime}>
-            Sent: {parseFloat(data.sat_sent).toFixed(2)} sats
-          </Text>
-          <Text style={styles.transactionTime}>
-            Received: {parseFloat(data.sat_recv).toFixed(2)} sats
-          </Text>
-        </View>
+/**
+ * @type {React.FC<Props>}
+ */
+const _Peer = ({ data }) => ((
+  <View style={styles.transactionItem}>
+    <View style={styles.transactionDetails}>
+      <Image
+        style={styles.transactionIcon}
+        source={paymentIcon}
+        resizeMode="contain"
+      />
+      <View>
+        <Text
+          ellipsizeMode="tail"
+          numberOfLines={1}
+          style={styles.transactionHashText}
+        >
+          {data.address}
+        </Text>
+        <Text ellipsizeMode="middle" numberOfLines={1} style={styles.pubKey}>
+          {data.pub_key}
+        </Text>
       </View>
-    )
-  }
-}
+    </View>
+    <View>
+      <Text style={styles.transactionTime}>
+        Sent: {parseFloat(data.sat_sent).toFixed(2)} sats
+      </Text>
+      <Text style={styles.transactionTime}>
+        Received: {parseFloat(data.sat_recv).toFixed(2)} sats
+      </Text>
+    </View>
+  </View>
+))
+
+/**
+ * @type {React.FC<Props>}
+ */
+const Peer = React.memo(_Peer)
+
+export default Peer
 
 const styles = StyleSheet.create({
-  accordionItem: {
-    width: '100%',
+  pubKey: {
+    fontSize: 10,
+    opacity: 0.7,
   },
   transactionItem: {
     flexDirection: 'row',
@@ -67,7 +68,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     borderBottomWidth: 1,
     borderStyle: 'solid',
-    borderColor: '#ddd',
+    borderColor: CSS.Colors.BORDER_WHITE,
   },
   transactionDetails: {
     flexDirection: 'row',
@@ -81,12 +82,7 @@ const styles = StyleSheet.create({
   transactionHashText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#999999',
-  },
-  transactionValueText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#6b6b6b',
+    color: CSS.Colors.TEXT_GRAY_LIGHT,
   },
   transactionTime: {
     textAlign: 'right',

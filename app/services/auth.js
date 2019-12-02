@@ -35,9 +35,7 @@ export const connectNodeToLND = (alias, password) =>
         },
       })
 
-      if (res.ok) {
-        return
-      } else {
+      if (!res.ok) {
         const body = await res.json()
         throw new Error(body.errorMessage || body.message)
       }
@@ -103,13 +101,13 @@ export const unlockWallet = async (alias, password) => {
       publicKey: body.user.publicKey,
       token: body.authorization,
     }
-  } else {
-    if (body.errorMessage === 'LND is down') {
-      connectNodeToLND(alias, password)
-    }
-
-    throw new Error(body.errorMessage || body.message)
   }
+
+  if (body.errorMessage === 'LND is down') {
+    connectNodeToLND(alias, password)
+  }
+
+  throw new Error(body.errorMessage || body.message)
 }
 
 /**
@@ -152,13 +150,13 @@ export const registerExistingWallet = async (alias, password) => {
       publicKey: body.user.publicKey,
       token: body.authorization,
     }
-  } else {
-    if (body.errorMessage === 'LND is down') {
-      connectNodeToLND(alias, password)
-    }
-
-    throw new Error(body.errorMessage || body.message)
   }
+
+  if (body.errorMessage === 'LND is down') {
+    connectNodeToLND(alias, password)
+  }
+
+  throw new Error(body.errorMessage || body.message)
 }
 
 /**
