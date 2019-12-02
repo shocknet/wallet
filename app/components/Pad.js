@@ -23,7 +23,7 @@ const _Pad = ({ amount, insideRow }) => ((
             marginTop: amount / 2,
           }
     }
-  ></View>
+  />
 ))
 
 const Pad = React.memo(_Pad)

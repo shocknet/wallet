@@ -4,7 +4,7 @@
  * @param {string} error
  */
 const report = (host, accessToken, error) => {
-  let endpoint = `${host}/api/mobile/errors`
+  const endpoint = `${host}/api/mobile/errors`
   const payload = {
     method: 'POST',
     headers: {

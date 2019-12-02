@@ -3,7 +3,7 @@
  */
 import React, { Component } from 'react'
 import {
-  Clipboard,
+  // Clipboard,
   Image,
   StyleSheet,
   Text,
@@ -32,7 +32,7 @@ import Channel from './Accordion/Channel'
 // import Invoice from './Accordion/Invoice'
 import Peer from './Accordion/Peer'
 import InfoModal from './InfoModal'
-import { Icon } from 'react-native-elements'
+// import { Icon } from 'react-native-elements'
 export const ADVANCED_SCREEN = 'ADVANCED_SCREEN'
 
 /**
@@ -158,7 +158,7 @@ export default class AdvancedScreen extends Component {
 
       return {
         confirmedBalanceUSD,
-        channelBalanceUSD: channelBalanceUSD,
+        channelBalanceUSD,
       }
     }
 
@@ -252,6 +252,14 @@ export default class AdvancedScreen extends Component {
     this.setState({
       accordions: updatedAccordions,
     })
+  }
+
+  toggleChannelsAccordion = () => {
+    this.toggleAccordion('channels')
+  }
+
+  togglePeerAccordion = () => {
+    this.toggleAccordion('peers')
   }
 
   /**
@@ -425,24 +433,74 @@ export default class AdvancedScreen extends Component {
       err: '',
     })
   }
+
   openNodeInfo = () => {
     this.setState({
       nodeInfoModal: true,
     })
   }
+
   closeNodeInfo = () => {
     this.setState({
       nodeInfoModal: false,
     })
   }
+
   /**
    * @param {string} pubKey
    */
-  openChannelPeer = pubKey =>{
+  openChannelPeer = pubKey => {
     this.setState({
-      addChannelOpen:true,
-      channelPublicKey:pubKey
+      addChannelOpen: true,
+      channelPublicKey: pubKey,
     })
+  }
+
+  closeCloseChannelDialog = () => {
+    this.setState({
+      willCloseChannelPoint: null,
+    })
+  }
+
+  /**
+   * @param {string} channelPoint
+   */
+  onPressChannel = channelPoint => {
+    const [fundingTX, outputIndex] = channelPoint.split(':')
+    this.willCloseChannel({ fundingTX, outputIndex })
+  }
+
+  closeAddChannelDialog = () => {
+    this.setState({
+      addChannelOpen: false,
+    })
+  }
+
+  closeAddPeerDialog = () => {
+    this.setState({
+      addPeerOpen: false,
+    })
+  }
+
+  /** @param {string} text */
+  onChangePeerPublicKey = text => this.handleInputChange('peerPublicKey', text)
+
+  /** @param {string} text */
+  onChangeHost = text => this.handleInputChange('host', text)
+
+  /** @param {string} text */
+  onChangeChannelPublicKey = text => {
+    this.handleInputChange('channelPublicKey', text)
+  }
+
+  /** @param {string} text */
+  onChangeChannelCapacity = text => {
+    this.handleInputChange('channelCapacity', text)
+  }
+
+  /** @param {string} text */
+  onChangeChannelPushAmount = text => {
+    this.handleInputChange('channelPushAmount', text)
   }
 
   render() {
@@ -493,7 +551,7 @@ export default class AdvancedScreen extends Component {
             </View>
           </View>
           <View style={styles.statsContainer}>
-            <View style={[styles.stat, { marginBottom: 15 }]}>
+            <View style={xStyles.channelBalanceContainer}>
               <View style={styles.statIcon}>
                 <EntypoIcons name="flash" color="#F5A623" size={20} />
               </View>
@@ -574,7 +632,7 @@ export default class AdvancedScreen extends Component {
             data={peers}
             Item={Peer}
             title="Peers"
-            open={accordions['peers']}
+            open={accordions.peers}
             menuOptions={[
               {
                 name: 'Add Peer',
@@ -587,9 +645,9 @@ export default class AdvancedScreen extends Component {
                 },
               },
             ]}
-            toggleAccordion={() => this.toggleAccordion('peers')}
-            keyExtractor={p => p.pub_key}
-            onPressItem = {this.openChannelPeer}
+            onPressItem={this.openChannelPeer}
+            toggleAccordion={this.togglePeerAccordion}
+            keyExtractor={peerKeyExtractor}
           />
           {/* <AccordionItem
             fetchNextPage={() => this.fetchNextPage('invoices', 'invoices')}
@@ -603,11 +661,9 @@ export default class AdvancedScreen extends Component {
           <AccordionItem
             data={channels}
             Item={Channel}
-            keyExtractor={(
-              /** @type {import('../../services/wallet').Channel} */ channel,
-            ) => channel.channel_point}
+            keyExtractor={channelKeyExtractor}
             title="Channels"
-            open={accordions['channels']}
+            open={accordions.channels}
             menuOptions={[
               {
                 name: 'Add Channel',
@@ -619,28 +675,19 @@ export default class AdvancedScreen extends Component {
                 },
               },
             ]}
-            toggleAccordion={() => this.toggleAccordion('channels')}
-            onPressItem={channelPoint => {
-              const [fundingTX, outputIndex] = channelPoint.split(':')
-              this.willCloseChannel({ fundingTX, outputIndex })
-            }}
+            toggleAccordion={this.toggleChannelsAccordion}
+            onPressItem={this.onPressChannel}
             hideBottomBorder
           />
         </View>
         <BasicDialog
-          onRequestClose={() =>
-            this.setState({
-              addPeerOpen: false,
-            })
-          }
+          onRequestClose={this.closeAddPeerDialog}
           visible={addPeerOpen}
         >
           <View>
             <ShockInput
               placeholder="Public Key"
-              onChangeText={text =>
-                this.handleInputChange('peerPublicKey', text)
-              }
+              onChangeText={this.onChangePeerPublicKey}
               value={peerPublicKey}
             />
 
@@ -648,7 +695,7 @@ export default class AdvancedScreen extends Component {
 
             <ShockInput
               placeholder="Host"
-              onChangeText={text => this.handleInputChange('host', text)}
+              onChangeText={this.onChangeHost}
               value={host}
             />
 
@@ -660,37 +707,27 @@ export default class AdvancedScreen extends Component {
           </View>
         </BasicDialog>
         <BasicDialog
-          onRequestClose={() =>
-            this.setState({
-              addChannelOpen: false,
-            })
-          }
+          onRequestClose={this.closeAddChannelDialog}
           visible={addChannelOpen}
         >
           <View>
             <ShockInput
               placeholder="Public Key"
-              onChangeText={text =>
-                this.handleInputChange('channelPublicKey', text)
-              }
+              onChangeText={this.onChangeChannelPublicKey}
               value={channelPublicKey}
             />
 
             <ShockInput
               placeholder="Channel Capacity"
               keyboardType="number-pad"
-              onChangeText={text =>
-                this.handleInputChange('channelCapacity', text)
-              }
+              onChangeText={this.onChangeChannelCapacity}
               value={channelCapacity}
             />
 
             <ShockInput
               placeholder="Push Amount"
               keyboardType="number-pad"
-              onChangeText={text =>
-                this.handleInputChange('channelPushAmount', text)
-              }
+              onChangeText={this.onChangeChannelPushAmount}
               value={channelPushAmount}
             />
 
@@ -746,17 +783,9 @@ export default class AdvancedScreen extends Component {
                 }
               }
             },
-            'Go back': () => {
-              this.setState({
-                willCloseChannelPoint: null,
-              })
-            },
+            'Go back': this.closeCloseChannelDialog,
           }}
-          onRequestClose={() => {
-            this.setState({
-              willCloseChannelPoint: null,
-            })
-          }}
+          onRequestClose={this.closeCloseChannelDialog}
           message="Close this channel?"
           visible={!!willCloseChannelPoint}
         />
@@ -768,7 +797,7 @@ export default class AdvancedScreen extends Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: CSS.Colors.BACKGROUND_WHITE,
     justifyContent: 'flex-start',
     alignItems: 'center',
   },
@@ -777,6 +806,7 @@ const styles = StyleSheet.create({
     elevation: 1,
     zIndex: 10,
   },
+  marginBottom15: { marginBottom: 15 },
   nav: {
     width: '100%',
     paddingHorizontal: 20,
@@ -790,28 +820,12 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 100,
-    backgroundColor: '#0071BC',
-  },
-  avatarNotifications: {
-    position: 'absolute',
-    bottom: -10,
-    right: 0,
-    width: 30,
-    height: 30,
-    borderRadius: 100,
-    backgroundColor: '#F5A623',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatarNotificationsText: {
-    color: 'white',
-    fontWeight: '900',
-    fontSize: 17,
+    backgroundColor: CSS.Colors.BLUE_LIGHT,
   },
   navText: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: 'white',
+    color: CSS.Colors.TEXT_WHITE,
   },
   settingsBtn: {
     width: 60,
@@ -833,16 +847,16 @@ const styles = StyleSheet.create({
     marginRight: 9,
     borderRadius: 100,
     borderWidth: 3,
-    borderColor: 'white',
+    borderColor: CSS.Colors.BORDER_WHITE,
     borderStyle: 'solid',
   },
   statTextPrimary: {
-    color: 'white',
+    color: CSS.Colors.TEXT_WHITE,
     fontSize: 25,
     fontWeight: '900',
   },
   statTextSecondary: {
-    color: '#F5A623',
+    color: CSS.Colors.ORANGE,
     fontSize: 14,
   },
   accordionsContainer: {
@@ -865,3 +879,17 @@ const styles = StyleSheet.create({
     color: CSS.Colors.TEXT_WHITE,
   },
 })
+
+const xStyles = {
+  channelBalanceContainer: [styles.stat, styles.marginBottom15],
+}
+
+/**
+ * @param {Wallet.Channel} channel
+ */
+const channelKeyExtractor = channel => channel.channel_point
+
+/**
+ * @param {Wallet.Peer} p
+ */
+const peerKeyExtractor = p => p.pub_key

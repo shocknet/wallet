@@ -5,7 +5,7 @@ import React from 'react'
 import { StyleSheet, Text, TouchableHighlight, View } from 'react-native'
 import { Icon } from 'react-native-elements'
 
-import { Colors } from '../css'
+import * as CSS from '../css'
 
 /**
  * @typedef {object} IconProps
@@ -27,56 +27,65 @@ import { Colors } from '../css'
  */
 
 const DEFAULT_ICON_SIZE = 17
-const DEFAULT_ICON_COLOR = Colors.TEXT_WHITE
+const DEFAULT_ICON_COLOR = CSS.Colors.TEXT_WHITE
 const DEFAULT_ICON_STYLE = { marginRight: 8 }
 
 /**
- * @type {React.FC<Props>}
+ * @augments React.PureComponent<Props>
  */
-const ShockButton = ({ color, disabled, fullWidth, icon, onPress, title }) => {
-  /**
-   * @type {import('react-native').TouchableHighlightProps['style']}
-   */
-  const rootStyles = [styles.container]
-
-  if (fullWidth) {
-    rootStyles.push(styles.fullWidth)
+export default class ShockButton extends React.PureComponent {
+  static defaultProps = {
+    title: '',
+    color: CSS.Colors.ORANGE,
   }
 
-  if (color) {
-    rootStyles.push({
-      backgroundColor: color,
-    })
+  onPress = () => {
+    const { disabled, onPress } = this.props
+
+    onPress && !disabled && onPress()
   }
 
-  return ((
-    <TouchableHighlight
-      onPress={
-        disabled
-          ? undefined
-          : () => {
-              onPress && onPress()
-            }
-      }
-      style={[rootStyles, disabled && styles.disabled]}
-      underlayColor={color}
-    >
-      <View style={styles.row}>
-        <View>
-          {icon && (
-            <Icon
-              name={icon.name}
-              type={icon.type}
-              size={icon.size ? icon.size : DEFAULT_ICON_SIZE}
-              color={icon.color ? icon.color : DEFAULT_ICON_COLOR}
-              iconStyle={icon.iconStyle ? icon.iconStyle : DEFAULT_ICON_STYLE}
-            />
-          )}
+  render() {
+    const { color, disabled, fullWidth, icon, title } = this.props
+
+    /** @type {import('react-native').ViewProps['style']} */
+    let containerStyle = xStyles.container
+
+    if (disabled && fullWidth) {
+      containerStyle = xStyles.containerDisabledFullWidth
+    } else if (disabled) {
+      containerStyle = xStyles.containerDisabled
+    } else if (fullWidth) {
+      containerStyle = xStyles.containerFullWidth
+    }
+
+    if (color) {
+      containerStyle = [containerStyle, { backgroundColor: color }]
+    }
+
+    return (
+      <TouchableHighlight
+        onPress={this.onPress}
+        style={containerStyle}
+        underlayColor={color}
+      >
+        <View style={styles.row}>
+          <View>
+            {icon && (
+              <Icon
+                name={icon.name}
+                type={icon.type}
+                size={icon.size ? icon.size : DEFAULT_ICON_SIZE}
+                color={icon.color ? icon.color : DEFAULT_ICON_COLOR}
+                iconStyle={icon.iconStyle ? icon.iconStyle : DEFAULT_ICON_STYLE}
+              />
+            )}
+          </View>
+          <Text style={styles.text}>{title}</Text>
         </View>
-        <Text style={styles.text}>{title}</Text>
-      </View>
-    </TouchableHighlight>
-  ))
+      </TouchableHighlight>
+    )
+  }
 }
 
 const styles = StyleSheet.create({
@@ -92,17 +101,13 @@ const styles = StyleSheet.create({
   },
 
   disabled: {
-    backgroundColor: Colors.GRAY_MEDIUM,
+    backgroundColor: CSS.Colors.GRAY_MEDIUM,
   },
 
   text: {
-    color: Colors.TEXT_WHITE,
+    color: CSS.Colors.TEXT_WHITE,
     fontSize: 16,
     fontWeight: 'bold',
-  },
-
-  fullWidth: {
-    width: '100%',
   },
 
   row: {
@@ -110,9 +115,13 @@ const styles = StyleSheet.create({
   },
 })
 
-ShockButton.defaultProps = {
-  title: '',
-  color: Colors.ORANGE,
+const xStyles = {
+  container: styles.container,
+  containerDisabled: [styles.container, styles.disabled],
+  containerFullWidth: [styles.container, CSS.styles.width100],
+  containerDisabledFullWidth: [
+    styles.container,
+    styles.disabled,
+    CSS.styles.width100,
+  ],
 }
-
-export default React.memo(ShockButton)

@@ -33,11 +33,13 @@ const byTimestampFromOldestToNewest = (a, b) => a.timestamp - b.timestamp
 /**
  * @type {React.FC}
  */
-const NoChatsOrRequests = React.memo(() => ((
+const _NoChatsOrRequests = () => ((
   <View style={styles.noChats}>
     <Text>NO CHATS OR REQUESTS</Text>
   </View>
-)))
+))
+
+const NoChatsOrRequests = React.memo(_NoChatsOrRequests)
 
 /**
  * @param {API.Schema.Chat | API.Schema.SimpleReceivedRequest | API.Schema.SimpleSentRequest} item
@@ -46,9 +48,8 @@ const NoChatsOrRequests = React.memo(() => ((
 const keyExtractor = item => {
   if (API.Schema.isChat(item)) {
     return item.recipientPublicKey
-  } else {
-    return item.id
   }
+  return item.id
 }
 
 /**
@@ -148,13 +149,17 @@ export default class ChatsView extends React.PureComponent {
             alternateTextBold={unread}
             id={chat.recipientPublicKey}
             image={chat.recipientAvatar}
-            lowerText={
-              lastMsg.body === '$$__SHOCKWALLET__INITIAL__MESSAGE'
-                ? 'Empty conversation'
-                : lastMsg.body.indexOf('$$__SHOCKWALLET__INVOICE__') === 0
-                ? 'Invoice'
-                : lastMsg.body
-            }
+            lowerText={(() => {
+              if (lastMsg.body === '$$__SHOCKWALLET__INITIAL__MESSAGE') {
+                return 'Empty conversation'
+              }
+
+              if (lastMsg.body.indexOf('$$__SHOCKWALLET__INVOICE__') === 0) {
+                return 'Invoice'
+              }
+
+              return lastMsg.body
+            })()}
             lowerTextStyle={unread ? styles.boldFont : undefined}
             name={
               chat.recipientDisplayName === null
@@ -269,6 +274,21 @@ export default class ChatsView extends React.PureComponent {
     return null
   }
 
+  onPressAdd = () => {
+    this.props.onPressAdd()
+  }
+
+  header = () => (
+    <View style={styles.header}>
+      <Ionicons
+        name="ios-add"
+        color={Colors.BLUE_LIGHT}
+        size={48}
+        onPress={this.onPressAdd}
+      />
+    </View>
+  )
+
   render() {
     const {
       acceptingRequest,
@@ -277,7 +297,6 @@ export default class ChatsView extends React.PureComponent {
       receivedRequests,
       sentRequests,
 
-      onPressAdd,
       showingAddDialog,
       onRequestCloseAddDialog,
 
@@ -300,10 +319,10 @@ export default class ChatsView extends React.PureComponent {
 
     items.sort((a, b) => {
       /** @type {number} */
-      let at
+      let at = 0
 
       /** @type {number} */
-      let bt
+      let bt = 0
 
       if (API.Schema.isChat(a)) {
         const sortedMessages = a.messages
@@ -347,24 +366,7 @@ export default class ChatsView extends React.PureComponent {
     return (
       <React.Fragment>
         <FlatList
-          ListHeaderComponent={() => (
-            <View
-              style={{
-                justifyContent: 'flex-end',
-                flexDirection: 'row',
-                paddingLeft: SCREEN_PADDING,
-                paddingRight: SCREEN_PADDING,
-                paddingTop: 12,
-              }}
-            >
-              <Ionicons
-                name="ios-add"
-                color={Colors.BLUE_LIGHT}
-                size={48}
-                onPress={onPressAdd}
-              />
-            </View>
-          )}
+          ListHeaderComponent={this.header}
           ItemSeparatorComponent={Divider}
           ListEmptyComponent={NoChatsOrRequests}
           data={items}
@@ -401,6 +403,14 @@ const styles = {
   boldFont: {
     // @ts-ignore
     fontWeight: 'bold',
+  },
+
+  header: {
+    justifyContent: 'flex-end',
+    flexDirection: 'row',
+    paddingLeft: SCREEN_PADDING,
+    paddingRight: SCREEN_PADDING,
+    paddingTop: 12,
   },
 
   itemContainer: {

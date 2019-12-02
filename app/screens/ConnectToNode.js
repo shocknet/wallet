@@ -14,6 +14,7 @@ import {
 import EntypoIcon from 'react-native-vector-icons/Entypo'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 
+import * as CSS from '../css'
 /** @type {number} */
 // @ts-ignore
 const shockBG = require('../assets/images/shock-bg.png')
@@ -56,16 +57,16 @@ const shockLogo = require('../assets/images/shocklogo.png')
  * @augments React.PureComponent<Props, State, never>
  */
 export default class ConnectToNode extends React.PureComponent {
+  /** @type {State} */
+  state = {
+    nodeIP: '',
+  }
+
   /**
    * @type {import('react-navigation').NavigationScreenOptions}
    */
   static navigationOptions = {
     header: null,
-  }
-
-  /** @type {State} */
-  state = {
-    nodeIP: '',
   }
 
   /**
@@ -121,13 +122,13 @@ export default class ConnectToNode extends React.PureComponent {
             >
               <Ionicons
                 name="ios-barcode"
-                style={{ position: 'absolute' }}
+                style={styles.positionAbsolute}
                 size={10}
                 color="#eee"
               />
               <Ionicons
                 name="md-qr-scanner"
-                style={{ position: 'absolute' }}
+                style={styles.positionAbsolute}
                 size={20}
                 color="#eee"
               />
@@ -171,9 +172,12 @@ export default class ConnectToNode extends React.PureComponent {
 }
 
 const styles = StyleSheet.create({
+  positionAbsolute: {
+    position: 'absolute',
+  },
   container: {
     flex: 1,
-    backgroundColor: '#2E4674',
+    backgroundColor: CSS.Colors.BLUE_DARK,
     justifyContent: 'space-around',
     paddingLeft: 30,
     paddingRight: 30,
@@ -186,12 +190,9 @@ const styles = StyleSheet.create({
   shockWalletLogoContainer: {
     alignItems: 'center',
   },
-  shockWalletCallToActionContainer: {
-    alignItems: 'center',
-  },
   textInputFieldContainer: {
     flexDirection: 'row',
-    backgroundColor: '#ffffff',
+    backgroundColor: CSS.Colors.TEXT_WHITE,
     height: 60,
     borderRadius: 100,
     paddingLeft: 25,
@@ -208,20 +209,20 @@ const styles = StyleSheet.create({
     width: 35,
     height: 35,
     flexShrink: 0,
-    backgroundColor: '#505050',
+    backgroundColor: CSS.Colors.GRAY_MEDIUM,
     borderRadius: 100,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 10,
   },
   logoText: {
-    color: '#ffffff',
+    color: CSS.Colors.TEXT_WHITE,
     fontFamily: 'Montserrat-700',
     fontSize: 18,
     letterSpacing: 2.5,
   },
   callToAction: {
-    color: '#ffffff',
+    color: CSS.Colors.TEXT_WHITE,
     fontFamily: 'Montserrat-900',
     fontSize: 28,
     textAlign: 'center',
@@ -229,7 +230,7 @@ const styles = StyleSheet.create({
   },
   connectBtn: {
     height: 60,
-    backgroundColor: '#f8a61e',
+    backgroundColor: CSS.Colors.ORANGE,
     borderRadius: 100,
     alignItems: 'center',
     justifyContent: 'center',
@@ -238,13 +239,13 @@ const styles = StyleSheet.create({
   connectBtnText: {
     fontSize: 15,
     letterSpacing: 1.25,
-    color: 'white',
+    color: CSS.Colors.TEXT_WHITE,
     fontFamily: 'Montserrat-700',
   },
   shockBtn: {
     flexDirection: 'row',
     height: 60,
-    backgroundColor: '#ffffff',
+    backgroundColor: CSS.Colors.TEXT_WHITE,
     borderRadius: 100,
     alignItems: 'center',
     justifyContent: 'center',
@@ -254,7 +255,7 @@ const styles = StyleSheet.create({
   shockBtnText: {
     fontSize: 15,
     letterSpacing: 1,
-    color: '#274f94',
+    color: CSS.Colors.BLUE_DARK,
     fontFamily: 'Montserrat-700',
     marginLeft: 10,
   },

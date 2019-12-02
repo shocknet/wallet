@@ -21,6 +21,7 @@ const shockBG = require('../assets/images/shock-bg.png')
 
 import * as API from '../services/contact-api'
 import * as Auth from '../services/auth'
+import * as CSS from '../css'
 import ShockDialog from '../components/ShockDialog'
 import { LOGIN } from './Login'
 
@@ -67,6 +68,7 @@ export default class Login extends React.PureComponent {
   }
 
   connUnsubscribe = () => {}
+
   willFocusSub = {
     remove() {},
   }
@@ -210,7 +212,7 @@ export default class Login extends React.PureComponent {
                 editable={connected}
                 onChangeText={this.onChangePass}
                 style={styles.textInputField}
-                secureTextEntry={true}
+                secureTextEntry
                 placeholder="Existing LND Password"
                 value={pass}
               />
@@ -224,19 +226,12 @@ export default class Login extends React.PureComponent {
               <Text style={styles.connectBtnText}>Create Alias</Text>
             </TouchableOpacity>
             <View style={styles.createContainer}>
-              <Text
-                style={{
-                  textAlign: 'center',
-                  width: '100%',
-                  color: 'white',
-                  fontFamily: 'Montserrat-700',
-                }}
-              >
+              <Text style={styles.alreadyCreatedAnAlias}>
                 Already created an alias?
               </Text>
               <TouchableOpacity
                 onPress={this.goToUnlockWallet}
-                style={{ width: '100%' }}
+                style={styles.width100}
               >
                 <Text style={styles.createBtnText}>Login</Text>
               </TouchableOpacity>
@@ -255,9 +250,15 @@ export default class Login extends React.PureComponent {
 }
 
 const styles = StyleSheet.create({
+  alreadyCreatedAnAlias: {
+    textAlign: 'center',
+    width: '100%',
+    color: CSS.Colors.TEXT_WHITE,
+    fontFamily: 'Montserrat-700',
+  },
   container: {
     flex: 1,
-    backgroundColor: '#2E4674',
+    backgroundColor: CSS.Colors.BLUE_DARK,
     justifyContent: 'space-around',
     minHeight: 600,
     paddingLeft: 30,
@@ -274,7 +275,7 @@ const styles = StyleSheet.create({
   },
   connectBtn: {
     height: 60,
-    backgroundColor: '#f8a61e',
+    backgroundColor: CSS.Colors.ORANGE,
     borderRadius: 100,
     alignItems: 'center',
     justifyContent: 'center',
@@ -283,18 +284,18 @@ const styles = StyleSheet.create({
   connectBtnText: {
     fontSize: 15,
     letterSpacing: 1.25,
-    color: 'white',
+    color: CSS.Colors.TEXT_WHITE,
     fontFamily: 'Montserrat-700',
   },
   textInputFieldLabel: {
     marginBottom: 10,
     marginLeft: 15,
-    color: 'white',
+    color: CSS.Colors.TEXT_WHITE,
     fontFamily: 'Montserrat-600',
   },
   textInputFieldContainer: {
     flexDirection: 'row',
-    backgroundColor: '#ffffff',
+    backgroundColor: CSS.Colors.BACKGROUND_WHITE,
     height: 50,
     borderRadius: 100,
     paddingLeft: 25,
@@ -308,13 +309,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   logoText: {
-    color: '#ffffff',
+    color: CSS.Colors.TEXT_WHITE,
     fontWeight: 'bold',
     fontSize: 20,
     marginTop: 10,
   },
   callToAction: {
-    color: '#ffffff',
+    color: CSS.Colors.TEXT_WHITE,
     fontFamily: 'Montserrat-700',
     fontSize: 28,
   },
@@ -323,8 +324,11 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   createBtnText: {
-    color: '#f8a61e',
+    color: CSS.Colors.ORANGE,
     fontFamily: 'Montserrat-700',
     textAlign: 'center',
+  },
+  width100: {
+    width: '100%',
   },
 })

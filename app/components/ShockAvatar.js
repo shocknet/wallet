@@ -15,28 +15,24 @@ const DEFAULT_USER_IMAGE =
  */
 
 /**
- * @augments React.PureComponent<Props>
+ * @type {React.FC<Props>}
  */
-export default class ShockAvatar extends React.PureComponent {
-  render() {
-    const { height, image } = this.props
+const _ShockAvatar = ({ height, image }) => ((
+  <Avatar
+    height={height}
+    rounded
+    source={
+      image === null || image.length === 0
+        ? {
+            uri: 'data:image/png;base64,' + DEFAULT_USER_IMAGE,
+          }
+        : {
+            uri: 'data:image/png;base64,' + image,
+          }
+    }
+  />
+))
 
-    // const source =
+const ShockAvatar = React.memo(_ShockAvatar)
 
-    return (
-      <Avatar
-        height={height}
-        rounded
-        source={
-          image === null || image.length === 0
-            ? {
-                uri: 'data:image/png;base64,' + DEFAULT_USER_IMAGE,
-              }
-            : {
-                uri: 'data:image/png;base64,' + image,
-              }
-        }
-      />
-    )
-  }
-}
+export default ShockAvatar

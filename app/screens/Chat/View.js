@@ -10,8 +10,6 @@ import { GiftedChat, Send } from 'react-native-gifted-chat'
  * @typedef {import('react-native-gifted-chat').User} GiftedChatUser
  */
 
-import * as API from '../../services/contact-api'
-
 import ChatInvoice from './ChatInvoice'
 import ChatMessage from './ChatMessage'
 import BasicDialog from '../../components/BasicDialog'
@@ -45,6 +43,7 @@ const Loading = () => (
  * @param {Record<string, any>} props
  */
 const SendRenderer = props => (
+  // eslint-disable-next-line react/jsx-props-no-spreading
   <Send {...props}>
     <View style={styles.sendIcon}>
       <Icon name="paper-plane" type="font-awesome" />
@@ -68,7 +67,7 @@ const SendRenderer = props => (
  * Used for displaying payment status on invoices. If undefined for a given
  * invoice, an spinner  will be shown for that given invoice as a placeholder.
  * Please refer to _PaymentStatus to see what each one represents.
- * @prop {API.Schema.ChatMessage[]} messages
+ * @prop {import('../../services/contact-api').Schema.ChatMessage[]} messages
  * @prop {(msgID: string) => void} onPressUnpaidIncomingInvoice
  * @prop {(text: string) => void} onSendMessage
  * @prop {string|null} ownDisplayName
@@ -113,7 +112,7 @@ export default class ChatView extends React.PureComponent {
       recipientPublicKey,
     } = this.props
 
-    const user = currentMessage.user
+    const { user } = currentMessage
 
     const outgoing = user._id !== recipientPublicKey
 
@@ -261,7 +260,7 @@ export default class ChatView extends React.PureComponent {
       return <Loading />
     }
 
-    const firstMsg = sortedMessages[0]
+    const [firstMsg] = sortedMessages
 
     const thereAreMoreMessages =
       firstMsg.body !== '$$__SHOCKWALLET__INITIAL__MESSAGE'

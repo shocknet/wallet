@@ -8,6 +8,8 @@
     "test": "jest",
     "postinstall": "npx jetifier -r",
     "typecheck": "tsc",
+    "prettify": "prettier --write \"index.js\" \"app/**/*.{js,ts}\"",
+    "format": "yarn prettify",
     "lint": "eslint \"./app/**/*.js\"",
     "build:debug": "rm -f android/app/src/main/assets/index.android.bundle && cd android && ./gradlew clean && cd .. && react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res && cd android && ./gradlew assembleDebug && cd .. && cp android/app/build/outputs/apk/debug/app-debug.apk APK-DEBUG.apk",
     "build:release:delete-old-bundle": "rm -f android/app/src/main/assets/index.android.bundle",
@@ -79,7 +81,9 @@
     "eslint-plugin-react": "^7.16.0",
     "eslint-plugin-react-native": "^3.8.1",
     "flow-bin": "^0.78.0",
+    "husky": "^3.1.0",
     "jest": "23.1.0",
+    "lint-staged": "^9.5.0",
     "prettier": "^1.17.1",
     "react-test-renderer": "16.3.1",
     "typescript": "^3.5.2"
@@ -94,5 +98,22 @@
     "assets": [
       "./app/assets/fonts/"
     ]
+  },
+  "lint-staged": {
+    "app/**/*.js": [
+      "prettier --write",
+      "eslint --fix",
+      "git add"
+    ],
+    "index.js": [
+      "prettier --write",
+      "eslint --fix",
+      "git add"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "yarn typecheck && yarn lint-staged"
+    }
   }
 }

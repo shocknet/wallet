@@ -35,11 +35,17 @@ export default class ChatMessage extends React.PureComponent {
     typeof this.intervalID === 'number' && clearInterval(this.intervalID)
   }
 
+  onPress = () => {
+    const { id, onPress } = this.props
+
+    onPress && onPress(id)
+  }
+
   render() {
-    const { body, id, onPress, outgoing, senderName, timestamp } = this.props
+    const { body, outgoing, senderName, timestamp } = this.props
 
     return (
-      <TouchableOpacity onPress={() => onPress && onPress(id)}>
+      <TouchableOpacity onPress={this.onPress}>
         <View style={outgoing ? styles.container : styles.containerOutgoing}>
           <Text style={outgoing ? styles.name : styles.nameOutgoing}>
             {senderName}

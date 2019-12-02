@@ -16,9 +16,10 @@ import {
 import LinearGradient from 'react-native-linear-gradient'
 import Icon from 'react-native-vector-icons/Entypo'
 
+import * as CSS from '../../../css'
+
 /**
  * @typedef {{ action?: () => void, icon: string, name: string }} Option
- *
  */
 
 /**
@@ -51,16 +52,8 @@ export default class Accordion extends Component {
   }
 
   state = {
-    open: false,
     menuOpen: false,
     menuOpenAnimation: new Animated.Value(0),
-  }
-
-  componentDidMount() {
-    const { open } = this.props
-    this.setState({
-      open,
-    })
   }
 
   toggleMenuOpen = () => {
@@ -76,6 +69,24 @@ export default class Accordion extends Component {
   }
 
   /**
+   * @type {import('react-native').ListRenderItem<T>}
+   */
+  itemRender = ({ item }) => {
+    const { Item, keyExtractor, onPressItem } = this.props
+
+    return ((
+      <TouchableOpacity
+        // eslint-disable-next-line react/jsx-no-bind
+        onPress={() => {
+          onPressItem && onPressItem(keyExtractor(item))
+        }}
+      >
+        <Item data={item} />
+      </TouchableOpacity>
+    ))
+  }
+
+  /**
    * @param {Option[]} options
    */
   renderTRXMenu = options => {
@@ -84,8 +95,11 @@ export default class Accordion extends Component {
     if (open && options && options.length > 0) {
       return (
         <View style={styles.accordionMenu}>
-          {options.map(option => (
-            <TouchableWithoutFeedback onPress={option.action}>
+          {options.map((option, i) => (
+            <TouchableWithoutFeedback
+              key={option ? option.name + i : i}
+              onPress={option.action}
+            >
               <Animated.View
                 style={[
                   styles.accordionMenuItem,
@@ -134,6 +148,18 @@ export default class Accordion extends Component {
     return null
   }
 
+  onEndReached = () => {
+    const { data, fetchNextPage } = this.props
+
+    if (Array.isArray(data)) {
+      throw new TypeError()
+    }
+
+    if (data.page < data.totalPages && fetchNextPage) {
+      fetchNextPage()
+    }
+  }
+
   render() {
     const {
       title,
@@ -141,14 +167,15 @@ export default class Accordion extends Component {
       toggleAccordion,
       data,
       Item,
-      fetchNextPage,
       menuOptions,
       keyExtractor,
       onPressItem,
       hideBottomBorder,
     } = this.props
     return (
-      <View style={[styles.accordionItem, { flex: open ? 1 : 0 }]}>
+      <View
+        style={open ? xStyles.accordionItemOpen : xStyles.accordionItemClosed}
+      >
         <TouchableOpacity
           onPress={toggleAccordion}
           style={styles.accordionItem}
@@ -170,33 +197,18 @@ export default class Accordion extends Component {
         {!Array.isArray(data) ? (
           <FlatList
             data={data.content}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                onPress={() => {
-                  onPressItem && onPressItem(keyExtractor(item))
-                }}
-              >
-                <Item data={item} />
-              </TouchableOpacity>
-            )}
-            style={{
-              height: open ? '100%' : '0%',
-            }}
+            renderItem={this.itemRender}
+            style={open ? CSS.styles.width100 : CSS.styles.width0}
             keyExtractor={keyExtractor}
-            onEndReached={() => {
-              if (data.page < data.totalPages && fetchNextPage) {
-                fetchNextPage()
-              }
-            }}
+            onEndReached={this.onEndReached}
           />
         ) : (
-          <ScrollView
-            style={{
-              height: open ? '100%' : '0%',
-            }}
-          >
-            {data.map(item => (
+          <ScrollView style={open ? CSS.styles.width100 : CSS.styles.width0}>
+            {data.map((item, i) => (
               <TouchableOpacity
+                // eslint-disable-next-line react/no-array-index-key
+                key={String(item) + i}
+                // eslint-disable-next-line react/jsx-no-bind
                 onPress={() => {
                   onPressItem && onPressItem(keyExtractor(item))
                 }}
@@ -225,14 +237,14 @@ const styles = StyleSheet.create({
   accordionHeader: {
     paddingVertical: 10,
     paddingHorizontal: 15,
-    borderColor: '#eee',
+    borderColor: CSS.Colors.BORDER_WHITE,
     borderStyle: 'solid',
     elevation: 2,
   },
   accordionHeaderText: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: 'white',
+    color: CSS.Colors.TEXT_WHITE,
   },
   accordionMenu: {
     position: 'absolute',
@@ -251,7 +263,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingRight: 20,
     borderRadius: 100,
-    backgroundColor: 'white',
+    backgroundColor: CSS.Colors.BACKGROUND_WHITE,
     marginRight: 15,
     elevation: 3,
   },
@@ -259,16 +271,21 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   accordionMenuItemText: {
-    color: '#294f93',
+    color: CSS.Colors.BLUE_DARK,
     fontWeight: 'bold',
   },
   accordionMenuBtn: {
     width: 45,
     height: 45,
     borderRadius: 100,
-    backgroundColor: '#f5a623',
+    backgroundColor: CSS.Colors.ORANGE,
     alignItems: 'center',
     justifyContent: 'center',
     elevation: 3,
   },
 })
+
+const xStyles = {
+  accordionItemOpen: [styles.accordionItem, CSS.styles.flex],
+  accordionItemClosed: [styles.accordionItem, CSS.styles.flexZero],
+}

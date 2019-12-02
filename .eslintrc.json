@@ -46,15 +46,27 @@
     "complexity": "off",
     "yoda": "off",
     "prefer-promise-reject-errors": "off",
+    "line-comment-position": "off",
     "camelcase": "off",
     "consistent-return": "off",
     "no-shadow": "off",
+    "no-empty-function": "off",
+    // we something need to pass undefined as a prop
+    "no-undefined": "off",
+    // typescript now handles this
+    "default-case": "off",
+    // regexp is hard
+    "prefer-named-capture-group": "off",
+    "require-unicode-regexp": "off",
     "react/no-set-state": "off",
+    // unsensical rule, setState inside didUpdate is a common pattern
+    "react/no-did-update-set-state": "off",
     "react/prop-types": "off",
     "react/jsx-indent": "off",
     "react/jsx-no-literals": "off",
     "react/jsx-max-props-per-line": "off",
     "react/jsx-sort-props": "off",
+    "react/jsx-sort-default-props": "off",
     "react/jsx-one-expression-per-line": "off",
     "react/jsx-max-depth": "off",
     "react/jsx-handler-names": "off",
@@ -64,14 +76,22 @@
     "react/forbid-component-props": "off",
     "react/destructuring-assignment": "off",
     "react/state-in-constructor": "off",
+    // React docs say this is ok
+    "react/no-did-mount-set-state": "off",
+    // we don't abuse this rule
+    "react/no-multi-comp": "off",
     "react/require-optimization": "off",
+    // not sure of this rule, hampers readability a lot.
+    "react/no-unescaped-entities": "off",
     "react-native/sort-styles": "off",
     "react-native/split-platform-components": "off",
     "react/jsx-fragments": "off",
+    // good rule but it's currently broken
+    "react/sort-comp": "off",
     "no-use-before-define": "off",
     "new-cap": "off",
-    "babel/new-cap": 1,
-    "babel/camelcase": 1,
+    "babel/new-cap": "off",
+    "babel/camelcase": "off",
     "object-curly-spacing": "off",
     "babel/object-curly-spacing": "off",
     "quotes": "off",
@@ -79,13 +99,13 @@
     "semi": "off",
     "babel/semi": "off",
     "no-unused-expressions": "off",
-    "babel/no-unused-expressions": 1,
+    "babel/no-unused-expressions": ["error", { "allowShortCircuit": true }],
     "valid-typeof": "off",
     "babel/valid-typeof": 1
   },
   "settings": {
     "react": {
-      "version": "^16.6.3"
+      "version": "^16.10.2"
     }
   }
 }

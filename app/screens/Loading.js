@@ -11,6 +11,7 @@ import {
   ImageBackground,
 } from 'react-native'
 
+import * as CSS from '../css'
 
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation
@@ -29,32 +30,35 @@ const shockBG = require('../assets/images/shock-bg.png')
 const shockLogo = require('../assets/images/shocklogo.png')
 
 /**
+ * @type {React.FC}
+ */
+const _Loading = () => ((
+  <ImageBackground
+    resizeMode="cover"
+    resizeMethod="scale"
+    source={shockBG}
+    style={styles.container}
+  >
+    <View style={styles.shockWalletLogoContainer}>
+      <Image style={SHOCK_LOGO_STYLE} source={shockLogo} />
+      <Text style={styles.logoText}>S H O C K W A L L E T</Text>
+    </View>
+
+    <ActivityIndicator animating size="large" color="white" />
+  </ImageBackground>
+))
+
+/**
  * A simple loading screen with the shock wallet logo on top.
  */
-export default class Loading extends React.PureComponent {
-  render() {
-    return (
-      <ImageBackground
-        resizeMode="cover"
-        resizeMethod="scale"
-        source={shockBG}
-        style={styles.container}
-      >
-        <View style={styles.shockWalletLogoContainer}>
-          <Image style={SHOCK_LOGO_STYLE} source={shockLogo} />
-          <Text style={styles.logoText}>S H O C K W A L L E T</Text>
-        </View>
+const Loading = React.memo(_Loading)
 
-        <ActivityIndicator animating size="large" color="white" />
-      </ImageBackground>
-    )
-  }
-}
+export default Loading
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#2E4674',
+    backgroundColor: CSS.Colors.BLUE_DARK,
     justifyContent: 'space-around',
     paddingLeft: 30,
     paddingRight: 30,
@@ -63,7 +67,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logoText: {
-    color: '#ffffff',
+    color: CSS.Colors.TEXT_WHITE,
     fontWeight: 'bold',
     fontSize: 20,
     marginTop: 10,

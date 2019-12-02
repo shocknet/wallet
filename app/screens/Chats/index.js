@@ -80,7 +80,9 @@ export default class Chats extends React.PureComponent {
   }
 
   chatsUnsubscribe = () => {}
+
   receivedReqsUnsubscribe = () => {}
+
   sentReqsUnsubscribe = () => {}
 
   componentDidMount() {
@@ -116,8 +118,7 @@ export default class Chats extends React.PureComponent {
     // CAST: If user is pressing on a chat, chats are loaded and not null.
     // TS wants the expression to be casted to `unknown` first. Not possible
     // with jsdoc
-    //  @ts-ignore
-    const chats = /** @type  {API.Schema.Chat[]} */ (this.state.chats)
+    const { chats } = this.state
 
     // CAST: If user is pressing on a chat, that chat exists
     const { messages } = /** @type {API.Schema.Chat} */ (chats.find(

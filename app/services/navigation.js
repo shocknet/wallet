@@ -1,5 +1,8 @@
 /** @format  */
-import { NavigationActions, NavigationNavigateAction } from 'react-navigation'
+import { NavigationActions } from 'react-navigation'
+/**
+ * @typedef {import('react-navigation').NavigationNavigateAction} NavigationNavigateAction
+ */
 
 /**
  * @type {import('react-navigation').NavigationContainerComponent|null}

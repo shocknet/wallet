@@ -4,6 +4,7 @@
 import React from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 
+import { Colors } from '../css'
 import * as ContactAPI from '../services/contact-api'
 
 /**
@@ -72,7 +73,7 @@ export default class WithConnWarning extends React.PureComponent {
 
 const styles = StyleSheet.create({
   banner: {
-    backgroundColor: 'red',
+    backgroundColor: Colors.FAILURE_RED,
     height: 24,
     left: 0,
     position: 'absolute',
@@ -85,6 +86,6 @@ const styles = StyleSheet.create({
   },
 
   text: {
-    color: 'white',
+    color: Colors.TEXT_WHITE,
   },
 })

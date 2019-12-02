@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
   },
 
   data: {
-    color: CSS.Colors.TEXT_LIGHT_GRAY,
+    color: CSS.Colors.TEXT_GRAY_LIGHT,
     fontSize: 14,
     fontFamily: 'Montserrat-200',
   },
