@@ -44,6 +44,8 @@ export const styles = StyleSheet.create({
   flex: { flex: 1 },
   flexZero: { flex: 0 },
   fontSize24: { fontSize: 24 },
+  height0: { height: '0%' },
+  height100: { height: '100%' },
   deadCenter: {
     alignItems: 'center',
     justifyContent: 'center',
