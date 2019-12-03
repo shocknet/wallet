@@ -9,6 +9,7 @@ import once from 'lodash/once'
 import debounce from 'lodash/debounce'
 
 import React, { Component } from 'react'
+import { Provider } from 'react-redux'
 
 import RootStack, { setup as rootStackSetup } from './app/navigators/Root'
 
@@ -21,6 +22,8 @@ import * as ContactApi from './app/services/contact-api'
 import WithConnWarning from './app/components/WithConnWarning'
 import ConnectToNode from './app/screens/ConnectToNode'
 import QRScanner from './app/screens/QRScanner'
+import configureStore from './store'
+import { PersistGate } from 'redux-persist/integration/react'
 
 const CONTACT_SOCKET_PORT = 9835
 
@@ -53,6 +56,8 @@ AppRegistry.registerComponent('shockwallet', () => ShockWallet)
  * @prop {string|null} tryingIP
  * @prop {boolean} scanningQR
  */
+
+const { persistor, store } = configureStore()
 
 /**
  * @augments React.Component<{}, State, never>
@@ -266,8 +271,9 @@ export default class ShockWallet extends Component {
     })
   }
 
-  render() {
-    if (this.state.nodeIPSet && !this.state.fetchingCache) {
+  renderContent = () => {
+    const { nodeIPSet, fetchingCache, tryingIP, scanningQR } = this.state
+    if (nodeIPSet && !fetchingCache) {
       return (
         <WithConnWarning>
           <RootStack
@@ -278,40 +284,40 @@ export default class ShockWallet extends Component {
       )
     }
 
-    if (this.state.fetchingCache || this.state.tryingIP) {
+    if (fetchingCache || tryingIP) {
       return (
         <View style={styles.flex}>
           <Loading />
 
           {/* <ShockDialog
-            message={this.state.err}
+            message={err}
             onRequestClose={this.dismissDialog}
-            visible={!!this.state.err}
+            visible={!!err}
           /> */}
         </View>
       )
     }
 
-    if (this.state.tryingIP === null && !this.state.scanningQR) {
+    if (tryingIP === null && !scanningQR) {
       return (
         <View style={styles.flex}>
           <ConnectToNode
-            disableControls={!!this.state.tryingIP}
+            disableControls={!!tryingIP}
             onPressConnect={this.onPressConnect}
             onPressUseShockcloud={this.onPressUseShockCloud}
             toggleQRScreen={this.toggleQRScreen}
           />
 
           {/* <ShockDialog
-            message={this.state.err}
+            message={err}
             onRequestClose={this.dismissDialog}
-            visible={!!this.state.err}
+            visible={!!err}
           /> */}
         </View>
       )
     }
 
-    if (this.state.scanningQR) {
+    if (scanningQR) {
       return (
         <View style={styles.flex}>
           <QRScanner
@@ -320,15 +326,25 @@ export default class ShockWallet extends Component {
           />
 
           {/* <ShockDialog
-            message={this.state.err}
+            message={err}
             onRequestClose={this.dismissDialog}
-            visible={!!this.state.err}
+            visible={!!err}
           /> */}
         </View>
       )
     }
 
     return <Loading />
+  }
+
+  render() {
+    return (
+      <Provider store={store}>
+        <PersistGate loading={<Loading />} persistor={persistor}>
+          {this.renderContent()}
+        </PersistGate>
+      </Provider>
+    )
   }
 }
 
