@@ -47,3 +47,17 @@ export const getQueryParams = (url, params = {}) => {
  * @returns {string}
  */
 export const defaultName = pub => 'anon' + pub.slice(0, 8)
+
+/**
+ * @param {string} ip
+ * @returns {boolean}
+ */
+export const isValidIP = ip => {
+  const sections = ip.split('.')
+
+  if (sections.length !== 4) return false
+
+  return sections.every(
+    s => Number.isInteger(Number(s)) && s.length <= 3 && s.length > 0,
+  )
+}

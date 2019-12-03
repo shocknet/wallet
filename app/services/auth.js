@@ -3,11 +3,8 @@
  */
 import { backOff } from 'exponential-backoff'
 import { JitterTypes } from 'exponential-backoff/dist/options'
-import Http from 'axios'
 
 import * as Cache from './cache'
-
-const PORT = 9835
 
 /**
  * Tells the node to connect to LND.
@@ -18,13 +15,13 @@ const PORT = 9835
 export const connectNodeToLND = (alias, password) =>
   backOff(
     async () => {
-      const nodeIP = await Cache.getNodeIP()
+      const nodeURL = await Cache.getNodeURL()
 
-      if (nodeIP === null) {
-        throw new TypeError('nodeIP === null')
+      if (nodeURL === null) {
+        throw new TypeError('nodeURL === null')
       }
 
-      const res = await fetch(`http://${nodeIP}:${PORT}/api/lnd/connect`, {
+      const res = await fetch(`http://${nodeURL}/api/lnd/connect`, {
         method: 'POST',
         body: JSON.stringify({
           alias,
@@ -53,12 +50,15 @@ export const connectNodeToLND = (alias, password) =>
   )
 
 export const walletExists = async () => {
-  try {
-    const { data } = await Http.get('/api/lnd/wallet/status')
-    return data.walletExists
-  } catch (err) {
-    console.error(err)
+  const nodeURL = await Cache.getNodeURL()
+  const res = await fetch(`http://${nodeURL}/api/lnd/wallet/status`)
+  const body = await res.json()
+
+  if (res.ok) {
+    return body.walletExists
   }
+
+  throw new Error(body.errorMessage)
 }
 
 /**
@@ -69,13 +69,13 @@ export const walletExists = async () => {
  */
 export const unlockWallet = async (alias, password) => {
   await connectNodeToLND(alias, password)
-  const nodeIP = await Cache.getNodeIP()
+  const nodeURL = await Cache.getNodeURL()
 
-  if (nodeIP === null) {
-    throw new TypeError('nodeIP === null')
+  if (nodeURL === null) {
+    throw new TypeError('nodeURL === null')
   }
 
-  const res = await fetch(`http://${nodeIP}:${PORT}/api/lnd/auth`, {
+  const res = await fetch(`http://${nodeURL}/api/lnd/auth`, {
     method: 'POST',
     body: JSON.stringify({
       alias,
@@ -116,13 +116,13 @@ export const unlockWallet = async (alias, password) => {
  * @returns {Promise<{ token: string , publicKey: string }>}
  */
 export const registerExistingWallet = async (alias, password) => {
-  const nodeIP = await Cache.getNodeIP()
+  const nodeURL = await Cache.getNodeURL()
 
-  if (nodeIP === null) {
-    throw new TypeError('nodeIP === null')
+  if (nodeURL === null) {
+    throw new TypeError('nodeURL === null')
   }
 
-  const res = await fetch(`http://${nodeIP}:${PORT}/api/lnd/wallet/existing`, {
+  const res = await fetch(`http://${nodeURL}/api/lnd/wallet/existing`, {
     method: 'POST',
     body: JSON.stringify({
       alias,
@@ -166,13 +166,13 @@ export const registerExistingWallet = async (alias, password) => {
  * @returns {Promise<{ token: string , publicKey: string }>}
  */
 export const createWallet = async (alias, password) => {
-  const nodeIP = await Cache.getNodeIP()
+  const nodeURL = await Cache.getNodeURL()
 
-  if (nodeIP === null) {
-    throw new TypeError('nodeIP === null')
+  if (nodeURL === null) {
+    throw new TypeError('nodeURL === null')
   }
 
-  const res = await fetch(`http://${nodeIP}:${PORT}/api/lnd/wallet`, {
+  const res = await fetch(`http://${nodeURL}/api/lnd/wallet`, {
     method: 'POST',
     body: JSON.stringify({
       alias,

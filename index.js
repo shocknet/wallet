@@ -22,8 +22,6 @@ import WithConnWarning from './app/components/WithConnWarning'
 import ConnectToNode from './app/screens/ConnectToNode'
 import QRScanner from './app/screens/QRScanner'
 
-const CONTACT_SOCKET_PORT = 9835
-
 // https://github.com/moment/moment/issues/2781#issuecomment-160739129
 moment.locale('en', {
   relativeTime: {
@@ -66,105 +64,80 @@ export default class ShockWallet extends Component {
     scanningQR: false,
   }
 
-  onNodeIPUnsub = () => {}
+  connectToNodeIP = async () => {
+    try {
+      const { tryingIP: ip } = this.state
+      ContactApi.Socket.connect(`http://${ip}:9835`)
 
-  /**
-   * @private
-   * @readonly
-   * @param {string|null} ip
-   * @returns {void}
-   */
-  onNodeIPChange = ip => {
-    if (ip === null) {
+      /** @type {boolean} */
+      const connected = await Promise.race([
+        new Promise(res => {
+          ContactApi.Events.onConnection(
+            debounce(
+              once(conn => {
+                res(conn)
+              }),
+              300,
+            ),
+          )
+        }),
+        new Promise(res => {
+          setTimeout(() => {
+            res(false)
+          }, 5000)
+        }),
+      ])
+
+      if (connected) {
+        await Cache.writeNodeURLOrIP(ip)
+
+        const storedAuthData = await Cache.getStoredAuthData()
+        // Sets a base URL for all requests so we won't have to worry
+        // concatenating it every time we want to make a request.
+        Http.defaults.baseURL = ip ? `http://${ip}:9835` : undefined
+
+        if (storedAuthData !== null && storedAuthData.nodeIP === ip) {
+          ContactApi.Events.initAuthData(storedAuthData.authData)
+
+          // Adds a default Authorization header for all requests
+          if (storedAuthData.authData) {
+            Http.defaults.headers.common.Authorization = `${storedAuthData.authData.token}`
+          }
+        }
+
+        ContactApi.Events.setupEvents()
+
+        this.setState({
+          nodeIPSet: true,
+        })
+      } else {
+        // avoid reconnection attempts, unsubscribe event listeners
+        ContactApi.Socket.disconnect()
+      }
+    } catch (e) {
+      // avoid reconnection attempts, unsubscribe event listeners
+      ContactApi.Socket.disconnect()
+
+      ToastAndroid.show(
+        typeof e === 'object' && e !== null
+          ? `Could not connect: ${e.message}`
+          : 'Could not connect (unknown error)',
+        800,
+      )
+    } finally {
       this.setState({
-        nodeIPSet: false,
-      })
-    } else {
-      this.setState({
-        nodeIPSet: true,
+        tryingIP: null,
       })
     }
   }
 
-  connectToNodeIP = (ip = this.state.tryingIP, port = CONTACT_SOCKET_PORT) => {
-    ContactApi.Socket.connect(`http://${ip}:${port}`)
-
-    Promise.race([
-      new Promise(res => {
-        ContactApi.Events.onConnection(
-          debounce(
-            once(conn => {
-              res(conn)
-            }),
-            300,
-          ),
-        )
-      }),
-      new Promise(res => {
-        setTimeout(() => {
-          res(false)
-        }, 5000)
-      }),
-    ])
-      .then(async conn => {
-        if (conn) {
-          await Cache.writeNodeIP(ip)
-
-          const storedAuthData = await Cache.getStoredAuthData()
-          // Sets a base URL for all requests so we won't have to worry
-          // concatenating it every time we want to make a request.
-          Http.defaults.baseURL = ip ? `http://${ip}:${port}` : undefined
-
-          if (storedAuthData !== null && storedAuthData.nodeIP === ip) {
-            ContactApi.Events.initAuthData(storedAuthData.authData)
-
-            // Adds a default Authorization header for all requests
-            if (storedAuthData.authData) {
-              Http.defaults.headers.common.Authorization = `${storedAuthData.authData.token}`
-            }
-          }
-
-          ContactApi.Events.setupEvents()
-
-          this.onNodeIPUnsub = Cache.onNodeIPChange(this.onNodeIPChange)
-
-          this.setState({
-            tryingIP: null,
-          })
-        } else {
-          // avoid reconnection attempts, unsubscribe event listeners
-          ContactApi.Socket.disconnect()
-
-          this.setState({
-            tryingIP: null,
-          })
-        }
-      })
-      .catch(e => {
-        console.warn('error')
-        // avoid reconnection attempts, unsubscribe event listeners
-        ContactApi.Socket.disconnect()
-
-        this.setState({
-          tryingIP: null,
-        })
-
-        ToastAndroid.show(
-          typeof e === 'object' && e !== null
-            ? `Could not connect: ${e.message}`
-            : 'Could not connect (unknown error)',
-          800,
-        )
-      })
-  }
-
   async componentDidMount() {
     try {
-      const nodeIP = await Cache.getNodeIP()
+      const nodeURL = await Cache.getNodeURL()
 
-      if (typeof nodeIP === 'string') {
+      if (typeof nodeURL === 'string') {
         this.setState({
-          tryingIP: nodeIP,
+          tryingIP: nodeURL.split(':')[0],
         })
       }
 
@@ -176,10 +149,6 @@ export default class ShockWallet extends Component {
     } finally {
       RNBootSplash.hide({ duration: 250 })
     }
-  }
-
-  componentWillUnmount() {
-    this.onNodeIPUnsub()
   }
 
   /**

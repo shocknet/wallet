@@ -120,7 +120,7 @@ export const setup = () => {
         const currentRoute = NavigationService.getCurrentRoute()
         NavigationService.navigate(LOADING)
         const LNDWalletExists = await walletExists()
-        console.log('Wallet Exists:', LNDWalletExists)
+        console.warn('Wallet Exists:', LNDWalletExists)
         // Anytime un-authentication happens immediately navigate to the login screen.
 
         if (ad === null && currentRoute !== AUTH && LNDWalletExists) {
@@ -143,7 +143,7 @@ export const setup = () => {
       }),
     )
   } catch (e) {
-    console.warn(e)
+    console.warn(`rootstack setup err: ${e.message}`)
   }
 }
 

@@ -324,13 +324,13 @@ export const USDExchangeRate = () => {
  * @returns {Promise<WalletBalanceResponse>}
  */
 export const balance = async () => {
-  const { nodeIP, token } = await Cache.getNodeIPTokenPair()
+  const { nodeURL, token } = await Cache.getNodeURLTokenPair()
 
   if (typeof token !== 'string') {
     throw new TypeError(NO_CACHED_TOKEN)
   }
 
-  const endpoint = `http://${nodeIP}:9835/api/lnd/balance`
+  const endpoint = `http://${nodeURL}/api/lnd/balance`
 
   const payload = {
     method: 'GET',
@@ -359,13 +359,13 @@ export const balance = async () => {
  * @returns {Promise<PaginatedTransactionsResponse>}
  */
 export const getTransactions = async request => {
-  const { nodeIP, token } = await Cache.getNodeIPTokenPair()
+  const { nodeURL, token } = await Cache.getNodeURLTokenPair()
 
   if (typeof token !== 'string') {
     throw new TypeError(NO_CACHED_TOKEN)
   }
 
-  const endpoint = `http://${nodeIP}:9835/api/lnd/transactions?paginate=true&page=${request.page}&itemsPerPage=${request.itemsPerPage}`
+  const endpoint = `http://${nodeURL}/api/lnd/transactions?paginate=true&page=${request.page}&itemsPerPage=${request.itemsPerPage}`
 
   const payload = {
     method: 'GET',
@@ -397,13 +397,13 @@ export const getRegularBitcoinTransactions = getTransactions
  * @returns {Promise<PaginatedListPaymentsResponse>}
  */
 export const listPayments = async request => {
-  const { nodeIP, token } = await Cache.getNodeIPTokenPair()
+  const { nodeURL, token } = await Cache.getNodeURLTokenPair()
 
   if (typeof token !== 'string') {
     throw new TypeError(NO_CACHED_TOKEN)
   }
 
-  const url = `http://${nodeIP}:9835/api/lnd/listpayments?paginate=true&page=${
+  const url = `http://${nodeURL}/api/lnd/listpayments?paginate=true&page=${
     request.page
   }&itemsPerPage=${request.itemsPerPage}${
     request.include_incomplete ? '&include_incomplete' : ''
@@ -439,13 +439,13 @@ export const listPayments = async request => {
  * @returns {Promise<PaginatedListInvoicesResponse>}
  */
 export const listInvoices = async request => {
-  const { nodeIP, token } = await Cache.getNodeIPTokenPair()
+  const { nodeURL, token } = await Cache.getNodeURLTokenPair()
 
   if (typeof token !== 'string') {
     throw new TypeError(NO_CACHED_TOKEN)
   }
 
-  const endpoint = `http://${nodeIP}:9835/api/lnd/listinvoices`
+  const endpoint = `http://${nodeURL}/api/lnd/listinvoices`
 
   const url = Utils.getQueryParams(endpoint, request)
 
@@ -493,13 +493,13 @@ export const newAddress = async useOlderFormat => {
     type: useOlderFormat ? 1 : 0,
   }
 
-  const { nodeIP, token } = await Cache.getNodeIPTokenPair()
+  const { nodeURL, token } = await Cache.getNodeURLTokenPair()
 
   if (typeof token !== 'string') {
     throw new TypeError(NO_CACHED_TOKEN)
   }
 
-  const endpoint = `http://${nodeIP}:9835/api/lnd/newaddress`
+  const endpoint = `http://${nodeURL}/api/lnd/newaddress`
 
   const payload = {
     method: 'POST',
@@ -551,13 +551,13 @@ export const newAddress = async useOlderFormat => {
  * @returns {Promise<AddInvoiceResponse>}
  */
 export const addInvoice = async request => {
-  const { nodeIP, token } = await Cache.getNodeIPTokenPair()
+  const { nodeURL, token } = await Cache.getNodeURLTokenPair()
 
   if (typeof token !== 'string') {
     throw new TypeError(NO_CACHED_TOKEN)
   }
 
-  const endpoint = `http://${nodeIP}:9835/api/lnd/addinvoice`
+  const endpoint = `http://${nodeURL}/api/lnd/addinvoice`
 
   const payload = {
     method: 'POST',
@@ -599,12 +599,12 @@ export const addInvoice = async request => {
  * @returns {Promise<string>}
  */
 export const sendCoins = async request => {
-  const { nodeIP, token } = await Cache.getNodeIPTokenPair()
+  const { nodeURL, token } = await Cache.getNodeURLTokenPair()
   if (typeof token !== 'string') {
     throw new TypeError(NO_CACHED_TOKEN)
   }
 
-  const endpoint = `http://${nodeIP}:9835/api/lnd/sendcoins`
+  const endpoint = `http://${nodeURL}/api/lnd/sendcoins`
 
   const payload = {
     method: 'POST',
@@ -672,13 +672,13 @@ export const sendCoins = async request => {
  * @returns {Promise<SendResponse>}
  */
 export const CAUTION_payInvoice = async ({ amt, payreq }) => {
-  const { nodeIP, token } = await Cache.getNodeIPTokenPair()
+  const { nodeURL, token } = await Cache.getNodeURLTokenPair()
 
   if (typeof token !== 'string') {
     throw new TypeError(NO_CACHED_TOKEN)
   }
 
-  const endpoint = `http://${nodeIP}:9835/api/lnd/sendpayment`
+  const endpoint = `http://${nodeURL}/api/lnd/sendpayment`
 
   const payload = {
     method: 'POST',
@@ -731,13 +731,13 @@ export const CAUTION_payInvoice = async ({ amt, payreq }) => {
  * @returns {Promise<DecodeInvoiceResponse>}
  */
 export const decodeInvoice = async ({ payReq }) => {
-  const { nodeIP, token } = await Cache.getNodeIPTokenPair()
+  const { nodeURL, token } = await Cache.getNodeURLTokenPair()
 
   if (typeof token !== 'string') {
     throw new TypeError(NO_CACHED_TOKEN)
   }
 
-  const endpoint = `http://${nodeIP}:9835/api/lnd/decodePayReq`
+  const endpoint = `http://${nodeURL}/api/lnd/decodePayReq`
 
   const payload = {
     method: 'POST',
@@ -772,13 +772,13 @@ export const decodeInvoice = async ({ payReq }) => {
  * @returns {Promise<Peer[]>}
  */
 export const listPeers = async () => {
-  const { nodeIP, token } = await Cache.getNodeIPTokenPair()
+  const { nodeURL, token } = await Cache.getNodeURLTokenPair()
 
   if (typeof token !== 'string') {
     throw new TypeError(NO_CACHED_TOKEN)
   }
 
-  const endpoint = `http://${nodeIP}:9835/api/lnd/listpeers`
+  const endpoint = `http://${nodeURL}/api/lnd/listpeers`
 
   const payload = {
     method: 'GET',
@@ -818,13 +818,13 @@ export const listPeers = async () => {
  * @returns {Promise<Channel[]>}
  */
 export const listChannels = async () => {
-  const { nodeIP, token } = await Cache.getNodeIPTokenPair()
+  const { nodeURL, token } = await Cache.getNodeURLTokenPair()
 
   if (typeof token !== 'string') {
     throw new TypeError(NO_CACHED_TOKEN)
   }
 
-  const endpoint = `http://${nodeIP}:9835/api/lnd/listchannels`
+  const endpoint = `http://${nodeURL}/api/lnd/listchannels`
 
   const payload = {
     method: 'GET',
