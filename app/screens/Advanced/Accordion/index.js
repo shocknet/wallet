@@ -203,7 +203,7 @@ export default class Accordion extends Component {
             onEndReached={this.onEndReached}
           />
         ) : (
-          <ScrollView style={open ? CSS.styles.width100 : CSS.styles.width0}>
+          <ScrollView style={open ? CSS.styles.height100 : CSS.styles.height0}>
             {data.map((item, i) => (
               <TouchableOpacity
                 // eslint-disable-next-line react/no-array-index-key
