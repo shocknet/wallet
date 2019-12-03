@@ -3,8 +3,6 @@
  */
 
 import { AsyncStorage } from 'react-native'
-import { backOff } from 'exponential-backoff'
-import { JitterTypes } from 'exponential-backoff/dist/options'
 
 /**
  * @typedef {import('./contact-api/events').AuthData} AuthData
@@ -119,37 +117,19 @@ export const onSADChange = listener => {
 /**
  * @returns {Promise<string|null>}
  */
-export const getNodeIP = () =>
-  backOff(() => AsyncStorage.getItem(NODE_IP), {
-    jitter: JitterTypes.Full,
-    retry(_, attemptNumber) {
-      console.warn(`retry getItem(NODE_IP): ${attemptNumber}`)
-      return true
-    },
-  })
+export const getNodeIP = () => AsyncStorage.getItem(NODE_IP)
 
 /**
  * @param {string|null} ip
  * @returns {Promise<void>}
  */
-export const writeNodeIP = ip =>
-  backOff(
-    () => {
-      if (ip === null) {
-        return AsyncStorage.removeItem(NODE_IP)
-      }
-      return AsyncStorage.setItem(NODE_IP, ip)
-    },
-    {
-      jitter: JitterTypes.Full,
-      retry(_, attemptNumber) {
-        console.warn(`retry getItem(STORED_AUTH_DATA): ${attemptNumber}`)
-        return true
-      },
-    },
-  ).then(() => {
-    notifyNodeIPListeners()
-  })
+export const writeNodeIP = async ip => {
+  if (ip === null) {
+    return AsyncStorage.removeItem(NODE_IP)
+  }
+  await AsyncStorage.setItem(NODE_IP, ip)
+  notifyNodeIPListeners()
+}
 
 /**
  * @returns {Promise<StoredAuthData|null>}
@@ -168,40 +148,30 @@ export const getStoredAuthData = () =>
  * present.
  * @returns {Promise<void>}
  */
-export const writeStoredAuthData = authData =>
-  backOff(() => {
-    if (authData === null) {
-      return AsyncStorage.removeItem(STORED_AUTH_DATA)
-    }
-    return getNodeIP().then(nodeIP => {
-      if (nodeIP === null) {
-        throw new Error()
-      }
+export const writeStoredAuthData = async authData => {
+  if (authData === null) {
+    return AsyncStorage.removeItem(STORED_AUTH_DATA)
+  }
 
-      /** @type {StoredAuthData} */
-      const sad = {
-        authData,
-        nodeIP,
-      }
+  const nodeIP = await getNodeIP()
 
-      return backOff(
-        () =>
-          Promise.all([
-            AsyncStorage.setItem(STORED_AUTH_DATA, JSON.stringify(sad)),
-            AsyncStorage.setItem(AUTHENTICATED_NODE, nodeIP),
-          ]),
-        {
-          jitter: JitterTypes.Full,
-          retry(_, attemptNumber) {
-            console.warn(`retry getItem(STORED_AUTH_DATA): ${attemptNumber}`)
-            return true
-          },
-        },
-      ).then(() => {
-        notifySADListeners()
-      })
-    })
-  })
+  if (nodeIP === null) {
+    throw new Error('writeStoredAuthData() -> nodeIP is not cached')
+  }
+
+  /** @type {StoredAuthData} */
+  const sad = {
+    authData,
+    nodeIP,
+  }
+
+  await Promise.all([
+    AsyncStorage.setItem(STORED_AUTH_DATA, JSON.stringify(sad)),
+    AsyncStorage.setItem(AUTHENTICATED_NODE, nodeIP),
+  ])
+
+  notifySADListeners()
+}
 
 /**
  * Returns the token.
