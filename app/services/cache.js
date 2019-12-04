@@ -10,7 +10,7 @@ import * as Utils from './utils'
  * @typedef {import('./contact-api/events').AuthData} AuthData
  */
 
-const DEFAULT_PORT = 9835
+export const DEFAULT_PORT = 9835
 
 /**
  * @typedef {object} StoredAuthData
