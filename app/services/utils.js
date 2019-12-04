@@ -61,3 +61,17 @@ export const isValidIP = ip => {
     s => Number.isInteger(Number(s)) && s.length <= 3 && s.length > 0,
   )
 }
+
+/**
+ * @param {string} url
+ * @returns {boolean}
+ */
+export const isValidURL = url => {
+  const [ip, port] = url.split(':')
+
+  if (!port) {
+    return isValidIP(ip)
+  }
+
+  return isValidIP(ip) && port.length === 4
+}
