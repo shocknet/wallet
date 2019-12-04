@@ -21,6 +21,7 @@ import * as ContactApi from './app/services/contact-api'
 import WithConnWarning from './app/components/WithConnWarning'
 import ConnectToNode from './app/screens/ConnectToNode'
 import QRScanner from './app/screens/QRScanner'
+import { isValidURL } from './app/services/utils'
 
 // https://github.com/moment/moment/issues/2781#issuecomment-160739129
 moment.locale('en', {
@@ -48,7 +49,7 @@ AppRegistry.registerComponent('shockwallet', () => ShockWallet)
  * @typedef {object} State
  * @prop {boolean} fetchingCache
  * @prop {boolean} nodeIPSet
- * @prop {string|null} tryingIP
+ * @prop {string|null} tryingURL
  * @prop {boolean} scanningQR
  */
 
@@ -60,14 +61,14 @@ export default class ShockWallet extends Component {
   state = {
     fetchingCache: true,
     nodeIPSet: false,
-    tryingIP: null,
+    tryingURL: null,
     scanningQR: false,
   }
 
   connectToNodeIP = async () => {
     try {
-      const { tryingIP: ip } = this.state
-      ContactApi.Socket.connect(`http://${ip}:9835`)
+      const { tryingURL: url } = this.state
+      ContactApi.Socket.connect(`http://${url}`)
 
       /** @type {boolean} */
       const connected = await Promise.race([
@@ -89,14 +90,14 @@ export default class ShockWallet extends Component {
       ])
 
       if (connected) {
-        await Cache.writeNodeURLOrIP(ip)
+        await Cache.writeNodeURLOrIP(url)
 
         const storedAuthData = await Cache.getStoredAuthData()
         // Sets a base URL for all requests so we won't have to worry
         // concatenating it every time we want to make a request.
-        Http.defaults.baseURL = ip ? `http://${ip}:9835` : undefined
+        Http.defaults.baseURL = url ? `http://${url}` : undefined
 
-        if (storedAuthData !== null && storedAuthData.nodeIP === ip) {
+        if (storedAuthData !== null && storedAuthData.nodeIP === url) {
           ContactApi.Events.initAuthData(storedAuthData.authData)
 
           // Adds a default Authorization header for all requests
@@ -126,7 +127,7 @@ export default class ShockWallet extends Component {
       )
     } finally {
       this.setState({
-        tryingIP: null,
+        tryingURL: null,
       })
     }
   }
@@ -137,7 +138,7 @@ export default class ShockWallet extends Component {
 
       if (typeof nodeURL === 'string') {
         this.setState({
-          tryingIP: nodeURL.split(':')[0],
+          tryingURL: nodeURL,
         })
       }
 
@@ -169,9 +170,10 @@ export default class ShockWallet extends Component {
       })
     }
 
-    const ipToTry = prevState.tryingIP === null && this.state.tryingIP !== null
+    const urlToTry =
+      prevState.tryingURL === null && this.state.tryingURL !== null
 
-    if (!ipToTry) {
+    if (!urlToTry) {
       return
     }
 
@@ -218,11 +220,13 @@ export default class ShockWallet extends Component {
 
   /**
    * @private
-   * @param {string} ip
+   * @param {string} urlOrIP
    */
-  onPressConnect = ip => {
+  onPressConnect = urlOrIP => {
     this.setState({
-      tryingIP: ip,
+      tryingURL: isValidURL(urlOrIP)
+        ? urlOrIP
+        : urlOrIP + ':' + Cache.DEFAULT_PORT,
     })
   }
 
@@ -247,7 +251,7 @@ export default class ShockWallet extends Component {
       )
     }
 
-    if (this.state.fetchingCache || this.state.tryingIP) {
+    if (this.state.fetchingCache || this.state.tryingURL) {
       return (
         <View style={styles.flex}>
           <Loading />
@@ -261,11 +265,11 @@ export default class ShockWallet extends Component {
       )
     }
 
-    if (this.state.tryingIP === null && !this.state.scanningQR) {
+    if (this.state.tryingURL === null && !this.state.scanningQR) {
       return (
         <View style={styles.flex}>
           <ConnectToNode
-            disableControls={!!this.state.tryingIP}
+            disableControls={!!this.state.tryingURL}
             onPressConnect={this.onPressConnect}
             onPressUseShockcloud={this.onPressUseShockCloud}
             toggleQRScreen={this.toggleQRScreen}
