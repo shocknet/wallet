@@ -15,6 +15,7 @@ import EntypoIcon from 'react-native-vector-icons/Entypo'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 
 import * as CSS from '../css'
+import { isValidURL as isValidIP } from '../services/utils'
 /** @type {number} */
 // @ts-ignore
 const shockBG = require('../assets/images/shock-bg.png')
@@ -22,19 +23,6 @@ const shockBG = require('../assets/images/shock-bg.png')
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation
  */
-
-/**
- * @param {string} ip
- */
-const isValidIP = ip => {
-  const sections = ip.split('.')
-
-  if (sections.length !== 4) return false
-
-  return sections.every(
-    s => Number.isInteger(Number(s)) && s.length <= 3 && s.length > 0,
-  )
-}
 
 /** @type {number} */
 // @ts-ignore
