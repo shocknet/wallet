@@ -11,7 +11,7 @@ const Units = {
 
 /**
  *
- * @param {number} from
+ * @param {string} from
  * @param {keyof typeof Units} fromUnit
  * @param {keyof typeof Units} toUnit
  * @returns {number}
@@ -26,9 +26,9 @@ const convert = (from, fromUnit, toUnit) => {
     throw new Error(`'${toUnit}' is not a bitcoin unit`)
   }
 
-  if (typeof from !== 'number') {
-    throw new Error(`convert() -> from is not a number`)
-  }
+  // if (typeof from !== 'number') {
+  //   throw new Error(`convert() -> from is not a number`)
+  // }
 
   const result = new Big(from).times(fromFactor).div(toFactor)
 

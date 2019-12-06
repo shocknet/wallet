@@ -2,7 +2,7 @@
  * @format
  */
 
-import React from 'react'
+import React, { Component } from 'react'
 import {
   ActivityIndicator,
   Clipboard,
@@ -15,6 +15,7 @@ import {
   Linking,
 } from 'react-native'
 import EntypoIcons from 'react-native-vector-icons/Entypo'
+import { connect } from 'react-redux'
 import QRCodeScanner from '../../components/QRScanner'
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}, Params>} Navigation
@@ -33,6 +34,9 @@ import * as ContactAPI from '../../services/contact-api'
 import * as CSS from '../../css'
 import * as Wallet from '../../services/wallet'
 
+import { getUSDRate, getWalletBalance } from '../../../actions/WalletActions'
+import { fetchRecentTransactions } from '../../../actions/HistoryActions'
+
 import { CHATS_ROUTE } from '../../screens/Chats'
 
 import QR from './QR'
@@ -47,7 +51,11 @@ import UnifiedTrx from './UnifiedTrx'
  */
 
 /**
- * @typedef {object} Props
+ * @typedef {ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps} ConnectedRedux
+ */
+
+/**
+ * @typedef {ConnectedRedux & object} Props
  * @prop {Navigation} navigation
  */
 
@@ -57,9 +65,6 @@ import UnifiedTrx from './UnifiedTrx'
 
 /**
  * @typedef {object} State
- * @prop {number|null} USDExchangeRate Null on first fetch.
- * @prop {number|null} balance Null on first fetch.
- *
  * @prop {boolean} displayingSendDialog
  * @prop {boolean} displayingSendToBTCDialog
  * @prop {string} sendToBTCAddress
@@ -107,8 +112,6 @@ import UnifiedTrx from './UnifiedTrx'
  *
  * @prop {boolean} sendingInvoiceToShockUser
  * @prop {string} sendingInvoiceToShockUserMsg
- *
- * @prop {(Wallet.Invoice|Wallet.Payment|Wallet.Transaction)[]|null} unifiedTrx
  */
 
 const { width, height } = Dimensions.get('window')
@@ -120,9 +123,9 @@ const showCopiedToClipboardToast = () => {
 }
 
 /**
- * @augments React.PureComponent<Props, State, never>
+ * @augments Component<Props, State, never>
  */
-export default class WalletOverview extends React.PureComponent {
+class WalletOverview extends Component {
   /**
    * @type {import('react-navigation').NavigationBottomTabScreenOptions}
    */
@@ -143,9 +146,6 @@ export default class WalletOverview extends React.PureComponent {
    * @type {State}
    */
   state = {
-    USDExchangeRate: null,
-    balance: null,
-
     displayingSendDialog: false,
     displayingSendToBTCDialog: false,
     sendToBTCAddress: '',
@@ -183,7 +183,6 @@ export default class WalletOverview extends React.PureComponent {
     invoice: null,
     receivingBTCAddress: null,
     receivingOlderFormatBTCAddress: null,
-    unifiedTrx: null,
 
     displayingPreShockUserQRScan: false,
     scanningShockUserQR: false,
@@ -602,9 +601,9 @@ export default class WalletOverview extends React.PureComponent {
   }
 
   onPressSend = () => {
-    const { balance } = this.state
+    const { totalBalance } = this.props
 
-    if (balance === null) {
+    if (totalBalance === null) {
       return
     }
 
@@ -946,7 +945,7 @@ export default class WalletOverview extends React.PureComponent {
   }
 
   //////////////////////////////////////////////////////////////////////////////
-  // /PAY INVOICE //////////////////////////////////////////////////////////////
+  /// PAY INVOICE //////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////
 
   sendChoiceToHandler = {
@@ -1012,12 +1011,9 @@ export default class WalletOverview extends React.PureComponent {
   }
 
   componentDidMount() {
-    this.balanceIntervalID = setInterval(this.fetchBalance, 4000)
-    this.exchangeRateIntervalID = setInterval(this.fetchExchangeRate, 4000)
-    this.recentTransactionsIntervalID = setInterval(
-      this.fetchRecentTransactions,
-      4000,
-    )
+    this.fetchBalance()
+    this.fetchExchangeRate()
+    this.fetchRecentTransactions()
   }
 
   componentWillUnmount() {
@@ -1034,71 +1030,42 @@ export default class WalletOverview extends React.PureComponent {
     }
   }
 
+  /**
+   * Promisified setTimeout
+   * @param {number} ms
+   */
+  wait = ms =>
+    new Promise(resolve => {
+      /**
+       * Timeout ID
+       * @type {number}
+       */
+      const timeout = setTimeout(() => resolve(timeout), ms)
+    })
+
   fetchRecentTransactions = async () => {
-    await Promise.all([
-      Wallet.listInvoices({
-        itemsPerPage: 100,
-        page: 1,
-      }),
-      Wallet.listPayments({
-        include_incomplete: false,
-        itemsPerPage: 100,
-        page: 1,
-        paginate: true,
-      }),
-      Wallet.getTransactions({
-        itemsPerPage: 100,
-        page: 1,
-        paginate: true,
-      }),
-    ])
-      .then(([invoiceResponse, payments, transactions]) => {
-        const unifiedTrx = [
-          ...invoiceResponse.content,
-          ...payments.content,
-          ...transactions.content,
-        ]
-
-        this.setState({
-          unifiedTrx,
-        })
-      })
-      .catch(err => {
-        console.warn(`error fetching recent transactions: ${err.message}`)
-      })
+    const { fetchRecentTransactions } = this.props
+    await fetchRecentTransactions()
+    await this.wait(400000)
+    this.fetchRecentTransactions()
   }
 
-  fetchBalance = () => {
-    Wallet.balance()
-      .then(balance => {
-        this.setState({
-          balance:
-            Number(balance.confirmed_balance) +
-            Number(balance.channel_balance) +
-            Number(balance.pending_channel_balance),
-        })
-      })
-      .catch(e => {
-        console.warn(`Error fetching balance: ${e.message}`)
-      })
+  fetchBalance = async () => {
+    const { getWalletBalance } = this.props
+    await getWalletBalance()
+    await this.wait(400000)
+    this.fetchBalance()
   }
 
-  fetchExchangeRate = () => {
-    Wallet.USDExchangeRate()
-      .then(USDExchangeRate => {
-        this.setState({
-          USDExchangeRate,
-        })
-      })
-      .catch(e => {
-        console.warn(`Error fetching USD exchange rate: ${e.message}`)
-      })
+  fetchExchangeRate = async () => {
+    const { getUSDRate } = this.props
+    await getUSDRate()
   }
 
   onPressRequest = () => {
-    const { balance } = this.state
+    const { totalBalance } = this.props.wallet
 
-    if (balance === null) {
+    if (totalBalance === null) {
       return
     }
 
@@ -1108,11 +1075,11 @@ export default class WalletOverview extends React.PureComponent {
   }
 
   renderBalance = () => {
-    const { USDExchangeRate, balance } = this.state
+    const { USDRate, totalBalance } = this.props.wallet
 
     return (
       <View style={styles.balanceContainer}>
-        {balance === null ? (
+        {totalBalance === null ? (
           <View style={CSS.styles.flex}>
             <ActivityIndicator size="large" />
           </View>
@@ -1135,7 +1102,7 @@ export default class WalletOverview extends React.PureComponent {
                   CSS.styles.fontSize24,
                 ]}
               >
-                {balance.toFixed(0).toString()} sats
+                {totalBalance} sats
               </Text>
             </View>
 
@@ -1150,7 +1117,7 @@ export default class WalletOverview extends React.PureComponent {
                 USD VALUE
               </Text>
 
-              {USDExchangeRate === null ? (
+              {USDRate === null ? (
                 <ActivityIndicator />
               ) : (
                 <Text
@@ -1163,8 +1130,8 @@ export default class WalletOverview extends React.PureComponent {
                   {'$' +
                     (
                       Math.round(
-                        btcConvert(balance, 'Satoshi', 'BTC') *
-                          USDExchangeRate *
+                        btcConvert(totalBalance, 'Satoshi', 'BTC') *
+                          USDRate *
                           100,
                       ) / 100
                     )
@@ -1217,7 +1184,6 @@ export default class WalletOverview extends React.PureComponent {
       invoice,
       receivingBTCAddress,
       receivingOlderFormatBTCAddress,
-      unifiedTrx,
 
       displayingPreShockUserQRScan,
       scanningShockUserQR,
@@ -1227,6 +1193,8 @@ export default class WalletOverview extends React.PureComponent {
       sendingInvoiceToShockUser,
       sendingInvoiceToShockUserMsg,
     } = this.state
+
+    const { recentTransactions } = this.props.history
 
     if (scanningBTCAddressQR) {
       return (
@@ -1281,7 +1249,7 @@ export default class WalletOverview extends React.PureComponent {
         </View>
 
         <View style={styles.trxContainer}>
-          <UnifiedTrx unifiedTrx={unifiedTrx} />
+          <UnifiedTrx unifiedTrx={recentTransactions} />
         </View>
         <ShockDialog
           choiceToHandler={this.receiveDialogChoiceToHandler}
@@ -1592,6 +1560,22 @@ export default class WalletOverview extends React.PureComponent {
     )
   }
 }
+
+/**
+ * @param {typeof import('../../../reducers/index').default} state
+ */
+const mapStateToProps = ({ wallet, history }) => ({ wallet, history })
+
+const mapDispatchToProps = {
+  getUSDRate,
+  getWalletBalance,
+  fetchRecentTransactions,
+}
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(WalletOverview)
 
 const styles = StyleSheet.create({
   alignItemsCenter: {
