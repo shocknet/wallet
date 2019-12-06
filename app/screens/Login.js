@@ -40,7 +40,9 @@ const shockLogo = require('../assets/images/shocklogo.png')
 /**
  * @typedef {object} State
  * @prop {string} alias
+ * @prop {string|null} cachedAlias
  * @prop {boolean} awaitingRes
+ * @prop {boolean} fetchingCachedAlias
  * @prop {string} err
  * @prop {string} pass
  */
@@ -59,25 +61,46 @@ export default class Login extends React.PureComponent {
   /** @type {State} */
   state = {
     alias: '',
-    awaitingRes: true,
+    cachedAlias: null,
+    awaitingRes: false,
+    fetchingCachedAlias: true,
     err: '',
     pass: '',
   }
 
+  willFocusSub = {
+    remove() {},
+  }
+
   componentDidMount() {
-    this.willFocusSub = this.props.navigation.addListener('didFocus', () => {
-      this.setState({
-        awaitingRes: false,
-      })
-    })
+    this.getCachedAlias()
+    this.willFocusSub = this.props.navigation.addListener(
+      'didFocus',
+      this.getCachedAlias,
+    )
   }
 
   componentWillUnmount() {
     this.willFocusSub.remove()
   }
 
-  willFocusSub = {
-    remove() {},
+  getCachedAlias = async () => {
+    this.setState({
+      cachedAlias: null,
+      fetchingCachedAlias: true,
+    })
+
+    const sad = await Cache.getStoredAuthData()
+
+    if (sad !== null && sad.authData !== null) {
+      this.setState({
+        cachedAlias: sad.authData.alias,
+      })
+    }
+
+    this.setState({
+      fetchingCachedAlias: false,
+    })
   }
 
   /**
@@ -144,9 +167,16 @@ export default class Login extends React.PureComponent {
   }
 
   render() {
-    const { alias, awaitingRes, pass } = this.state
-
-    const enableUnlockBtn = alias.length > 0 && pass.length > 0
+    const {
+      alias,
+      awaitingRes,
+      cachedAlias,
+      fetchingCachedAlias,
+      pass,
+    } = this.state
+    const loading = awaitingRes || fetchingCachedAlias
+    const enableUnlockBtn =
+      !loading && (alias.length > 0 || cachedAlias !== null) && pass.length > 0
 
     return (
       <ImageBackground source={shockBG} style={styles.container}>
@@ -155,32 +185,37 @@ export default class Login extends React.PureComponent {
           <Text style={styles.logoText}>S H O C K W A L L E T</Text>
         </View>
 
-        {awaitingRes ? <ActivityIndicator animating size="large" /> : null}
+        {loading ? <ActivityIndicator animating size="large" /> : null}
 
-        {!awaitingRes ? (
+        {!loading ? (
           <View style={styles.shockWalletCallToActionContainer}>
             <Text style={styles.callToAction}>Unlock Wallet</Text>
           </View>
         ) : null}
 
-        {!awaitingRes ? (
+        {!loading ? (
           <View style={styles.formContainer}>
-            <Text style={styles.textInputFieldLabel}>Alias</Text>
-            <View style={styles.textInputFieldContainer}>
-              <TextInput
-                autoCapitalize="none"
-                autoCorrect={false}
-                onChangeText={this.onChangeAlias}
-                style={styles.textInputField}
-                value={alias}
-              />
-            </View>
-
+            {!cachedAlias && (
+              <React.Fragment>
+                <Text style={styles.textInputFieldLabel}>Alias</Text>
+                <View style={styles.textInputFieldContainer}>
+                  <TextInput
+                    editable={!loading}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    onChangeText={this.onChangeAlias}
+                    style={styles.textInputField}
+                    value={alias}
+                  />
+                </View>
+              </React.Fragment>
+            )}
             <Text style={styles.textInputFieldLabel}>Password</Text>
             <View style={styles.textInputFieldContainer}>
               <TextInput
                 autoCapitalize="none"
                 autoCorrect={false}
+                editable={!loading}
                 onChangeText={this.onChangePass}
                 style={styles.textInputField}
                 secureTextEntry
