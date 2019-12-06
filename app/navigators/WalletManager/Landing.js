@@ -51,17 +51,50 @@ export default class CreateWallet extends React.PureComponent {
     walletExists: null,
   }
 
-  async componentDidMount() {
-    const authData = await Cache.getStoredAuthData()
-    const walletExists = await Auth.walletExists()
+  willFocusSub = {
+    remove() {},
+  }
 
-    if (authData !== null && walletExists) {
-      this.props.navigation.navigate(APP)
-    } else {
+  willBlurSub = {
+    remove() {},
+  }
+
+  componentDidMount() {
+    this.checkWalletStatus()
+    this.willFocusSub = this.props.navigation.addListener(
+      'didFocus',
+      this.checkWalletStatus,
+    )
+    this.willBlurSub = this.props.navigation.addListener('didBlur', () => {
       this.setState({
-        walletExists,
+        walletExists: null,
       })
-    }
+    })
+  }
+
+  componentWillUnmount() {
+    this.willFocusSub.remove()
+    this.willBlurSub.remove()
+  }
+
+  checkWalletStatus = () => {
+    this.setState(
+      {
+        walletExists: null,
+      },
+      async () => {
+        const authData = await Cache.getStoredAuthData()
+        const walletExists = await Auth.walletExists()
+
+        if (authData !== null && walletExists) {
+          this.props.navigation.navigate(APP)
+        } else {
+          this.setState({
+            walletExists,
+          })
+        }
+      },
+    )
   }
 
   onPressCreate = () => {
