@@ -223,17 +223,6 @@ export default class Login extends React.PureComponent {
             >
               <Text style={styles.connectBtnText}>Connect</Text>
             </TouchableOpacity>
-            <View style={styles.createContainer}>
-              <Text style={styles.dontHaveAccountText}>
-                Don't have an account?
-              </Text>
-              <TouchableOpacity
-                onPress={this.goToCreateWallet}
-                style={styles.width100}
-              >
-                <Text style={styles.createBtnText}>Create a wallet</Text>
-              </TouchableOpacity>
-            </View>
           </View>
         ) : null}
 
@@ -255,12 +244,6 @@ const styles = StyleSheet.create({
     minHeight: 600,
     paddingLeft: 30,
     paddingRight: 30,
-  },
-  dontHaveAccountText: {
-    textAlign: 'center',
-    width: '100%',
-    color: CSS.Colors.TEXT_WHITE,
-    fontFamily: 'Montserrat-700',
   },
   shockWalletLogoContainer: {
     alignItems: 'center',
@@ -317,15 +300,4 @@ const styles = StyleSheet.create({
     fontFamily: 'Montserrat-700',
     fontSize: 28,
   },
-  createContainer: {
-    alignItems: 'center',
-    width: '100%',
-  },
-  createBtnText: {
-    color: CSS.Colors.ORANGE,
-    fontFamily: 'Montserrat-700',
-    textAlign: 'center',
-  },
-
-  width100: { width: '100%' },
 })
