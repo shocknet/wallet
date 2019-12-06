@@ -7,9 +7,7 @@ import {
   createStackNavigator,
   createSwitchNavigator,
   createDrawerNavigator,
-  NavigationActions,
 } from 'react-navigation'
-import debounce from 'lodash/debounce'
 
 import Chat, { CHAT_ROUTE } from '../screens/Chat'
 import Chats, { CHATS_ROUTE } from '../screens/Chats'
@@ -17,18 +15,12 @@ import Advanced, { ADVANCED_SCREEN } from '../screens/Advanced'
 import WalletOverview, { WALLET_OVERVIEW } from '../screens/WalletOverview'
 
 import Login, { LOGIN } from '../screens/Login'
-import Register, { REGISTER } from '../screens/Register'
-import RegisterExisting, {
-  REGISTER_EXISTING,
-} from '../screens/RegisterExisting'
 
 import MyProfile, { MY_PROFILE } from '../screens/MyProfile'
 import Loading, { LOADING } from '../screens/Loading'
 
-import * as ContactAPI from '../services/contact-api'
-import * as Cache from '../services/cache'
-import { walletExists } from '../services/auth'
-import * as NavigationService from '../services/navigation'
+import WalletManager, { WALLET_MANAGER } from './WalletManager'
+import ConnectToNode, { CONNECT_TO_NODE } from '../screens/ConnectToNode'
 
 export const APP = 'APP'
 export const MAIN_NAV = 'MAIN_NAV'
@@ -89,16 +81,16 @@ const App = createStackNavigator(
   },
 )
 
-const AUTH = 'AUTH'
+export const AUTH = 'AUTH'
 
-const Auth = createStackNavigator(
+const Auth = createSwitchNavigator(
   {
     [LOGIN]: Login,
-    [REGISTER]: Register,
-    [REGISTER_EXISTING]: RegisterExisting,
+    [WALLET_MANAGER]: WalletManager,
+    [CONNECT_TO_NODE]: ConnectToNode,
   },
   {
-    initialRouteName: REGISTER,
+    initialRouteName: CONNECT_TO_NODE,
   },
 )
 
@@ -109,42 +101,8 @@ const MainSwitch = createSwitchNavigator(
     [LOADING]: Loading,
   },
   {
-    initialRouteName: APP,
+    initialRouteName: AUTH,
   },
 )
-
-export const setup = () => {
-  try {
-    ContactAPI.Events.onAuth(
-      debounce(async ad => {
-        const currentRoute = NavigationService.getCurrentRoute()
-        NavigationService.navigate(LOADING)
-        const LNDWalletExists = await walletExists()
-        console.warn('Wallet Exists:', LNDWalletExists)
-        // Anytime un-authentication happens immediately navigate to the login screen.
-
-        if (ad === null && currentRoute !== AUTH && LNDWalletExists) {
-          return NavigationService.navigate(
-            AUTH,
-            {},
-            NavigationActions.navigate({ routeName: REGISTER_EXISTING }),
-          )
-        }
-
-        if (ad === null && currentRoute !== AUTH) {
-          NavigationService.navigate(AUTH)
-        }
-
-        if (ad !== null && currentRoute !== APP) {
-          NavigationService.navigate(APP)
-        }
-
-        Cache.writeStoredAuthData(ad)
-      }),
-    )
-  } catch (e) {
-    console.warn(`rootstack setup err: ${e.message}`)
-  }
-}
 
 export default MainSwitch
