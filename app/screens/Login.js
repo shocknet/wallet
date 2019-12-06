@@ -16,7 +16,7 @@ import {
  * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation
  */
 
-import * as API from '../services/contact-api'
+import * as Cache from '../services/cache'
 import * as Auth from '../services/auth'
 import * as CSS from '../css'
 import ShockDialog from '../components/ShockDialog'
@@ -123,11 +123,11 @@ export default class Login extends React.PureComponent {
       () => {
         Auth.unlockWallet(this.state.alias, this.state.pass)
           .then(res => {
-            API.Events.initAuthData(res)
-            // Cache.writeStoredAuthData({
-            //   publicKey: res.publicKey,
-            //   token: res.token,
-            // })
+            Cache.writeStoredAuthData({
+              alias: this.state.alias,
+              publicKey: res.publicKey,
+              token: res.token,
+            })
           })
           .catch(e => {
             this.setState({

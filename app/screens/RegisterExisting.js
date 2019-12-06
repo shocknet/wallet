@@ -141,7 +141,11 @@ export default class Login extends React.PureComponent {
       () => {
         Auth.registerExistingWallet(this.state.alias, this.state.pass)
           .then(res => {
-            API.Events.initAuthData(res)
+            API.Events.initAuthData({
+              alias: this.state.alias,
+              publicKey: res.publicKey,
+              token: res.token,
+            })
             // Cache.writeStoredAuthData({
             //   publicKey: res.publicKey,
             //   token: res.token,

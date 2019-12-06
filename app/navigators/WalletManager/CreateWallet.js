@@ -141,6 +141,7 @@ export default class CreateWallet extends React.PureComponent {
     Auth.createWallet(this.state.alias, this.state.pass)
       .then(({ publicKey, token }) => {
         Cache.writeStoredAuthData({
+          alias: this.state.alias,
           publicKey,
           token,
         })

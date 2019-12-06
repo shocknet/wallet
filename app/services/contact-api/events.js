@@ -15,6 +15,7 @@ import * as Schema from './schema'
 
 /**
  * @typedef {object} _AuthData
+ * @prop {string} alias
  * @prop {string} publicKey
  * @prop {string} token
  */

@@ -184,8 +184,15 @@ export default class Register extends React.PureComponent {
       .then(({ publicKey, token }) => {
         this.props.navigation.goBack()
 
+        Cache.writeStoredAuthData({
+          alias: this.state.alias,
+          publicKey,
+          token,
+        })
+
         setImmediate(() => {
           API.Events.initAuthData({
+            alias: this.state.alias,
             publicKey,
             token,
           })
