@@ -19,7 +19,6 @@ import {
 import * as API from '../services/contact-api'
 import * as Auth from '../services/auth'
 import * as CSS from '../css'
-import { REGISTER } from './Register'
 import ShockDialog from '../components/ShockDialog'
 
 export const LOGIN = 'LOGIN'
@@ -42,7 +41,6 @@ const shockLogo = require('../assets/images/shocklogo.png')
  * @typedef {object} State
  * @prop {string} alias
  * @prop {boolean} awaitingRes
- * @prop {boolean} connected
  * @prop {string} err
  * @prop {string} pass
  */
@@ -62,13 +60,11 @@ export default class Login extends React.PureComponent {
   state = {
     alias: '',
     awaitingRes: true,
-    connected: false,
     err: '',
     pass: '',
   }
 
   componentDidMount() {
-    this.connUnsubscribe = API.Events.onConnection(this.onConn)
     this.willFocusSub = this.props.navigation.addListener('didFocus', () => {
       this.setState({
         awaitingRes: false,
@@ -77,11 +73,8 @@ export default class Login extends React.PureComponent {
   }
 
   componentWillUnmount() {
-    this.connUnsubscribe()
     this.willFocusSub.remove()
   }
-
-  connUnsubscribe = () => {}
 
   willFocusSub = {
     remove() {},
@@ -93,17 +86,6 @@ export default class Login extends React.PureComponent {
   dismissDialog = () => {
     this.setState({
       err: '',
-    })
-  }
-
-  /**
-   * @private
-   * @param {boolean} connected
-   * @returns {void}
-   */
-  onConn = connected => {
-    this.setState({
-      connected,
     })
   }
 
@@ -161,18 +143,10 @@ export default class Login extends React.PureComponent {
     )
   }
 
-  /**
-   * @private
-   * @returns {void}
-   */
-  goToCreateWallet = () => {
-    this.props.navigation.navigate(REGISTER)
-  }
-
   render() {
-    const { alias, awaitingRes, connected, pass } = this.state
+    const { alias, awaitingRes, pass } = this.state
 
-    const enableUnlockBtn = connected && alias.length > 0 && pass.length > 0
+    const enableUnlockBtn = alias.length > 0 && pass.length > 0
 
     return (
       <ImageBackground source={shockBG} style={styles.container}>
@@ -196,7 +170,6 @@ export default class Login extends React.PureComponent {
               <TextInput
                 autoCapitalize="none"
                 autoCorrect={false}
-                editable={connected}
                 onChangeText={this.onChangeAlias}
                 style={styles.textInputField}
                 value={alias}
@@ -208,7 +181,6 @@ export default class Login extends React.PureComponent {
               <TextInput
                 autoCapitalize="none"
                 autoCorrect={false}
-                editable={connected}
                 onChangeText={this.onChangePass}
                 style={styles.textInputField}
                 secureTextEntry
