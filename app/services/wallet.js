@@ -860,3 +860,18 @@ export const listChannels = async () => {
   }
   throw new Error('listChannels() -> ' + body.errorMessage || body.message)
 }
+
+/**
+ * @returns {Promise<{ walletExists: boolean , walletStatus: string }>}
+ */
+export const walletStatus = async () => {
+  const nodeURL = await Cache.getNodeURL()
+  const res = await fetch(`http://${nodeURL}/api/lnd/wallet/status`)
+  const body = await res.json()
+
+  if (res.ok) {
+    return body
+  }
+
+  throw new Error(body.errorMessage)
+}
