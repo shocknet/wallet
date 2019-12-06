@@ -107,6 +107,12 @@ export const writeNodeURLOrIP = async urlOrIP => {
     throw new TypeError('writeNodeURLOrIP() -> invalid IP supplied')
   }
 
+  const storedAD = await getStoredAuthData()
+
+  if (storedAD !== null && storedAD.nodeIP !== ip) {
+    await writeStoredAuthData(null)
+  }
+
   await AsyncStorage.setItem(NODE_URL, `${ip}:${port}`)
 }
 
