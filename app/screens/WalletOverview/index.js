@@ -1046,14 +1046,14 @@ class WalletOverview extends Component {
   fetchRecentTransactions = async () => {
     const { fetchRecentTransactions } = this.props
     await fetchRecentTransactions()
-    await this.wait(400000)
+    await this.wait(4000)
     this.fetchRecentTransactions()
   }
 
   fetchBalance = async () => {
     const { getWalletBalance } = this.props
     await getWalletBalance()
-    await this.wait(400000)
+    await this.wait(4000)
     this.fetchBalance()
   }
 
