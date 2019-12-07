@@ -77,6 +77,10 @@ export default class ConnectToNode extends React.PureComponent {
 
     if (nodeURL !== null) {
       this.props.navigation.navigate(WALLET_MANAGER)
+    } else {
+      this.setState({
+        checkingCacheForNodeURL: false,
+      })
     }
   }
 
