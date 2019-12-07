@@ -189,14 +189,6 @@ export default class Register extends React.PureComponent {
           publicKey,
           token,
         })
-
-        setImmediate(() => {
-          API.Events.initAuthData({
-            alias: this.state.alias,
-            publicKey,
-            token,
-          })
-        })
       })
       .catch(e => {
         if (e.message === 'wallet already exists') {

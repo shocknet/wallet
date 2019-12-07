@@ -3,11 +3,14 @@
  */
 
 import { AsyncStorage } from 'react-native'
+import Http from 'axios'
 
 import * as Utils from './utils'
-
 /**
- * @typedef {import('./contact-api/events').AuthData} AuthData
+ * @typedef {object} AuthData
+ * @prop {string} alias
+ * @prop {string} publicKey
+ * @prop {string} token
  */
 
 export const DEFAULT_PORT = 9835
@@ -84,7 +87,10 @@ export const getNodeURL = () => AsyncStorage.getItem(NODE_URL)
  */
 export const writeNodeURLOrIP = async urlOrIP => {
   if (urlOrIP === null) {
-    return AsyncStorage.removeItem(NODE_URL)
+    Http.defaults.baseURL = undefined
+    AsyncStorage.removeItem(NODE_URL)
+    writeStoredAuthData(null)
+    return
   }
 
   let ip = urlOrIP
@@ -112,6 +118,8 @@ export const writeNodeURLOrIP = async urlOrIP => {
   if (storedAD !== null && storedAD.nodeIP !== ip) {
     await writeStoredAuthData(null)
   }
+
+  Http.defaults.baseURL = `http://${ip}:${port}`
 
   await AsyncStorage.setItem(NODE_URL, `${ip}:${port}`)
 }
