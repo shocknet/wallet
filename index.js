@@ -3,14 +3,13 @@
  */
 import { AppRegistry } from 'react-native'
 import moment from 'moment'
-
+import Http from 'axios'
 import React from 'react'
-
-import RootStack from './app/navigators/Root'
-
 import RNBootSplash from 'react-native-bootsplash'
 
 import * as NavigationService from './app/services/navigation'
+import * as Cache from './app/services/cache'
+import RootStack from './app/navigators/Root'
 
 // https://github.com/moment/moment/issues/2781#issuecomment-160739129
 moment.locale('en', {
@@ -35,12 +34,23 @@ moment.locale('en', {
 AppRegistry.registerComponent('shockwallet', () => ShockWallet)
 
 /**
- * @augments React.Component<{},{},never>
+ * @augments React.Component<{},{ ready: boolean },never>
  */
 export default class ShockWallet extends React.Component {
+  state = {
+    ready: false,
+  }
+
   // eslint-disable-next-line class-methods-use-this
-  componentDidMount() {
+  async componentDidMount() {
+    const nodeURL = await Cache.getNodeURL()
+    if (nodeURL !== null) {
+      Http.defaults.url = `http://${nodeURL}`
+    }
     RNBootSplash.hide({ duration: 250 })
+    this.setState({
+      ready: true,
+    })
   }
 
   /**
@@ -82,6 +92,10 @@ export default class ShockWallet extends React.Component {
   }
 
   render() {
+    if (!this.state.ready) {
+      return null
+    }
+
     return (
       <RootStack onNavigationStateChange={this.onNavChange} ref={this.onRef} />
     )

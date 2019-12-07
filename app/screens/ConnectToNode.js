@@ -13,7 +13,7 @@ import {
 } from 'react-native'
 import EntypoIcon from 'react-native-vector-icons/Entypo'
 import Ionicons from 'react-native-vector-icons/Ionicons'
-import Http from 'axios'
+
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation
  */
@@ -124,10 +124,7 @@ export default class ConnectToNode extends React.PureComponent {
   }
 
   onPressContinue = () => {
-    Cache.writeNodeURLOrIP(this.state.nodeURL).then(async () => {
-      const nodeURL = await Cache.getNodeURL()
-      Http.defaults.baseURL = `http://${nodeURL}`
-    })
+    Cache.writeNodeURLOrIP(this.state.nodeURL)
 
     this.props.navigation.navigate(WALLET_MANAGER)
   }
