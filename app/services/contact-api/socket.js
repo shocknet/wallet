@@ -3,6 +3,10 @@
  */
 import SocketIO from 'socket.io-client'
 
+import * as Cache from '../../services/cache'
+
+import * as Events from './events'
+
 /**
  * @typedef {object} SimpleSocket
  * @prop {() => void} connect
@@ -26,14 +30,20 @@ export const disconnect = () => {
   }
 }
 
-/**
- * @param {string} url
- * @returns {void}
- */
-export const connect = url => {
-  disconnect()
+let eventsSetup = false
 
-  socket = SocketIO(url, {
+/**
+ * @returns {Promise<void>}
+ */
+export const connect = async () => {
+  const nodeURL = await Cache.getNodeURL()
+
+  if (nodeURL === null) {
+    throw new Error('Tried to connect the socket without a cached node url')
+  }
+
+  socket = SocketIO(`http://${nodeURL}`, {
+    autoConnect: false,
     transports: ['websocket'],
     jsonp: false,
   })
@@ -64,6 +74,14 @@ export const connect = url => {
     if (reason === 'io server disconnect') {
       // https://Socket.socket.io/docs/client-api/#Event-%E2%80%98disconnect%E2%80%99
       socket.connect()
+    }
+  })
+
+  socket.on('connect', () => {
+    if (!eventsSetup) {
+      eventsSetup = true
+
+      Events.setupEvents()
     }
   })
 
