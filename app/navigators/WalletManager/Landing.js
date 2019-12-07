@@ -13,6 +13,7 @@ import EntypoIcon from 'react-native-vector-icons/Entypo'
  * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation
  */
 
+import * as API from '../../services/contact-api'
 import * as Auth from '../../services/auth'
 import * as CSS from '../../css'
 import { CREATE_WALLET } from './CreateWallet'
@@ -60,7 +61,6 @@ export default class CreateWallet extends React.PureComponent {
   }
 
   componentDidMount() {
-    this.checkWalletStatus()
     this.willFocusSub = this.props.navigation.addListener(
       'didFocus',
       this.checkWalletStatus,
@@ -87,7 +87,12 @@ export default class CreateWallet extends React.PureComponent {
         const walletExists = await Auth.walletExists()
 
         if (authData !== null && walletExists) {
-          this.props.navigation.navigate(APP)
+          try {
+            await API.Socket.connect()
+            this.props.navigation.navigate(APP)
+          } catch (e) {
+            console.warn(`<Landing /> -> error: ${e.message}`)
+          }
         } else {
           this.setState({
             walletExists,

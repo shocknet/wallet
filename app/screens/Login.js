@@ -16,10 +16,12 @@ import {
  * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation
  */
 
+import * as API from '../services/contact-api'
 import * as Cache from '../services/cache'
 import * as Auth from '../services/auth'
 import * as CSS from '../css'
 import ShockDialog from '../components/ShockDialog'
+import { APP } from '../navigators/Root'
 
 export const LOGIN = 'LOGIN'
 
@@ -151,6 +153,11 @@ export default class Login extends React.PureComponent {
               publicKey: res.publicKey,
               token: res.token,
             })
+
+            return API.Socket.connect()
+          })
+          .then(() => {
+            this.props.navigation.navigate(APP)
           })
           .catch(e => {
             this.setState({
