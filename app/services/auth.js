@@ -49,18 +49,6 @@ export const connectNodeToLND = (alias, password) =>
     },
   )
 
-export const walletExists = async () => {
-  const nodeURL = await Cache.getNodeURL()
-  const res = await fetch(`http://${nodeURL}/api/lnd/wallet/status`)
-  const body = await res.json()
-
-  if (res.ok) {
-    return body.walletExists
-  }
-
-  throw new Error(body.errorMessage)
-}
-
 /**
  * @param {string} alias
  * @param {string} password

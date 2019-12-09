@@ -14,7 +14,7 @@ import EntypoIcon from 'react-native-vector-icons/Entypo'
  */
 
 import * as API from '../../services/contact-api'
-import * as Auth from '../../services/auth'
+import * as Wallet from '../../services/wallet'
 import * as CSS from '../../css'
 import { CREATE_WALLET } from './CreateWallet'
 
@@ -84,7 +84,12 @@ export default class CreateWallet extends React.PureComponent {
       },
       async () => {
         const authData = await Cache.getStoredAuthData()
-        const walletExists = await Auth.walletExists()
+        let walletExists = false
+
+        try {
+          ;({ walletExists } = await Wallet.walletStatus())
+          // eslint-disable-next-line no-empty
+        } catch (_) {}
 
         if (authData !== null && walletExists) {
           try {
