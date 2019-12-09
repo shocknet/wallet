@@ -206,7 +206,7 @@ export default class CreateWallet extends React.PureComponent {
             </View>
             <View>
               <Text style={[styles.textInputLabel, styles.textAlignCenter]}>
-                Creating wallet...
+                Creating wallet... (this can take a while)
               </Text>
               <ActivityIndicator size="large" color="#3775ae" />
             </View>
