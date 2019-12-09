@@ -31,6 +31,7 @@ export const LANDING = 'LANDING'
 
 /**
  * @typedef {object} State
+ * @prop {string|null} walletError
  * @prop {boolean|null} walletExists
  */
 
@@ -49,6 +50,7 @@ export default class CreateWallet extends React.PureComponent {
    * @type {State}
    */
   state = {
+    walletError: null,
     walletExists: null,
   }
 
@@ -80,27 +82,25 @@ export default class CreateWallet extends React.PureComponent {
   checkWalletStatus = () => {
     this.setState(
       {
+        walletError: null,
         walletExists: null,
       },
       async () => {
-        const authData = await Cache.getStoredAuthData()
-        let walletExists = false
-
         try {
-          ;({ walletExists } = await Wallet.walletStatus())
-          // eslint-disable-next-line no-empty
-        } catch (_) {}
+          const authData = await Cache.getStoredAuthData()
+          const { walletExists } = await Wallet.walletStatus()
 
-        if (authData !== null && walletExists) {
-          try {
+          if (authData !== null && walletExists) {
             await API.Socket.connect()
             this.props.navigation.navigate(APP)
-          } catch (e) {
-            console.warn(`<Landing /> -> error: ${e.message}`)
+          } else {
+            this.setState({
+              walletExists,
+            })
           }
-        } else {
+        } catch (e) {
           this.setState({
-            walletExists,
+            walletError: e.message,
           })
         }
       },
@@ -116,8 +116,8 @@ export default class CreateWallet extends React.PureComponent {
   }
 
   render() {
-    const { walletExists } = this.state
-    const fetchingWalletStatus = walletExists === null
+    const { walletError, walletExists } = this.state
+    const fetchingWalletStatus = walletExists === null && walletError === null
 
     return (
       <View style={styles.container}>
@@ -151,31 +151,66 @@ export default class CreateWallet extends React.PureComponent {
               <EntypoIcon
                 name="wallet"
                 size={180}
-                color={
-                  walletExists ? CSS.Colors.BLUE_LIGHT : CSS.Colors.FAILURE_RED
-                }
+                color={(() => {
+                  if (walletExists) {
+                    return CSS.Colors.BLUE_LIGHT
+                  }
+
+                  if (walletError) {
+                    return CSS.Colors.FAILURE_RED
+                  }
+
+                  // need to create wallet
+                  return CSS.Colors.CAUTION_YELLOW
+                })()}
               />
               <Text style={styles.msg}>
-                {walletExists
-                  ? 'Your wallet is already created but needs to be unlocked'
-                  : 'You need to create a wallet before proceeding'}
+                {(() => {
+                  if (walletExists) {
+                    return 'Your wallet is already created but needs to be unlocked'
+                  }
+
+                  if (walletError) {
+                    return walletError
+                  }
+
+                  // wallet does not exist
+                  return 'You need to create a wallet before proceeding'
+                })()}
               </Text>
             </View>
-            {walletExists ? (
-              <TouchableOpacity
-                onPress={this.onPressUnlock}
-                style={styles.connectBtn}
-              >
-                <Text style={styles.connectBtnText}>Unlock</Text>
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity
-                onPress={this.onPressCreate}
-                style={styles.connectBtn}
-              >
-                <Text style={styles.connectBtnText}>Create Wallet</Text>
-              </TouchableOpacity>
-            )}
+            {(() => {
+              if (walletError) {
+                return (
+                  <TouchableOpacity
+                    onPress={this.checkWalletStatus}
+                    style={styles.connectBtn}
+                  >
+                    <Text style={styles.connectBtnText}>Try Again</Text>
+                  </TouchableOpacity>
+                )
+              }
+
+              if (walletExists) {
+                return (
+                  <TouchableOpacity
+                    onPress={this.onPressUnlock}
+                    style={styles.connectBtn}
+                  >
+                    <Text style={styles.connectBtnText}>Unlock</Text>
+                  </TouchableOpacity>
+                )
+              }
+
+              return (
+                <TouchableOpacity
+                  onPress={this.onPressCreate}
+                  style={styles.connectBtn}
+                >
+                  <Text style={styles.connectBtnText}>Create Wallet</Text>
+                </TouchableOpacity>
+              )
+            })()}
           </ScrollView>
         )}
       </View>
