@@ -59,27 +59,7 @@ export default class ShockWallet extends React.Component {
    * @returns {void}
    */
   onNavChange = (_, newState) => {
-    this.getCurrentRouteName(newState)
-  }
-
-  /**
-   * @private
-   * @param {import('react-navigation').NavigationState|import('react-navigation').NavigationRoute} navStateOrNavRoute
-   * @returns {void}
-   */
-  getCurrentRouteName = navStateOrNavRoute => {
-    // eslint-disable-next-line no-prototype-builtins
-    if (navStateOrNavRoute.hasOwnProperty('index')) {
-      this.getCurrentRouteName(
-        navStateOrNavRoute.routes[navStateOrNavRoute.index],
-      )
-    } else {
-      const currentRoute =
-        // @ts-ignore
-        /** @type {string} */ (navStateOrNavRoute.routeName)
-
-      NavigationService.setCurrentRoute(currentRoute)
-    }
+    getCurrentRouteName(newState)
   }
 
   /**
@@ -99,5 +79,22 @@ export default class ShockWallet extends React.Component {
     return (
       <RootStack onNavigationStateChange={this.onNavChange} ref={this.onRef} />
     )
+  }
+}
+
+/**
+ * @param {import('react-navigation').NavigationState|import('react-navigation').NavigationRoute} navStateOrNavRoute
+ * @returns {void}
+ */
+const getCurrentRouteName = navStateOrNavRoute => {
+  // eslint-disable-next-line no-prototype-builtins
+  if (navStateOrNavRoute.hasOwnProperty('index')) {
+    getCurrentRouteName(navStateOrNavRoute.routes[navStateOrNavRoute.index])
+  } else {
+    const currentRoute =
+      // @ts-ignore
+      /** @type {string} */ (navStateOrNavRoute.routeName)
+
+    NavigationService.setCurrentRoute(currentRoute)
   }
 }
