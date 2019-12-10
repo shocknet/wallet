@@ -102,12 +102,12 @@
   "lint-staged": {
     "app/**/*.js": [
       "prettier --write",
-      "eslint --fix",
+      "eslint",
       "git add"
     ],
     "index.js": [
       "prettier --write",
-      "eslint --fix",
+      "eslint",
       "git add"
     ]
   },
