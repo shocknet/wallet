@@ -34,14 +34,18 @@ moment.locale('en', {
 AppRegistry.registerComponent('shockwallet', () => ShockWallet)
 
 /**
- * @augments React.Component<{},{ ready: boolean },never>
+ * @typedef {object} State
+ * @prop {boolean} ready
+ */
+
+/**
+ * @augments React.Component<{}, State,never>
  */
 export default class ShockWallet extends React.Component {
   state = {
     ready: false,
   }
 
-  // eslint-disable-next-line class-methods-use-this
   async componentDidMount() {
     const nodeURL = await Cache.getNodeURL()
     if (nodeURL !== null) {
@@ -53,48 +57,11 @@ export default class ShockWallet extends React.Component {
     })
   }
 
-  /**
-   * @private
-   * @type {import('react-navigation').NavigationContainerProps['onNavigationStateChange']}
-   * @returns {void}
-   */
-  onNavChange = (_, newState) => {
-    getCurrentRouteName(newState)
-  }
-
-  /**
-   * @private
-   * @param {import('react-navigation').NavigationContainerComponent|null} ref
-   * @returns {void}
-   */
-  onRef = ref => {
-    NavigationService.setTopLevelNavigator(ref)
-  }
-
   render() {
     if (!this.state.ready) {
       return null
     }
 
-    return (
-      <RootStack onNavigationStateChange={this.onNavChange} ref={this.onRef} />
-    )
-  }
-}
-
-/**
- * @param {import('react-navigation').NavigationState|import('react-navigation').NavigationRoute} navStateOrNavRoute
- * @returns {void}
- */
-const getCurrentRouteName = navStateOrNavRoute => {
-  // eslint-disable-next-line no-prototype-builtins
-  if (navStateOrNavRoute.hasOwnProperty('index')) {
-    getCurrentRouteName(navStateOrNavRoute.routes[navStateOrNavRoute.index])
-  } else {
-    const currentRoute =
-      // @ts-ignore
-      /** @type {string} */ (navStateOrNavRoute.routeName)
-
-    NavigationService.setCurrentRoute(currentRoute)
+    return <RootStack ref={NavigationService.setTopLevelNavigator} />
   }
 }
