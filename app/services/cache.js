@@ -150,6 +150,42 @@ export const writeStoredAuthData = async authData => {
     return AsyncStorage.removeItem(STORED_AUTH_DATA)
   }
 
+  if (typeof authData.alias !== 'string') {
+    throw new TypeError(
+      "Cache.writeStoredAuthData -> typeof authData.alias !== 'string'",
+    )
+  }
+
+  if (typeof authData.publicKey !== 'string') {
+    throw new TypeError(
+      "Cache.writeStoredAuthData -> typeof authData.publicKey !== 'string'",
+    )
+  }
+
+  if (typeof authData.token !== 'string') {
+    throw new TypeError(
+      "Cache.writeStoredAuthData -> typeof authData.token !== 'string'",
+    )
+  }
+
+  if (authData.alias.length === 0) {
+    throw new TypeError(
+      'Cache.writeStoredAuthData -> authData.alias.length === 0',
+    )
+  }
+
+  if (authData.publicKey.length === 0) {
+    throw new TypeError(
+      'Cache.writeStoredAuthData -> authData.publicKey.length === 0',
+    )
+  }
+
+  if (authData.token.length === 0) {
+    throw new TypeError(
+      'Cache.writeStoredAuthData -> authData.token.length === 0',
+    )
+  }
+
   const nodeURL = await getNodeURL()
 
   if (nodeURL === null) {
