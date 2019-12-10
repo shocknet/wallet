@@ -357,18 +357,19 @@ const styles = StyleSheet.create({
 // Adds an Authorization token to the header before sending any request
 Http.interceptors.request.use(async config => {
   try {
+    console.log('Interceptor running')
     if (!config.headers.Authorization) {
       const { nodeIP, token } = await Cache.getNodeIPTokenPair()
 
       // eslint-disable-next-line require-atomic-updates
-      config.baseURL = nodeIP
+      config.baseURL = `http://${nodeIP}:${CONTACT_SOCKET_PORT}`
       // eslint-disable-next-line require-atomic-updates
       config.headers.common.Authorization = `Bearer ${token}`
     }
 
     return config
   } catch (err) {
-    console.log(err && err.response)
+    console.log(err ? err.response : err)
     return config
   }
 })
