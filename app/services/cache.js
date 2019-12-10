@@ -5,6 +5,9 @@
 import { AsyncStorage } from 'react-native'
 import Http from 'axios'
 
+import { AUTH } from '../navigators/Root'
+
+import * as Navigation from './navigation'
 import * as Utils from './utils'
 /**
  * @typedef {object} AuthData
@@ -143,6 +146,7 @@ export const getStoredAuthData = () =>
  */
 export const writeStoredAuthData = async authData => {
   if (authData === null) {
+    Navigation.navigate(AUTH)
     return AsyncStorage.removeItem(STORED_AUTH_DATA)
   }
 
