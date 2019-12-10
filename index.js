@@ -353,3 +353,22 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 })
+
+// Adds an Authorization token to the header before sending any request
+Http.interceptors.request.use(async config => {
+  try {
+    if (!config.headers.Authorization) {
+      const { nodeIP, token } = await Cache.getNodeIPTokenPair()
+
+      // eslint-disable-next-line require-atomic-updates
+      config.baseURL = nodeIP
+      // eslint-disable-next-line require-atomic-updates
+      config.headers.common.Authorization = `Bearer ${token}`
+    }
+
+    return config
+  } catch (err) {
+    console.log(err && err.response)
+    return config
+  }
+})
