@@ -14,6 +14,7 @@ import EntypoIcon from 'react-native-vector-icons/Entypo'
  */
 
 import * as API from '../../services/contact-api'
+import * as Auth from '../../services/auth'
 import * as Wallet from '../../services/wallet'
 import * as CSS from '../../css'
 import { CREATE_WALLET } from './CreateWallet'
@@ -31,8 +32,8 @@ export const LANDING = 'LANDING'
 
 /**
  * @typedef {object} State
- * @prop {string|null} walletError
- * @prop {boolean|null} walletExists
+ * @prop {boolean|null} needsUnlock
+ * @prop {string|null} err
  */
 
 /**
@@ -50,8 +51,8 @@ export default class CreateWallet extends React.PureComponent {
    * @type {State}
    */
   state = {
-    walletError: null,
-    walletExists: null,
+    err: null,
+    needsUnlock: null,
   }
 
   willFocusSub = {
@@ -69,7 +70,8 @@ export default class CreateWallet extends React.PureComponent {
     )
     this.willBlurSub = this.props.navigation.addListener('didBlur', () => {
       this.setState({
-        walletExists: null,
+        err: null,
+        needsUnlock: null,
       })
     })
   }
@@ -82,25 +84,26 @@ export default class CreateWallet extends React.PureComponent {
   checkWalletStatus = () => {
     this.setState(
       {
-        walletError: null,
-        walletExists: null,
+        err: null,
+        needsUnlock: null,
       },
       async () => {
         try {
           const authData = await Cache.getStoredAuthData()
           const { walletExists } = await Wallet.walletStatus()
+          const gunAuthed = await Auth.isGunAuthed()
 
-          if (authData !== null && walletExists) {
+          if (authData !== null && walletExists && gunAuthed) {
             await API.Socket.connect()
             this.props.navigation.navigate(APP)
           } else {
             this.setState({
-              walletExists,
+              needsUnlock: true,
             })
           }
         } catch (e) {
           this.setState({
-            walletError: e.message,
+            err: e.message,
           })
         }
       },
@@ -116,8 +119,8 @@ export default class CreateWallet extends React.PureComponent {
   }
 
   render() {
-    const { walletError, walletExists } = this.state
-    const fetchingWalletStatus = walletExists === null && walletError === null
+    const { err, needsUnlock } = this.state
+    const fetchingWalletStatus = needsUnlock === null && err === null
 
     return (
       <View style={styles.container}>
@@ -152,11 +155,11 @@ export default class CreateWallet extends React.PureComponent {
                 name="wallet"
                 size={180}
                 color={(() => {
-                  if (walletExists) {
+                  if (needsUnlock) {
                     return CSS.Colors.BLUE_LIGHT
                   }
 
-                  if (walletError) {
+                  if (err) {
                     return CSS.Colors.FAILURE_RED
                   }
 
@@ -166,12 +169,12 @@ export default class CreateWallet extends React.PureComponent {
               />
               <Text style={styles.msg}>
                 {(() => {
-                  if (walletExists) {
+                  if (needsUnlock) {
                     return 'Your wallet is already created but needs to be unlocked'
                   }
 
-                  if (walletError) {
-                    return walletError
+                  if (err) {
+                    return err
                   }
 
                   // wallet does not exist
@@ -180,7 +183,7 @@ export default class CreateWallet extends React.PureComponent {
               </Text>
             </View>
             {(() => {
-              if (walletError) {
+              if (err) {
                 return (
                   <TouchableOpacity
                     onPress={this.checkWalletStatus}
@@ -191,7 +194,7 @@ export default class CreateWallet extends React.PureComponent {
                 )
               }
 
-              if (walletExists) {
+              if (needsUnlock) {
                 return (
                   <TouchableOpacity
                     onPress={this.onPressUnlock}
