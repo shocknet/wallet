@@ -16,6 +16,7 @@ import {
 } from 'react-native'
 import EntypoIcons from 'react-native-vector-icons/Entypo'
 import { connect } from 'react-redux'
+//import { compose } from 'redux'
 import QRCodeScanner from '../../components/QRScanner'
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}, Params>} Navigation
@@ -591,13 +592,22 @@ class WalletOverview extends Component {
   //////////////////////////////////////////////////////////////////////////////
   // SEND BTC //////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////
-
-  sendToBTCAddress = () => {
+  /**
+   * @param {null|{address : null|string,amount :null|number}} destination
+   */
+  sendToBTCAddress = destination => {
     this.closeAllSendDialogs()
-
-    this.setState({
-      displayingSendToBTCDialog: true,
-    })
+    if (destination) {
+      this.setState({
+        displayingSendToBTCDialog: true,
+        sendToBTCAddress: destination.address ? destination.address : '',
+        sendToBTCAmount: destination.amount ? destination.amount : 0,
+      })
+    } else {
+      this.setState({
+        displayingSendToBTCDialog: true,
+      })
+    }
   }
 
   onPressSend = () => {
@@ -739,13 +749,21 @@ class WalletOverview extends Component {
   //////////////////////////////////////////////////////////////////////////////
   // PAY INVOICE ///////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////
-
-  payLightningInvoice = () => {
+  /**
+   * @param {null|{invoice : null|string}} destination
+   */
+  payLightningInvoice = destination => {
     this.closeAllSendDialogs()
-
-    this.setState({
-      displayingPayLightningInvoiceDialog: true,
-    })
+    if (destination) {
+      this.setState({
+        displayingPayLightningInvoiceDialog: true,
+        lightningInvoiceInput: destination.invoice ? destination.invoice : '',
+      })
+    } else {
+      this.setState({
+        displayingPayLightningInvoiceDialog: true,
+      })
+    }
   }
 
   /**
@@ -1010,13 +1028,60 @@ class WalletOverview extends Component {
     )
   }
 
+  /**
+   * @param {{url: string}} event
+   */
+  _handleOpenURL = event => {
+    /**
+     * @param {string} url
+     */
+    const middle = url => {
+      //const url = event.url
+      console.log(url)
+      const protocol = url.split(':')
+      if (
+        protocol.length !== 2 ||
+        (protocol[0] !== 'bitcoin' && protocol[0] !== 'lightning')
+      ) {
+        console.log('invalid url: ' + url)
+        return
+      }
+      const details = protocol[1].split('?amount=')
+      console.log(details)
+      const hasDetails = details.length > 1
+      if (protocol[0] === 'bitcoin') {
+        this.sendToBTCAddress({
+          address: details[0],
+          amount: hasDetails ? Number(details[1]) * 100000000 : 0,
+        })
+      }
+      if (protocol[0] === 'lightning') {
+        //lightningInvoiceInput
+        this.payLightningInvoice({ invoice: details[0] })
+      }
+    }
+    middle(event.url)
+  }
+
   componentDidMount() {
+    Linking.addEventListener('url', this._handleOpenURL)
+    Linking.getInitialURL()
+      .then(url => {
+        if (url) {
+          console.log('Initial url is: ' + url)
+          this._handleOpenURL({ url })
+        }
+      })
+      .catch(err => console.error('An error occurred', err))
+
     this.fetchBalance()
     this.fetchExchangeRate()
     this.fetchRecentTransactions()
   }
 
   componentWillUnmount() {
+    Linking.removeEventListener('url', this._handleOpenURL)
+
     if (this.balanceIntervalID) {
       clearInterval(this.balanceIntervalID)
     }
