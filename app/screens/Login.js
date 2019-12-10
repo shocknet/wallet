@@ -70,20 +70,19 @@ export default class Login extends React.PureComponent {
     pass: '',
   }
 
-  willFocusSub = {
+  didFocusSub = {
     remove() {},
   }
 
   componentDidMount() {
-    this.getCachedAlias()
-    this.willFocusSub = this.props.navigation.addListener(
+    this.didFocusSub = this.props.navigation.addListener(
       'didFocus',
       this.getCachedAlias,
     )
   }
 
   componentWillUnmount() {
-    this.willFocusSub.remove()
+    this.didFocusSub.remove()
   }
 
   getCachedAlias = async () => {
@@ -137,8 +136,31 @@ export default class Login extends React.PureComponent {
    * @returns {void}
    */
   onPressUnlock = () => {
-    if (this.state.awaitingRes || this.state.alias.length === 0) {
+    const {
+      alias,
+      awaitingRes,
+      cachedAlias,
+      fetchingCachedAlias,
+      pass,
+    } = this.state
+
+    const loading = awaitingRes || fetchingCachedAlias
+
+    const enabled =
+      !loading && (alias.length > 0 || cachedAlias !== null) && pass.length > 0
+
+    if (!enabled) {
       return
+    }
+
+    const aliasToUse = alias || cachedAlias
+
+    if (typeof aliasToUse !== 'string') {
+      throw new TypeError("typeof aliasToUse !== 'string'")
+    }
+
+    if (aliasToUse.length === 0) {
+      throw new TypeError('aliasToUse.length === 0')
     }
 
     this.setState(
@@ -146,10 +168,10 @@ export default class Login extends React.PureComponent {
         awaitingRes: true,
       },
       () => {
-        Auth.unlockWallet(this.state.alias, this.state.pass)
+        Auth.unlockWallet(aliasToUse, this.state.pass)
           .then(res => {
             Cache.writeStoredAuthData({
-              alias: this.state.alias,
+              alias: aliasToUse,
               publicKey: res.publicKey,
               token: res.token,
             })
@@ -157,16 +179,17 @@ export default class Login extends React.PureComponent {
             return API.Socket.connect()
           })
           .then(() => {
+            this.setState({
+              awaitingRes: false,
+            })
             this.props.navigation.navigate(APP)
           })
           .catch(e => {
             this.setState({
-              err: e.message,
-            })
-          })
-          .finally(() => {
-            this.setState({
               awaitingRes: false,
+            })
+            this.setState({
+              err: e.message,
             })
           })
       },
