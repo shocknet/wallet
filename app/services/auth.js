@@ -7,6 +7,11 @@ import { JitterTypes } from 'exponential-backoff/dist/options'
 import * as Cache from './cache'
 
 /**
+ * @returns {Promise<boolean>}
+ */
+export const isGunAuthed = () => Promise.resolve(false)
+
+/**
  * Tells the node to connect to LND.
  * @param {string} alias
  * @param {string} password
