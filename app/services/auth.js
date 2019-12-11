@@ -3,13 +3,49 @@
  */
 import { backOff } from 'exponential-backoff'
 import { JitterTypes } from 'exponential-backoff/dist/options'
+import once from 'lodash/once'
 
 import * as Cache from './cache'
+import { Socket } from './contact-api'
+
+// TO DO: Move this constant to common repo
+const IS_GUN_AUTH = 'IS_GUN_AUTH'
 
 /**
  * @returns {Promise<boolean>}
  */
-export const isGunAuthed = () => Promise.resolve(false)
+export const isGunAuthed = async () => {
+  const socket = await Socket.createSocket()
+  socket.connect()
+
+  const socketPromise = new Promise(res => {
+    socket.on(
+      IS_GUN_AUTH,
+      once(response => {
+        console.warn(`response: ${JSON.stringify(response)}`)
+        res(response.msg.isGunAuth)
+      }),
+    )
+    socket.binary(false).emit(IS_GUN_AUTH, {})
+  })
+
+  const timeout = new Promise((_, rej) => {
+    setTimeout(() => {
+      rej(new Error('Could not retrieve gun auth status in under 5 seconds'))
+    }, 5000)
+  })
+
+  // ideally we would place socket.disconnect() inside a finally clause, but
+  // those are bugged as of current react native version
+  try {
+    const res = await Promise.race([socketPromise, timeout])
+    socket.disconnect()
+    return res
+  } catch (err) {
+    socket.disconnect()
+    throw err
+  }
+}
 
 /**
  * Tells the node to connect to LND.
