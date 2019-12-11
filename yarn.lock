@@ -6976,7 +6976,7 @@ react-native-video@4.4.2:
     prop-types "^15.5.10"
     shaka-player "^2.4.4"
 
-react-native@^0.57.7:
+react-native@0.57.8:
   version "0.57.8"
   resolved "https://registry.yarnpkg.com/react-native/-/react-native-0.57.8.tgz#1a840fbe144cd3902cc14313a783ce28efc48cb9"
   integrity sha512-K6DAMTPTq+lxVYC73y4Kh/bgLajddBaIKzwsVeV4JOoS1Fdq48/ISXD3vApV+x+/IBVTXnrT9qlA+9U6MMZCqA==
