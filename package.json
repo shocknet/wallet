@@ -39,6 +39,7 @@
     "react-native": "^0.57.7",
     "react-native-bootsplash": "^1.0.3",
     "react-native-camera": "^1.13.1",
+    "react-native-deep-link": "^0.2.9",
     "react-native-deep-linking": "^2.2.0",
     "react-native-elements": "^0.19.1",
     "react-native-gifted-chat": "^0.9.3",
