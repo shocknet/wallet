@@ -374,6 +374,7 @@ export const setupEvents = () => {
   })
 
   Socket.socket.on('disconnect', reason => {
+    console.warn('socket disconnected')
     connectionListeners.forEach(l => {
       l(false)
     })
