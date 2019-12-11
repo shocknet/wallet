@@ -22,7 +22,6 @@ export const isGunAuthed = async () => {
     socket.on(
       IS_GUN_AUTH,
       once(response => {
-        console.warn(`response: ${JSON.stringify(response)}`)
         res(response.msg.isGunAuth)
       }),
     )
