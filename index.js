@@ -9,6 +9,7 @@ import RNBootSplash from 'react-native-bootsplash'
 
 import * as NavigationService from './app/services/navigation'
 import * as Cache from './app/services/cache'
+import { ConnectionProvider } from './app/ctx/Connection'
 import RootStack from './app/navigators/Root'
 
 // https://github.com/moment/moment/issues/2781#issuecomment-160739129
@@ -62,6 +63,10 @@ export default class ShockWallet extends React.Component {
       return null
     }
 
-    return <RootStack ref={NavigationService.setTopLevelNavigator} />
+    return (
+      <ConnectionProvider>
+        <RootStack ref={NavigationService.setTopLevelNavigator} />
+      </ConnectionProvider>
+    )
   }
 }
