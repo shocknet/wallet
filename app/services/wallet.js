@@ -346,7 +346,7 @@ export const balance = async () => {
   if (res.ok) {
     return body
   }
-  throw new Error(body.errorMessage || body.message)
+  throw new Error(body.errorMessage || body.message || 'Unknown error.')
 }
 
 /**
@@ -381,7 +381,7 @@ export const getTransactions = async request => {
   if (res.ok) {
     return body
   }
-  throw new Error(body.errorMessage || body.message)
+  throw new Error(body.errorMessage || body.message || 'Unknown error.')
 }
 
 /**
@@ -423,7 +423,7 @@ export const listPayments = async request => {
   if (res.ok) {
     return body
   }
-  throw new Error(body.errorMessage || body.message)
+  throw new Error(body.errorMessage || body.message || 'Unknown error.')
 }
 
 /**
@@ -463,7 +463,7 @@ export const listInvoices = async request => {
   if (res.ok) {
     return body
   }
-  throw new Error(body.errorMessage || body.message)
+  throw new Error(body.errorMessage || body.message || 'Unknown error.')
 }
 
 /**
@@ -518,7 +518,7 @@ export const newAddress = async useOlderFormat => {
   if (res.ok) {
     return /** @type {NewAddressResponse} */ (body).address
   }
-  throw new Error(body.errorMessage || body.message)
+  throw new Error(body.errorMessage || body.message || 'Unknown error.')
 }
 
 /**
@@ -576,7 +576,7 @@ export const addInvoice = async request => {
   if (res.ok) {
     return body
   }
-  throw new Error(body.errorMessage || body.message)
+  throw new Error(body.errorMessage || body.message || 'Unknown error.')
 }
 
 /**
@@ -623,7 +623,7 @@ export const sendCoins = async request => {
   if (res.ok) {
     return body
   }
-  throw new Error(body.errorMessage || body.message)
+  throw new Error(body.errorMessage || body.message || 'Unknown error.')
 }
 
 /**
@@ -697,7 +697,7 @@ export const CAUTION_payInvoice = async ({ amt, payreq }) => {
   if (res.ok) {
     return body
   }
-  throw new Error(body.errorMessage || body.message)
+  throw new Error(body.errorMessage || body.message || 'Unknown error.')
 }
 
 /**
@@ -756,7 +756,7 @@ export const decodeInvoice = async ({ payReq }) => {
   if (res.ok) {
     return body
   }
-  throw new Error(body.errorMessage || body.message)
+  throw new Error(body.errorMessage || body.message || 'Unknown error.')
 }
 
 /**
@@ -800,7 +800,7 @@ export const listPeers = async () => {
     return body.peers
   }
 
-  throw new Error(body.errorMessage || body.message)
+  throw new Error(body.errorMessage || body.message || 'Unknown error.')
 }
 
 /**
@@ -858,7 +858,11 @@ export const listChannels = async () => {
       }
     })
   }
-  throw new Error('listChannels() -> ' + body.errorMessage || body.message)
+  throw new Error(
+    'listChannels() -> ' + body.errorMessage ||
+      body.message ||
+      'Unknown error.',
+  )
 }
 
 /**

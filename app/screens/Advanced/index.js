@@ -341,7 +341,7 @@ export default class AdvancedScreen extends Component {
       )
 
       if (res.status !== 200) {
-        throw new Error(res.data.errorMessage)
+        throw new Error(res.data.errorMessage || 'Unknown error.')
       }
 
       ToastAndroid.show('Added successfully', 800)
@@ -386,7 +386,7 @@ export default class AdvancedScreen extends Component {
       })
 
       if (res.status !== 200) {
-        throw new Error(res.data.errorMessage)
+        throw new Error(res.data.errorMessage || 'Unknown error.')
       }
 
       ToastAndroid.show('Added successfully', 800)
@@ -766,7 +766,7 @@ export default class AdvancedScreen extends Component {
                   })
 
                   if (res.status !== 200) {
-                    throw new Error(res.data.errorMessage)
+                    throw new Error(res.data.errorMessage || 'Unknown error.')
                   }
 
                   this.setState({

@@ -74,7 +74,8 @@ export const connectNodeToLND = (alias, password) =>
 
       if (!res.ok) {
         const body = await res.json()
-        throw new Error(body.errorMessage || body.message)
+
+        throw new Error(body.errorMessage || body.message || 'Unknown error.')
       }
     },
     {
@@ -135,7 +136,7 @@ export const unlockWallet = async (alias, password) => {
     connectNodeToLND(alias, password)
   }
 
-  throw new Error(body.errorMessage || body.message)
+  throw new Error(body.errorMessage || body.message || 'Unknown error.')
 }
 
 /**
@@ -184,7 +185,7 @@ export const registerExistingWallet = async (alias, password) => {
     connectNodeToLND(alias, password)
   }
 
-  throw new Error(body.errorMessage || body.message)
+  throw new Error(body.errorMessage || body.message || 'Unknown error.')
 }
 
 /**
@@ -229,6 +230,6 @@ export const createWallet = async (alias, password) => {
       connectNodeToLND(alias, password)
     }
 
-    throw new Error(body.errorMessage || body.message)
+    throw new Error(body.errorMessage || body.message || 'Unknown error.')
   }
 }
