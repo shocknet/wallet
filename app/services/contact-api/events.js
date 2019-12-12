@@ -366,8 +366,11 @@ export const onRegister = listener => {
 }
 
 export const setupEvents = () => {
+  if (!Socket.socket.connected) {
+    throw new Error('Should call setupEvents() after socket is connected.')
+  }
+
   Socket.socket.on('connect', () => {
-    console.warn('socket connected')
     connectionListeners.forEach(l => {
       l(true)
     })
@@ -471,5 +474,9 @@ export const setupEvents = () => {
         Cache.writeStoredAuthData(null)
       }
     })
+  })
+
+  connectionListeners.forEach(l => {
+    l(Socket.socket.connected)
   })
 }
