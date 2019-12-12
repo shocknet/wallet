@@ -3,12 +3,20 @@
  */
 
 import { AsyncStorage } from 'react-native'
-import { backOff } from 'exponential-backoff'
-import { JitterTypes } from 'exponential-backoff/dist/options'
+import Http from 'axios'
 
+import { AUTH } from '../navigators/Root'
+
+import * as Navigation from './navigation'
+import * as Utils from './utils'
 /**
- * @typedef {import('./contact-api/events').AuthData} AuthData
+ * @typedef {object} AuthData
+ * @prop {string} alias
+ * @prop {string} publicKey
+ * @prop {string} token
  */
+
+export const DEFAULT_PORT = 9835
 
 /**
  * @typedef {object} StoredAuthData
@@ -16,33 +24,20 @@ import { JitterTypes } from 'exponential-backoff/dist/options'
  * @prop {string} nodeIP The node ip for which the auth data is valid.
  */
 
-const NODE_IP = 'NODE_IP'
+const NODE_URL = 'NODE_URL'
 const STORED_AUTH_DATA = 'STORED_AUTH_DATA'
 const AUTHENTICATED_NODE = 'AUTHENTICATED_NODE'
 
 export const NO_CACHED_NODE_IP = 'NO_CACHED_NODE_IP'
 
 /**
- * @typedef {(nodeIP: string|null) => void} NodeIPListener
  * @typedef {(sad: StoredAuthData|null) => void} StoredAuthDataListener
  */
 
 /**
- * @type {Array<NodeIPListener>}
- */
-const nodeIPListeners = []
-/**
  * @type {Array<StoredAuthDataListener>}
  */
 const storedAuthDataListeners = []
-
-const notifyNodeIPListeners = () => {
-  getNodeIP().then(nip => {
-    nodeIPListeners.forEach(l => {
-      l(nip)
-    })
-  })
-}
 
 const notifySADListeners = () => {
   getStoredAuthData().then(sad => {
@@ -50,39 +45,6 @@ const notifySADListeners = () => {
       l(sad)
     })
   })
-}
-
-/**
- * @param {NodeIPListener} listener
- * @returns {() => void}
- */
-export const onNodeIPChange = listener => {
-  if (nodeIPListeners.includes(listener)) {
-    throw new Error('Tried to subscribe twice')
-  }
-
-  nodeIPListeners.push(listener)
-
-  getNodeIP()
-    .then(nip => {
-      // check in case unsub was called before promise resolution
-      if (nodeIPListeners.includes(listener)) {
-        listener(nip)
-      }
-    })
-    .catch(e => {
-      console.warn(e)
-    })
-
-  return () => {
-    const idx = nodeIPListeners.indexOf(listener)
-
-    if (idx < 0) {
-      throw new Error('tried to unsubscribe twice')
-    }
-
-    nodeIPListeners.splice(idx, 1)
-  }
 }
 
 /**
@@ -119,37 +81,51 @@ export const onSADChange = listener => {
 /**
  * @returns {Promise<string|null>}
  */
-export const getNodeIP = () =>
-  backOff(() => AsyncStorage.getItem(NODE_IP), {
-    jitter: JitterTypes.Full,
-    retry(_, attemptNumber) {
-      console.warn(`retry getItem(NODE_IP): ${attemptNumber}`)
-      return true
-    },
-  })
+export const getNodeURL = () => AsyncStorage.getItem(NODE_URL)
 
 /**
- * @param {string|null} ip
+ * @param {string|null} urlOrIP Pass either a url (x.x.x.x:xxxx) or an ip
+ * (x.x.x.x).
  * @returns {Promise<void>}
  */
-export const writeNodeIP = ip =>
-  backOff(
-    () => {
-      if (ip === null) {
-        return AsyncStorage.removeItem(NODE_IP)
-      }
-      return AsyncStorage.setItem(NODE_IP, ip)
-    },
-    {
-      jitter: JitterTypes.Full,
-      retry(_, attemptNumber) {
-        console.warn(`retry getItem(STORED_AUTH_DATA): ${attemptNumber}`)
-        return true
-      },
-    },
-  ).then(() => {
-    notifyNodeIPListeners()
-  })
+export const writeNodeURLOrIP = async urlOrIP => {
+  if (urlOrIP === null) {
+    Http.defaults.baseURL = undefined
+    AsyncStorage.removeItem(NODE_URL)
+    writeStoredAuthData(null)
+    return
+  }
+
+  let ip = urlOrIP
+  let port = DEFAULT_PORT.toString()
+
+  const hasPort = urlOrIP.indexOf(':') > -1
+
+  if (hasPort) {
+    ;[ip, port] = urlOrIP.split(':')
+  }
+
+  if (
+    port.length < 4 ||
+    !port.split('').every(c => '0123456789'.split('').includes(c))
+  ) {
+    throw new TypeError('writeNodeURLOrIP() -> invalid port supplied')
+  }
+
+  if (!Utils.isValidIP(ip)) {
+    throw new TypeError('writeNodeURLOrIP() -> invalid IP supplied')
+  }
+
+  const storedAD = await getStoredAuthData()
+
+  if (storedAD !== null && storedAD.nodeIP !== ip) {
+    await writeStoredAuthData(null)
+  }
+
+  Http.defaults.baseURL = `http://${ip}:${port}`
+
+  await AsyncStorage.setItem(NODE_URL, `${ip}:${port}`)
+}
 
 /**
  * @returns {Promise<StoredAuthData|null>}
@@ -168,40 +144,67 @@ export const getStoredAuthData = () =>
  * present.
  * @returns {Promise<void>}
  */
-export const writeStoredAuthData = authData =>
-  backOff(() => {
-    if (authData === null) {
-      return AsyncStorage.removeItem(STORED_AUTH_DATA)
-    }
-    return getNodeIP().then(nodeIP => {
-      if (nodeIP === null) {
-        throw new Error()
-      }
+export const writeStoredAuthData = async authData => {
+  if (authData === null) {
+    Navigation.navigate(AUTH)
+    return AsyncStorage.removeItem(STORED_AUTH_DATA)
+  }
 
-      /** @type {StoredAuthData} */
-      const sad = {
-        authData,
-        nodeIP,
-      }
+  if (typeof authData.alias !== 'string') {
+    throw new TypeError(
+      "Cache.writeStoredAuthData -> typeof authData.alias !== 'string'",
+    )
+  }
 
-      return backOff(
-        () =>
-          Promise.all([
-            AsyncStorage.setItem(STORED_AUTH_DATA, JSON.stringify(sad)),
-            AsyncStorage.setItem(AUTHENTICATED_NODE, nodeIP),
-          ]),
-        {
-          jitter: JitterTypes.Full,
-          retry(_, attemptNumber) {
-            console.warn(`retry getItem(STORED_AUTH_DATA): ${attemptNumber}`)
-            return true
-          },
-        },
-      ).then(() => {
-        notifySADListeners()
-      })
-    })
-  })
+  if (typeof authData.publicKey !== 'string') {
+    throw new TypeError(
+      "Cache.writeStoredAuthData -> typeof authData.publicKey !== 'string'",
+    )
+  }
+
+  if (typeof authData.token !== 'string') {
+    throw new TypeError(
+      "Cache.writeStoredAuthData -> typeof authData.token !== 'string'",
+    )
+  }
+
+  if (authData.alias.length === 0) {
+    throw new TypeError(
+      'Cache.writeStoredAuthData -> authData.alias.length === 0',
+    )
+  }
+
+  if (authData.publicKey.length === 0) {
+    throw new TypeError(
+      'Cache.writeStoredAuthData -> authData.publicKey.length === 0',
+    )
+  }
+
+  if (authData.token.length === 0) {
+    throw new TypeError(
+      'Cache.writeStoredAuthData -> authData.token.length === 0',
+    )
+  }
+
+  const nodeURL = await getNodeURL()
+
+  if (nodeURL === null) {
+    throw new Error('writeStoredAuthData() -> nodeIP is not cached')
+  }
+
+  /** @type {StoredAuthData} */
+  const sad = {
+    authData,
+    nodeIP: nodeURL.split(':')[0],
+  }
+
+  await Promise.all([
+    AsyncStorage.setItem(STORED_AUTH_DATA, JSON.stringify(sad)),
+    AsyncStorage.setItem(AUTHENTICATED_NODE, nodeURL),
+  ])
+
+  notifySADListeners()
+}
 
 /**
  * Returns the token.
@@ -209,9 +212,9 @@ export const writeStoredAuthData = authData =>
  * @returns {Promise<string|null>}
  */
 export const getToken = async () => {
-  const nodeIP = await getNodeIP()
+  const nodeURL = await getNodeURL()
 
-  if (typeof nodeIP !== 'string') {
+  if (typeof nodeURL !== 'string') {
     throw new TypeError(NO_CACHED_NODE_IP)
   }
 
@@ -229,10 +232,10 @@ export const getToken = async () => {
 }
 
 /**
- * @returns {Promise<{ nodeIP: string , token: string|null }>}
+ * @returns {Promise<{ nodeURL: string , token: string|null }>}
  */
-export const getNodeIPTokenPair = async () => ({
-  // @ts-ignore If nodeIP is null, getToken() will throw.
-  nodeIP: await getNodeIP(),
+export const getNodeURLTokenPair = async () => ({
+  // CAST: If nodeURL is null, getToken() will throw.
+  nodeURL: /** @type {string} */ (await getNodeURL()),
   token: await getToken(),
 })

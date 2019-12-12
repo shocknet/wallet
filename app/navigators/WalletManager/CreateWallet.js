@@ -11,21 +11,17 @@ import {
   Dimensions,
 } from 'react-native'
 /**
- * @typedef {import('react-navigation').NavigationScreenProp<{}, { awaitingRes: boolean }>} Navigation
+ * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation
  */
 
-import ShockDialog from '../components/ShockDialog'
+import ShockDialog from '../../components/ShockDialog'
 
-import * as API from '../services/contact-api'
-import * as Auth from '../services/auth'
-import * as Cache from '../services/cache'
-import * as CSS from '../css'
+import * as Auth from '../../services/auth'
+import * as Cache from '../../services/cache'
+import * as CSS from '../../css'
 import EntypoIcon from 'react-native-vector-icons/Entypo'
 
-const SUCCESS_MSG = 'Registration Sucessful'
-
-export const REGISTER = 'REGISTER'
-export const LOGIN = 'LOGIN'
+export const CREATE_WALLET = 'CREATE_WALLET'
 
 /**
  * @typedef {object} Props
@@ -35,7 +31,7 @@ export const LOGIN = 'LOGIN'
 /**
  * @typedef {object} State
  * @prop {string} alias
- * @prop {boolean} connected
+ * @prop {boolean} creating
  * @prop {string|null} msg
  * @prop {string} pass
  * @prop {boolean} keyboardOpen
@@ -45,41 +41,13 @@ export const LOGIN = 'LOGIN'
 /**
  * @augments React.PureComponent<Props, State>
  */
-export default class Register extends React.PureComponent {
-  /**
-   * @param {{ navigation: Navigation }} args
-   * @returns {import('react-navigation').NavigationStackScreenOptions}
-   */
-  static navigationOptions = ({ navigation }) => {
-    const awaitingRes = navigation.getParam('awaitingRes', false)
-
-    return awaitingRes
-      ? {
-          headerLeft: null,
-          gesturesEnabled: false,
-          headerStyle: {
-            backgroundColor: CSS.Colors.BACKGROUND_WHITE,
-            elevation: 0,
-          },
-        }
-      : {
-          headerStyle: {
-            backgroundColor: CSS.Colors.BLUE_LIGHT,
-            elevation: 0,
-          },
-        }
-  }
-
-  connUnsubscribe = () => {}
-
-  regUnsubscribe = () => {}
-
+export default class CreateWallet extends React.PureComponent {
   /**
    * @type {State}
    */
   state = {
     alias: '',
-    connected: false,
+    creating: false,
     keyboardOpen: false,
     msg: null,
     pass: '',
@@ -98,8 +66,7 @@ export default class Register extends React.PureComponent {
   /** @type {import('react-native').TextInput|null} */
   confirmPassword = null
 
-  async componentDidMount() {
-    this.connUnsubscribe = API.Events.onConnection(this.onConn)
+  componentDidMount() {
     this.keyboardDidShowListener = Keyboard.addListener(
       'keyboardDidShow',
       this.keyboardDidShow,
@@ -108,14 +75,9 @@ export default class Register extends React.PureComponent {
       'keyboardDidHide',
       this.keyboardDidHide,
     )
-    const storedAuth = await Cache.getStoredAuthData()
-    if (storedAuth) {
-      this.props.navigation.navigate(LOGIN)
-    }
   }
 
   componentWillUnmount() {
-    this.connUnsubscribe()
     if (this.keyboardDidShowListener) this.keyboardDidShowListener.remove()
     if (this.keyboardDidHideListener) this.keyboardDidHideListener.remove()
   }
@@ -136,10 +98,6 @@ export default class Register extends React.PureComponent {
    * @private
    */
   dismissDialog = () => {
-    if (this.state.msg === SUCCESS_MSG) {
-      this.props.navigation.goBack()
-    }
-
     this.setState({
       msg: null,
     })
@@ -175,46 +133,31 @@ export default class Register extends React.PureComponent {
    * @private
    * @returns {void}
    */
-  onPressRegister = () => {
-    this.props.navigation.setParams({
-      awaitingRes: true,
+  onPressCreate = () => {
+    this.setState({
+      creating: true,
     })
 
     Auth.createWallet(this.state.alias, this.state.pass)
       .then(({ publicKey, token }) => {
-        this.props.navigation.goBack()
-
         Cache.writeStoredAuthData({
           alias: this.state.alias,
           publicKey,
           token,
         })
+
+        this.props.navigation.goBack()
       })
       .catch(e => {
-        if (e.message === 'wallet already exists') {
-          this.props.navigation.navigate('LOGIN')
-        } else {
-          this.setState({
-            msg: e.message,
-          })
-        }
-      })
-      .finally(() => {
-        this.props.navigation.setParams({
-          awaitingRes: false,
+        this.setState({
+          msg: e.message,
         })
       })
-  }
-
-  /**
-   * @private
-   * @param {boolean} connected
-   * @returns {void}
-   */
-  onConn = connected => {
-    this.setState({
-      connected,
-    })
+      .finally(() => {
+        this.setState({
+          creating: false,
+        })
+      })
   }
 
   afterAlias = () => {
@@ -244,18 +187,17 @@ export default class Register extends React.PureComponent {
   }
 
   render() {
-    const { alias, connected, msg, pass, repeatPass, keyboardOpen } = this.state
-    const awaitingRes = this.props.navigation.getParam('awaitingRes', false)
+    const { alias, creating, msg, pass, repeatPass, keyboardOpen } = this.state
 
     return (
       <View
         style={[
           styles.container,
-          awaitingRes && styles.noPadding,
+          creating && styles.noPadding,
           keyboardOpen && styles.bottomPadding30,
         ]}
       >
-        {awaitingRes ? (
+        {creating && (
           <View style={[styles.subContainer, styles.creatingWalletDialog]}>
             <View style={styles.formHead}>
               <View style={styles.formHeadIconContainer}>
@@ -264,20 +206,14 @@ export default class Register extends React.PureComponent {
             </View>
             <View>
               <Text style={[styles.textInputLabel, styles.textAlignCenter]}>
-                Creating wallet...
+                Creating wallet... (this can take a while)
               </Text>
               <ActivityIndicator size="large" color="#3775ae" />
             </View>
           </View>
-        ) : null}
+        )}
 
-        {/* {!awaitingRes ? (
-          <View style={styles.center}>
-            <Text style={styles.callToAction}>Create Wallet</Text>
-          </View>
-        ) : null} */}
-
-        {!awaitingRes ? (
+        {!creating && (
           <ScrollView
             contentContainerStyle={[
               styles.subContainer,
@@ -287,7 +223,7 @@ export default class Register extends React.PureComponent {
             ]}
           >
             <View style={styles.formHead}>
-              <Text style={styles.formHeadText}>WELCOME</Text>
+              <Text style={styles.formHeadText}>Creating a new Wallet</Text>
               <View style={styles.formHeadIconContainer}>
                 <EntypoIcon
                   name="wallet"
@@ -297,10 +233,11 @@ export default class Register extends React.PureComponent {
               </View>
             </View>
             <View>
-              <Text style={styles.textInputLabel}>Alias</Text>
+              <Text style={styles.textInputLabel}>
+                Alias (This will be your GUN alias)
+              </Text>
               <View style={styles.textInputFieldContainer}>
                 <TextInput
-                  editable={connected}
                   style={styles.textInputField}
                   onChangeText={this.onChangeAlias}
                   autoCapitalize="none"
@@ -311,10 +248,11 @@ export default class Register extends React.PureComponent {
                 />
               </View>
 
-              <Text style={styles.textInputLabel}>Password</Text>
+              <Text style={styles.textInputLabel}>
+                Password (this will be both your GUN and wallet password)
+              </Text>
               <View style={styles.textInputFieldContainer}>
                 <TextInput
-                  editable={connected}
                   style={styles.textInputField}
                   onChangeText={this.onChangePass}
                   autoCapitalize="none"
@@ -331,7 +269,6 @@ export default class Register extends React.PureComponent {
               <Text style={styles.textInputLabel}>Confirm Password</Text>
               <View style={styles.textInputFieldContainer}>
                 <TextInput
-                  editable={connected}
                   style={styles.textInputField}
                   onChangeText={this.onChangeRepeatPass}
                   autoCapitalize="none"
@@ -346,19 +283,18 @@ export default class Register extends React.PureComponent {
 
               <TouchableOpacity
                 disabled={
-                  !connected ||
-                  pass !== repeatPass ||
-                  pass.length === 0 ||
-                  alias.length === 0
+                  pass !== repeatPass || pass.length === 0 || alias.length === 0
                 }
-                onPress={this.onPressRegister}
+                onPress={this.onPressCreate}
                 style={styles.connectBtn}
               >
-                <Text style={styles.connectBtnText}>Create new Wallet</Text>
+                <Text style={styles.connectBtnText}>
+                  Create new Wallet/GUN User
+                </Text>
               </TouchableOpacity>
             </View>
           </ScrollView>
-        ) : null}
+        )}
 
         <ShockDialog
           message={msg}

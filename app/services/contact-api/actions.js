@@ -5,21 +5,24 @@
 import debounce from 'lodash/debounce'
 import once from 'lodash/once'
 
+import * as Cache from '../../services/cache'
+
 import Action from './action'
 import Event from './event'
-import { _authData as authData } from './events'
 import { socket } from './socket'
 
 /**
- * @param {string} alias
- * @param {string} pass
+ * @throws {Error} If no data is cached.
+ * @returns {Promise<string>}
  */
-export const auth = (alias, pass) => {
-  if (!socket.connected) {
-    throw new Error('NOT_CONNECTED')
+const getToken = async () => {
+  const authData = await Cache.getStoredAuthData()
+
+  if (authData === null) {
+    throw new Error('Subscribed to event without having auth data cached.')
   }
 
-  socket.emit(Action.AUTHENTICATE, { alias, pass })
+  return authData.authData.token
 }
 
 /**
@@ -30,13 +33,11 @@ export const acceptRequest = requestID => {
     throw new Error('NOT_CONNECTED')
   }
 
-  if (authData === null) {
-    throw new Error('NOT_AUTH')
-  }
-
-  socket.emit(Action.ACCEPT_REQUEST, {
-    token: authData.token,
-    requestID,
+  Cache.getToken().then(token => {
+    socket.emit(Action.ACCEPT_REQUEST, {
+      token,
+      requestID,
+    })
   })
 }
 
@@ -45,12 +46,10 @@ export const generateNewHandshakeNode = () => {
     throw new Error('NOT_CONNECTED')
   }
 
-  if (authData === null) {
-    throw new Error('NOT_AUTH')
-  }
-
-  socket.emit(Action.GENERATE_NEW_HANDSHAKE_NODE, {
-    token: authData.token,
+  getToken().then(token => {
+    socket.emit(Action.GENERATE_NEW_HANDSHAKE_NODE, {
+      token,
+    })
   })
 }
 
@@ -59,12 +58,10 @@ export const logout = () => {
     throw new Error('NOT_CONNECTED')
   }
 
-  if (authData === null) {
-    throw new Error('NOT_AUTH')
-  }
-
-  socket.emit(Action.LOGOUT, {
-    token: authData.token,
+  getToken().then(token => {
+    socket.emit(Action.LOGOUT, {
+      token,
+    })
   })
 }
 
@@ -88,13 +85,11 @@ export const setAvatar = avatar => {
     throw new Error('NOT_CONNECTED')
   }
 
-  if (authData === null) {
-    throw new Error('NOT_AUTH')
-  }
-
-  socket.emit(Action.SET_AVATAR, {
-    token: authData.token,
-    avatar,
+  getToken().then(token => {
+    socket.emit(Action.SET_AVATAR, {
+      token,
+      avatar,
+    })
   })
 }
 
@@ -106,13 +101,11 @@ export const setDisplayName = displayName => {
     throw new Error('NOT_CONNECTED')
   }
 
-  if (authData === null) {
-    throw new Error('NOT_AUTH')
-  }
-
-  socket.emit(Action.SET_DISPLAY_NAME, {
-    token: authData.token,
-    displayName,
+  getToken().then(token => {
+    socket.emit(Action.SET_DISPLAY_NAME, {
+      token,
+      displayName,
+    })
   })
 }
 
@@ -124,22 +117,18 @@ export const sendHandshakeRequest = recipientPublicKey => {
     throw new Error('NOT_CONNECTED')
   }
 
-  if (authData === null) {
-    throw new Error('NOT_AUTH')
-  }
-
-  socket.emit(Action.SEND_HANDSHAKE_REQUEST, {
-    token: authData.token,
-    recipientPublicKey,
-  })
-
-  // issue#31
-  const { token } = authData
-  setTimeout(() => {
-    socket.emit(Event.ON_SENT_REQUESTS, {
+  getToken().then(token => {
+    socket.emit(Action.SEND_HANDSHAKE_REQUEST, {
       token,
+      recipientPublicKey,
     })
-  }, 500)
+
+    setTimeout(() => {
+      socket.emit(Event.ON_SENT_REQUESTS, {
+        token,
+      })
+    }, 500)
+  })
 }
 
 /**
@@ -151,14 +140,12 @@ export const sendMessage = (recipientPublicKey, body) => {
     throw new Error('NOT_CONNECTED')
   }
 
-  if (authData === null) {
-    throw new Error('NOT_AUTH')
-  }
-
-  socket.emit(Action.SEND_MESSAGE, {
-    token: authData.token,
-    recipientPublicKey,
-    body,
+  getToken().then(token => {
+    socket.emit(Action.SEND_MESSAGE, {
+      token,
+      recipientPublicKey,
+      body,
+    })
   })
 }
 
@@ -173,12 +160,10 @@ export const sendReqWithInitialMsg = async (recipientPublicKey, initialMsg) => {
     throw new Error('NOT_CONNECTED')
   }
 
-  if (authData === null) {
-    throw new Error('NOT_AUTH')
-  }
+  const token = await getToken()
 
   socket.emit(Action.SEND_HANDSHAKE_REQUEST_WITH_INITIAL_MSG, {
-    token: authData.token,
+    token,
     recipientPublicKey,
     initialMsg,
   })
@@ -198,7 +183,6 @@ export const sendReqWithInitialMsg = async (recipientPublicKey, initialMsg) => {
   console.warn(`res in sendreqwithinitialmsg: ${JSON.stringify(res)}`)
 
   // issue#31
-  const { token } = authData
   setTimeout(() => {
     socket.emit(Event.ON_SENT_REQUESTS, {
       token,

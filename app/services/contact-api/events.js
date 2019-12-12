@@ -3,83 +3,34 @@
  */
 import once from 'lodash/once'
 
+import * as Cache from '../../services/cache'
+
 import Action from './action'
 import Event from './event'
 import * as Socket from './socket'
 // eslint-disable-next-line no-unused-vars
 import * as Schema from './schema'
 
-////////////////////////////////////////////////////////////////////////////////
-// AUTH AND CONNECTIVITY ///////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-
 /**
- * @typedef {object} _AuthData
- * @prop {string} publicKey
- * @prop {string} token
+ * @throws {Error} If no data is cached.
+ * @returns {Promise<string>}
  */
+const getToken = async () => {
+  const authData = await Cache.getStoredAuthData()
 
-/** @typedef {_AuthData|null} AuthData */
+  if (authData === null) {
+    throw new Error('Subscribed to event without having auth data cached.')
+  }
 
-/** @typedef {(authData: AuthData) => void} AuthListener */
+  return authData.authData.token
+}
+
 /** @typedef {(connected: boolean) => void} ConnectionListener  */
-
-/**
- * @type {AuthData}
- */
-export let _authData = null
-
-/**
- * @type {AuthListener[]}
- */
-const authListeners = []
 
 /**
  * @type {ConnectionListener[]}
  */
 const connectionListeners = []
-
-/**
- *
- * @param {AuthData} ad
- */
-export const initAuthData = ad => {
-  _authData = ad
-
-  setImmediate(() => {
-    authListeners.forEach(l => {
-      l(_authData)
-    })
-  })
-}
-
-/**
- * @param {AuthListener} listener
- */
-export const onAuth = listener => {
-  if (authListeners.indexOf(listener) > -1) {
-    throw new Error('tried to subscribe twice')
-  }
-
-  authListeners.push(listener)
-
-  setImmediate(() => {
-    // in case unsub was called before next tick
-    if (authListeners.includes(listener)) {
-      listener(_authData)
-    }
-  })
-
-  return () => {
-    const idx = authListeners.indexOf(listener)
-
-    if (idx < 0) {
-      throw new Error('tried to unsubscribe twice')
-    }
-
-    authListeners.splice(idx, 1)
-  }
-}
 
 /**
  * @param {ConnectionListener} listener
@@ -176,18 +127,16 @@ const usersListeners = []
  * @param {AvatarListener} listener
  */
 export const onAvatar = listener => {
-  if (_authData === null) {
-    throw new Error('NOT_AUTH')
-  }
-
   if (avatarListeners.indexOf(listener) > -1) {
     throw new Error('tried to subscribe twice')
   }
 
   avatarListeners.push(listener)
 
-  Socket.socket.emit(Event.ON_AVATAR, {
-    token: _authData.token,
+  setImmediate(async () => {
+    Socket.socket.emit(Event.ON_AVATAR, {
+      token: await getToken(),
+    })
   })
 
   return () => {
@@ -205,18 +154,16 @@ export const onAvatar = listener => {
  * @param {ChatsListener} listener
  */
 export const onChats = listener => {
-  if (_authData === null) {
-    throw new Error('NOT_AUTH')
-  }
-
   if (chatsListeners.indexOf(listener) > -1) {
     throw new Error('tried to subscribe twice')
   }
 
   chatsListeners.push(listener)
 
-  Socket.socket.emit(Event.ON_CHATS, {
-    token: _authData.token,
+  setImmediate(async () => {
+    Socket.socket.emit(Event.ON_CHATS, {
+      token: await getToken(),
+    })
   })
 
   return () => {
@@ -234,18 +181,16 @@ export const onChats = listener => {
  * @param {HandshakeAddrListener} listener
  */
 export const onHandshakeAddr = listener => {
-  if (_authData === null) {
-    throw new Error('NOT_AUTH')
-  }
-
   if (handshakeAddrListeners.indexOf(listener) > -1) {
     throw new Error('tried to subscribe twice')
   }
 
   handshakeAddrListeners.push(listener)
 
-  Socket.socket.emit(Event.ON_HANDSHAKE_ADDRESS, {
-    token: _authData.token,
+  setImmediate(async () => {
+    Socket.socket.emit(Event.ON_HANDSHAKE_ADDRESS, {
+      token: await getToken(),
+    })
   })
 
   return () => {
@@ -263,18 +208,16 @@ export const onHandshakeAddr = listener => {
  * @param {DisplayNameListener} listener
  */
 export const onDisplayName = listener => {
-  if (_authData === null) {
-    throw new Error('NOT_AUTH')
-  }
-
   if (displayNameListeners.indexOf(listener) > -1) {
     throw new Error('tried to subscribe twice')
   }
 
   displayNameListeners.push(listener)
 
-  Socket.socket.emit(Event.ON_DISPLAY_NAME, {
-    token: _authData.token,
+  setImmediate(async () => {
+    Socket.socket.emit(Event.ON_DISPLAY_NAME, {
+      token: await getToken(),
+    })
   })
 
   return () => {
@@ -292,18 +235,16 @@ export const onDisplayName = listener => {
  * @param {ReceivedRequestsListener} listener
  */
 export const onReceivedRequests = listener => {
-  if (_authData === null) {
-    throw new Error('NOT_AUTH')
-  }
-
   if (receivedRequestsListeners.indexOf(listener) > -1) {
     throw new Error('tried to subscribe twice')
   }
 
   receivedRequestsListeners.push(listener)
 
-  Socket.socket.emit(Event.ON_RECEIVED_REQUESTS, {
-    token: _authData.token,
+  setImmediate(async () => {
+    Socket.socket.emit(Event.ON_RECEIVED_REQUESTS, {
+      token: await getToken(),
+    })
   })
 
   return () => {
@@ -321,18 +262,16 @@ export const onReceivedRequests = listener => {
  * @param {SentRequestsListener} listener
  */
 export const onSentRequests = listener => {
-  if (_authData === null) {
-    throw new Error('NOT_AUTH')
-  }
-
   if (sentRequestsListeners.indexOf(listener) > -1) {
     throw new Error('tried to subscribe twice')
   }
 
   sentRequestsListeners.push(listener)
 
-  Socket.socket.emit(Event.ON_SENT_REQUESTS, {
-    token: _authData.token,
+  setImmediate(async () => {
+    Socket.socket.emit(Event.ON_SENT_REQUESTS, {
+      token: await getToken(),
+    })
   })
 
   return () => {
@@ -350,18 +289,16 @@ export const onSentRequests = listener => {
  * @param {UsersListener} listener
  */
 export const onUsers = listener => {
-  if (_authData === null) {
-    throw new Error('NOT_AUTH')
-  }
-
   if (usersListeners.indexOf(listener) > -1) {
     throw new Error('tried to subscribe twice')
   }
 
   usersListeners.push(listener)
 
-  Socket.socket.emit(Event.ON_ALL_USERS, {
-    token: _authData.token,
+  setImmediate(async () => {
+    Socket.socket.emit(Event.ON_ALL_USERS, {
+      token: await getToken(),
+    })
   })
 
   return () => {
@@ -429,33 +366,27 @@ export const onRegister = listener => {
 }
 
 export const setupEvents = () => {
+  if (!Socket.socket.connected) {
+    throw new Error('Should call setupEvents() after socket is connected.')
+  }
+
   Socket.socket.on('connect', () => {
-    console.warn('socket connected')
     connectionListeners.forEach(l => {
       l(true)
     })
   })
 
   Socket.socket.on('disconnect', reason => {
+    console.warn('socket disconnected')
     connectionListeners.forEach(l => {
       l(false)
     })
 
+    // @ts-ignore
     if (reason === 'io server disconnect') {
       // https://socket.io/docs/client-api/#Event-%E2%80%98disconnect%E2%80%99
       Socket.socket.connect()
     }
-  })
-
-  Socket.socket.on(Action.REGISTER, res => {
-    registerListeners.forEach(l => {
-      l({
-        alias: res.origBody.alias,
-        msg: res.msg,
-        ok: res.ok,
-        pass: res.origBody.pass,
-      })
-    })
   })
 
   Socket.socket.on(Event.ON_AVATAR, res => {
@@ -525,11 +456,7 @@ export const setupEvents = () => {
         res.msg === 'NOT_AUTH' ||
         res.msg === 'secret or public key must be provided'
       ) {
-        _authData = null
-
-        authListeners.forEach(l => {
-          l(_authData)
-        })
+        Cache.writeStoredAuthData(null)
       }
     })
   })
@@ -544,12 +471,12 @@ export const setupEvents = () => {
         res.msg === 'NOT_AUTH' ||
         res.msg === 'secret or public key must be provided'
       ) {
-        _authData = null
-
-        authListeners.forEach(l => {
-          l(_authData)
-        })
+        Cache.writeStoredAuthData(null)
       }
     })
+  })
+
+  connectionListeners.forEach(l => {
+    l(Socket.socket.connected)
   })
 }

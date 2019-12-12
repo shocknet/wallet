@@ -17,10 +17,11 @@ import {
  */
 
 import * as API from '../services/contact-api'
+import * as Cache from '../services/cache'
 import * as Auth from '../services/auth'
 import * as CSS from '../css'
-import { REGISTER } from './Register'
 import ShockDialog from '../components/ShockDialog'
+import { APP } from '../navigators/Root'
 
 export const LOGIN = 'LOGIN'
 
@@ -41,8 +42,9 @@ const shockLogo = require('../assets/images/shocklogo.png')
 /**
  * @typedef {object} State
  * @prop {string} alias
+ * @prop {string|null} cachedAlias
  * @prop {boolean} awaitingRes
- * @prop {boolean} connected
+ * @prop {boolean} fetchingCachedAlias
  * @prop {string} err
  * @prop {string} pass
  */
@@ -61,30 +63,45 @@ export default class Login extends React.PureComponent {
   /** @type {State} */
   state = {
     alias: '',
-    awaitingRes: true,
-    connected: false,
+    cachedAlias: null,
+    awaitingRes: false,
+    fetchingCachedAlias: true,
     err: '',
     pass: '',
   }
 
+  didFocusSub = {
+    remove() {},
+  }
+
   componentDidMount() {
-    this.connUnsubscribe = API.Events.onConnection(this.onConn)
-    this.willFocusSub = this.props.navigation.addListener('didFocus', () => {
-      this.setState({
-        awaitingRes: false,
-      })
-    })
+    this.didFocusSub = this.props.navigation.addListener(
+      'didFocus',
+      this.getCachedAlias,
+    )
   }
 
   componentWillUnmount() {
-    this.connUnsubscribe()
-    this.willFocusSub.remove()
+    this.didFocusSub.remove()
   }
 
-  connUnsubscribe = () => {}
+  getCachedAlias = async () => {
+    this.setState({
+      cachedAlias: null,
+      fetchingCachedAlias: true,
+    })
 
-  willFocusSub = {
-    remove() {},
+    const sad = await Cache.getStoredAuthData()
+
+    if (sad !== null && sad.authData !== null) {
+      this.setState({
+        cachedAlias: sad.authData.alias,
+      })
+    }
+
+    this.setState({
+      fetchingCachedAlias: false,
+    })
   }
 
   /**
@@ -93,17 +110,6 @@ export default class Login extends React.PureComponent {
   dismissDialog = () => {
     this.setState({
       err: '',
-    })
-  }
-
-  /**
-   * @private
-   * @param {boolean} connected
-   * @returns {void}
-   */
-  onConn = connected => {
-    this.setState({
-      connected,
     })
   }
 
@@ -130,8 +136,31 @@ export default class Login extends React.PureComponent {
    * @returns {void}
    */
   onPressUnlock = () => {
-    if (this.state.awaitingRes || this.state.alias.length === 0) {
+    const {
+      alias,
+      awaitingRes,
+      cachedAlias,
+      fetchingCachedAlias,
+      pass,
+    } = this.state
+
+    const loading = awaitingRes || fetchingCachedAlias
+
+    const enabled =
+      !loading && (alias.length > 0 || cachedAlias !== null) && pass.length > 0
+
+    if (!enabled) {
       return
+    }
+
+    const aliasToUse = alias || cachedAlias
+
+    if (typeof aliasToUse !== 'string') {
+      throw new TypeError("typeof aliasToUse !== 'string'")
+    }
+
+    if (aliasToUse.length === 0) {
+      throw new TypeError('aliasToUse.length === 0')
     }
 
     this.setState(
@@ -139,40 +168,45 @@ export default class Login extends React.PureComponent {
         awaitingRes: true,
       },
       () => {
-        Auth.unlockWallet(this.state.alias, this.state.pass)
+        Auth.unlockWallet(aliasToUse, this.state.pass)
           .then(res => {
-            API.Events.initAuthData(res)
-            // Cache.writeStoredAuthData({
-            //   publicKey: res.publicKey,
-            //   token: res.token,
-            // })
+            Cache.writeStoredAuthData({
+              alias: aliasToUse,
+              publicKey: res.publicKey,
+              token: res.token,
+            })
+
+            return API.Socket.connect()
+          })
+          .then(() => {
+            this.setState({
+              awaitingRes: false,
+            })
+            this.props.navigation.navigate(APP)
           })
           .catch(e => {
             this.setState({
-              err: e.message,
-            })
-          })
-          .finally(() => {
-            this.setState({
               awaitingRes: false,
+            })
+            this.setState({
+              err: e.message,
             })
           })
       },
     )
   }
 
-  /**
-   * @private
-   * @returns {void}
-   */
-  goToCreateWallet = () => {
-    this.props.navigation.navigate(REGISTER)
-  }
-
   render() {
-    const { alias, awaitingRes, connected, pass } = this.state
-
-    const enableUnlockBtn = connected && alias.length > 0 && pass.length > 0
+    const {
+      alias,
+      awaitingRes,
+      cachedAlias,
+      fetchingCachedAlias,
+      pass,
+    } = this.state
+    const loading = awaitingRes || fetchingCachedAlias
+    const enableUnlockBtn =
+      !loading && (alias.length > 0 || cachedAlias !== null) && pass.length > 0
 
     return (
       <ImageBackground source={shockBG} style={styles.container}>
@@ -181,34 +215,37 @@ export default class Login extends React.PureComponent {
           <Text style={styles.logoText}>S H O C K W A L L E T</Text>
         </View>
 
-        {awaitingRes ? <ActivityIndicator animating size="large" /> : null}
+        {loading ? <ActivityIndicator animating size="large" /> : null}
 
-        {!awaitingRes ? (
+        {!loading ? (
           <View style={styles.shockWalletCallToActionContainer}>
             <Text style={styles.callToAction}>Unlock Wallet</Text>
           </View>
         ) : null}
 
-        {!awaitingRes ? (
+        {!loading ? (
           <View style={styles.formContainer}>
-            <Text style={styles.textInputFieldLabel}>Alias</Text>
-            <View style={styles.textInputFieldContainer}>
-              <TextInput
-                autoCapitalize="none"
-                autoCorrect={false}
-                editable={connected}
-                onChangeText={this.onChangeAlias}
-                style={styles.textInputField}
-                value={alias}
-              />
-            </View>
-
+            {!cachedAlias && (
+              <React.Fragment>
+                <Text style={styles.textInputFieldLabel}>Alias</Text>
+                <View style={styles.textInputFieldContainer}>
+                  <TextInput
+                    editable={!loading}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    onChangeText={this.onChangeAlias}
+                    style={styles.textInputField}
+                    value={alias}
+                  />
+                </View>
+              </React.Fragment>
+            )}
             <Text style={styles.textInputFieldLabel}>Password</Text>
             <View style={styles.textInputFieldContainer}>
               <TextInput
                 autoCapitalize="none"
                 autoCorrect={false}
-                editable={connected}
+                editable={!loading}
                 onChangeText={this.onChangePass}
                 style={styles.textInputField}
                 secureTextEntry
@@ -223,17 +260,6 @@ export default class Login extends React.PureComponent {
             >
               <Text style={styles.connectBtnText}>Connect</Text>
             </TouchableOpacity>
-            <View style={styles.createContainer}>
-              <Text style={styles.dontHaveAccountText}>
-                Don't have an account?
-              </Text>
-              <TouchableOpacity
-                onPress={this.goToCreateWallet}
-                style={styles.width100}
-              >
-                <Text style={styles.createBtnText}>Create a wallet</Text>
-              </TouchableOpacity>
-            </View>
           </View>
         ) : null}
 
@@ -255,12 +281,6 @@ const styles = StyleSheet.create({
     minHeight: 600,
     paddingLeft: 30,
     paddingRight: 30,
-  },
-  dontHaveAccountText: {
-    textAlign: 'center',
-    width: '100%',
-    color: CSS.Colors.TEXT_WHITE,
-    fontFamily: 'Montserrat-700',
   },
   shockWalletLogoContainer: {
     alignItems: 'center',
@@ -317,15 +337,4 @@ const styles = StyleSheet.create({
     fontFamily: 'Montserrat-700',
     fontSize: 28,
   },
-  createContainer: {
-    alignItems: 'center',
-    width: '100%',
-  },
-  createBtnText: {
-    color: CSS.Colors.ORANGE,
-    fontFamily: 'Montserrat-700',
-    textAlign: 'center',
-  },
-
-  width100: { width: '100%' },
 })

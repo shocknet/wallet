@@ -10,6 +10,7 @@ import MaterialIcons from 'react-native-vector-icons/MaterialCommunityIcons'
 
 import * as API from '../../services/contact-api'
 import * as Wallet from '../../services/wallet'
+import * as Cache from '../../services/cache'
 import { Colors } from '../../css'
 
 import { WALLET_OVERVIEW } from '../WalletOverview'
@@ -329,15 +330,15 @@ export default class Chat extends React.PureComponent {
     }
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     const { navigation } = this.props
 
-    this.authUnsub = API.Events.onAuth(this.onAuth)
     this.chatsUnsub = API.Events.onChats(this.onChats)
     this.displayNameUnsub = API.Events.onDisplayName(displayName => {
-      this.setState({
-        ownDisplayName: displayName,
-      })
+      this.mounted &&
+        this.setState({
+          ownDisplayName: displayName,
+        })
     })
 
     this.mounted = true
@@ -349,29 +350,27 @@ export default class Chat extends React.PureComponent {
     navigation.setParams({
       _onPressSendInvoice: this.toggleSendInvoiceDialog,
     })
+
+    const sad = await Cache.getStoredAuthData()
+
+    if (sad === null) {
+      throw new Error()
+    }
+
+    this.setState({
+      ownPublicKey: sad.authData.publicKey,
+    })
   }
 
   componentWillUnmount() {
     this.mounted = false
+    this.chatsUnsub()
+    this.displayNameUnsub()
   }
-
-  authUnsub = () => {}
 
   chatsUnsub = () => {}
 
   displayNameUnsub = () => {}
-
-  /**
-   * @private
-   * @param {API.Events.AuthData} authData
-   * @returns {void}
-   */
-  onAuth = authData => {
-    authData &&
-      this.setState({
-        ownPublicKey: authData.publicKey,
-      })
-  }
 
   /**
    * @private

@@ -2,35 +2,20 @@
 import { NavigationActions } from 'react-navigation'
 /**
  * @typedef {import('react-navigation').NavigationNavigateAction} NavigationNavigateAction
+ * @typedef {import('react-navigation').NavigationContainerComponent} NavigationContainerComponent
  */
 
 /**
- * @type {import('react-navigation').NavigationContainerComponent|null}
+ * @type {NavigationContainerComponent|null}
  */
 let navRef = null
 
-let currentRoute = ''
-
 /**
- * @param {import('react-navigation').NavigationContainerComponent|null} navigatorRef
+ * @param {NavigationContainerComponent|null} navigatorRef
  * @returns {void}
  */
 export const setTopLevelNavigator = navigatorRef => {
   navRef = navigatorRef
-}
-
-/**
- * @param {string} route
- */
-export const setCurrentRoute = route => {
-  currentRoute = route
-}
-
-/**
- * @returns {string}
- */
-export const getCurrentRoute = () => {
-  return currentRoute
 }
 
 /**
@@ -41,16 +26,15 @@ export const getCurrentRoute = () => {
  */
 export const navigate = (routeName, params, action) => {
   if (navRef === null) {
-    console.warn(
+    throw new Error(
       'called navigate() at navigation service without providing a navigation container component reference first',
     )
-  } else {
-    navRef.dispatch(
-      NavigationActions.navigate({
-        routeName,
-        params,
-        action,
-      }),
-    )
   }
+  navRef.dispatch(
+    NavigationActions.navigate({
+      routeName,
+      params,
+      action,
+    }),
+  )
 }

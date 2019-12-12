@@ -15,6 +15,7 @@ import { AirbnbRating } from 'react-native-ratings'
 
 import * as API from '../services/contact-api'
 import * as CSS from '../css'
+import * as Cache from '../services/cache'
 import * as Utils from '../services/utils'
 import ShockAvatar from '../components/ShockAvatar'
 import QR from './WalletOverview/QR'
@@ -31,7 +32,7 @@ const showCopiedToClipboardToast = () => {
 
 /**
  * @typedef {object} State
- * @prop {API.Events.AuthData} authData
+ * @prop {Cache.AuthData|null} authData
  * @prop {string|null} displayName
  * @prop {boolean} displayNameDialogOpen
  * @prop {string} displayNameInput
@@ -67,18 +68,11 @@ export default class MyProfile extends React.PureComponent {
     handshakeAddr: null,
   }
 
-  onAuthDataUnsub = () => {}
-
   onDisplayNameUnsub = () => {}
 
   onHandshakeAddressUnsub = () => {}
 
-  componentDidMount() {
-    this.onAuthDataUnsub = API.Events.onAuth(ad => {
-      this.setState({
-        authData: ad,
-      })
-    })
+  async componentDidMount() {
     this.onDisplayNameUnsub = API.Events.onDisplayName(dn => {
       this.setState({
         displayName: dn,
@@ -89,10 +83,19 @@ export default class MyProfile extends React.PureComponent {
         handshakeAddr: addr,
       })
     })
+
+    const authData = await Cache.getStoredAuthData()
+
+    if (authData === null) {
+      throw new Error()
+    }
+
+    this.setState({
+      authData: authData.authData,
+    })
   }
 
   componentWillUnmount() {
-    this.onAuthDataUnsub()
     this.onDisplayNameUnsub()
     this.onHandshakeAddressUnsub()
   }

@@ -213,7 +213,9 @@ export default class AdvancedScreen extends Component {
           })
         })
         .catch(e => {
-          console.warn(`Error fetching /healthz: ${e.message}`)
+          console.warn(
+            `Error fetching /healthz: ${e.message}, status: ${e.status}`,
+          )
         })
 
       console.log({
@@ -339,7 +341,7 @@ export default class AdvancedScreen extends Component {
       )
 
       if (res.status !== 200) {
-        throw new Error(res.data.errorMessage)
+        throw new Error(res.data.errorMessage || 'Unknown error.')
       }
 
       ToastAndroid.show('Added successfully', 800)
@@ -384,7 +386,7 @@ export default class AdvancedScreen extends Component {
       })
 
       if (res.status !== 200) {
-        throw new Error(res.data.errorMessage)
+        throw new Error(res.data.errorMessage || 'Unknown error.')
       }
 
       ToastAndroid.show('Added successfully', 800)
@@ -764,7 +766,7 @@ export default class AdvancedScreen extends Component {
                   })
 
                   if (res.status !== 200) {
-                    throw new Error(res.data.errorMessage)
+                    throw new Error(res.data.errorMessage || 'Unknown error.')
                   }
 
                   this.setState({

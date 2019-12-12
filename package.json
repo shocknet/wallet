@@ -22,6 +22,7 @@
     "build": "yarn run build:debug && yarn build:release"
   },
   "dependencies": {
+    "@react-native-community/netinfo": "2.x.x",
     "axios": "^0.19.0",
     "babel-polyfill": "^6.26.0",
     "big.js": "^5.2.2",
@@ -36,7 +37,7 @@
     "moment": "^2.24.0",
     "opencollective-postinstall": "^2.0.2",
     "react": "^16.6.3",
-    "react-native": "^0.57.7",
+    "react-native": "0.57.8",
     "react-native-bootsplash": "^1.0.3",
     "react-native-camera": "^1.13.1",
     "react-native-deep-linking": "^2.2.0",
@@ -102,12 +103,12 @@
   "lint-staged": {
     "app/**/*.js": [
       "prettier --write",
-      "eslint --fix",
+      "eslint",
       "git add"
     ],
     "index.js": [
       "prettier --write",
-      "eslint --fix",
+      "eslint",
       "git add"
     ]
   },

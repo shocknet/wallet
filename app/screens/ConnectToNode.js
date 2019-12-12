@@ -14,54 +14,47 @@ import {
 import EntypoIcon from 'react-native-vector-icons/Entypo'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 
-import * as CSS from '../css'
-/** @type {number} */
-// @ts-ignore
-const shockBG = require('../assets/images/shock-bg.png')
-
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation
  */
 
-/**
- * @param {string} ip
- */
-const isValidIP = ip => {
-  const sections = ip.split('.')
-
-  if (sections.length !== 4) return false
-
-  return sections.every(
-    s => Number.isInteger(Number(s)) && s.length <= 3 && s.length > 0,
-  )
-}
+import * as CSS from '../css'
+import * as Cache from '../services/cache'
+import * as Conn from '../services/connection'
+import { isValidURL as isValidIP } from '../services/utils'
+import Pad from '../components/Pad'
+import QRScanner from './QRScanner'
+import Loading from './Loading'
+import { WALLET_MANAGER } from '../navigators/WalletManager'
+/** @type {number} */
+// @ts-ignore
+const shockBG = require('../assets/images/shock-bg.png')
 
 /** @type {number} */
 // @ts-ignore
 const shockLogo = require('../assets/images/shocklogo.png')
 
+export const CONNECT_TO_NODE = 'CONNECT_TO_NODE'
+
 /**
  * @typedef {object} Props
- * @prop {boolean} disableControls
- * @prop {(ip: string) => void} onPressConnect
- * @prop {() => void} onPressUseShockcloud
- * @prop {() => void} toggleQRScreen
+ * @prop {Navigation} navigation
  */
 
 /**
  * @typedef {object} State
- * @prop {string} nodeIP
+ * @prop {boolean} checkingCacheForNodeURL
+ * @prop {string} nodeURL
+ * @prop {boolean} pinging
+ * @prop {boolean} wasBadPing
+ * @prop {boolean} wasGoodPing
+ * @prop {boolean} scanningQR
  */
 
 /**
  * @augments React.PureComponent<Props, State, never>
  */
 export default class ConnectToNode extends React.PureComponent {
-  /** @type {State} */
-  state = {
-    nodeIP: '',
-  }
-
   /**
    * @type {import('react-navigation').NavigationScreenOptions}
    */
@@ -69,23 +62,112 @@ export default class ConnectToNode extends React.PureComponent {
     header: null,
   }
 
+  /** @type {State} */
+  state = {
+    checkingCacheForNodeURL: true,
+    nodeURL: '',
+    pinging: false,
+    wasBadPing: false,
+    wasGoodPing: false,
+    scanningQR: false,
+  }
+
+  async componentDidMount() {
+    const nodeURL = await Cache.getNodeURL()
+
+    if (nodeURL !== null) {
+      this.props.navigation.navigate(WALLET_MANAGER)
+    } else {
+      this.setState({
+        checkingCacheForNodeURL: false,
+      })
+    }
+  }
+
+  componentDidUpdate() {
+    if (this.state.wasBadPing && this.state.wasGoodPing) {
+      throw new Error('bad state')
+    }
+  }
+
   /**
    * @private
-   * @param {string} nodeIP
+   * @param {string} nodeURL
    */
-  onChangeNodeIP = nodeIP => {
+  onChangeNodeURL = nodeURL => {
     this.setState({
-      nodeIP,
+      nodeURL,
     })
   }
 
   /** @private */
   onPressConnect = () => {
-    this.props.onPressConnect(this.state.nodeIP)
+    this.setState({
+      pinging: true,
+    })
+
+    Conn.pingURL(this.state.nodeURL).then(res => {
+      this.setState({
+        pinging: false,
+        wasBadPing: !res,
+        wasGoodPing: res,
+      })
+    })
+  }
+
+  onPressTryAgain = () => {
+    this.setState({
+      wasBadPing: false,
+    })
+  }
+
+  toggleQRScreen = () => {
+    this.setState(({ scanningQR }) => ({
+      scanningQR: !scanningQR,
+    }))
+  }
+
+  onPressContinue = () => {
+    Cache.writeNodeURLOrIP(this.state.nodeURL)
+
+    this.props.navigation.navigate(WALLET_MANAGER)
+  }
+
+  /**
+   * @param {string} ip
+   * @param {number} port
+   */
+  onQRRead = (ip, port) => {
+    this.setState({
+      scanningQR: false,
+      nodeURL: ip + ':' + port,
+    })
   }
 
   render() {
-    const { nodeIP } = this.state
+    const {
+      checkingCacheForNodeURL,
+      nodeURL,
+      wasBadPing,
+      pinging,
+      wasGoodPing,
+      scanningQR,
+    } = this.state
+
+    if (checkingCacheForNodeURL) {
+      return <Loading />
+    }
+
+    if (scanningQR) {
+      return (
+        <View style={CSS.styles.flex}>
+          <QRScanner
+            connectToNodeIP={this.onQRRead}
+            toggleQRScreen={this.toggleQRScreen}
+          />
+        </View>
+      )
+    }
 
     return (
       <ImageBackground
@@ -96,29 +178,41 @@ export default class ConnectToNode extends React.PureComponent {
       >
         <View style={styles.shockWalletLogoContainer}>
           <Image style={styles.shockLogo} source={shockLogo} />
-          <Text style={styles.logoText}>SHOCKWALLET</Text>
+          {!pinging && !wasGoodPing && !wasBadPing && (
+            <Text style={styles.logoText}>SHOCKWALLET</Text>
+          )}
         </View>
 
-        {/* <View style={styles.shockWalletCallToActionContainer}>
-        </View> */}
-
+        {wasGoodPing && (
+          <View style={[CSS.styles.width100, CSS.styles.deadCenter]}>
+            <Ionicons
+              name="md-checkmark-circle-outline"
+              size={150}
+              color={CSS.Colors.TEXT_WHITE}
+            />
+            <Pad amount={20} />
+          </View>
+        )}
         <View>
-          <Text style={styles.callToAction}>WELCOME</Text>
+          {!pinging && !wasGoodPing && !wasBadPing && (
+            <Text style={styles.callToAction}>WELCOME</Text>
+          )}
+
           <View style={styles.textInputFieldContainer}>
             <TextInput
               autoCapitalize="none"
               autoCorrect={false}
-              editable={!this.props.disableControls}
+              editable={!pinging && !wasBadPing && !wasGoodPing}
               keyboardType="numeric"
-              onChangeText={this.onChangeNodeIP}
+              onChangeText={this.onChangeNodeURL}
               placeholder="Specify Node IP"
               placeholderTextColor="grey"
               style={styles.textInputField}
-              value={nodeIP}
+              value={nodeURL}
             />
             <TouchableOpacity
               style={styles.scanBtn}
-              onPress={this.props.toggleQRScreen}
+              onPress={this.toggleQRScreen}
             >
               <Ionicons
                 name="ios-barcode"
@@ -135,36 +229,63 @@ export default class ConnectToNode extends React.PureComponent {
             </TouchableOpacity>
           </View>
 
-          <TouchableOpacity
-            disabled={!isValidIP(nodeIP) || this.props.disableControls}
-            onPress={this.onPressConnect}
-            style={styles.connectBtn}
-          >
-            <Text style={styles.connectBtnText}>Connect</Text>
-          </TouchableOpacity>
+          <View>
+            <Text style={styles.msg}>
+              {(() => {
+                if (pinging) {
+                  return 'Checking...'
+                }
 
-          <TouchableOpacity
-            disabled={!isValidIP(nodeIP) || this.props.disableControls}
-            onPress={this.onPressConnect}
-          >
-            <View style={styles.shockBtn}>
-              <EntypoIcon name="cloud" size={20} color="#274f94" />
-              <Text style={styles.shockBtnText}>Use ShockCloud</Text>
-            </View>
-          </TouchableOpacity>
+                if (wasBadPing) {
+                  return "Could not connect, you can still continue if you're sure this is your node's ip."
+                }
 
-          {/* <ShockButton
-            disabled={!isValidIP(nodeIP) || this.props.disableControls}
-            onPress={this.onPressConnect}
-            title="Connect"
-          /> */}
+                return null
+              })()}
+            </Text>
+            <Pad amount={10} />
+            {wasBadPing && (
+              <Text onPress={this.onPressTryAgain} style={styles.msgLink}>
+                Try Again
+              </Text>
+            )}
+          </View>
 
-          {/* <ShockButton
-            disabled={this.props.disableControls}
-            color="grey"
-            onPress={this.props.onPressUseShockcloud}
-            title="Use Shock Cloud"
-          /> */}
+          {wasBadPing && (
+            <TouchableOpacity onPress={this.onPressContinue}>
+              <View style={styles.shockBtn}>
+                <Text style={styles.shockBtnText}>Continue</Text>
+              </View>
+            </TouchableOpacity>
+          )}
+
+          {wasGoodPing && (
+            <TouchableOpacity
+              onPress={this.onPressContinue}
+              style={styles.connectBtn}
+            >
+              <Text style={styles.connectBtnText}>Continue</Text>
+            </TouchableOpacity>
+          )}
+
+          {!pinging && !wasGoodPing && !wasBadPing && (
+            <TouchableOpacity
+              disabled={!isValidIP(nodeURL) || pinging}
+              onPress={this.onPressConnect}
+              style={styles.connectBtn}
+            >
+              <Text style={styles.connectBtnText}>Connect</Text>
+            </TouchableOpacity>
+          )}
+
+          {!pinging && !wasGoodPing && !wasBadPing && (
+            <TouchableOpacity disabled>
+              <View style={styles.shockBtn}>
+                <EntypoIcon name="cloud" size={20} color="#274f94" />
+                <Text style={styles.shockBtnText}>Use ShockCloud</Text>
+              </View>
+            </TouchableOpacity>
+          )}
         </View>
       </ImageBackground>
     )
@@ -226,6 +347,21 @@ const styles = StyleSheet.create({
     fontFamily: 'Montserrat-900',
     fontSize: 28,
     textAlign: 'center',
+    marginBottom: 30,
+  },
+  msg: {
+    color: CSS.Colors.TEXT_WHITE,
+    fontFamily: 'Montserrat-500',
+    fontSize: 18,
+    textAlign: 'center',
+    marginBottom: 30,
+  },
+  msgLink: {
+    color: CSS.Colors.TEXT_WHITE,
+    fontFamily: 'Montserrat-700',
+    fontSize: 14,
+    textAlign: 'center',
+    textDecorationLine: 'underline',
     marginBottom: 30,
   },
   connectBtn: {

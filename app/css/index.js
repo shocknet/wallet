@@ -34,6 +34,7 @@ export const Colors = {
   TEXT_GRAY_LIGHTEST: '#B6B4B4',
   SUCCESS_GREEN: '#39B54A',
   FAILURE_RED: '#C1272D',
+  CAUTION_YELLOW: '#EFC238',
 }
 
 export const styles = StyleSheet.create({
