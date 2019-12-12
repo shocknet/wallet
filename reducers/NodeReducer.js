@@ -7,10 +7,11 @@ import { ACTIONS } from '../actions/NodeActions'
  * @prop {'online'|'offline'} connectionStatus
  */
 
+// TO DO: typings for data
 /**
  * @typedef {object} Action
  * @prop {string} type
- * @prop {(object|array)=} data
+ * @prop {(object|any[])=} data
  */
 
 /** @type {State} */

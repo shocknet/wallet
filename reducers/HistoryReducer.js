@@ -2,19 +2,23 @@ import { ACTIONS } from '../actions/HistoryActions'
 import * as Wallet from '../app/services/wallet'
 
 /**
- * @typedef {object} State
- * @prop {array} channels
- * @prop {object} invoices
- * @prop {array} peers
- * @prop {object} transactions
- * @prop {object} payments
- * @prop {array|null} recentTransactions
+ * @typedef {Wallet.Invoice | Wallet.Payment | Wallet.Transaction} UnifiedTransaction
  */
 
 /**
+ * @typedef {object} State
+ * @prop {Wallet.Channel[]} channels
+ * @prop {object} invoices
+ * @prop {Wallet.Peer[]} peers
+ * @prop {object} transactions
+ * @prop {object} payments
+ * @prop {UnifiedTransaction[]|null} recentTransactions
+ */
+// TO DO: typings for data
+/**
  * @typedef {object} Action
  * @prop {string} type
- * @prop {(object|array|number)=} data
+ * @prop {(object|any[]|number)=} data
  */
 
 /** @type {State} */
