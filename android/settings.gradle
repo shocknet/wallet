@@ -1,6 +1,8 @@
 rootProject.name = 'shockwallet'
 include ':react-native-sensitive-info'
 project(':react-native-sensitive-info').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-sensitive-info/android')
+include ':@react-native-community_netinfo'
+project(':@react-native-community_netinfo').projectDir = new File(rootProject.projectDir, '../node_modules/@react-native-community/netinfo/android')
 include ':react-native-bootsplash'
 project(':react-native-bootsplash').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-bootsplash/android')
 include ':react-native-vector-icons'

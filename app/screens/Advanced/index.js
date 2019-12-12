@@ -253,7 +253,7 @@ class AdvancedScreen extends Component {
       )
 
       if (res.status !== 200) {
-        throw new Error(res.data.errorMessage)
+        throw new Error(res.data.errorMessage || 'Unknown error.')
       }
 
       ToastAndroid.show('Added successfully', 800)
@@ -293,7 +293,7 @@ class AdvancedScreen extends Component {
       })
 
       if (res.status !== 200) {
-        throw new Error(res.data.errorMessage)
+        throw new Error(res.data.errorMessage || 'Unknown error.')
       }
 
       ToastAndroid.show('Added successfully', 800)
@@ -665,7 +665,7 @@ class AdvancedScreen extends Component {
                   })
 
                   if (res.status !== 200) {
-                    throw new Error(res.data.errorMessage)
+                    throw new Error(res.data.errorMessage || 'Unknown error.')
                   }
 
                   fetchChannels()
@@ -802,11 +802,11 @@ const xStyles = {
 }
 
 /**
- * @param {import('../../services/Wallet').Channel} channel
+ * @param {import('../../services/wallet').Channel} channel
  */
 const channelKeyExtractor = channel => channel.channel_point
 
 /**
- * @param {import('../../services/Wallet').Peer} p
+ * @param {import('../../services/wallet').Peer} p
  */
 const peerKeyExtractor = p => p.pub_key

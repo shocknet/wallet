@@ -149,6 +149,7 @@ android {
 
 dependencies {
     compile project(':react-native-sensitive-info')
+    compile project(':@react-native-community_netinfo')
     compile project(':react-native-bootsplash')
     compile project(':react-native-vector-icons')
     compile project(':react-native-camera')

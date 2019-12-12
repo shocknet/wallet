@@ -17,6 +17,7 @@ import {
 import EntypoIcons from 'react-native-vector-icons/Entypo'
 import { connect } from 'react-redux'
 //import { compose } from 'redux'
+import { ConnectionContext } from '../../ctx/Connection'
 import QRCodeScanner from '../../components/QRScanner'
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}, Params>} Navigation
@@ -142,6 +143,13 @@ class WalletOverview extends Component {
       ))
     },
   }
+
+  static contextType = ConnectionContext
+
+  /**
+   * @type {React.ContextType<typeof ConnectionContext>}
+   */
+  context = true
 
   /**
    * @type {State}
@@ -1141,6 +1149,8 @@ class WalletOverview extends Component {
 
   renderBalance = () => {
     const { USDRate, totalBalance } = this.props.wallet
+    /** @type {boolean} */
+    const isConnected = this.context
 
     return (
       <View style={styles.balanceContainer}>
@@ -1165,6 +1175,7 @@ class WalletOverview extends Component {
                   CSS.styles.textWhite,
                   CSS.styles.textBold,
                   CSS.styles.fontSize24,
+                  !isConnected && styles.yellowText,
                 ]}
               >
                 {totalBalance} sats
@@ -1190,6 +1201,7 @@ class WalletOverview extends Component {
                     CSS.styles.textWhite,
                     CSS.styles.textBold,
                     CSS.styles.fontSize24,
+                    !isConnected && styles.yellowText,
                   ]}
                 >
                   {'$' +
@@ -1708,6 +1720,9 @@ const styles = StyleSheet.create({
     height,
     flex: 1,
     width,
+  },
+  yellowText: {
+    color: CSS.Colors.CAUTION_YELLOW,
   },
 })
 

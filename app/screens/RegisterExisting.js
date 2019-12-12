@@ -21,6 +21,7 @@ const shockBG = require('../assets/images/shock-bg.png')
 
 import * as API from '../services/contact-api'
 import * as Auth from '../services/auth'
+import * as Cache from '../services/cache'
 import * as CSS from '../css'
 import ShockDialog from '../components/ShockDialog'
 import { LOGIN } from './Login'
@@ -141,11 +142,11 @@ export default class Login extends React.PureComponent {
       () => {
         Auth.registerExistingWallet(this.state.alias, this.state.pass)
           .then(res => {
-            API.Events.initAuthData(res)
-            // Cache.writeStoredAuthData({
-            //   publicKey: res.publicKey,
-            //   token: res.token,
-            // })
+            Cache.writeStoredAuthData({
+              alias: this.state.alias,
+              publicKey: res.publicKey,
+              token: res.token,
+            })
           })
           .catch(e => {
             this.setState({

@@ -3,11 +3,48 @@
  */
 import { backOff } from 'exponential-backoff'
 import { JitterTypes } from 'exponential-backoff/dist/options'
-import Http from 'axios'
+import once from 'lodash/once'
 
 import * as Cache from './cache'
+import { Socket } from './contact-api'
 
-const PORT = 9835
+// TO DO: Move this constant to common repo
+const IS_GUN_AUTH = 'IS_GUN_AUTH'
+
+/**
+ * @returns {Promise<boolean>}
+ */
+export const isGunAuthed = async () => {
+  const socket = await Socket.createSocket()
+  socket.connect()
+
+  const socketPromise = new Promise(res => {
+    socket.on(
+      IS_GUN_AUTH,
+      once(response => {
+        res(response.msg.isGunAuth)
+      }),
+    )
+    socket.binary(false).emit(IS_GUN_AUTH, {})
+  })
+
+  const timeout = new Promise((_, rej) => {
+    setTimeout(() => {
+      rej(new Error('Could not retrieve gun auth status in under 5 seconds'))
+    }, 5000)
+  })
+
+  // ideally we would place socket.disconnect() inside a finally clause, but
+  // those are bugged as of current react native version
+  try {
+    const res = await Promise.race([socketPromise, timeout])
+    socket.disconnect()
+    return res
+  } catch (err) {
+    socket.disconnect()
+    throw err
+  }
+}
 
 /**
  * Tells the node to connect to LND.
@@ -18,13 +55,13 @@ const PORT = 9835
 export const connectNodeToLND = (alias, password) =>
   backOff(
     async () => {
-      const nodeIP = await Cache.getNodeIP()
+      const nodeURL = await Cache.getNodeURL()
 
-      if (nodeIP === null) {
-        throw new TypeError('nodeIP === null')
+      if (nodeURL === null) {
+        throw new TypeError('nodeURL === null')
       }
 
-      const res = await fetch(`http://${nodeIP}:${PORT}/api/lnd/connect`, {
+      const res = await fetch(`http://${nodeURL}/api/lnd/connect`, {
         method: 'POST',
         body: JSON.stringify({
           alias,
@@ -37,7 +74,8 @@ export const connectNodeToLND = (alias, password) =>
 
       if (!res.ok) {
         const body = await res.json()
-        throw new Error(body.errorMessage || body.message)
+
+        throw new Error(body.errorMessage || body.message || 'Unknown error.')
       }
     },
     {
@@ -52,15 +90,6 @@ export const connectNodeToLND = (alias, password) =>
     },
   )
 
-export const walletExists = async () => {
-  try {
-    const { data } = await Http.get('/api/lnd/wallet/status')
-    return data.walletExists
-  } catch (err) {
-    console.error(err)
-  }
-}
-
 /**
  * @param {string} alias
  * @param {string} password
@@ -69,13 +98,13 @@ export const walletExists = async () => {
  */
 export const unlockWallet = async (alias, password) => {
   await connectNodeToLND(alias, password)
-  const nodeIP = await Cache.getNodeIP()
+  const nodeURL = await Cache.getNodeURL()
 
-  if (nodeIP === null) {
-    throw new TypeError('nodeIP === null')
+  if (nodeURL === null) {
+    throw new TypeError('nodeURL === null')
   }
 
-  const res = await fetch(`http://${nodeIP}:${PORT}/api/lnd/auth`, {
+  const res = await fetch(`http://${nodeURL}/api/lnd/auth`, {
     method: 'POST',
     body: JSON.stringify({
       alias,
@@ -107,7 +136,7 @@ export const unlockWallet = async (alias, password) => {
     connectNodeToLND(alias, password)
   }
 
-  throw new Error(body.errorMessage || body.message)
+  throw new Error(body.errorMessage || body.message || 'Unknown error.')
 }
 
 /**
@@ -116,13 +145,13 @@ export const unlockWallet = async (alias, password) => {
  * @returns {Promise<{ token: string , publicKey: string }>}
  */
 export const registerExistingWallet = async (alias, password) => {
-  const nodeIP = await Cache.getNodeIP()
+  const nodeURL = await Cache.getNodeURL()
 
-  if (nodeIP === null) {
-    throw new TypeError('nodeIP === null')
+  if (nodeURL === null) {
+    throw new TypeError('nodeURL === null')
   }
 
-  const res = await fetch(`http://${nodeIP}:${PORT}/api/lnd/wallet/existing`, {
+  const res = await fetch(`http://${nodeURL}/api/lnd/wallet/existing`, {
     method: 'POST',
     body: JSON.stringify({
       alias,
@@ -156,7 +185,7 @@ export const registerExistingWallet = async (alias, password) => {
     connectNodeToLND(alias, password)
   }
 
-  throw new Error(body.errorMessage || body.message)
+  throw new Error(body.errorMessage || body.message || 'Unknown error.')
 }
 
 /**
@@ -166,13 +195,13 @@ export const registerExistingWallet = async (alias, password) => {
  * @returns {Promise<{ token: string , publicKey: string }>}
  */
 export const createWallet = async (alias, password) => {
-  const nodeIP = await Cache.getNodeIP()
+  const nodeURL = await Cache.getNodeURL()
 
-  if (nodeIP === null) {
-    throw new TypeError('nodeIP === null')
+  if (nodeURL === null) {
+    throw new TypeError('nodeURL === null')
   }
 
-  const res = await fetch(`http://${nodeIP}:${PORT}/api/lnd/wallet`, {
+  const res = await fetch(`http://${nodeURL}/api/lnd/wallet`, {
     method: 'POST',
     body: JSON.stringify({
       alias,
@@ -201,6 +230,6 @@ export const createWallet = async (alias, password) => {
       connectNodeToLND(alias, password)
     }
 
-    throw new Error(body.errorMessage || body.message)
+    throw new Error(body.errorMessage || body.message || 'Unknown error.')
   }
 }

@@ -61,6 +61,8 @@
 		9D9AC3E5ECA443698C1CECCC /* Montserrat-900.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 18DF8BAD201B41078D99747C /* Montserrat-900.ttf */; };
 		B4FAFEF3EA40455A9EAA65A3 /* libRNBootSplash.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 43913E53DED7495BA82AABB1 /* libRNBootSplash.a */; };
 		2ED35CA5B9D942A1A4C62A0F /* libRNSensitiveInfo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A22CE928E98C4D07A2611E69 /* libRNSensitiveInfo.a */; };
+		3654CC5A7B3649F4B36E87FD /* libRNCNetInfo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 891557634E0A452189A1BBD2 /* libRNCNetInfo.a */; };
+		49686DBB42B2430283EC1AC1 /* libRNCNetInfo-tvOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8570A91CE95C4881BC9D1E64 /* libRNCNetInfo-tvOS.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -397,6 +399,9 @@
 		43913E53DED7495BA82AABB1 /* libRNBootSplash.a */ = {isa = PBXFileReference; name = "libRNBootSplash.a"; path = "libRNBootSplash.a"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = archive.ar; explicitFileType = undefined; includeInIndex = 0; };
 		0EDF23D97E5B41F9A5EFD39C /* RNSensitiveInfo.xcodeproj */ = {isa = PBXFileReference; name = "RNSensitiveInfo.xcodeproj"; path = "../node_modules/react-native-sensitive-info/ios/RNSensitiveInfo.xcodeproj"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = wrapper.pb-project; explicitFileType = undefined; includeInIndex = 0; };
 		A22CE928E98C4D07A2611E69 /* libRNSensitiveInfo.a */ = {isa = PBXFileReference; name = "libRNSensitiveInfo.a"; path = "libRNSensitiveInfo.a"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = archive.ar; explicitFileType = undefined; includeInIndex = 0; };
+		20BBD88184164EFDAE781BFA /* RNCNetInfo.xcodeproj */ = {isa = PBXFileReference; name = "RNCNetInfo.xcodeproj"; path = "../node_modules/@react-native-community/netinfo/ios/RNCNetInfo.xcodeproj"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = wrapper.pb-project; explicitFileType = undefined; includeInIndex = 0; };
+		891557634E0A452189A1BBD2 /* libRNCNetInfo.a */ = {isa = PBXFileReference; name = "libRNCNetInfo.a"; path = "libRNCNetInfo.a"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = archive.ar; explicitFileType = undefined; includeInIndex = 0; };
+		8570A91CE95C4881BC9D1E64 /* libRNCNetInfo-tvOS.a */ = {isa = PBXFileReference; name = "libRNCNetInfo-tvOS.a"; path = "libRNCNetInfo-tvOS.a"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = archive.ar; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -431,6 +436,7 @@
 				4AAA8E09A8EE4B0FBB0466D1 /* libRNCAsyncStorage.a in Frameworks */,
 				B4FAFEF3EA40455A9EAA65A3 /* libRNBootSplash.a in Frameworks */,
 				2ED35CA5B9D942A1A4C62A0F /* libRNSensitiveInfo.a in Frameworks */,
+				3654CC5A7B3649F4B36E87FD /* libRNCNetInfo.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -447,6 +453,7 @@
 				2D02E4C71E0B4AEC006451C7 /* libRCTText-tvOS.a in Frameworks */,
 				2D02E4C81E0B4AEC006451C7 /* libRCTWebSocket-tvOS.a in Frameworks */,
 				65E504AC7ED545E1B6CAE884 /* libRNSVG-tvOS.a in Frameworks */,
+				49686DBB42B2430283EC1AC1 /* libRNCNetInfo-tvOS.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -625,6 +632,7 @@
 				87C85815093E47B890A274C9 /* RNCAsyncStorage.xcodeproj */,
 				DDA6338A38AA4F1E94B60C88 /* RNBootSplash.xcodeproj */,
 				0EDF23D97E5B41F9A5EFD39C /* RNSensitiveInfo.xcodeproj */,
+				20BBD88184164EFDAE781BFA /* RNCNetInfo.xcodeproj */,
 			);
 			name = Libraries;
 			sourceTree = "<group>";
@@ -1299,6 +1307,7 @@
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
+					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1309,6 +1318,7 @@
 					"$(SRCROOT)/../node_modules/@react-native-community/async-storage/ios",
 					"$(SRCROOT)\..\node_modules\react-native-bootsplash\ios",
 					"$(SRCROOT)\..\node_modules\react-native-sensitive-info\ios\RNSensitiveInfo",
+					"$(SRCROOT)/../node_modules/@react-native-community/netinfo/ios",
 				);
 			};
 			name = Debug;
@@ -1336,6 +1346,7 @@
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
+					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1346,6 +1357,7 @@
 					"$(SRCROOT)/../node_modules/@react-native-community/async-storage/ios",
 					"$(SRCROOT)\..\node_modules\react-native-bootsplash\ios",
 					"$(SRCROOT)\..\node_modules\react-native-sensitive-info\ios\RNSensitiveInfo",
+					"$(SRCROOT)/../node_modules/@react-native-community/netinfo/ios",
 				);
 			};
 			name = Release;
@@ -1375,6 +1387,7 @@
 					"$(SRCROOT)/../node_modules/@react-native-community/async-storage/ios",
 					"$(SRCROOT)\..\node_modules\react-native-bootsplash\ios",
 					"$(SRCROOT)\..\node_modules\react-native-sensitive-info\ios\RNSensitiveInfo",
+					"$(SRCROOT)/../node_modules/@react-native-community/netinfo/ios",
 				);
 			};
 			name = Debug;
@@ -1403,6 +1416,7 @@
 					"$(SRCROOT)/../node_modules/@react-native-community/async-storage/ios",
 					"$(SRCROOT)\..\node_modules\react-native-bootsplash\ios",
 					"$(SRCROOT)\..\node_modules\react-native-sensitive-info\ios\RNSensitiveInfo",
+					"$(SRCROOT)/../node_modules/@react-native-community/netinfo/ios",
 				);
 			};
 			name = Release;
@@ -1438,6 +1452,7 @@
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
+					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1448,6 +1463,7 @@
 					"$(SRCROOT)/../node_modules/@react-native-community/async-storage/ios",
 					"$(SRCROOT)\..\node_modules\react-native-bootsplash\ios",
 					"$(SRCROOT)\..\node_modules\react-native-sensitive-info\ios\RNSensitiveInfo",
+					"$(SRCROOT)/../node_modules/@react-native-community/netinfo/ios",
 				);
 			};
 			name = Debug;
@@ -1483,6 +1499,7 @@
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
+					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1493,6 +1510,7 @@
 					"$(SRCROOT)/../node_modules/@react-native-community/async-storage/ios",
 					"$(SRCROOT)\..\node_modules\react-native-bootsplash\ios",
 					"$(SRCROOT)\..\node_modules\react-native-sensitive-info\ios\RNSensitiveInfo",
+					"$(SRCROOT)/../node_modules/@react-native-community/netinfo/ios",
 				);
 			};
 			name = Release;
@@ -1527,6 +1545,7 @@
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
+					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1537,6 +1556,7 @@
 					"$(SRCROOT)/../node_modules/@react-native-community/async-storage/ios",
 					"$(SRCROOT)\..\node_modules\react-native-bootsplash\ios",
 					"$(SRCROOT)\..\node_modules\react-native-sensitive-info\ios\RNSensitiveInfo",
+					"$(SRCROOT)/../node_modules/@react-native-community/netinfo/ios",
 				);
 			};
 			name = Debug;
@@ -1571,6 +1591,7 @@
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
+					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1581,6 +1602,7 @@
 					"$(SRCROOT)/../node_modules/@react-native-community/async-storage/ios",
 					"$(SRCROOT)\..\node_modules\react-native-bootsplash\ios",
 					"$(SRCROOT)\..\node_modules\react-native-sensitive-info\ios\RNSensitiveInfo",
+					"$(SRCROOT)/../node_modules/@react-native-community/netinfo/ios",
 				);
 			};
 			name = Release;
