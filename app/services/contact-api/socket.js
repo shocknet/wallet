@@ -2,6 +2,7 @@
  * @format
  */
 import SocketIO from 'socket.io-client'
+import once from 'lodash/once'
 
 import * as Cache from '../../services/cache'
 
@@ -42,8 +43,6 @@ export const disconnect = () => {
     socket.off()
   }
 }
-
-let eventsSetup = false
 
 /**
  * Use outside of this module if need to create a single use socket.
@@ -100,13 +99,7 @@ export const connect = async () => {
     }
   })
 
-  socket.on('connect', () => {
-    if (!eventsSetup) {
-      eventsSetup = true
-
-      Events.setupEvents()
-    }
-  })
+  socket.on('connect', once(Events.setupEvents))
 
   socket.connect()
 }
