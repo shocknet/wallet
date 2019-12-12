@@ -25,11 +25,7 @@ export class ConnectionProvider extends React.PureComponent {
   socketConnUnsub = () => {}
 
   componentDidMount() {
-    this.socketConnUnsub = Events.onConnection(socketConnected => {
-      this.setState({
-        socketConnected,
-      })
-    })
+    this.socketConnUnsub = Events.onConnection(this.onSocketConn)
 
     NetInfo.isConnected.addEventListener(
       'connectionChange',
@@ -42,6 +38,16 @@ export class ConnectionProvider extends React.PureComponent {
       'connectionChange',
       this.handleConnectivityChange,
     )
+  }
+
+  /**
+   * @param {boolean} socketConn
+   */
+  onSocketConn = socketConn => {
+    console.warn(`socketConn: ${socketConn}`)
+    this.setState({
+      socketConnected: socketConn,
+    })
   }
 
   /**
