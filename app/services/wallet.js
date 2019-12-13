@@ -866,19 +866,26 @@ export const listChannels = async () => {
 }
 
 /**
- * @returns {Promise<{ walletExists: boolean , walletStatus: string|null }>}
+ * @typedef {'locked'|'unlocked'|'noncreated'} WalletStatus
+ */
+
+/**
+ * @returns {Promise<WalletStatus>}
  */
 export const walletStatus = async () => {
   const nodeURL = await Cache.getNodeURL()
   const res = await fetch(`http://${nodeURL}/api/lnd/wallet/status`)
   const body = await res.json()
 
-  if (body.code) {
-    throw new Error(`Error code: ${body.code}`)
+  if (!res.ok) {
+    throw new Error(body.errorMessage)
   }
 
-  return {
-    walletExists: !!body.walletExists,
-    walletStatus: body.walletStatus,
+  const { walletExists, walletStatus } = body
+
+  if (walletExists) {
+    return walletStatus
   }
+
+  return 'noncreated'
 }
