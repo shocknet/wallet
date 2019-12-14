@@ -93,6 +93,7 @@ export default class CreateWallet extends React.PureComponent {
         const isGunAuth = await Auth.isGunAuthed()
 
         this.setState({
+          err: null,
           fetching: false,
           walletStatus,
           isGunAuth,
@@ -104,8 +105,10 @@ export default class CreateWallet extends React.PureComponent {
         }
       } catch (e) {
         this.setState({
-          fetching: false,
           err: e.message,
+          fetching: false,
+          isGunAuth: null,
+          walletStatus: null,
         })
       }
     })
