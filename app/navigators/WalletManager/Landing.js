@@ -193,17 +193,6 @@ export default class CreateWallet extends React.PureComponent {
               </Text>
             </View>
             {(() => {
-              if (err) {
-                return (
-                  <TouchableOpacity
-                    onPress={this.checkWalletStatus}
-                    style={styles.connectBtn}
-                  >
-                    <Text style={styles.connectBtnText}>Try Again</Text>
-                  </TouchableOpacity>
-                )
-              }
-
               if (needsUnlock) {
                 return (
                   <TouchableOpacity
@@ -211,6 +200,17 @@ export default class CreateWallet extends React.PureComponent {
                     style={styles.connectBtn}
                   >
                     <Text style={styles.connectBtnText}>Unlock</Text>
+                  </TouchableOpacity>
+                )
+              }
+
+              if (err) {
+                return (
+                  <TouchableOpacity
+                    onPress={this.checkWalletStatus}
+                    style={styles.connectBtn}
+                  >
+                    <Text style={styles.connectBtnText}>Try Again</Text>
                   </TouchableOpacity>
                 )
               }
