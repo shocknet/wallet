@@ -13,12 +13,15 @@ import {
   TouchableHighlight,
   View,
   Linking,
+  ImageBackground,
 } from 'react-native'
 import EntypoIcons from 'react-native-vector-icons/Entypo'
 import { connect } from 'react-redux'
 //import { compose } from 'redux'
 import { ConnectionContext } from '../../ctx/Connection'
 import QRCodeScanner from '../../components/QRScanner'
+import Nav from '../../components/Nav'
+import wavesBG from '../../assets/images/waves-bg.png'
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}, Params>} Navigation
  */
@@ -37,6 +40,7 @@ import * as CSS from '../../css'
 import * as Wallet from '../../services/wallet'
 
 import { getUSDRate, getWalletBalance } from '../../../actions/WalletActions'
+import { fetchNodeInfo } from '../../../actions/NodeActions'
 import { fetchRecentTransactions } from '../../../actions/HistoryActions'
 
 import { CHATS_ROUTE } from '../../screens/Chats'
@@ -116,7 +120,7 @@ import UnifiedTrx from './UnifiedTrx'
  * @prop {string} sendingInvoiceToShockUserMsg
  */
 
-const { width, height } = Dimensions.get('window')
+const { height } = Dimensions.get('window')
 
 export const WALLET_OVERVIEW = 'WALLET_OVERVIEW'
 
@@ -1072,6 +1076,7 @@ class WalletOverview extends Component {
   }
 
   componentDidMount() {
+    const { fetchNodeInfo } = this.props
     Linking.addEventListener('url', this._handleOpenURL)
     Linking.getInitialURL()
       .then(url => {
@@ -1085,6 +1090,7 @@ class WalletOverview extends Component {
     this.fetchBalance()
     this.fetchExchangeRate()
     this.fetchRecentTransactions()
+    fetchNodeInfo()
   }
 
   componentWillUnmount() {
@@ -1151,74 +1157,38 @@ class WalletOverview extends Component {
     const { USDRate, totalBalance } = this.props.wallet
     /** @type {boolean} */
     const isConnected = this.context
+    const convertedBalance = (
+      Math.round(btcConvert(totalBalance, 'Satoshi', 'BTC') * USDRate * 100) /
+      100
+    )
+      .toFixed(2)
+      .toString()
+
+    if (totalBalance === null) {
+      return (
+        <View>
+          <ActivityIndicator size="large" />
+        </View>
+      )
+    }
 
     return (
       <View style={styles.balanceContainer}>
-        {totalBalance === null ? (
-          <View style={CSS.styles.flex}>
-            <ActivityIndicator size="large" />
-          </View>
-        ) : (
-          <View style={CSS.styles.flex}>
-            <View
-              style={[
-                CSS.styles.flex,
-                CSS.styles.backgroundBlueGray,
-                CSS.styles.deadCenter,
-              ]}
-            >
-              <Text style={[CSS.styles.textWhite, CSS.styles.textBold]}>
-                BALANCE
-              </Text>
-              <Text
-                style={[
-                  CSS.styles.textWhite,
-                  CSS.styles.textBold,
-                  CSS.styles.fontSize24,
-                  !isConnected && styles.yellowText,
-                ]}
-              >
-                {totalBalance} sats
-              </Text>
-            </View>
-
-            <View
-              style={[
-                CSS.styles.flex,
-                CSS.styles.backgroundBlueGray,
-                CSS.styles.deadCenter,
-              ]}
-            >
-              <Text style={[CSS.styles.textWhite, CSS.styles.textBold]}>
-                USD VALUE
-              </Text>
-
-              {USDRate === null ? (
-                <ActivityIndicator />
-              ) : (
-                <Text
-                  style={[
-                    CSS.styles.textWhite,
-                    CSS.styles.textBold,
-                    CSS.styles.fontSize24,
-                    !isConnected && styles.yellowText,
-                  ]}
-                >
-                  {'$' +
-                    (
-                      Math.round(
-                        btcConvert(totalBalance, 'Satoshi', 'BTC') *
-                          USDRate *
-                          100,
-                      ) / 100
-                    )
-                      .toFixed(2)
-                      .toString()}
-                </Text>
-              )}
-            </View>
-          </View>
-        )}
+        <Text style={styles.balanceTitle}>Total Balance</Text>
+        <Text
+          style={[
+            styles.balanceValueContainer,
+            !isConnected && styles.yellowText,
+          ]}
+        >
+          <Text style={styles.balanceValue}>{convertedBalance}</Text>{' '}
+          <Text style={styles.balanceCurrency}>Sats</Text>
+        </Text>
+        <Text
+          style={[styles.balanceUSDValue, !isConnected && styles.yellowText]}
+        >
+          {USDRate === null ? 'Loading...' : `${convertedBalance} USD`}
+        </Text>
       </View>
     )
   }
@@ -1271,6 +1241,8 @@ class WalletOverview extends Component {
       sendingInvoiceToShockUserMsg,
     } = this.state
 
+    const { nodeInfo } = this.props.node
+
     const { recentTransactions } = this.props.history
 
     if (scanningBTCAddressQR) {
@@ -1302,27 +1274,37 @@ class WalletOverview extends Component {
 
     return (
       <View style={styles.container}>
-        <View style={styles.overview}>
+        <ImageBackground
+          source={wavesBG}
+          resizeMode="cover"
+          style={styles.overview}
+        >
+          <Nav title="Wallet" />
           {this.renderBalance()}
-
-          <View style={styles.sendRequestsButtons}>
-            <TouchableHighlight
-              underlayColor="transparent"
-              onPress={this.onPressSend}
-            >
-              <View style={styles.sendButton}>
-                <Text style={styles.sendReceiveText}>Send</Text>
-              </View>
-            </TouchableHighlight>
-            <TouchableHighlight
-              underlayColor="transparent"
-              onPress={this.onPressRequest}
-            >
-              <View style={styles.requestButton}>
-                <Text style={styles.sendReceiveText}>Request</Text>
-              </View>
-            </TouchableHighlight>
-          </View>
+        </ImageBackground>
+        {nodeInfo.testnet ? (
+          <Text style={styles.networkNotice}>
+            You are using Testnet network
+          </Text>
+        ) : null}
+        <View style={styles.actionButtons}>
+          <TouchableHighlight
+            underlayColor="transparent"
+            onPress={this.onPressSend}
+            style={styles.actionButton}
+          >
+            <Text style={styles.actionButtonText}>Send</Text>
+          </TouchableHighlight>
+          <TouchableHighlight
+            underlayColor="transparent"
+            onPress={this.onPressRequest}
+            style={[
+              styles.actionButton,
+              { backgroundColor: CSS.Colors.FUN_BLUE },
+            ]}
+          >
+            <Text style={styles.actionButtonText}>Request</Text>
+          </TouchableHighlight>
         </View>
 
         <View style={styles.trxContainer}>
@@ -1641,12 +1623,17 @@ class WalletOverview extends Component {
 /**
  * @param {typeof import('../../../reducers/index').default} state
  */
-const mapStateToProps = ({ wallet, history }) => ({ wallet, history })
+const mapStateToProps = ({ wallet, history, node }) => ({
+  wallet,
+  history,
+  node,
+})
 
 const mapDispatchToProps = {
   getUSDRate,
   getWalletBalance,
   fetchRecentTransactions,
+  fetchNodeInfo,
 }
 
 export default connect(
@@ -1658,68 +1645,85 @@ const styles = StyleSheet.create({
   alignItemsCenter: {
     alignItems: 'center',
   },
+  networkNotice: {
+    backgroundColor: CSS.Colors.BACKGROUND_RED,
+    width: '100%',
+    height: 30,
+    fontSize: 11,
+    fontFamily: 'Montserrat-700',
+    textAlignVertical: 'center',
+    paddingHorizontal: 25,
+    color: CSS.Colors.TEXT_WHITE,
+  },
   balanceContainer: {
-    flex: 2,
-    margin: 25,
-    backgroundColor: CSS.Colors.BLUE_GRAY,
-    borderColor: CSS.Colors.BLUE_GRAY,
-    borderWidth: 0.5,
-    borderRadius: 10,
+    marginHorizontal: 50,
+    marginVertical: 32,
+    marginBottom: 57,
+  },
+  balanceTitle: {
+    fontFamily: 'Montserrat-700',
+    fontSize: 15,
+    marginBottom: 5,
+    color: CSS.Colors.TEXT_WHITE,
+  },
+  balanceValueContainer: {
+    alignItems: 'flex-end',
+    flexDirection: 'row',
+    marginBottom: 5,
+  },
+  balanceValue: {
+    fontSize: 25,
+    fontFamily: 'Montserrat-900',
+    color: CSS.Colors.TEXT_WHITE,
+  },
+  balanceCurrency: {
+    fontSize: 12,
+    fontFamily: 'Montserrat-700',
+    color: CSS.Colors.TEXT_WHITE,
+  },
+  balanceUSDValue: {
+    fontSize: 14,
+    fontFamily: 'Montserrat-600',
+    color: CSS.Colors.TEXT_ORANGE,
   },
   container: {
-    flex: 1,
     backgroundColor: CSS.Colors.BACKGROUND_WHITE,
+    flex: 1,
     justifyContent: 'flex-start',
     alignItems: 'center',
     margin: 0,
   },
   overview: {
-    height: height / 2,
-    width,
-    backgroundColor: CSS.Colors.BLUE_DARK,
+    width: '100%',
+    backgroundColor: CSS.Colors.FUN_BLUE,
   },
-  sendRequestsButtons: {
-    flex: 1,
+  actionButtons: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    width,
-    backgroundColor: CSS.Colors.BLUE_DARK,
+    width: '100%',
+    paddingHorizontal: 25,
+    marginTop: 36,
+    marginBottom: 36,
   },
-  sendReceiveText: {
-    color: CSS.Colors.TEXT_WHITE,
-    fontWeight: 'bold',
-    fontSize: 18,
-  },
-  sendButton: {
-    height: 50,
-    width: width / 2.5,
+  actionButton: {
+    width: '45%',
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 100,
     backgroundColor: CSS.Colors.ORANGE,
-    borderColor: CSS.Colors.ORANGE,
-    borderWidth: 0.5,
-    borderRadius: 5,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 15,
-    marginLeft: 20,
   },
-  requestButton: {
-    height: 50,
-    width: width / 2.5,
-    borderWidth: 0.5,
-    backgroundColor: CSS.Colors.BLUE_LIGHT,
-    borderColor: CSS.Colors.BLUE_LIGHT,
-    borderRadius: 5,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 15,
-    marginRight: 20,
+  actionButtonText: {
+    color: CSS.Colors.TEXT_WHITE,
+    fontFamily: 'Montserrat-700',
   },
   trxContainer: {
     backgroundColor: CSS.Colors.BACKGROUND_WHITE,
     height,
     flex: 1,
-    width,
+    width: '100%',
+    paddingHorizontal: 30,
   },
   yellowText: {
     color: CSS.Colors.CAUTION_YELLOW,
