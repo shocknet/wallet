@@ -27,7 +27,7 @@ import Pad from '../../components/Pad'
 import ShockDialog from '../../components/ShockDialog'
 
 import AccordionItem from './Accordion'
-// import Transaction from './Accordion/Transaction'
+import Transaction from './Accordion/Transaction'
 import Channel from './Accordion/Channel'
 // import Invoice from './Accordion/Invoice'
 import Peer from './Accordion/Peer'
@@ -153,7 +153,7 @@ class AdvancedScreen extends Component {
   /**
    * @param {keyof Accordions} name
    */
-  toggleAccordion = name => {
+  toggleAccordion = name => () => {
     const { accordions } = this.state
     if (!(name in accordions)) {
       throw new Error(
@@ -194,7 +194,7 @@ class AdvancedScreen extends Component {
    *
    * @param {string} routeName
    */
-  fetchNextPage = routeName => {
+  fetchNextPage = routeName => () => {
     const {
       history,
       fetchInvoices,
@@ -408,6 +408,11 @@ class AdvancedScreen extends Component {
     this.handleInputChange('channelPushAmount', text)
   }
 
+  /**
+   * @param {import('../../services/wallet').Transaction} transaction
+   */
+  transactionKeyExtractor = transaction => transaction.tx_hash
+
   render() {
     const { node, wallet, history, fetchChannels } = this.props
     const {
@@ -510,12 +515,12 @@ class AdvancedScreen extends Component {
           </View>
         </LinearGradient>
         <View style={styles.accordionsContainer}>
-          {/* <AccordionItem
-            fetchNextPage={() => this.fetchNextPage('payments', 'transactions')}
+          <AccordionItem
+            fetchNextPage={this.fetchNextPage('transactions')}
             data={history.transactions}
             Item={Transaction}
             title="Transactions"
-            open={accordions['transactions']}
+            open={accordions.transactions}
             menuOptions={[
               {
                 name: 'Generate',
@@ -526,9 +531,9 @@ class AdvancedScreen extends Component {
                 icon: 'flash',
               },
             ]}
-            toggleAccordion={() => this.toggleAccordion('transactions')}
-            keyExtractor={transaction => transaction.tx_hash}
-          /> */}
+            toggleAccordion={this.toggleAccordion('transactions')}
+            keyExtractor={this.transactionKeyExtractor}
+          />
           <AccordionItem
             data={history.peers}
             Item={Peer}
@@ -547,7 +552,7 @@ class AdvancedScreen extends Component {
               },
             ]}
             onPressItem={this.openChannelPeer}
-            toggleAccordion={this.togglePeerAccordion}
+            toggleAccordion={this.toggleAccordion('peers')}
             keyExtractor={peerKeyExtractor}
           />
           {/* <AccordionItem
@@ -576,7 +581,7 @@ class AdvancedScreen extends Component {
                 },
               },
             ]}
-            toggleAccordion={this.toggleChannelsAccordion}
+            toggleAccordion={this.toggleAccordion('channels')}
             onPressItem={this.onPressChannel}
             hideBottomBorder
           />

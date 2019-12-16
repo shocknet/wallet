@@ -60,7 +60,7 @@ export default class UnifiedTransaction extends React.PureComponent {
     let description = ''
 
     if (Wallet.isInvoice(unifiedTransaction)) {
-      hash = unifiedTransaction.fallback_addr
+      hash = unifiedTransaction.payment_request
       description = unifiedTransaction.memo
       // eslint-disable-next-line prefer-destructuring
       value = unifiedTransaction.value
@@ -73,12 +73,14 @@ export default class UnifiedTransaction extends React.PureComponent {
     }
 
     if (Wallet.isPayment(unifiedTransaction)) {
-      hash = unifiedTransaction.payment_hash
+      hash = unifiedTransaction.decodedPayment
+        ? unifiedTransaction.decodedPayment.destination
+        : 'Unknown'
       description = 'Payment'
       value = unifiedTransaction.value_sat
       timestamp = Number(unifiedTransaction.creation_date)
 
-      outbound = true
+      outbound = unifiedTransaction.status === 'IN_FLIGHT'
     }
 
     if (Wallet.isTransaction(unifiedTransaction)) {

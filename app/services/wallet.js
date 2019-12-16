@@ -77,6 +77,7 @@ import * as Utils from './utils'
  * @prop {string} payment_request  The optional payment request being fulfilled.
  * @prop {'UNKNOWN'|'IN_FLIGHT'|'SUCCEEDED'|'FAILED'} status  The status of the
  * payment.
+ * @prop {(DecodedPayReq)=} decodedPayment The decoded payment request
  * @prop {(Int64)=} fee_sat  The fee paid for this payment in satoshis
  * @prop {(Int64)=} fee_msat  The fee paid for this payment in milli-satoshis
  */

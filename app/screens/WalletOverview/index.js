@@ -1703,8 +1703,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
     paddingHorizontal: 25,
-    marginTop: 36,
-    marginBottom: 36,
+    marginTop: 25,
+    marginBottom: 25,
   },
   actionButton: {
     width: '45%',
