@@ -39,7 +39,7 @@ export const LANDING = 'LANDING'
  */
 
 /** @type {State} */
-const INITIAL_STATE = {
+const DEFAULT_STATE = {
   err: null,
   fetching: true,
   isGunAuth: null,
@@ -60,7 +60,7 @@ export default class CreateWallet extends React.PureComponent {
   /**
    * @type {State}
    */
-  state = INITIAL_STATE
+  state = DEFAULT_STATE
 
   willFocusSub = {
     remove() {},
@@ -76,7 +76,7 @@ export default class CreateWallet extends React.PureComponent {
       this.checkWalletStatus,
     )
     this.willBlurSub = this.props.navigation.addListener('didBlur', () => {
-      this.setState(INITIAL_STATE)
+      this.setState(DEFAULT_STATE)
     })
   }
 
@@ -86,13 +86,14 @@ export default class CreateWallet extends React.PureComponent {
   }
 
   checkWalletStatus = () => {
-    this.setState(INITIAL_STATE, async () => {
+    this.setState(DEFAULT_STATE, async () => {
       try {
         const authData = await Cache.getStoredAuthData()
         const walletStatus = await Wallet.walletStatus()
         const isGunAuth = await Auth.isGunAuthed()
 
         this.setState({
+          err: null,
           fetching: false,
           walletStatus,
           isGunAuth,
@@ -104,8 +105,10 @@ export default class CreateWallet extends React.PureComponent {
         }
       } catch (e) {
         this.setState({
-          fetching: false,
           err: e.message,
+          fetching: false,
+          isGunAuth: null,
+          walletStatus: null,
         })
       }
     })
@@ -193,17 +196,6 @@ export default class CreateWallet extends React.PureComponent {
               </Text>
             </View>
             {(() => {
-              if (err) {
-                return (
-                  <TouchableOpacity
-                    onPress={this.checkWalletStatus}
-                    style={styles.connectBtn}
-                  >
-                    <Text style={styles.connectBtnText}>Try Again</Text>
-                  </TouchableOpacity>
-                )
-              }
-
               if (needsUnlock) {
                 return (
                   <TouchableOpacity
@@ -211,6 +203,17 @@ export default class CreateWallet extends React.PureComponent {
                     style={styles.connectBtn}
                   >
                     <Text style={styles.connectBtnText}>Unlock</Text>
+                  </TouchableOpacity>
+                )
+              }
+
+              if (err) {
+                return (
+                  <TouchableOpacity
+                    onPress={this.checkWalletStatus}
+                    style={styles.connectBtn}
+                  >
+                    <Text style={styles.connectBtnText}>Try Again</Text>
                   </TouchableOpacity>
                 )
               }

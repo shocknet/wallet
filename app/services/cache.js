@@ -239,3 +239,8 @@ export const getNodeURLTokenPair = async () => ({
   nodeURL: /** @type {string} */ (await getNodeURL()),
   token: await getToken(),
 })
+
+/**
+ * @returns {Promise<void>}
+ */
+export const clearAllStorage = () => AsyncStorage.clear()

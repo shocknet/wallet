@@ -341,6 +341,9 @@ export const balance = async () => {
   }
 
   const res = await fetch(endpoint, payload)
+  if (res.status === 401) {
+    await Cache.writeStoredAuthData(null)
+  }
   const body = await res.json()
 
   if (res.ok) {
@@ -376,6 +379,9 @@ export const getTransactions = async request => {
   }
 
   const res = await fetch(endpoint, payload)
+  if (res.status === 401) {
+    await Cache.writeStoredAuthData(null)
+  }
   const body = await res.json()
 
   if (res.ok) {
@@ -418,6 +424,9 @@ export const listPayments = async request => {
   }
 
   const res = await fetch(url, payload)
+  if (res.status === 401) {
+    await Cache.writeStoredAuthData(null)
+  }
   const body = await res.json()
 
   if (res.ok) {
@@ -458,6 +467,9 @@ export const listInvoices = async request => {
   }
 
   const res = await fetch(url, payload)
+  if (res.status === 401) {
+    await Cache.writeStoredAuthData(null)
+  }
   const body = await res.json()
 
   if (res.ok) {
@@ -512,6 +524,9 @@ export const newAddress = async useOlderFormat => {
   }
 
   const res = await fetch(endpoint, payload)
+  if (res.status === 401) {
+    await Cache.writeStoredAuthData(null)
+  }
 
   const body = await res.json()
 
@@ -570,6 +585,9 @@ export const addInvoice = async request => {
   }
 
   const res = await fetch(endpoint, payload)
+  if (res.status === 401) {
+    await Cache.writeStoredAuthData(null)
+  }
 
   const body = await res.json()
 
@@ -617,6 +635,9 @@ export const sendCoins = async request => {
   }
 
   const res = await fetch(endpoint, payload)
+  if (res.status === 401) {
+    await Cache.writeStoredAuthData(null)
+  }
 
   const body = await res.json()
 
@@ -691,6 +712,9 @@ export const CAUTION_payInvoice = async ({ amt, payreq }) => {
   }
 
   const res = await fetch(endpoint, payload)
+  if (res.status === 401) {
+    await Cache.writeStoredAuthData(null)
+  }
 
   const body = await res.json()
 
@@ -750,6 +774,9 @@ export const decodeInvoice = async ({ payReq }) => {
   }
 
   const res = await fetch(endpoint, payload)
+  if (res.status === 401) {
+    await Cache.writeStoredAuthData(null)
+  }
 
   const body = await res.json()
 
@@ -789,6 +816,9 @@ export const listPeers = async () => {
   }
 
   const res = await fetch(endpoint, payload)
+  if (res.status === 401) {
+    await Cache.writeStoredAuthData(null)
+  }
 
   const body = await res.json()
 
@@ -835,6 +865,9 @@ export const listChannels = async () => {
   }
 
   const res = await fetch(endpoint, payload)
+  if (res.status === 401) {
+    await Cache.writeStoredAuthData(null)
+  }
 
   const body = await res.json()
 
@@ -878,7 +911,10 @@ export const walletStatus = async () => {
   const body = await res.json()
 
   if (!res.ok) {
-    throw new Error(body.errorMessage)
+    if (res.status === 401) {
+      await Cache.writeStoredAuthData(null)
+    }
+    throw new Error(body.errorMessage || body.message || 'Unknown Error')
   }
 
   const { walletExists, walletStatus } = body
