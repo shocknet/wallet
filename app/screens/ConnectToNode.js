@@ -148,9 +148,17 @@ export default class ConnectToNode extends React.PureComponent {
   }
 
   onPressContinue = () => {
-    Cache.writeNodeURLOrIP(this.state.nodeURL)
+    this.setState(
+      {
+        // show an spinner
+        checkingCacheForNodeURL: true,
+      },
+      async () => {
+        await Cache.writeNodeURLOrIP(this.state.nodeURL)
 
-    this.props.navigation.navigate(WALLET_MANAGER)
+        this.props.navigation.navigate(WALLET_MANAGER)
+      },
+    )
   }
 
   /**
