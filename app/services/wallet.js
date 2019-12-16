@@ -878,7 +878,7 @@ export const walletStatus = async () => {
   const body = await res.json()
 
   if (!res.ok) {
-    throw new Error(body.errorMessage || 'Unknown Error')
+    throw new Error(body.errorMessage || body.message || 'Unknown Error')
   }
 
   const { walletExists, walletStatus } = body
