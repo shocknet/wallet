@@ -47,7 +47,6 @@ export const CONNECT_TO_NODE = 'CONNECT_TO_NODE'
  * @prop {string} nodeURL
  * @prop {boolean} pinging
  * @prop {boolean} wasBadPing
- * @prop {boolean} wasGoodPing
  * @prop {boolean} scanningQR
  */
 
@@ -57,7 +56,6 @@ const DEFAULT_STATE = {
   nodeURL: '',
   pinging: false,
   wasBadPing: false,
-  wasGoodPing: false,
   scanningQR: false,
 }
 
@@ -104,12 +102,6 @@ export default class ConnectToNode extends React.PureComponent {
     })
   }
 
-  componentDidUpdate() {
-    if (this.state.wasBadPing && this.state.wasGoodPing) {
-      throw new Error('bad state')
-    }
-  }
-
   /**
    * @private
    * @param {string} nodeURL
@@ -127,11 +119,14 @@ export default class ConnectToNode extends React.PureComponent {
     })
 
     Conn.pingURL(this.state.nodeURL).then(res => {
-      this.setState({
-        pinging: false,
-        wasBadPing: !res,
-        wasGoodPing: res,
-      })
+      if (res) {
+        this.props.navigation.navigate(WALLET_MANAGER)
+      } else {
+        this.setState({
+          pinging: false,
+          wasBadPing: !res,
+        })
+      }
     })
   }
 
@@ -178,7 +173,6 @@ export default class ConnectToNode extends React.PureComponent {
       nodeURL,
       wasBadPing,
       pinging,
-      wasGoodPing,
       scanningQR,
     } = this.state
 
@@ -206,23 +200,13 @@ export default class ConnectToNode extends React.PureComponent {
       >
         <View style={styles.shockWalletLogoContainer}>
           <Image style={styles.shockLogo} source={shockLogo} />
-          {!pinging && !wasGoodPing && !wasBadPing && (
+          {!pinging && !wasBadPing && (
             <Text style={styles.logoText}>SHOCKWALLET</Text>
           )}
         </View>
 
-        {wasGoodPing && (
-          <View style={[CSS.styles.width100, CSS.styles.deadCenter]}>
-            <Ionicons
-              name="md-checkmark-circle-outline"
-              size={150}
-              color={CSS.Colors.TEXT_WHITE}
-            />
-            <Pad amount={20} />
-          </View>
-        )}
         <View>
-          {!pinging && !wasGoodPing && !wasBadPing && (
+          {!pinging && !wasBadPing && (
             <Text style={styles.callToAction}>WELCOME</Text>
           )}
 
@@ -230,7 +214,7 @@ export default class ConnectToNode extends React.PureComponent {
             <TextInput
               autoCapitalize="none"
               autoCorrect={false}
-              editable={!pinging && !wasBadPing && !wasGoodPing}
+              editable={!pinging && !wasBadPing}
               keyboardType="numeric"
               onChangeText={this.onChangeNodeURL}
               placeholder="Specify Node IP"
@@ -287,16 +271,7 @@ export default class ConnectToNode extends React.PureComponent {
             </TouchableOpacity>
           )}
 
-          {wasGoodPing && (
-            <TouchableOpacity
-              onPress={this.onPressContinue}
-              style={styles.connectBtn}
-            >
-              <Text style={styles.connectBtnText}>Continue</Text>
-            </TouchableOpacity>
-          )}
-
-          {!pinging && !wasGoodPing && !wasBadPing && (
+          {!pinging && !wasBadPing && (
             <TouchableOpacity
               disabled={!isValidIP(nodeURL) || pinging}
               onPress={this.onPressConnect}
@@ -306,7 +281,7 @@ export default class ConnectToNode extends React.PureComponent {
             </TouchableOpacity>
           )}
 
-          {!pinging && !wasGoodPing && !wasBadPing && (
+          {!pinging && !wasBadPing && (
             <TouchableOpacity disabled>
               <View style={styles.shockBtn}>
                 <EntypoIcon name="cloud" size={20} color="#274f94" />
