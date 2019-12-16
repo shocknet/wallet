@@ -114,20 +114,36 @@ export default class ConnectToNode extends React.PureComponent {
 
   /** @private */
   onPressConnect = () => {
-    this.setState({
-      pinging: true,
-    })
+    const { nodeURL } = this.state
 
-    Conn.pingURL(this.state.nodeURL).then(res => {
-      if (res) {
-        this.props.navigation.navigate(WALLET_MANAGER)
-      } else {
-        this.setState({
-          pinging: false,
-          wasBadPing: !res,
-        })
-      }
-    })
+    this.setState(
+      {
+        pinging: true,
+      },
+      async () => {
+        try {
+          const wasGoodPing = await Conn.pingURL(nodeURL)
+
+          if (wasGoodPing) {
+            await Cache.writeNodeURLOrIP(nodeURL)
+
+            this.props.navigation.navigate(WALLET_MANAGER)
+          } else {
+            this.setState({
+              pinging: false,
+              wasBadPing: true,
+            })
+          }
+        } catch (err) {
+          this.setState({
+            pinging: false,
+            wasBadPing: true,
+          })
+
+          console.warn(err.message)
+        }
+      },
+    )
   }
 
   onPressTryAgain = () => {
