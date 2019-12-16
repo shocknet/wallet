@@ -32,6 +32,22 @@ moment.locale('en', {
   },
 })
 
+Http.interceptors.response.use(
+  res => res,
+  async err => {
+    // catch reference/Cache errors
+    try {
+      if (401 === err.response.status) {
+        await Cache.writeStoredAuthData(null)
+      }
+    } catch (e) {
+      console.warn(`Error inside response interceptor: ${e.message}`)
+    }
+
+    return err
+  },
+)
+
 AppRegistry.registerComponent('shockwallet', () => ShockWallet)
 
 /**
