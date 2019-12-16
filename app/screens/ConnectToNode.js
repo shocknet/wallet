@@ -51,6 +51,16 @@ export const CONNECT_TO_NODE = 'CONNECT_TO_NODE'
  * @prop {boolean} scanningQR
  */
 
+/** @type {State} */
+const DEFAULT_STATE = {
+  checkingCacheForNodeURL: true,
+  nodeURL: '',
+  pinging: false,
+  wasBadPing: false,
+  wasGoodPing: false,
+  scanningQR: false,
+}
+
 /**
  * @augments React.PureComponent<Props, State, never>
  */
@@ -63,25 +73,34 @@ export default class ConnectToNode extends React.PureComponent {
   }
 
   /** @type {State} */
-  state = {
-    checkingCacheForNodeURL: true,
-    nodeURL: '',
-    pinging: false,
-    wasBadPing: false,
-    wasGoodPing: false,
-    scanningQR: false,
+  state = DEFAULT_STATE
+
+  willFocusSub = {
+    remove() {},
   }
 
-  async componentDidMount() {
-    const nodeURL = await Cache.getNodeURL()
+  componentDidMount() {
+    this.willFocusSub = this.props.navigation.addListener('didFocus', () => {
+      this.setState(DEFAULT_STATE)
+    })
+  }
 
-    if (nodeURL !== null) {
-      this.props.navigation.navigate(WALLET_MANAGER)
-    } else {
-      this.setState({
-        checkingCacheForNodeURL: false,
-      })
-    }
+  componentWillUnmount() {
+    this.willFocusSub.remove()
+  }
+
+  checkCacheForNodeURL = () => {
+    this.setState(DEFAULT_STATE, async () => {
+      const nodeURL = await Cache.getNodeURL()
+
+      if (nodeURL !== null) {
+        this.props.navigation.navigate(WALLET_MANAGER)
+      } else {
+        this.setState({
+          checkingCacheForNodeURL: false,
+        })
+      }
+    })
   }
 
   componentDidUpdate() {
