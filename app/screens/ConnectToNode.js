@@ -80,6 +80,7 @@ export default class ConnectToNode extends React.PureComponent {
   }
 
   componentDidMount() {
+    this.checkCacheForNodeURL()
     this.willFocusSub = this.props.navigation.addListener('didFocus', () => {
       this.setState(DEFAULT_STATE)
     })
