@@ -146,7 +146,7 @@ export default class ConnectToNode extends React.PureComponent {
     this.setState(
       {
         // show an spinner
-        checkingCacheForNodeURL: true,
+        pinging: true,
       },
       async () => {
         await Cache.writeNodeURLOrIP(this.state.nodeURL)
