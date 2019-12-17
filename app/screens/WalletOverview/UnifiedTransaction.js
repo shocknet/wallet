@@ -80,7 +80,7 @@ export default class UnifiedTransaction extends React.PureComponent {
       value = unifiedTransaction.value_sat
       timestamp = Number(unifiedTransaction.creation_date)
 
-      outbound = unifiedTransaction.status === 'IN_FLIGHT'
+      outbound = true
     }
 
     if (Wallet.isTransaction(unifiedTransaction)) {

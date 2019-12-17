@@ -121,11 +121,11 @@ const history = (state = INITIAL_STATE, action) => {
       }
     }
     case ACTIONS.LOAD_RECENT_TRANSACTIONS: {
-      const { data } = action
-
       /**
        * @param {Wallet.Invoice | Wallet.Payment | Wallet.Transaction} unifiedTransaction
        */
+      const { data } = action
+
       const filteredTransactions = data.filter(
         /**
          * @param {Wallet.Invoice | Wallet.Payment | Wallet.Transaction} unifiedTransaction
@@ -136,7 +136,7 @@ const history = (state = INITIAL_STATE, action) => {
           }
 
           if (Wallet.isPayment(unifiedTransaction)) {
-            return true
+            return unifiedTransaction.status === 'IN_FLIGHT'
           }
 
           if (Wallet.isTransaction(unifiedTransaction)) {

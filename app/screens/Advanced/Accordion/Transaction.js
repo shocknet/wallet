@@ -1,5 +1,5 @@
 import React from 'react'
-import { View, Text, StyleSheet, Image } from 'react-native'
+import { View, Text, StyleSheet, Image, Linking } from 'react-native'
 import Moment from 'moment'
 
 import * as CSS from '../../../css'
@@ -9,11 +9,26 @@ import * as CSS from '../../../css'
 /** @type {number} */
 //@ts-ignore
 const paymentIcon = require('../../../assets/images/payment-icon.png')
+const blockExplorer = 'https://blockstream.info/tx/'
 
 /**
  * @typedef {object} Props
  * @prop {ITransaction} data
  */
+
+/**
+ *
+ * @param {string} url
+ */
+const openURL = url => async () => {
+  const supported = await Linking.canOpenURL(url)
+
+  if (supported) {
+    await Linking.openURL(url)
+    return true
+  }
+  return false
+}
 
 /**
  * @type {React.FC<Props>}
@@ -31,6 +46,7 @@ const _Transaction = ({ data }) => ((
           ellipsizeMode="tail"
           numberOfLines={1}
           style={styles.transactionHashText}
+          onPress={openURL(`${blockExplorer}${data.tx_hash}`)}
         >
           {data.tx_hash}
         </Text>
