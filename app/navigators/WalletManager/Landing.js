@@ -17,7 +17,7 @@ import * as API from '../../services/contact-api'
 import * as Auth from '../../services/auth'
 import * as Wallet from '../../services/wallet'
 import * as CSS from '../../css'
-import { CREATE_WALLET } from './CreateWallet'
+import { CREATE_WALLET_OR_ALIAS } from './CreateWalletOrAlias'
 
 import * as Cache from '../../services/cache'
 import { LOGIN } from '../../screens/Login'
@@ -115,7 +115,7 @@ export default class CreateWallet extends React.PureComponent {
   }
 
   onPressCreate = () => {
-    this.props.navigation.navigate(CREATE_WALLET)
+    this.props.navigation.navigate(CREATE_WALLET_OR_ALIAS)
   }
 
   onPressUnlock = () => {
