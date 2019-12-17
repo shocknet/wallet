@@ -114,6 +114,13 @@ export default class Login extends React.PureComponent {
     })
   }
 
+  /** @private */
+  dismissCachedAlias = () => {
+    this.setState({
+      cachedAlias: null,
+    })
+  }
+
   /**
    * @private
    * @param {string} alias
@@ -230,6 +237,12 @@ export default class Login extends React.PureComponent {
               <View style={xStyles.cachedAliasContainer}>
                 <Text style={styles.textInputFieldLabel}>
                   {`Alias:   ${cachedAlias}`}
+                </Text>
+                <Text
+                  onPress={this.dismissCachedAlias}
+                  style={xStyles.changeText}
+                >
+                  Change
                 </Text>
               </View>
             )}
@@ -348,9 +361,6 @@ const styles = StyleSheet.create({
 })
 
 const xStyles = {
-  cachedAliasContainer: [
-    CSS.styles.justifySpaceBetween,
-    CSS.styles.flexRow,
-    CSS.styles.textBold,
-  ],
+  cachedAliasContainer: [CSS.styles.justifySpaceBetween, CSS.styles.flexRow],
+  changeText: [CSS.styles.textUnderlined, styles.textInputFieldLabel],
 }
