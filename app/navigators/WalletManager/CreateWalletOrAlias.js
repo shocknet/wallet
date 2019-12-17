@@ -134,30 +134,33 @@ export default class CreateWallet extends React.PureComponent {
    * @returns {void}
    */
   onPressCreateWallet = () => {
-    this.setState({
-      creating: true,
-    })
+    this.setState(
+      {
+        creating: true,
+      },
+      () => {
+        Auth.createWallet(this.state.alias, this.state.pass)
+          .then(({ publicKey, token }) => {
+            Cache.writeStoredAuthData({
+              alias: this.state.alias,
+              publicKey,
+              token,
+            })
 
-    Auth.createWallet(this.state.alias, this.state.pass)
-      .then(({ publicKey, token }) => {
-        Cache.writeStoredAuthData({
-          alias: this.state.alias,
-          publicKey,
-          token,
-        })
-
-        this.props.navigation.goBack()
-      })
-      .catch(e => {
-        this.setState({
-          msg: e.message,
-        })
-      })
-      .finally(() => {
-        this.setState({
-          creating: false,
-        })
-      })
+            this.props.navigation.goBack()
+          })
+          .catch(e => {
+            this.setState({
+              msg: e.message,
+            })
+          })
+          .finally(() => {
+            this.setState({
+              creating: false,
+            })
+          })
+      },
+    )
   }
 
   /** @private */
