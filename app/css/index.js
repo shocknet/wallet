@@ -53,6 +53,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  textAlignCenter: { textAlign: 'center' },
   textUnderlined: { textDecorationLine: 'underline' },
   textWhite: { color: Colors.TEXT_WHITE },
   width0: { width: '0%' },
