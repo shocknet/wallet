@@ -22,6 +22,7 @@ import * as Auth from '../services/auth'
 import * as CSS from '../css'
 import ShockDialog from '../components/ShockDialog'
 import { APP } from '../navigators/Root'
+import { CREATE_WALLET_OR_ALIAS } from '../navigators/WalletManager/CreateWalletOrAlias'
 
 export const LOGIN = 'LOGIN'
 
@@ -137,6 +138,11 @@ export default class Login extends React.PureComponent {
    */
   onChangePass = pass => {
     this.setState({ pass })
+  }
+
+  /** @private */
+  onPressCreateNewAlias = () => {
+    this.props.navigation.navigate(CREATE_WALLET_OR_ALIAS)
   }
 
   /**
@@ -284,6 +290,13 @@ export default class Login extends React.PureComponent {
           </View>
         ) : null}
 
+        <Text
+          onPress={this.onPressCreateNewAlias}
+          style={xStyles.createAliasText}
+        >
+          Create a new Alias
+        </Text>
+
         <ShockDialog
           message={this.state.err}
           onRequestClose={this.dismissDialog}
@@ -362,5 +375,6 @@ const styles = StyleSheet.create({
 
 const xStyles = {
   cachedAliasContainer: [CSS.styles.justifySpaceBetween, CSS.styles.flexRow],
+  createAliasText: [styles.textInputFieldLabel, CSS.styles.textAlignCenter],
   changeText: [CSS.styles.textUnderlined, styles.textInputFieldLabel],
 }
