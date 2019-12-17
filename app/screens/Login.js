@@ -75,6 +75,7 @@ export default class Login extends React.PureComponent {
   }
 
   componentDidMount() {
+    this.getCachedAlias()
     this.didFocusSub = this.props.navigation.addListener(
       'didFocus',
       this.getCachedAlias,
