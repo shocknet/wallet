@@ -226,6 +226,13 @@ export default class Login extends React.PureComponent {
 
         {!loading ? (
           <View style={styles.formContainer}>
+            {cachedAlias && (
+              <View style={xStyles.cachedAliasContainer}>
+                <Text style={styles.textInputFieldLabel}>
+                  {`Alias:   ${cachedAlias}`}
+                </Text>
+              </View>
+            )}
             {!cachedAlias && (
               <React.Fragment>
                 <Text style={styles.textInputFieldLabel}>Alias</Text>
@@ -339,3 +346,11 @@ const styles = StyleSheet.create({
     fontSize: 28,
   },
 })
+
+const xStyles = {
+  cachedAliasContainer: [
+    CSS.styles.justifySpaceBetween,
+    CSS.styles.flexRow,
+    CSS.styles.textBold,
+  ],
+}
