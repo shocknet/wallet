@@ -290,12 +290,14 @@ export default class Login extends React.PureComponent {
           </View>
         ) : null}
 
-        <Text
-          onPress={this.onPressCreateNewAlias}
-          style={xStyles.createAliasText}
-        >
-          Create a new Alias
-        </Text>
+        {!(awaitingRes || fetchingCachedAlias) && (
+          <Text
+            onPress={this.onPressCreateNewAlias}
+            style={xStyles.createAliasText}
+          >
+            Create a new Alias
+          </Text>
+        )}
 
         <ShockDialog
           message={this.state.err}
