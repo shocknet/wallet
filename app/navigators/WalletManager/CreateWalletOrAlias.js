@@ -53,7 +53,7 @@ export default class CreateWallet extends React.PureComponent {
     alias: '',
     creatingAlias: false,
     creatingWallet: false,
-    fetchingWalletStatus: false,
+    fetchingWalletStatus: true,
     keyboardOpen: false,
     msg: null,
     pass: '',
