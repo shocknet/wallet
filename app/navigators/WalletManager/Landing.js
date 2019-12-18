@@ -17,11 +17,12 @@ import * as API from '../../services/contact-api'
 import * as Auth from '../../services/auth'
 import * as Wallet from '../../services/wallet'
 import * as CSS from '../../css'
-import { CREATE_WALLET_OR_ALIAS } from './CreateWalletOrAlias'
 
 import * as Cache from '../../services/cache'
 import { LOGIN } from '../../screens/Login'
 import { APP } from '../Root'
+
+import { CREATE_WALLET_OR_ALIAS } from './CreateWalletOrAlias'
 
 export const LANDING = 'LANDING'
 
@@ -99,6 +100,10 @@ export default class CreateWallet extends React.PureComponent {
         walletStatus,
         isGunAuth,
       })
+
+      if (walletStatus === 'noncreated') {
+        await Cache.writeStoredAuthData(null)
+      }
 
       if (walletStatus === 'unlocked') {
         if (authData !== null && isGunAuth) {
