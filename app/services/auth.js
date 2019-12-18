@@ -1,8 +1,3 @@
-/**
- * @format
- */
-import { backOff } from 'exponential-backoff'
-import { JitterTypes } from 'exponential-backoff/dist/options'
 import once from 'lodash/once'
 
 import * as Cache from './cache'
@@ -48,50 +43,6 @@ export const isGunAuthed = async () => {
 }
 
 /**
- * Tells the node to connect to LND.
- * @param {string} alias
- * @param {string} password
- * @returns {Promise<void>}
- */
-export const connectNodeToLND = (alias, password) =>
-  backOff(
-    async () => {
-      const nodeURL = await Cache.getNodeURL()
-
-      if (nodeURL === null) {
-        throw new TypeError('nodeURL === null')
-      }
-
-      const res = await fetch(`http://${nodeURL}/api/lnd/connect`, {
-        method: 'POST',
-        body: JSON.stringify({
-          alias,
-          password,
-        }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-
-      if (!res.ok) {
-        const body = await res.json()
-
-        throw new Error(body.errorMessage || body.message || 'Unknown error.')
-      }
-    },
-    {
-      jitter: JitterTypes.Full,
-      retry(e, attemptNumber) {
-        console.warn(
-          `retrying connectNodeToLND, error messages: ${e.message}, attempt number ${attemptNumber} out of 10`,
-        )
-
-        return true
-      },
-    },
-  )
-
-/**
  * @typedef {object} AuthResponse
  * @prop {string} publicKey
  * @prop {string} token
@@ -104,7 +55,6 @@ export const connectNodeToLND = (alias, password) =>
  * @returns {Promise<AuthResponse>}
  */
 export const unlockWallet = async (alias, password) => {
-  await connectNodeToLND(alias, password)
   const nodeURL = await Cache.getNodeURL()
 
   if (nodeURL === null) {
@@ -137,10 +87,6 @@ export const unlockWallet = async (alias, password) => {
       publicKey: body.user.publicKey,
       token: body.authorization,
     }
-  }
-
-  if (body.errorMessage === 'LND is down') {
-    connectNodeToLND(alias, password)
   }
 
   throw new Error(body.errorMessage || body.message || 'Unknown error.')
@@ -188,10 +134,6 @@ export const registerExistingWallet = async (alias, password) => {
     }
   }
 
-  if (body.errorMessage === 'LND is down') {
-    connectNodeToLND(alias, password)
-  }
-
   throw new Error(body.errorMessage || body.message || 'Unknown error.')
 }
 
@@ -233,10 +175,6 @@ export const createWallet = async (alias, password) => {
       }
     }
   } else {
-    if (body.errorMessage === 'LND is down') {
-      connectNodeToLND(alias, password)
-    }
-
     throw new Error(body.errorMessage || body.message || 'Unknown error.')
   }
 }
