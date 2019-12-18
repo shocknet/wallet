@@ -1,6 +1,4 @@
-/**
- * @format
- */
+import { Socket } from './contact-api'
 
 import * as Cache from './cache'
 import * as Utils from './utils'
@@ -342,6 +340,7 @@ export const balance = async () => {
 
   const res = await fetch(endpoint, payload)
   if (res.status === 401) {
+    Socket.disconnect()
     await Cache.writeStoredAuthData(null)
   }
   const body = await res.json()
@@ -380,6 +379,7 @@ export const getTransactions = async request => {
 
   const res = await fetch(endpoint, payload)
   if (res.status === 401) {
+    Socket.disconnect()
     await Cache.writeStoredAuthData(null)
   }
   const body = await res.json()
@@ -425,6 +425,7 @@ export const listPayments = async request => {
 
   const res = await fetch(url, payload)
   if (res.status === 401) {
+    Socket.disconnect()
     await Cache.writeStoredAuthData(null)
   }
   const body = await res.json()
@@ -468,6 +469,7 @@ export const listInvoices = async request => {
 
   const res = await fetch(url, payload)
   if (res.status === 401) {
+    Socket.disconnect()
     await Cache.writeStoredAuthData(null)
   }
   const body = await res.json()
@@ -525,6 +527,7 @@ export const newAddress = async useOlderFormat => {
 
   const res = await fetch(endpoint, payload)
   if (res.status === 401) {
+    Socket.disconnect()
     await Cache.writeStoredAuthData(null)
   }
 
@@ -586,6 +589,7 @@ export const addInvoice = async request => {
 
   const res = await fetch(endpoint, payload)
   if (res.status === 401) {
+    Socket.disconnect()
     await Cache.writeStoredAuthData(null)
   }
 
@@ -636,6 +640,7 @@ export const sendCoins = async request => {
 
   const res = await fetch(endpoint, payload)
   if (res.status === 401) {
+    Socket.disconnect()
     await Cache.writeStoredAuthData(null)
   }
 
@@ -713,6 +718,7 @@ export const CAUTION_payInvoice = async ({ amt, payreq }) => {
 
   const res = await fetch(endpoint, payload)
   if (res.status === 401) {
+    Socket.disconnect()
     await Cache.writeStoredAuthData(null)
   }
 
@@ -775,6 +781,7 @@ export const decodeInvoice = async ({ payReq }) => {
 
   const res = await fetch(endpoint, payload)
   if (res.status === 401) {
+    Socket.disconnect()
     await Cache.writeStoredAuthData(null)
   }
 
@@ -817,6 +824,7 @@ export const listPeers = async () => {
 
   const res = await fetch(endpoint, payload)
   if (res.status === 401) {
+    Socket.disconnect()
     await Cache.writeStoredAuthData(null)
   }
 
@@ -866,6 +874,7 @@ export const listChannels = async () => {
 
   const res = await fetch(endpoint, payload)
   if (res.status === 401) {
+    Socket.disconnect()
     await Cache.writeStoredAuthData(null)
   }
 
@@ -912,6 +921,7 @@ export const walletStatus = async () => {
 
   if (!res.ok) {
     if (res.status === 401) {
+      Socket.disconnect()
       await Cache.writeStoredAuthData(null)
     }
     throw new Error(body.errorMessage || body.message || 'Unknown Error')
