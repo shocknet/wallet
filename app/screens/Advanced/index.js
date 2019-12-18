@@ -69,7 +69,7 @@ export const ADVANCED_SCREEN = 'ADVANCED_SCREEN'
  * @prop {string} err
  * @prop {ChannelPoint|null} willCloseChannelPoint
  *
- * @prop {import('./InfoModal').Info|null} nodeInfo
+ * @prop {Wallet.NodeInfo|null} nodeInfo
  * @prop {boolean} nodeInfoModal
  */
 
@@ -178,43 +178,16 @@ export default class AdvancedScreen extends Component {
         Wallet.listPeers(),
         Wallet.listChannels(),
       ])
-      Http.get('/healthz')
-        .then(res => res.data)
-        .then(data => {
-          if (typeof data !== 'object') {
-            console.warn(`Error fetching /healthz: data not an object`)
-            return
-          }
-          const { LNDStatus } = data
-          if (typeof LNDStatus !== 'object') {
-            console.warn(
-              `Error fetching /healthz: data.LNDStatus not an object`,
-            )
-            return
-          }
 
-          const { message } = LNDStatus
-          if (typeof message !== 'object') {
-            console.warn(
-              `Error fetching /healthz: data.LNDStatus.message not an object`,
-            )
-            return
-          }
-
-          const { identity_pubkey } = message
-          if (typeof identity_pubkey !== 'string') {
-            console.warn(
-              `Error fetching /healthz: data.LNDStatus.message.identity_pubkey not an string`,
-            )
-            return
-          }
+      Wallet.nodeInfo()
+        .then(nodeInfo => {
           this.setState({
-            nodeInfo: message,
+            nodeInfo,
           })
         })
         .catch(e => {
           console.warn(
-            `Error fetching /healthz: ${e.message}, status: ${e.status}`,
+            `Error fetching node info: ${e.message}, status: ${e.status}`,
           )
         })
 

@@ -935,3 +935,50 @@ export const walletStatus = async () => {
 
   return 'noncreated'
 }
+
+/**
+ * @typedef {object} NodeInfo
+ * @prop {string[]} uris
+ * @prop {boolean} synced_to_chain
+ * @prop {boolean} synced_to_graph
+ * @prop {string} identity_pubkey
+ * @prop {string} best_header_timestamp
+ * @prop {number} block_height
+ * @prop {number} num_pending_channels
+ * @prop {string} version
+ */
+
+/**
+ * @returns {Promise<NodeInfo>}
+ */
+export const nodeInfo = async () => {
+  const nodeURL = await Cache.getNodeURL()
+  const res = await fetch(`http://${nodeURL}/healthz`)
+  const data = await res.json()
+
+  if (!res.ok) {
+    throw new Error(data.errorMessage || data.message || 'Unknown Error')
+  }
+
+  if (typeof data !== 'object') {
+    throw new TypeError(
+      `Error fetching /healthz: data not an object, instead got: ${JSON.stringify(
+        data,
+      )}`,
+    )
+  }
+
+  const { LNDStatus } = data
+  if (typeof LNDStatus !== 'object') {
+    throw new TypeError(`Error fetching /healthz: data.LNDStatus not an object`)
+  }
+
+  const { message } = LNDStatus
+  if (typeof message !== 'object') {
+    throw new TypeError(
+      `Error fetching /healthz: data.LNDStatus.message not an object`,
+    )
+  }
+
+  return message
+}

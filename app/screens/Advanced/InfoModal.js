@@ -20,20 +20,8 @@ import ShockModal from '../../components/ShockModal'
 import Pad from '../../components/Pad'
 
 /**
- * @typedef {object} Info
- * @prop {string[]} uris
- * @prop {boolean} synced_to_chain
- * @prop {boolean} synced_to_graph
- * @prop {string} identity_pubkey
- * @prop {string} best_header_timestamp
- * @prop {number} block_height
- * @prop {number} num_pending_channels
- * @prop {string} version
- */
-
-/**
  * @typedef {object} Props
- * @prop {Info|null} info
+ * @prop {import('../../services/wallet').NodeInfo|null} info
  * @prop {() => void} onRequestClose
  * @prop {boolean} visible
  */
