@@ -21,11 +21,14 @@ import Loading, { LOADING } from '../screens/Loading'
 
 import WalletManager, { WALLET_MANAGER } from './WalletManager'
 import ConnectToNode, { CONNECT_TO_NODE } from '../screens/ConnectToNode'
+import SendScreen, { SEND_SCREEN } from '../screens/Send'
 
 export const APP = 'APP'
-export const MAIN_NAV = 'MAIN_NAV'
+export const BOTTOM_NAV = 'BOTTOM_NAV'
+export const WALLET_NAV = 'WALLET_NAV'
+export const WALLET = 'WALLET'
 
-const MainNav = createBottomTabNavigator(
+const BottomNav = createBottomTabNavigator(
   {
     [WALLET_OVERVIEW]: WalletOverview,
     [CHATS_ROUTE]: Chats,
@@ -39,7 +42,20 @@ const MainNav = createBottomTabNavigator(
   },
 )
 
-MainNav.navigationOptions = {
+const WalletNav = createStackNavigator(
+  {
+    [BOTTOM_NAV]: BottomNav,
+    [SEND_SCREEN]: SendScreen,
+  },
+  {
+    initialRouteName: BOTTOM_NAV,
+    navigationOptions: {
+      header: null,
+    },
+  },
+)
+
+BottomNav.navigationOptions = {
   header: null,
 }
 
@@ -47,8 +63,8 @@ const MAIN_DRAWER = 'MAIN_DRAWER'
 
 const MainDrawer = createDrawerNavigator(
   {
-    [MAIN_NAV]: {
-      screen: MainNav,
+    [WALLET_NAV]: {
+      screen: WalletNav,
       navigationOptions: {
         title: 'Home',
       },
@@ -61,7 +77,7 @@ const MainDrawer = createDrawerNavigator(
     },
   },
   {
-    initialRouteName: MAIN_NAV,
+    initialRouteName: WALLET_NAV,
   },
 )
 

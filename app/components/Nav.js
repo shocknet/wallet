@@ -3,20 +3,60 @@ import { View, SafeAreaView, Text, StyleSheet } from 'react-native'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 import { Colors } from '../css'
 
-const Nav = ({ title = '', style = {} }) => (
-  <SafeAreaView style={[navStyles.container, style]}>
-    <View style={navStyles.avatarContainer} />
-    <Text style={navStyles.navTitle}>
-      {title ? title.toUpperCase() : 'WALLET'}
-    </Text>
-    <Ionicons
-      name="md-menu"
-      color={Colors.TEXT_WHITE}
-      size={40}
-      style={navStyles.navMenu}
-    />
-  </SafeAreaView>
-)
+/**
+ * @typedef {import('react-navigation').NavigationScreenProp<{}, {}>} Navigation
+ */
+
+/**
+ * @typedef {object} Props
+ * @prop {(string)=} title
+ * @prop {(object)=} style
+ * @prop {(boolean)=} backButton
+ * @prop {(Navigation)=} navigation
+ */
+
+/**
+ * @argument {Props} props
+ */
+const Nav = ({ title = '', style = {}, backButton = false, navigation }) => {
+  const goBack = () => {
+    if (navigation) {
+      return navigation.goBack()
+    }
+
+    return null
+  }
+
+  return (
+    <SafeAreaView style={[navStyles.container, style]}>
+      {backButton ? (
+        <Ionicons
+          name="ios-arrow-round-back"
+          color={Colors.TEXT_WHITE}
+          size={40}
+          style={navStyles.navMenu}
+          // eslint-disable-next-line react/jsx-no-bind
+          onPress={goBack}
+        />
+      ) : (
+        <View style={navStyles.avatarContainer} />
+      )}
+      <Text style={navStyles.navTitle}>
+        {title ? title.toUpperCase() : 'WALLET'}
+      </Text>
+      {!backButton ? (
+        <Ionicons
+          name="md-menu"
+          color={Colors.TEXT_WHITE}
+          size={40}
+          style={navStyles.navMenu}
+        />
+      ) : (
+        <View style={navStyles.balanceComponent} />
+      )}
+    </SafeAreaView>
+  )
+}
 
 const navStyles = StyleSheet.create({
   container: {
@@ -44,6 +84,11 @@ const navStyles = StyleSheet.create({
     height: 40,
     textAlign: 'center',
     textAlignVertical: 'center',
+  },
+  // An invisible component to center the Nav's text in a responsive way
+  balanceComponent: {
+    width: 40,
+    height: 40,
   },
 })
 

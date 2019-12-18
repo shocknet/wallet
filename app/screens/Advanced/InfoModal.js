@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
 
   btn: {
     height: 60,
-    backgroundColor: CSS.Colors.TEAL,
+    backgroundColor: CSS.Colors.BUTTON_BLUE,
     borderRadius: 100,
     alignItems: 'center',
     justifyContent: 'center',
@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
   },
 
   warning: {
-    color: CSS.Colors.TEAL,
+    color: CSS.Colors.BUTTON_BLUE,
   },
 })
 

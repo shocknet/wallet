@@ -18,6 +18,7 @@ import {
 import EntypoIcons from 'react-native-vector-icons/Entypo'
 import { connect } from 'react-redux'
 //import { compose } from 'redux'
+import * as Navigation from '../../services/navigation'
 import { ConnectionContext } from '../../ctx/Connection'
 import QRCodeScanner from '../../components/QRScanner'
 import Nav from '../../components/Nav'
@@ -47,6 +48,7 @@ import { CHATS_ROUTE } from '../../screens/Chats'
 
 import QR from './QR'
 import UnifiedTrx from './UnifiedTrx'
+import { SEND_SCREEN } from '../Send'
 
 /**
  * @typedef {object} Params
@@ -629,9 +631,11 @@ class WalletOverview extends Component {
       return
     }
 
-    this.setState({
-      displayingSendDialog: true,
-    })
+    Navigation.navigate(SEND_SCREEN)
+
+    // this.setState({
+    //   displayingSendDialog: true,
+    // })
   }
 
   /**
