@@ -6,6 +6,7 @@ import { JitterTypes } from 'exponential-backoff/dist/options'
 import once from 'lodash/once'
 
 import * as Cache from './cache'
+import * as Wallet from './wallet'
 import { Socket } from './contact-api'
 
 // TO DO: Move this constant to common repo
@@ -91,10 +92,16 @@ export const connectNodeToLND = (alias, password) =>
   )
 
 /**
+ * @typedef {object} AuthResponse
+ * @prop {string} publicKey
+ * @prop {string} token
+ */
+
+/**
  * @param {string} alias
  * @param {string} password
  * @throws {Error|TypeError}
- * @returns {Promise<{ token: string , publicKey: string }>}
+ * @returns {Promise<AuthResponse>}
  */
 export const unlockWallet = async (alias, password) => {
   await connectNodeToLND(alias, password)
@@ -192,7 +199,7 @@ export const registerExistingWallet = async (alias, password) => {
  * @param {string} alias
  * @param {string} password
  * @throws {Error|TypeError}
- * @returns {Promise<{ token: string , publicKey: string }>}
+ * @returns {Promise<AuthResponse>}
  */
 export const createWallet = async (alias, password) => {
   const nodeURL = await Cache.getNodeURL()
@@ -231,5 +238,46 @@ export const createWallet = async (alias, password) => {
     }
 
     throw new Error(body.errorMessage || body.message || 'Unknown error.')
+  }
+}
+
+/**
+ *
+ * @param {string} alias
+ * @param {string} pass
+ * @throws {Error}
+ * @returns {Promise<AuthResponse>}
+ */
+export const newGUNAlias = async (alias, pass) => {
+  const currWalletStatus = await Wallet.walletStatus()
+
+  if (currWalletStatus === 'noncreated') {
+    throw new Error(
+      'Tried to call newGunAlias() witht a noncreated wallet status',
+    )
+  }
+
+  const nodeURL = await Cache.getNodeURL()
+
+  const res = await fetch(`http://${nodeURL}/api/lnd/wallet/existing`, {
+    method: 'POST',
+    body: JSON.stringify({
+      alias,
+      password: pass,
+    }),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+  const body = await res.json()
+
+  if (!res.ok) {
+    console.warn(`here: ${JSON.stringify(body)}`)
+    throw new Error(body.errorMessage || body.message || 'Unknown error.')
+  }
+
+  return {
+    publicKey: body.user.publicKey,
+    token: body.authorization,
   }
 }
