@@ -73,7 +73,7 @@ export default class CreateWallet extends React.PureComponent {
   componentDidMount() {
     this.willFocusSub = this.props.navigation.addListener(
       'didFocus',
-      this.checkWalletStatus,
+      this.setup,
     )
     this.willBlurSub = this.props.navigation.addListener('didBlur', () => {
       this.setState(DEFAULT_STATE)
@@ -85,33 +85,45 @@ export default class CreateWallet extends React.PureComponent {
     this.willBlurSub.remove()
   }
 
-  checkWalletStatus = () => {
-    this.setState(DEFAULT_STATE, async () => {
-      try {
-        const authData = await Cache.getStoredAuthData()
-        const walletStatus = await Wallet.walletStatus()
-        const isGunAuth = await Auth.isGunAuthed()
+  setup = async () => {
+    this.setState(DEFAULT_STATE)
 
-        this.setState({
-          err: null,
-          fetching: false,
-          walletStatus,
-          isGunAuth,
-        })
+    try {
+      const authData = await Cache.getStoredAuthData()
+      const walletStatus = await Wallet.walletStatus()
+      const isGunAuth = await Auth.isGunAuthed()
 
-        if (authData !== null && walletStatus === 'unlocked' && isGunAuth) {
+      this.setState({
+        err: null,
+        fetching: false,
+        walletStatus,
+        isGunAuth,
+      })
+
+      if (walletStatus === 'unlocked') {
+        if (authData !== null && isGunAuth) {
           await API.Socket.connect()
           this.props.navigation.navigate(APP)
+        } else {
+          this.props.navigation.navigate(LOGIN)
         }
-      } catch (e) {
-        this.setState({
-          err: e.message,
-          fetching: false,
-          isGunAuth: null,
-          walletStatus: null,
-        })
       }
-    })
+
+      if (walletStatus === 'locked') {
+        if (authData === null) {
+          this.props.navigation.navigate(CREATE_WALLET_OR_ALIAS)
+        } else {
+          this.props.navigation.navigate(LOGIN)
+        }
+      }
+    } catch (e) {
+      this.setState({
+        err: e.message,
+        fetching: false,
+        isGunAuth: null,
+        walletStatus: null,
+      })
+    }
   }
 
   onPressCreate = () => {
@@ -210,7 +222,7 @@ export default class CreateWallet extends React.PureComponent {
               if (err) {
                 return (
                   <TouchableOpacity
-                    onPress={this.checkWalletStatus}
+                    onPress={this.setup}
                     style={styles.connectBtn}
                   >
                     <Text style={styles.connectBtnText}>Try Again</Text>
