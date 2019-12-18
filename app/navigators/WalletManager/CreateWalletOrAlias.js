@@ -22,6 +22,8 @@ import * as Cache from '../../services/cache'
 import * as CSS from '../../css'
 import * as Wallet from '../../services/wallet'
 import { LOGIN } from '../../screens/Login'
+import { Socket } from '../../services/contact-api'
+import { APP } from '../Root'
 
 export const CREATE_WALLET_OR_ALIAS = 'CREATE_WALLET_OR_ALIAS'
 
@@ -174,21 +176,22 @@ export default class CreateWallet extends React.PureComponent {
    * @returns {void}
    */
   onPressCreateWallet = () => {
+    const { alias, pass } = this.state
     this.setState(
       {
         creatingWallet: true,
       },
       () => {
-        Auth.createWallet(this.state.alias, this.state.pass)
-          .then(({ publicKey, token }) => {
+        Auth.createWallet(alias, pass)
+          .then(({ publicKey, token }) =>
             Cache.writeStoredAuthData({
               alias: this.state.alias,
               publicKey,
               token,
-            })
-
-            this.props.navigation.goBack()
-          })
+            }),
+          )
+          .then(Socket.connect)
+          .then(() => this.props.navigation.navigate(APP))
           .catch(e => {
             this.setState({
               msg: e.message,
