@@ -21,6 +21,7 @@ import * as Auth from '../../services/auth'
 import * as Cache from '../../services/cache'
 import * as CSS from '../../css'
 import * as Wallet from '../../services/wallet'
+import { LOGIN } from '../../screens/Login'
 
 export const CREATE_WALLET_OR_ALIAS = 'CREATE_WALLET_OR_ALIAS'
 
@@ -260,6 +261,10 @@ export default class CreateWallet extends React.PureComponent {
     this.confirmPasswordRef = ref
   }
 
+  onPressUseExistingAlias = () => {
+    this.props.navigation.navigate(LOGIN)
+  }
+
   render() {
     const {
       alias,
@@ -434,6 +439,17 @@ export default class CreateWallet extends React.PureComponent {
                       : 'Create new GUN Alias'}
                   </Text>
                 </TouchableOpacity>
+
+                {walletStatus !== 'noncreated' && (
+                  <View style={CSS.styles.deadCenter}>
+                    <Text
+                      onPress={this.onPressUseExistingAlias}
+                      style={styles.textInputLabel}
+                    >
+                      Use Existing Alias
+                    </Text>
+                  </View>
+                )}
               </View>
             </ScrollView>
           ))}
