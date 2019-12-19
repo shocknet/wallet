@@ -9,6 +9,7 @@ import { AUTH } from '../navigators/Root'
 
 import * as Navigation from './navigation'
 import * as Utils from './utils'
+import { Socket } from './contact-api'
 /**
  * @typedef {object} AuthData
  * @prop {string} alias
@@ -141,6 +142,7 @@ export const getCachedAlias = () => AsyncStorage.getItem(ALIAS)
 export const writeStoredAuthData = async authData => {
   if (authData === null) {
     Navigation.navigate(AUTH)
+    Socket.disconnect()
     return AsyncStorage.removeItem(STORED_AUTH_DATA)
   }
 
