@@ -130,13 +130,32 @@ export const writeNodeURLOrIP = async urlOrIP => {
 /**
  * @returns {Promise<StoredAuthData|null>}
  */
-export const getStoredAuthData = () =>
-  AsyncStorage.getItem(STORED_AUTH_DATA).then(sad => {
-    if (sad === null) {
-      return null
-    }
-    return JSON.parse(sad)
-  })
+export const getStoredAuthData = async () => {
+  const _sad = await AsyncStorage.getItem(STORED_AUTH_DATA)
+
+  if (_sad === null) {
+    return null
+  }
+
+  /**
+   * @type {StoredAuthData}
+   */
+  const sad = JSON.parse(_sad)
+
+  const currNodeURL = await getNodeURL()
+  if (currNodeURL === null) {
+    AsyncStorage.removeItem(STORED_AUTH_DATA)
+    return null
+  }
+  const [currNodeIP] = currNodeURL.split(':')
+
+  if (sad.nodeIP !== currNodeIP) {
+    await AsyncStorage.removeItem(STORED_AUTH_DATA)
+    return null
+  }
+
+  return sad
+}
 
 /**
  * @param {AuthData|null} authData
