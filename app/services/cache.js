@@ -31,54 +31,6 @@ const AUTHENTICATED_NODE = 'AUTHENTICATED_NODE'
 export const NO_CACHED_NODE_IP = 'NO_CACHED_NODE_IP'
 
 /**
- * @typedef {(sad: StoredAuthData|null) => void} StoredAuthDataListener
- */
-
-/**
- * @type {Array<StoredAuthDataListener>}
- */
-const storedAuthDataListeners = []
-
-const notifySADListeners = () => {
-  getStoredAuthData().then(sad => {
-    storedAuthDataListeners.forEach(l => {
-      l(sad)
-    })
-  })
-}
-
-/**
- *
- * @param {StoredAuthDataListener} listener
- * @returns {() => void}
- */
-export const onSADChange = listener => {
-  if (storedAuthDataListeners.includes(listener)) {
-    throw new Error('Tried to subscribe twice')
-  }
-
-  getStoredAuthData()
-    .then(sad => {
-      if (storedAuthDataListeners.includes(listener)) {
-        listener(sad)
-      }
-    })
-    .catch(e => {
-      console.warn(e)
-    })
-
-  return () => {
-    const idx = storedAuthDataListeners.indexOf(listener)
-
-    if (idx < 0) {
-      throw new Error('tried to unsubscribe twice')
-    }
-
-    storedAuthDataListeners.splice(idx, 1)
-  }
-}
-
-/**
  * @returns {Promise<string|null>}
  */
 export const getNodeURL = () => AsyncStorage.getItem(NODE_URL)
@@ -221,8 +173,6 @@ export const writeStoredAuthData = async authData => {
     AsyncStorage.setItem(STORED_AUTH_DATA, JSON.stringify(sad)),
     AsyncStorage.setItem(AUTHENTICATED_NODE, nodeURL),
   ])
-
-  notifySADListeners()
 }
 
 /**
