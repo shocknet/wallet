@@ -40,8 +40,8 @@ import {
   fetchPeers,
   fetchTransactions,
   fetchHistory,
-} from '../../../actions/HistoryActions'
-import { fetchNodeInfo } from '../../../actions/NodeActions'
+} from '../../actions/HistoryActions'
+import { fetchNodeInfo } from '../../actions/NodeActions'
 export const ADVANCED_SCREEN = 'ADVANCED_SCREEN'
 
 /**

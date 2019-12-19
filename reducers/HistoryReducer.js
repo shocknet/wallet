@@ -1,4 +1,4 @@
-import { ACTIONS } from '../actions/HistoryActions'
+import { ACTIONS } from '../app/actions/HistoryActions'
 import * as Wallet from '../app/services/wallet'
 
 /**

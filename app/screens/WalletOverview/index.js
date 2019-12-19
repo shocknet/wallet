@@ -36,8 +36,8 @@ import * as ContactAPI from '../../services/contact-api'
 import * as CSS from '../../css'
 import * as Wallet from '../../services/wallet'
 
-import { getUSDRate, getWalletBalance } from '../../../actions/WalletActions'
-import { fetchRecentTransactions } from '../../../actions/HistoryActions'
+import { getUSDRate, getWalletBalance } from '../../actions/WalletActions'
+import { fetchRecentTransactions } from '../../actions/HistoryActions'
 
 import { CHATS_ROUTE } from '../../screens/Chats'
 

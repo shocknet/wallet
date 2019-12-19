@@ -1,6 +1,6 @@
 import Http from 'axios'
-import { ThunkAction } from 'redux-thunk'
-import { AnyAction } from 'redux'
+import { ThunkAction } from 'redux-thunk' // eslint-disable-line no-unused-vars
+import { AnyAction } from 'redux' // eslint-disable-line no-unused-vars
 
 export const ACTIONS = {
   LOAD_NODE_INFO: 'nodeInfo/load',
