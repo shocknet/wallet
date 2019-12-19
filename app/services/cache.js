@@ -24,59 +24,12 @@ export const DEFAULT_PORT = 9835
  * @prop {string} nodeIP The node ip for which the auth data is valid.
  */
 
+const ALIAS = 'ALIAS'
 const NODE_URL = 'NODE_URL'
 const STORED_AUTH_DATA = 'STORED_AUTH_DATA'
 const AUTHENTICATED_NODE = 'AUTHENTICATED_NODE'
 
 export const NO_CACHED_NODE_IP = 'NO_CACHED_NODE_IP'
-
-/**
- * @typedef {(sad: StoredAuthData|null) => void} StoredAuthDataListener
- */
-
-/**
- * @type {Array<StoredAuthDataListener>}
- */
-const storedAuthDataListeners = []
-
-const notifySADListeners = () => {
-  getStoredAuthData().then(sad => {
-    storedAuthDataListeners.forEach(l => {
-      l(sad)
-    })
-  })
-}
-
-/**
- *
- * @param {StoredAuthDataListener} listener
- * @returns {() => void}
- */
-export const onSADChange = listener => {
-  if (storedAuthDataListeners.includes(listener)) {
-    throw new Error('Tried to subscribe twice')
-  }
-
-  getStoredAuthData()
-    .then(sad => {
-      if (storedAuthDataListeners.includes(listener)) {
-        listener(sad)
-      }
-    })
-    .catch(e => {
-      console.warn(e)
-    })
-
-  return () => {
-    const idx = storedAuthDataListeners.indexOf(listener)
-
-    if (idx < 0) {
-      throw new Error('tried to unsubscribe twice')
-    }
-
-    storedAuthDataListeners.splice(idx, 1)
-  }
-}
 
 /**
  * @returns {Promise<string|null>}
@@ -130,13 +83,54 @@ export const writeNodeURLOrIP = async urlOrIP => {
 /**
  * @returns {Promise<StoredAuthData|null>}
  */
-export const getStoredAuthData = () =>
-  AsyncStorage.getItem(STORED_AUTH_DATA).then(sad => {
-    if (sad === null) {
-      return null
-    }
-    return JSON.parse(sad)
-  })
+export const getStoredAuthData = async () => {
+  const _sad = await AsyncStorage.getItem(STORED_AUTH_DATA)
+
+  if (_sad === null) {
+    return null
+  }
+
+  /**
+   * @type {StoredAuthData}
+   */
+  const sad = JSON.parse(_sad)
+
+  const currNodeURL = await getNodeURL()
+  if (currNodeURL === null) {
+    AsyncStorage.removeItem(STORED_AUTH_DATA)
+    return null
+  }
+  const [currNodeIP] = currNodeURL.split(':')
+
+  if (sad.nodeIP !== currNodeIP) {
+    await AsyncStorage.removeItem(STORED_AUTH_DATA)
+    return null
+  }
+
+  return {
+    ...sad,
+    authData: {
+      ...sad.authData,
+      alias: /** @type {string} */ (await getCachedAlias()),
+    },
+  }
+}
+
+/**
+ * @param {string|null} alias
+ * @returns {Promise<void>}
+ */
+export const writeCachedAlias = alias => {
+  if (alias === null) {
+    return AsyncStorage.removeItem(ALIAS)
+  }
+  return AsyncStorage.setItem(ALIAS, alias)
+}
+
+/**
+ * @returns {Promise<string|null>}
+ */
+export const getCachedAlias = () => AsyncStorage.getItem(ALIAS)
 
 /**
  * @param {AuthData|null} authData
@@ -199,11 +193,10 @@ export const writeStoredAuthData = async authData => {
   }
 
   await Promise.all([
+    writeCachedAlias(authData.alias),
     AsyncStorage.setItem(STORED_AUTH_DATA, JSON.stringify(sad)),
     AsyncStorage.setItem(AUTHENTICATED_NODE, nodeURL),
   ])
-
-  notifySADListeners()
 }
 
 /**
