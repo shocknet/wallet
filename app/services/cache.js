@@ -5,7 +5,7 @@
 import { AsyncStorage } from 'react-native'
 import Http from 'axios'
 
-import { AUTH } from '../navigators/Root'
+import { WALLET_MANAGER } from '../navigators/WalletManager'
 
 import * as Navigation from './navigation'
 import * as Utils from './utils'
@@ -165,7 +165,7 @@ export const getStoredAuthData = async () => {
  */
 export const writeStoredAuthData = async authData => {
   if (authData === null) {
-    Navigation.navigate(AUTH)
+    Navigation.navigate(WALLET_MANAGER)
     return AsyncStorage.removeItem(STORED_AUTH_DATA)
   }
 
