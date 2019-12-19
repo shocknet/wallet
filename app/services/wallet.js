@@ -1,6 +1,4 @@
-/**
- * @format
- */
+import { Socket } from './contact-api'
 
 import * as Cache from './cache'
 import * as Utils from './utils'
@@ -341,6 +339,10 @@ export const balance = async () => {
   }
 
   const res = await fetch(endpoint, payload)
+  if (res.status === 401) {
+    Socket.disconnect()
+    await Cache.writeStoredAuthData(null)
+  }
   const body = await res.json()
 
   if (res.ok) {
@@ -376,6 +378,10 @@ export const getTransactions = async request => {
   }
 
   const res = await fetch(endpoint, payload)
+  if (res.status === 401) {
+    Socket.disconnect()
+    await Cache.writeStoredAuthData(null)
+  }
   const body = await res.json()
 
   if (res.ok) {
@@ -418,6 +424,10 @@ export const listPayments = async request => {
   }
 
   const res = await fetch(url, payload)
+  if (res.status === 401) {
+    Socket.disconnect()
+    await Cache.writeStoredAuthData(null)
+  }
   const body = await res.json()
 
   if (res.ok) {
@@ -458,6 +468,10 @@ export const listInvoices = async request => {
   }
 
   const res = await fetch(url, payload)
+  if (res.status === 401) {
+    Socket.disconnect()
+    await Cache.writeStoredAuthData(null)
+  }
   const body = await res.json()
 
   if (res.ok) {
@@ -512,6 +526,10 @@ export const newAddress = async useOlderFormat => {
   }
 
   const res = await fetch(endpoint, payload)
+  if (res.status === 401) {
+    Socket.disconnect()
+    await Cache.writeStoredAuthData(null)
+  }
 
   const body = await res.json()
 
@@ -570,6 +588,10 @@ export const addInvoice = async request => {
   }
 
   const res = await fetch(endpoint, payload)
+  if (res.status === 401) {
+    Socket.disconnect()
+    await Cache.writeStoredAuthData(null)
+  }
 
   const body = await res.json()
 
@@ -617,6 +639,10 @@ export const sendCoins = async request => {
   }
 
   const res = await fetch(endpoint, payload)
+  if (res.status === 401) {
+    Socket.disconnect()
+    await Cache.writeStoredAuthData(null)
+  }
 
   const body = await res.json()
 
@@ -691,6 +717,10 @@ export const CAUTION_payInvoice = async ({ amt, payreq }) => {
   }
 
   const res = await fetch(endpoint, payload)
+  if (res.status === 401) {
+    Socket.disconnect()
+    await Cache.writeStoredAuthData(null)
+  }
 
   const body = await res.json()
 
@@ -750,6 +780,10 @@ export const decodeInvoice = async ({ payReq }) => {
   }
 
   const res = await fetch(endpoint, payload)
+  if (res.status === 401) {
+    Socket.disconnect()
+    await Cache.writeStoredAuthData(null)
+  }
 
   const body = await res.json()
 
@@ -789,6 +823,10 @@ export const listPeers = async () => {
   }
 
   const res = await fetch(endpoint, payload)
+  if (res.status === 401) {
+    Socket.disconnect()
+    await Cache.writeStoredAuthData(null)
+  }
 
   const body = await res.json()
 
@@ -835,6 +873,10 @@ export const listChannels = async () => {
   }
 
   const res = await fetch(endpoint, payload)
+  if (res.status === 401) {
+    Socket.disconnect()
+    await Cache.writeStoredAuthData(null)
+  }
 
   const body = await res.json()
 
@@ -866,19 +908,77 @@ export const listChannels = async () => {
 }
 
 /**
- * @returns {Promise<{ walletExists: boolean , walletStatus: string|null }>}
+ * @typedef {'locked'|'unlocked'|'noncreated'} WalletStatus
+ */
+
+/**
+ * @returns {Promise<WalletStatus>}
  */
 export const walletStatus = async () => {
   const nodeURL = await Cache.getNodeURL()
   const res = await fetch(`http://${nodeURL}/api/lnd/wallet/status`)
   const body = await res.json()
 
-  if (body.code) {
-    throw new Error(`Error code: ${body.code}`)
+  if (!res.ok) {
+    if (res.status === 401) {
+      Socket.disconnect()
+      await Cache.writeStoredAuthData(null)
+    }
+    throw new Error(body.errorMessage || body.message || 'Unknown Error')
   }
 
-  return {
-    walletExists: !!body.walletExists,
-    walletStatus: body.walletStatus,
+  const { walletExists, walletStatus } = body
+
+  if (walletExists) {
+    return walletStatus
   }
+
+  return 'noncreated'
+}
+
+/**
+ * @typedef {object} NodeInfo
+ * @prop {string[]} uris
+ * @prop {boolean} synced_to_chain
+ * @prop {boolean} synced_to_graph
+ * @prop {string} identity_pubkey
+ * @prop {string} best_header_timestamp
+ * @prop {number} block_height
+ * @prop {number} num_pending_channels
+ * @prop {string} version
+ */
+
+/**
+ * @returns {Promise<NodeInfo>}
+ */
+export const nodeInfo = async () => {
+  const nodeURL = await Cache.getNodeURL()
+  const res = await fetch(`http://${nodeURL}/healthz`)
+  const data = await res.json()
+
+  if (!res.ok) {
+    throw new Error(data.errorMessage || data.message || 'Unknown Error')
+  }
+
+  if (typeof data !== 'object') {
+    throw new TypeError(
+      `Error fetching /healthz: data not an object, instead got: ${JSON.stringify(
+        data,
+      )}`,
+    )
+  }
+
+  const { LNDStatus } = data
+  if (typeof LNDStatus !== 'object') {
+    throw new TypeError(`Error fetching /healthz: data.LNDStatus not an object`)
+  }
+
+  const { message } = LNDStatus
+  if (typeof message !== 'object') {
+    throw new TypeError(
+      `Error fetching /healthz: data.LNDStatus.message not an object`,
+    )
+  }
+
+  return message
 }

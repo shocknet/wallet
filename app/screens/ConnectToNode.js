@@ -47,9 +47,17 @@ export const CONNECT_TO_NODE = 'CONNECT_TO_NODE'
  * @prop {string} nodeURL
  * @prop {boolean} pinging
  * @prop {boolean} wasBadPing
- * @prop {boolean} wasGoodPing
  * @prop {boolean} scanningQR
  */
+
+/** @type {State} */
+const DEFAULT_STATE = {
+  checkingCacheForNodeURL: true,
+  nodeURL: '',
+  pinging: false,
+  wasBadPing: false,
+  scanningQR: false,
+}
 
 /**
  * @augments React.PureComponent<Props, State, never>
@@ -63,31 +71,35 @@ export default class ConnectToNode extends React.PureComponent {
   }
 
   /** @type {State} */
-  state = {
-    checkingCacheForNodeURL: true,
-    nodeURL: '',
-    pinging: false,
-    wasBadPing: false,
-    wasGoodPing: false,
-    scanningQR: false,
+  state = DEFAULT_STATE
+
+  willFocusSub = {
+    remove() {},
   }
 
-  async componentDidMount() {
-    const nodeURL = await Cache.getNodeURL()
-
-    if (nodeURL !== null) {
-      this.props.navigation.navigate(WALLET_MANAGER)
-    } else {
-      this.setState({
-        checkingCacheForNodeURL: false,
-      })
-    }
+  componentDidMount() {
+    this.checkCacheForNodeURL()
+    this.willFocusSub = this.props.navigation.addListener('didFocus', () => {
+      this.setState(DEFAULT_STATE)
+    })
   }
 
-  componentDidUpdate() {
-    if (this.state.wasBadPing && this.state.wasGoodPing) {
-      throw new Error('bad state')
-    }
+  componentWillUnmount() {
+    this.willFocusSub.remove()
+  }
+
+  checkCacheForNodeURL = () => {
+    this.setState(DEFAULT_STATE, async () => {
+      const nodeURL = await Cache.getNodeURL()
+
+      if (nodeURL !== null) {
+        this.props.navigation.navigate(WALLET_MANAGER)
+      } else {
+        this.setState({
+          checkingCacheForNodeURL: false,
+        })
+      }
+    })
   }
 
   /**
@@ -102,17 +114,36 @@ export default class ConnectToNode extends React.PureComponent {
 
   /** @private */
   onPressConnect = () => {
-    this.setState({
-      pinging: true,
-    })
+    const { nodeURL } = this.state
 
-    Conn.pingURL(this.state.nodeURL).then(res => {
-      this.setState({
-        pinging: false,
-        wasBadPing: !res,
-        wasGoodPing: res,
-      })
-    })
+    this.setState(
+      {
+        pinging: true,
+      },
+      async () => {
+        try {
+          const wasGoodPing = await Conn.pingURL(nodeURL)
+
+          if (wasGoodPing) {
+            await Cache.writeNodeURLOrIP(nodeURL)
+
+            this.props.navigation.navigate(WALLET_MANAGER)
+          } else {
+            this.setState({
+              pinging: false,
+              wasBadPing: true,
+            })
+          }
+        } catch (err) {
+          this.setState({
+            pinging: false,
+            wasBadPing: true,
+          })
+
+          console.warn(err.message)
+        }
+      },
+    )
   }
 
   onPressTryAgain = () => {
@@ -128,9 +159,17 @@ export default class ConnectToNode extends React.PureComponent {
   }
 
   onPressContinue = () => {
-    Cache.writeNodeURLOrIP(this.state.nodeURL)
+    this.setState(
+      {
+        // show an spinner
+        pinging: true,
+      },
+      async () => {
+        await Cache.writeNodeURLOrIP(this.state.nodeURL)
 
-    this.props.navigation.navigate(WALLET_MANAGER)
+        this.props.navigation.navigate(WALLET_MANAGER)
+      },
+    )
   }
 
   /**
@@ -150,7 +189,6 @@ export default class ConnectToNode extends React.PureComponent {
       nodeURL,
       wasBadPing,
       pinging,
-      wasGoodPing,
       scanningQR,
     } = this.state
 
@@ -178,23 +216,13 @@ export default class ConnectToNode extends React.PureComponent {
       >
         <View style={styles.shockWalletLogoContainer}>
           <Image style={styles.shockLogo} source={shockLogo} />
-          {!pinging && !wasGoodPing && !wasBadPing && (
+          {!pinging && !wasBadPing && (
             <Text style={styles.logoText}>SHOCKWALLET</Text>
           )}
         </View>
 
-        {wasGoodPing && (
-          <View style={[CSS.styles.width100, CSS.styles.deadCenter]}>
-            <Ionicons
-              name="md-checkmark-circle-outline"
-              size={150}
-              color={CSS.Colors.TEXT_WHITE}
-            />
-            <Pad amount={20} />
-          </View>
-        )}
         <View>
-          {!pinging && !wasGoodPing && !wasBadPing && (
+          {!pinging && !wasBadPing && (
             <Text style={styles.callToAction}>WELCOME</Text>
           )}
 
@@ -202,7 +230,7 @@ export default class ConnectToNode extends React.PureComponent {
             <TextInput
               autoCapitalize="none"
               autoCorrect={false}
-              editable={!pinging && !wasBadPing && !wasGoodPing}
+              editable={!pinging && !wasBadPing}
               keyboardType="numeric"
               onChangeText={this.onChangeNodeURL}
               placeholder="Specify Node IP"
@@ -259,16 +287,7 @@ export default class ConnectToNode extends React.PureComponent {
             </TouchableOpacity>
           )}
 
-          {wasGoodPing && (
-            <TouchableOpacity
-              onPress={this.onPressContinue}
-              style={styles.connectBtn}
-            >
-              <Text style={styles.connectBtnText}>Continue</Text>
-            </TouchableOpacity>
-          )}
-
-          {!pinging && !wasGoodPing && !wasBadPing && (
+          {!pinging && !wasBadPing && (
             <TouchableOpacity
               disabled={!isValidIP(nodeURL) || pinging}
               onPress={this.onPressConnect}
@@ -278,7 +297,7 @@ export default class ConnectToNode extends React.PureComponent {
             </TouchableOpacity>
           )}
 
-          {!pinging && !wasGoodPing && !wasBadPing && (
+          {!pinging && !wasBadPing && (
             <TouchableOpacity disabled>
               <View style={styles.shockBtn}>
                 <EntypoIcon name="cloud" size={20} color="#274f94" />

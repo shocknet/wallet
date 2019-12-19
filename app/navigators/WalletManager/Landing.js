@@ -17,11 +17,12 @@ import * as API from '../../services/contact-api'
 import * as Auth from '../../services/auth'
 import * as Wallet from '../../services/wallet'
 import * as CSS from '../../css'
-import { CREATE_WALLET } from './CreateWallet'
 
 import * as Cache from '../../services/cache'
 import { LOGIN } from '../../screens/Login'
 import { APP } from '../Root'
+
+import { CREATE_WALLET_OR_ALIAS } from './CreateWalletOrAlias'
 
 export const LANDING = 'LANDING'
 
@@ -32,9 +33,19 @@ export const LANDING = 'LANDING'
 
 /**
  * @typedef {object} State
- * @prop {boolean|null} needsUnlock
+ * @prop {boolean} fetching
  * @prop {string|null} err
+ * @prop {boolean|null} isGunAuth
+ * @prop {Wallet.WalletStatus|null} walletStatus
  */
+
+/** @type {State} */
+const DEFAULT_STATE = {
+  err: null,
+  fetching: true,
+  isGunAuth: null,
+  walletStatus: null,
+}
 
 /**
  * @augments React.PureComponent<Props, State>
@@ -50,10 +61,7 @@ export default class CreateWallet extends React.PureComponent {
   /**
    * @type {State}
    */
-  state = {
-    err: null,
-    needsUnlock: null,
-  }
+  state = DEFAULT_STATE
 
   willFocusSub = {
     remove() {},
@@ -66,13 +74,10 @@ export default class CreateWallet extends React.PureComponent {
   componentDidMount() {
     this.willFocusSub = this.props.navigation.addListener(
       'didFocus',
-      this.checkWalletStatus,
+      this.setup,
     )
     this.willBlurSub = this.props.navigation.addListener('didBlur', () => {
-      this.setState({
-        err: null,
-        needsUnlock: null,
-      })
+      this.setState(DEFAULT_STATE)
     })
   }
 
@@ -81,37 +86,53 @@ export default class CreateWallet extends React.PureComponent {
     this.willBlurSub.remove()
   }
 
-  checkWalletStatus = () => {
-    this.setState(
-      {
-        err: null,
-        needsUnlock: null,
-      },
-      async () => {
-        try {
-          const authData = await Cache.getStoredAuthData()
-          const { walletExists } = await Wallet.walletStatus()
-          const gunAuthed = await Auth.isGunAuthed()
+  setup = async () => {
+    this.setState(DEFAULT_STATE)
 
-          if (authData !== null && walletExists && gunAuthed) {
-            await API.Socket.connect()
-            this.props.navigation.navigate(APP)
-          } else {
-            this.setState({
-              needsUnlock: true,
-            })
-          }
-        } catch (e) {
-          this.setState({
-            err: e.message,
-          })
+    try {
+      const authData = await Cache.getStoredAuthData()
+      const walletStatus = await Wallet.walletStatus()
+      const isGunAuth = await Auth.isGunAuthed()
+
+      this.setState({
+        err: null,
+        fetching: false,
+        walletStatus,
+        isGunAuth,
+      })
+
+      if (walletStatus === 'noncreated') {
+        await Cache.writeStoredAuthData(null)
+      }
+
+      if (walletStatus === 'unlocked') {
+        if (authData !== null && isGunAuth) {
+          await API.Socket.connect()
+          this.props.navigation.navigate(APP)
+        } else {
+          this.props.navigation.navigate(LOGIN)
         }
-      },
-    )
+      }
+
+      if (walletStatus === 'locked') {
+        if (authData === null) {
+          this.props.navigation.navigate(CREATE_WALLET_OR_ALIAS)
+        } else {
+          this.props.navigation.navigate(LOGIN)
+        }
+      }
+    } catch (e) {
+      this.setState({
+        err: e.message,
+        fetching: false,
+        isGunAuth: null,
+        walletStatus: null,
+      })
+    }
   }
 
   onPressCreate = () => {
-    this.props.navigation.navigate(CREATE_WALLET)
+    this.props.navigation.navigate(CREATE_WALLET_OR_ALIAS)
   }
 
   onPressUnlock = () => {
@@ -119,12 +140,15 @@ export default class CreateWallet extends React.PureComponent {
   }
 
   render() {
-    const { err, needsUnlock } = this.state
-    const fetchingWalletStatus = needsUnlock === null && err === null
+    const { err, fetching, isGunAuth, walletStatus } = this.state
+    const needsCreation = walletStatus === 'noncreated'
+    const needsUnlock =
+      (!isGunAuth && walletStatus !== 'noncreated') ||
+      walletStatus === 'unlocked'
 
     return (
       <View style={styles.container}>
-        {fetchingWalletStatus && (
+        {fetching && (
           <View style={[styles.subContainer, styles.creatingWalletDialog]}>
             <View style={styles.formHead}>
               <View style={styles.formHeadIconContainer}>
@@ -140,7 +164,7 @@ export default class CreateWallet extends React.PureComponent {
           </View>
         )}
 
-        {!fetchingWalletStatus && (
+        {!fetching && (
           <ScrollView
             contentContainerStyle={[
               styles.subContainer,
@@ -163,8 +187,11 @@ export default class CreateWallet extends React.PureComponent {
                     return CSS.Colors.FAILURE_RED
                   }
 
-                  // need to create wallet
-                  return CSS.Colors.CAUTION_YELLOW
+                  if (needsCreation) {
+                    return CSS.Colors.CAUTION_YELLOW
+                  }
+
+                  throw new Error('Unreachable code')
                 })()}
               />
               <Text style={styles.msg}>
@@ -177,23 +204,15 @@ export default class CreateWallet extends React.PureComponent {
                     return err
                   }
 
-                  // wallet does not exist
-                  return 'You need to create a wallet before proceeding'
+                  if (needsCreation) {
+                    return 'You need to create a wallet before proceeding'
+                  }
+
+                  throw new Error('Unreachable code')
                 })()}
               </Text>
             </View>
             {(() => {
-              if (err) {
-                return (
-                  <TouchableOpacity
-                    onPress={this.checkWalletStatus}
-                    style={styles.connectBtn}
-                  >
-                    <Text style={styles.connectBtnText}>Try Again</Text>
-                  </TouchableOpacity>
-                )
-              }
-
               if (needsUnlock) {
                 return (
                   <TouchableOpacity
@@ -205,14 +224,29 @@ export default class CreateWallet extends React.PureComponent {
                 )
               }
 
-              return (
-                <TouchableOpacity
-                  onPress={this.onPressCreate}
-                  style={styles.connectBtn}
-                >
-                  <Text style={styles.connectBtnText}>Create Wallet</Text>
-                </TouchableOpacity>
-              )
+              if (err) {
+                return (
+                  <TouchableOpacity
+                    onPress={this.setup}
+                    style={styles.connectBtn}
+                  >
+                    <Text style={styles.connectBtnText}>Try Again</Text>
+                  </TouchableOpacity>
+                )
+              }
+
+              if (needsCreation) {
+                return (
+                  <TouchableOpacity
+                    onPress={this.onPressCreate}
+                    style={styles.connectBtn}
+                  >
+                    <Text style={styles.connectBtnText}>Create Wallet</Text>
+                  </TouchableOpacity>
+                )
+              }
+
+              throw new Error('Unreachable code.')
             })()}
           </ScrollView>
         )}
