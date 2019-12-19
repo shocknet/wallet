@@ -103,7 +103,7 @@
     "valid-typeof": "off",
     "babel/valid-typeof": 1,
     // needed for redux reducers function arguments
-    "default-param-last": "off"
+    "default-param-last": 1
   },
   "settings": {
     "react": {
