@@ -48,7 +48,7 @@ export const CREATE_WALLET_OR_ALIAS = 'CREATE_WALLET_OR_ALIAS'
 /**
  * @augments React.PureComponent<Props, State>
  */
-export default class CreateWallet extends React.PureComponent {
+export default class CreateWalletOrAlias extends React.PureComponent {
   /**
    * @type {State}
    */
