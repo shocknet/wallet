@@ -1082,9 +1082,12 @@ class WalletOverview extends Component {
       })
       .catch(err => console.error('An error occurred', err))
 
-    this.fetchBalance()
-    this.fetchExchangeRate()
-    this.fetchRecentTransactions()
+    this.balanceIntervalID = setInterval(this.fetchBalance, 4000)
+    this.exchangeRateIntervalID = setInterval(this.fetchExchangeRate, 4000)
+    this.recentTransactionsIntervalID = setInterval(
+      this.fetchRecentTransactions,
+      4000,
+    )
   }
 
   componentWillUnmount() {
@@ -1103,36 +1106,16 @@ class WalletOverview extends Component {
     }
   }
 
-  /**
-   * Promisified setTimeout
-   * @param {number} ms
-   */
-  wait = ms =>
-    new Promise(resolve => {
-      /**
-       * Timeout ID
-       * @type {number}
-       */
-      const timeout = setTimeout(() => resolve(timeout), ms)
-    })
-
-  fetchRecentTransactions = async () => {
-    const { fetchRecentTransactions } = this.props
-    await fetchRecentTransactions()
-    await this.wait(4000)
-    this.fetchRecentTransactions()
+  fetchRecentTransactions = () => {
+    this.props.fetchRecentTransactions()
   }
 
-  fetchBalance = async () => {
-    const { getWalletBalance } = this.props
-    await getWalletBalance()
-    await this.wait(4000)
-    this.fetchBalance()
+  fetchBalance = () => {
+    this.props.getWalletBalance()
   }
 
-  fetchExchangeRate = async () => {
-    const { getUSDRate } = this.props
-    await getUSDRate()
+  fetchExchangeRate = () => {
+    this.props.getUSDRate()
   }
 
   onPressRequest = () => {
