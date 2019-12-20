@@ -18,13 +18,30 @@
       android:icon="@mipmap/ic_launcher"
       android:allowBackup="false"
       android:theme="@style/AppTheme">
+      <!-- android:launchMode="singleTask" to verofy if conflict -->
       <activity
         android:name=".MainActivity"
+
+        android:launchMode="singleTask"
+
         android:label="@string/app_name"
         android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
         android:windowSoftInputMode="adjustResize"
         android:screenOrientation="portrait"
         android:exported="true">
+
+        <intent-filter android:label="bitcoin_filter">
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.DEFAULT" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="bitcoin" />
+        </intent-filter>
+        <intent-filter android:label="lightning_filter">
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.DEFAULT" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="lightning" />
+        </intent-filter>
 
       </activity>
       <activity android:name="com.facebook.react.devsupport.DevSettingsActivity" />

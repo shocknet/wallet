@@ -3,6 +3,7 @@ package com.shockwallet;
 import android.app.Application;
 
 import com.facebook.react.ReactApplication;
+import br.com.classapp.RNSensitiveInfo.RNSensitiveInfoPackage;
 import com.reactnativecommunity.netinfo.NetInfoPackage;
 import com.zoontek.rnbootsplash.RNBootSplashPackage;
 import com.reactnativecommunity.asyncstorage.AsyncStoragePackage;
@@ -30,6 +31,7 @@ public class MainApplication extends Application implements ReactApplication {
     protected List<ReactPackage> getPackages() {
       return Arrays.<ReactPackage>asList(
           new MainReactPackage(),
+            new RNSensitiveInfoPackage(),
             new NetInfoPackage(),
             new RNBootSplashPackage(),
             new LinearGradientPackage(),

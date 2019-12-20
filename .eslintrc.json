@@ -101,7 +101,9 @@
     "no-unused-expressions": "off",
     "babel/no-unused-expressions": ["error", { "allowShortCircuit": true }],
     "valid-typeof": "off",
-    "babel/valid-typeof": 1
+    "babel/valid-typeof": 1,
+    // needed for redux reducers function arguments
+    "default-param-last": 1
   },
   "settings": {
     "react": {

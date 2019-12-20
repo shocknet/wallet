@@ -16,9 +16,9 @@ import EntypoIcons from 'react-native-vector-icons/Entypo'
 import Feather from 'react-native-vector-icons/Feather'
 import Http from 'axios'
 import Big from 'big.js'
+import { connect } from 'react-redux'
 
 import * as CSS from '../../css'
-import * as Wallet from '../../services/wallet'
 import * as Cache from '../../services/cache'
 import BasicDialog from '../../components/BasicDialog'
 import ShockInput from '../../components/ShockInput'
@@ -33,6 +33,15 @@ import Channel from './Accordion/Channel'
 import Peer from './Accordion/Peer'
 import InfoModal from './InfoModal'
 // import { Icon } from 'react-native-elements'
+import {
+  fetchChannels,
+  fetchInvoices,
+  fetchPayments,
+  fetchPeers,
+  fetchTransactions,
+  fetchHistory,
+} from '../../actions/HistoryActions'
+import { fetchNodeInfo } from '../../actions/NodeActions'
 export const ADVANCED_SCREEN = 'ADVANCED_SCREEN'
 
 /**
@@ -52,13 +61,6 @@ export const ADVANCED_SCREEN = 'ADVANCED_SCREEN'
 /**
  * @typedef {object} State
  * @prop {Accordions} accordions
- * @prop {Wallet.PaginatedTransactionsResponse} transactions
- * @prop {Wallet.Peer[]} peers
- * @prop {Wallet.PaginatedListInvoicesResponse} invoices
- * @prop {Wallet.Channel[]} channels
- * @prop {string} confirmedBalance
- * @prop {string} channelBalance
- * @prop {null|number} USDRate
  * @prop {boolean} addPeerOpen
  * @prop {boolean} addChannelOpen: false,
  * @prop {string} peerPublicKey
@@ -69,14 +71,21 @@ export const ADVANCED_SCREEN = 'ADVANCED_SCREEN'
  * @prop {string} err
  * @prop {ChannelPoint|null} willCloseChannelPoint
  *
- * @prop {Wallet.NodeInfo|null} nodeInfo
  * @prop {boolean} nodeInfoModal
  */
 
 /**
- * @augments React.Component<{}, State>
+ * @typedef {ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps} ConnectedRedux
  */
-export default class AdvancedScreen extends Component {
+
+/**
+ * @typedef {ConnectedRedux & object} Props
+ */
+
+/**
+ * @augments React.Component<Props, State, never>
+ */
+class AdvancedScreen extends Component {
   /** @type {State} */
   state = {
     accordions: {
@@ -85,22 +94,6 @@ export default class AdvancedScreen extends Component {
       invoices: false,
       channels: false,
     },
-    transactions: {
-      content: [],
-      page: 0,
-      totalPages: 0,
-      totalItems: 0,
-    },
-    peers: [],
-    invoices: {
-      content: [],
-      page: 0,
-      totalPages: 0,
-    },
-    channels: [],
-    confirmedBalance: '0',
-    channelBalance: '0',
-    USDRate: null,
     addPeerOpen: false,
     addChannelOpen: false,
     peerPublicKey: '',
@@ -111,37 +104,15 @@ export default class AdvancedScreen extends Component {
     err: '',
     willCloseChannelPoint: null,
 
-    nodeInfo: null,
     nodeInfoModal: false,
   }
 
   componentDidMount() {
-    this.getUserBalance()
     this.fetchData()
   }
 
-  getUserBalance = async () => {
-    try {
-      const [walletBalance, USDRate] = await Promise.all([
-        Wallet.balance(),
-        Wallet.USDExchangeRate(),
-      ])
-      console.log(walletBalance, USDRate)
-
-      const parsedChannelBalance = new Big(walletBalance.channel_balance)
-      const parsedOpenBalance = new Big(walletBalance.pending_channel_balance)
-      this.setState({
-        USDRate,
-        confirmedBalance: walletBalance.confirmed_balance,
-        channelBalance: parsedChannelBalance.plus(parsedOpenBalance).toFixed(2),
-      })
-    } catch (err) {
-      console.error(err)
-    }
-  }
-
   convertBTCToUSD = () => {
-    const { confirmedBalance, channelBalance, USDRate } = this.state
+    const { confirmedBalance, channelBalance, USDRate } = this.props.wallet
     if (USDRate !== null) {
       const parsedConfirmedBalance = new Big(confirmedBalance)
       const parsedChannelBalance = new Big(channelBalance)
@@ -170,40 +141,12 @@ export default class AdvancedScreen extends Component {
 
   fetchData = async () => {
     try {
-      const [invoices, peers, channels] = await Promise.all([
-        Wallet.listInvoices({
-          itemsPerPage: 20,
-          page: 1,
-        }),
-        Wallet.listPeers(),
-        Wallet.listChannels(),
-      ])
-
-      Wallet.nodeInfo()
-        .then(nodeInfo => {
-          this.setState({
-            nodeInfo,
-          })
-        })
-        .catch(e => {
-          console.warn(
-            `Error fetching node info: ${e.message}, status: ${e.status}`,
-          )
-        })
-
-      console.log({
-        invoices,
-        peers,
-        channels,
-      })
-
-      this.setState({
-        invoices,
-        peers,
-        channels,
-      })
+      const { fetchHistory, fetchNodeInfo } = this.props
+      await Promise.all([fetchHistory(), fetchNodeInfo()])
+      return true
     } catch (err) {
-      console.error(err)
+      console.error(err.response)
+      throw err
     }
   }
 
@@ -250,31 +193,26 @@ export default class AdvancedScreen extends Component {
   /**
    *
    * @param {string} routeName
-   * @param {'invoices'|'transactions'} stateName
    */
-  fetchNextPage = async (routeName, stateName) => {
-    const currentData = this.state[stateName]
-    await this.wait(2000)
-    const { data } = await Http.get(
-      `/api/lnd/list${routeName}?page=${currentData.page + 1}`,
-    )
+  fetchNextPage = routeName => {
+    const {
+      history,
+      fetchInvoices,
+      fetchPayments,
+      fetchTransactions,
+    } = this.props
+    const currentData = history[routeName]
 
-    if (stateName === 'invoices') {
-      this.setState(({ invoices }) => ({
-        invoices: {
-          ...data,
-          content: [...invoices.content, ...data.content],
-        },
-      }))
+    if (routeName === 'invoices') {
+      fetchInvoices({ page: currentData.page + 1 })
     }
 
-    if (stateName === 'transactions') {
-      this.setState(({ transactions }) => ({
-        transactions: {
-          ...data,
-          content: [...transactions.content, ...data.content],
-        },
-      }))
+    if (routeName === 'payments') {
+      fetchPayments({ page: currentData.page + 1 })
+    }
+
+    if (routeName === 'transactions') {
+      fetchTransactions({ page: currentData.page + 1 })
     }
   }
 
@@ -292,6 +230,7 @@ export default class AdvancedScreen extends Component {
   addPeer = async () => {
     try {
       const { peerPublicKey, host } = this.state
+      const { fetchPeers } = this.props
       this.setState({
         addPeerOpen: false,
         peerPublicKey: '',
@@ -319,13 +258,7 @@ export default class AdvancedScreen extends Component {
 
       ToastAndroid.show('Added successfully', 800)
 
-      const newPeers = await Http.get('/api/lnd/listpeers')
-
-      console.log('newPeers', newPeers)
-
-      this.setState({
-        peers: newPeers.data.peers,
-      })
+      fetchPeers()
     } catch (err) {
       this.showErr(err.message)
       console.error(Http.defaults.baseURL, err.response)
@@ -344,6 +277,7 @@ export default class AdvancedScreen extends Component {
         channelCapacity,
         channelPushAmount,
       } = this.state
+      const { fetchChannels } = this.props
 
       this.setState({
         addChannelOpen: false,
@@ -364,11 +298,7 @@ export default class AdvancedScreen extends Component {
 
       ToastAndroid.show('Added successfully', 800)
 
-      const newChannels = await Wallet.listChannels()
-
-      this.setState({
-        channels: newChannels,
-      })
+      fetchChannels()
     } catch (err) {
       this.setState({
         addChannelOpen: false,
@@ -479,26 +409,19 @@ export default class AdvancedScreen extends Component {
   }
 
   render() {
+    const { node, wallet, history, fetchChannels } = this.props
     const {
       accordions,
-      // transactions,
-      peers,
-      // invoices,
-      channels,
       addPeerOpen,
       addChannelOpen,
       peerPublicKey,
       channelPublicKey,
       host,
-      USDRate,
-      confirmedBalance,
-      channelBalance,
       channelCapacity,
       channelPushAmount,
 
       willCloseChannelPoint,
 
-      nodeInfo,
       nodeInfoModal,
     } = this.state
     const { confirmedBalanceUSD, channelBalanceUSD } = this.convertBTCToUSD()
@@ -506,7 +429,7 @@ export default class AdvancedScreen extends Component {
       <View style={styles.container}>
         <InfoModal
           visible={nodeInfoModal}
-          info={nodeInfo}
+          info={node.nodeInfo}
           onRequestClose={this.closeNodeInfo}
         />
         <LinearGradient
@@ -532,13 +455,13 @@ export default class AdvancedScreen extends Component {
               </View>
               <View>
                 <Text style={styles.statTextPrimary}>
-                  {USDRate
-                    ? channelBalance.replace(/(\d)(?=(\d{3})+$)/g, '$1,')
+                  {wallet.USDRate
+                    ? wallet.channelBalance.replace(/(\d)(?=(\d{3})+$)/g, '$1,')
                     : 'Loading...'}{' '}
                   sats
                 </Text>
                 <Text style={styles.statTextSecondary}>
-                  {USDRate
+                  {wallet.USDRate
                     ? channelBalanceUSD.replace(/\d(?=(\d{3})+\.)/g, '$&,')
                     : 'Loading...'}{' '}
                   USD
@@ -551,13 +474,16 @@ export default class AdvancedScreen extends Component {
               </View>
               <View>
                 <Text style={styles.statTextPrimary}>
-                  {USDRate
-                    ? confirmedBalance.replace(/(\d)(?=(\d{3})+$)/g, '$1,')
+                  {wallet.USDRate
+                    ? wallet.confirmedBalance.replace(
+                        /(\d)(?=(\d{3})+$)/g,
+                        '$1,',
+                      )
                     : 'Loading...'}{' '}
                   sats
                 </Text>
                 <Text style={styles.statTextSecondary}>
-                  {USDRate
+                  {wallet.USDRate
                     ? confirmedBalanceUSD.replace(/\d(?=(\d{3})+\.)/g, '$&,')
                     : 'Loading...'}{' '}
                   USD
@@ -565,7 +491,7 @@ export default class AdvancedScreen extends Component {
               </View>
             </View>
             <View style={styles.getInfoHolder}>
-              {nodeInfo !== null ? (
+              {node.nodeInfo !== null ? (
                 <TouchableOpacity onPress={this.openNodeInfo}>
                   <View style={styles.centeredRow}>
                     <Text style={styles.getInfoText}>Get Info</Text>
@@ -586,7 +512,7 @@ export default class AdvancedScreen extends Component {
         <View style={styles.accordionsContainer}>
           {/* <AccordionItem
             fetchNextPage={() => this.fetchNextPage('payments', 'transactions')}
-            data={transactions}
+            data={history.transactions}
             Item={Transaction}
             title="Transactions"
             open={accordions['transactions']}
@@ -604,7 +530,7 @@ export default class AdvancedScreen extends Component {
             keyExtractor={transaction => transaction.tx_hash}
           /> */}
           <AccordionItem
-            data={peers}
+            data={history.peers}
             Item={Peer}
             title="Peers"
             open={accordions.peers}
@@ -626,7 +552,7 @@ export default class AdvancedScreen extends Component {
           />
           {/* <AccordionItem
             fetchNextPage={() => this.fetchNextPage('invoices', 'invoices')}
-            data={invoices}
+            data={history.invoices}
             Item={Invoice}
             title="Invoices"
             open={accordions['invoices']}
@@ -634,7 +560,7 @@ export default class AdvancedScreen extends Component {
             keyExtractor={inv => inv.r_hash.data.join('-')}
           /> */}
           <AccordionItem
-            data={channels}
+            data={history.channels}
             Item={Channel}
             keyExtractor={channelKeyExtractor}
             title="Channels"
@@ -742,15 +668,7 @@ export default class AdvancedScreen extends Component {
                     throw new Error(res.data.errorMessage || 'Unknown error.')
                   }
 
-                  this.setState({
-                    channels: [],
-                  })
-
-                  Wallet.listChannels().then(channels => {
-                    this.setState({
-                      channels,
-                    })
-                  })
+                  fetchChannels()
 
                   ToastAndroid.show('Closed successfully', 800)
                 } catch (err) {
@@ -768,6 +686,30 @@ export default class AdvancedScreen extends Component {
     )
   }
 }
+
+/**
+ * @param {typeof import('../../../reducers/index').default} state
+ */
+const mapStateToProps = ({ history, node, wallet }) => ({
+  history,
+  node,
+  wallet,
+})
+
+const mapDispatchToProps = {
+  fetchChannels,
+  fetchInvoices,
+  fetchPayments,
+  fetchPeers,
+  fetchTransactions,
+  fetchHistory,
+  fetchNodeInfo,
+}
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(AdvancedScreen)
 
 const styles = StyleSheet.create({
   container: {
@@ -860,11 +802,11 @@ const xStyles = {
 }
 
 /**
- * @param {Wallet.Channel} channel
+ * @param {import('../../services/wallet').Channel} channel
  */
 const channelKeyExtractor = channel => channel.channel_point
 
 /**
- * @param {Wallet.Peer} p
+ * @param {import('../../services/wallet').Peer} p
  */
 const peerKeyExtractor = p => p.pub_key

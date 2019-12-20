@@ -82,67 +82,9 @@ export default class UnifiedTransactions extends React.PureComponent {
       return <ActivityIndicator />
     }
 
-    const filtered = unifiedTrx.filter(unifiedTransaction => {
-      if (Wallet.isInvoice(unifiedTransaction)) {
-        return unifiedTransaction.settled
-      }
-
-      if (Wallet.isPayment(unifiedTransaction)) {
-        return true
-      }
-
-      if (Wallet.isTransaction(unifiedTransaction)) {
-        return true
-      }
-
-      console.warn(
-        `<UnifiedTrx /> -> render() -> unknown kind of item found: ${JSON.stringify(
-          unifiedTransaction,
-        )}`,
-      )
-
-      return false
-    })
-
-    filtered.sort((a, b) => {
-      const _a = (() => {
-        if (Wallet.isInvoice(a)) {
-          return Number(a.settle_date)
-        }
-
-        if (Wallet.isPayment(a)) {
-          return Number(a.creation_date)
-        }
-
-        if (Wallet.isTransaction(a)) {
-          return Number(a.time_stamp)
-        }
-
-        return 0
-      })()
-
-      const _b = (() => {
-        if (Wallet.isInvoice(b)) {
-          return Number(b.settle_date)
-        }
-
-        if (Wallet.isPayment(b)) {
-          return Number(b.creation_date)
-        }
-
-        if (Wallet.isTransaction(b)) {
-          return Number(b.time_stamp)
-        }
-
-        return 0
-      })()
-
-      return _b - _a
-    })
-
     return (
       <FlatList
-        data={filtered}
+        data={unifiedTrx}
         keyExtractor={keyExtractor}
         ItemSeparatorComponent={Separator}
         ListEmptyComponent={Empty}
