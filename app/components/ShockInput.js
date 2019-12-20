@@ -4,7 +4,7 @@
 import React from 'react'
 import { TextInput, StyleSheet } from 'react-native'
 
-import { Colors } from '../css'
+import { Colors } from '../res/css'
 
 /**
  * @typedef {object} Props

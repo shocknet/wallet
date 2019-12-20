@@ -33,7 +33,7 @@ import UserDetail from '../../components/UserDetail'
 
 import btcConvert from '../../services/convertBitcoin'
 import * as ContactAPI from '../../services/contact-api'
-import * as CSS from '../../css'
+import * as CSS from '../../res/css'
 import * as Wallet from '../../services/wallet'
 
 import { getUSDRate, getWalletBalance } from '../../actions/WalletActions'

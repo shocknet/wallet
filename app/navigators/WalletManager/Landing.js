@@ -16,7 +16,7 @@ import EntypoIcon from 'react-native-vector-icons/Entypo'
 import * as API from '../../services/contact-api'
 import * as Auth from '../../services/auth'
 import * as Wallet from '../../services/wallet'
-import * as CSS from '../../css'
+import * as CSS from '../../res/css'
 
 import * as Cache from '../../services/cache'
 import { LOGIN } from '../../screens/Login'

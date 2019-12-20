@@ -7,7 +7,7 @@ import { BackHandler, StyleSheet, Text, View } from 'react-native'
 import QRCodeScanner from 'react-native-qrcode-scanner'
 import Feather from 'react-native-vector-icons/Feather'
 
-import { Colors } from '../css'
+import { Colors } from '../res/css'
 
 /**
  * @typedef {object} Props

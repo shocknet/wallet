@@ -7,7 +7,7 @@ import LinearGradient from 'react-native-linear-gradient'
 import QRCodeScanner from 'react-native-qrcode-scanner'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 
-import * as CSS from '../css'
+import * as CSS from '../res/css'
 
 /**
  * @typedef {object} Props
