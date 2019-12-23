@@ -6,6 +6,10 @@ import { StyleSheet } from 'react-native'
 export const Colors = {
   BACKDROP: 'rgba(0, 0, 0, 0.4)',
   /**
+   * Blue when used as a background.
+   */
+  BACKGROUND_BLUE: '#4285B9',
+  /**
    * Black when used as a background.
    */
   BACKGROUND_BLACK: '#000000',
@@ -45,10 +49,15 @@ export const styles = StyleSheet.create({
   flex: { flex: 1 },
   flexZero: { flex: 0 },
   flexRow: { flexDirection: 'row' },
+  fontMontserratBold: { fontFamily: 'Montserrat-700' },
+  fontSize20: { fontSize: 20 },
+  fontSize22: { fontSize: 22 },
   fontSize24: { fontSize: 24 },
   height0: { height: '0%' },
   height100: { height: '100%' },
+  justifyCenter: { justifyContent: 'center' },
   justifySpaceBetween: { justifyContent: 'space-between' },
+  justifySpaceEvenly: { justifyContent: 'space-evenly' },
   deadCenter: {
     alignItems: 'center',
     justifyContent: 'center',
