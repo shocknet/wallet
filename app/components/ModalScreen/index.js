@@ -1,5 +1,5 @@
 import React from 'react'
-import { View, StyleSheet, ScrollView, Text } from 'react-native'
+import { View, StyleSheet, Text } from 'react-native'
 import range from 'lodash/range'
 
 import Pad from '../../components/Pad'
@@ -60,7 +60,7 @@ export default class ModalScreen extends React.PureComponent {
       <ShockBackground>
         <View style={styles.container}>
           <View style={styles.modal}>
-            <ScrollView>{this.props.children}</ScrollView>
+            <View>{this.props.children}</View>
 
             {(hasPages || showSkipBtn) && <Pad amount={16} />}
 
