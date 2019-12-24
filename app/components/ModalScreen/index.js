@@ -60,7 +60,7 @@ export default class ModalScreen extends React.PureComponent {
       <ShockBackground>
         <View style={styles.container}>
           <View style={styles.modal}>
-            <View>{this.props.children}</View>
+            <View style={CSS.styles.flex}>{this.props.children}</View>
 
             {(hasPages || showSkipBtn) && <Pad amount={16} />}
 
