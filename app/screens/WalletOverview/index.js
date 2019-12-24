@@ -1286,7 +1286,7 @@ class WalletOverview extends Component {
           <Nav title="Wallet" />
           {this.renderBalance()}
         </ImageBackground>
-        {nodeInfo.testnet ? (
+        {nodeInfo && nodeInfo.testnet ? (
           <Text style={styles.networkNotice}>
             You are using Testnet network
           </Text>
