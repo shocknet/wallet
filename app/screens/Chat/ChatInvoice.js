@@ -13,7 +13,7 @@ import Entypo from 'react-native-vector-icons/Entypo'
 
 import moment from 'moment'
 
-import { Colors } from '../../css'
+import { Colors } from '../../res/css'
 
 /**
  * @typedef {object} _PaymentStatus

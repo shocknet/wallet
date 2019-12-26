@@ -19,7 +19,7 @@ import ShockDialog from '../../components/ShockDialog'
 
 import * as Auth from '../../services/auth'
 import * as Cache from '../../services/cache'
-import * as CSS from '../../css'
+import * as CSS from '../../res/css'
 import * as Wallet from '../../services/wallet'
 import { LOGIN } from '../../screens/Login'
 import { Socket } from '../../services/contact-api'
@@ -48,7 +48,7 @@ export const CREATE_WALLET_OR_ALIAS = 'CREATE_WALLET_OR_ALIAS'
 /**
  * @augments React.PureComponent<Props, State>
  */
-export default class CreateWallet extends React.PureComponent {
+export default class CreateWalletOrAlias extends React.PureComponent {
   /**
    * @type {State}
    */

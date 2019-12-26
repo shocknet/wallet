@@ -9,7 +9,7 @@ import {
   TouchableWithoutFeedback,
 } from 'react-native'
 
-import * as CSS from '../css'
+import * as CSS from '../res/css'
 
 /**
  * @typedef {object} Props

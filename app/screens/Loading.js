@@ -11,7 +11,7 @@ import {
   ImageBackground,
 } from 'react-native'
 
-import * as CSS from '../css'
+import * as CSS from '../res/css'
 
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation

@@ -18,7 +18,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons'
  * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation
  */
 
-import * as CSS from '../css'
+import * as CSS from '../res/css'
 import * as Cache from '../services/cache'
 import * as Conn from '../services/connection'
 import { isValidURL as isValidIP } from '../services/utils'

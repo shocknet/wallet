@@ -19,7 +19,7 @@ import {
 import * as API from '../services/contact-api'
 import * as Cache from '../services/cache'
 import * as Auth from '../services/auth'
-import * as CSS from '../css'
+import * as CSS from '../res/css'
 import ShockDialog from '../components/ShockDialog'
 import { APP } from '../navigators/Root'
 import { CREATE_WALLET_OR_ALIAS } from '../navigators/WalletManager/CreateWalletOrAlias'

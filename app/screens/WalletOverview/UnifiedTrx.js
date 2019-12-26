@@ -12,7 +12,7 @@ import {
 } from 'react-native'
 
 import * as Wallet from '../../services/wallet'
-import * as CSS from '../../css'
+import * as CSS from '../../res/css'
 
 import UnifiedTransaction from './UnifiedTransaction'
 /**

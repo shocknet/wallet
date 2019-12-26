@@ -8,7 +8,7 @@ import Entypo from 'react-native-vector-icons/Entypo'
 import moment from 'moment'
 
 import * as Wallet from '../../services/wallet'
-import * as CSS from '../../css'
+import * as CSS from '../../res/css'
 import Pad from '../../components/Pad'
 
 /**

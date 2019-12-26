@@ -4,7 +4,7 @@ import React from 'react'
 import { Modal, View, StyleSheet, TouchableWithoutFeedback } from 'react-native'
 import { Text } from 'react-native-elements'
 
-import * as CSS from '../css'
+import * as CSS from '../res/css'
 
 import IGDialogBtn from './IGDialogBtn'
 
