@@ -1,6 +1,6 @@
 import { createStackNavigator } from 'react-navigation'
 
-import { stackNavConfigHeaderMixin } from '../../res'
+import { stackNavConfigHeaderMixin } from '../../components/ShockBackground'
 
 import CreateWalletOrAlias, {
   CREATE_WALLET_OR_ALIAS,
