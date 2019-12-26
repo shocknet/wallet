@@ -13,6 +13,7 @@ import {
   TouchableHighlight,
   View,
   Linking,
+  TouchableOpacity,
 } from 'react-native'
 import EntypoIcons from 'react-native-vector-icons/Entypo'
 import { connect } from 'react-redux'
@@ -43,6 +44,9 @@ import { CHATS_ROUTE } from '../../screens/Chats'
 
 import QR from './QR'
 import UnifiedTrx from './UnifiedTrx'
+
+import notificationService from '../../../notificationService'
+import * as Cache from '../../services/cache'
 
 /**
  * @typedef {object} Params
@@ -1130,6 +1134,22 @@ class WalletOverview extends Component {
     })
   }
 
+  startNotificationService = async () => {
+    const authData = await Cache.getStoredAuthData()
+    const nodeInfo = await Cache.getNodeURL()
+    if (!authData || !nodeInfo) {
+      console.log('error starting service, invalid info')
+    }
+    notificationService.startService(
+      nodeInfo,
+      authData ? authData.authData.token : 'token err',
+    )
+  }
+
+  stopNotificationService = () => {
+    notificationService.stopService()
+  }
+
   renderBalance = () => {
     const { USDRate, totalBalance } = this.props.wallet
     /** @type {boolean} */
@@ -1307,7 +1327,16 @@ class WalletOverview extends Component {
             </TouchableHighlight>
           </View>
         </View>
-
+        {/*----------------------------------------------------------------------------------------------*/}
+        <View>
+          <TouchableOpacity onPress={this.startNotificationService}>
+            <Text>Start</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={this.stopNotificationService}>
+            <Text>Stop</Text>
+          </TouchableOpacity>
+        </View>
+        {/*----------------------------------------------------------------------------------------------*/}
         <View style={styles.trxContainer}>
           <UnifiedTrx unifiedTrx={recentTransactions} />
         </View>
