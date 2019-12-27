@@ -42,11 +42,18 @@ export const Colors = {
 }
 
 export const styles = StyleSheet.create({
+  absolutelyCentered: {
+    position: 'absolute',
+    top: '50%',
+  },
+  alignItemsCenter: { alignItems: 'center' },
   alignItemsEnd: { alignItems: 'flex-end' },
+  alignSelfStart: { alignSelf: 'flex-start' },
   alignSelfEnd: { alignSelf: 'flex-end' },
   textBold: { fontWeight: 'bold' },
   backgroundBlueGray: { backgroundColor: Colors.BLUE_GRAY },
   flex: { flex: 1 },
+  flexBasisZero: { flexBasis: 0 },
   flexZero: { flex: 0 },
   flexRow: { flexDirection: 'row' },
   fontMontserratBold: { fontFamily: 'Montserrat-700' },
