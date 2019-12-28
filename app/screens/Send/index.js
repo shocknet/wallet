@@ -143,7 +143,7 @@ class SendScreen extends Component {
         >
           {error ? (
             <View style={styles.errorRow}>
-              <Text>{error}</Text>
+              <Text style={styles.errorText}>{error}</Text>
             </View>
           ) : null}
           <View style={styles.scanBtn}>
@@ -279,8 +279,14 @@ const styles = StyleSheet.create({
   errorRow: {
     width: '100%',
     paddingVertical: 5,
-    borderRadius: 10,
+    borderRadius: 100,
     backgroundColor: CSS.Colors.BACKGROUND_RED,
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  errorText: {
+    fontFamily: 'Montserrat-700',
+    color: CSS.Colors.TEXT_WHITE,
   },
   scanBtn: {
     width: '100%',
