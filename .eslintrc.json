@@ -100,6 +100,8 @@
     "semi": "off",
     "babel/semi": "off",
     "no-unused-expressions": "off",
+    // typescript does this
+    "no-unused-vars": "off",
     "babel/no-unused-expressions": ["error", { "allowShortCircuit": true }],
     "valid-typeof": "off",
     "babel/valid-typeof": 1,
