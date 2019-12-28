@@ -56,7 +56,7 @@ const _Transaction = ({ data }) => ((
     <View>
       <Text style={styles.transactionValueText}>{data.amount}</Text>
       <Text style={styles.transactionTime}>
-        {Moment(data.time_stamp).fromNow()}
+        {Moment.utc(parseInt(data.time_stamp, 10) * 1000).fromNow()}
       </Text>
     </View>
   </View>

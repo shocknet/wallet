@@ -46,9 +46,9 @@ import { fetchRecentTransactions } from '../../../actions/HistoryActions'
 
 import { CHATS_ROUTE } from '../../screens/Chats'
 
-import QR from './QR'
 import UnifiedTrx from './UnifiedTrx'
 import { SEND_SCREEN } from '../Send'
+import { RECEIVE_SCREEN } from '../Receive'
 
 /**
  * @typedef {object} Params
@@ -1152,9 +1152,11 @@ class WalletOverview extends Component {
       return
     }
 
-    this.setState({
-      displayingReceiveDialog: true,
-    })
+    Navigation.navigate(RECEIVE_SCREEN)
+
+    // this.setState({
+    //   displayingReceiveDialog: true,
+    // })
   }
 
   renderBalance = () => {
@@ -1185,7 +1187,7 @@ class WalletOverview extends Component {
             !isConnected && styles.yellowText,
           ]}
         >
-          <Text style={styles.balanceValue}>{convertedBalance}</Text>{' '}
+          <Text style={styles.balanceValue}>{totalBalance}</Text>{' '}
           <Text style={styles.balanceCurrency}>Sats</Text>
         </Text>
         <Text
@@ -1336,10 +1338,10 @@ class WalletOverview extends Component {
           visible={displayingBTCAddressQR}
         >
           <View style={styles.alignItemsCenter}>
-            <QR
+            {/* <QR
               logoToShow="btc"
-              value={/** @type {string} */ (receivingBTCAddress)}
-            />
+              value={(receivingBTCAddress)}
+            /> */}
             <Pad amount={10} />
             <Text>Scan To Send To This BTC Address</Text>
           </View>
@@ -1365,10 +1367,10 @@ class WalletOverview extends Component {
           visible={displayingOlderFormatBTCAddressQR}
         >
           <View style={styles.alignItemsCenter}>
-            <QR
+            {/* <QR
               logoToShow="btc"
-              value={/** @type {string} */ (receivingOlderFormatBTCAddress)}
-            />
+              value={(receivingOlderFormatBTCAddress)}
+            /> */}
             <Pad amount={10} />
             <Text>Scan To Send To This BTC Address</Text>
           </View>
@@ -1416,7 +1418,7 @@ class WalletOverview extends Component {
           visible={displayingInvoiceQR}
         >
           <View style={styles.alignItemsCenter}>
-            <QR logoToShow="shock" value={/** @type {string} */ (invoice)} />
+            {/* <QR logoToShow="shock" value={(invoice)} /> */}
             <Pad amount={10} />
             <Text>Scan To Pay This invoice</Text>
           </View>

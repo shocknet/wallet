@@ -79,11 +79,11 @@ export const ADVANCED_SCREEN = 'ADVANCED_SCREEN'
  */
 
 /**
- * @typedef {ConnectedRedux & object} Props
+ * @typedef {object} Props
  */
 
 /**
- * @augments React.Component<Props, State, never>
+ * @augments React.Component<ConnectedRedux & Props, State, never>
  */
 class AdvancedScreen extends Component {
   /** @type {State} */

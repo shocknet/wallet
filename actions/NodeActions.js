@@ -1,6 +1,4 @@
 import Http from 'axios'
-import { ThunkAction } from 'redux-thunk'
-import { AnyAction } from 'redux'
 
 export const ACTIONS = {
   LOAD_NODE_INFO: 'nodeInfo/load',
@@ -10,7 +8,7 @@ export const ACTIONS = {
 
 /**
  * Fetches the Node's info
- * @returns {ThunkAction<Promise<void>, {}, {}, AnyAction>}
+ * @returns {import('redux-thunk').ThunkAction<Promise<void>, {}, {}, import('redux').AnyAction>}
  */
 export const fetchNodeInfo = () => async dispatch => {
   const { data } = await Http.get(`/api/lnd/getinfo`)
@@ -25,7 +23,7 @@ export const fetchNodeInfo = () => async dispatch => {
 
 /**
  * Fetches the Node's Health
- * @returns {ThunkAction<Promise<void>, {}, {}, AnyAction>}
+ * @returns {import('redux-thunk').ThunkAction<Promise<void>, {}, {}, import('redux').AnyAction>}
  */
 export const fetchNodeHealth = () => async dispatch => {
   const { data } = await Http.get(`/healthz`)
@@ -41,7 +39,7 @@ export const fetchNodeHealth = () => async dispatch => {
 /**
  * Sets the Node's connection status
  * @param {'online'|'offline'} status
- * @returns {ThunkAction<void, {}, {}, AnyAction>}
+ * @returns {import('redux-thunk').ThunkAction<void, {}, {}, import('redux').AnyAction>}
  */
 export const setConnectionStatus = status => dispatch => {
   dispatch({

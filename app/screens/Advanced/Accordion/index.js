@@ -198,7 +198,7 @@ export default class Accordion extends Component {
           <FlatList
             data={data.content}
             renderItem={this.itemRender}
-            style={open ? CSS.styles.width100 : CSS.styles.width0}
+            style={open ? CSS.styles.height100 : CSS.styles.height0}
             keyExtractor={keyExtractor}
             onEndReached={this.onEndReached}
           />
