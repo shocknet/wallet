@@ -2,16 +2,7 @@
  * @prettier
  */
 import React from 'react'
-import {
-  ActivityIndicator,
-  Image,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-  ImageBackground,
-  TouchableOpacity,
-} from 'react-native'
+import { StyleSheet, Text, TextInput, View } from 'react-native'
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation
  */
@@ -23,10 +14,18 @@ import * as CSS from '../res/css'
 import ShockDialog from '../components/ShockDialog'
 import { APP } from '../navigators/Root'
 import { CREATE_WALLET_OR_ALIAS } from '../navigators/WalletManager/CreateWalletOrAlias'
+import * as Wallet from '../services/wallet'
+import OnboardingScreen, {
+  titleTextStyle,
+  ITEM_SPACING,
+  linkTextStyle,
+} from '../components/OnboardingScreen'
+import { WALLET_MANAGER } from '../navigators/WalletManager'
+import Pad from '../components/Pad'
+import OnboardingInput from '../components/OnboardingInput'
+import OnboardingBtn from '../components/OnboardingBtn'
 
 export const LOGIN = 'LOGIN'
-
-const SHOCK_LOGO_STYLE = { width: 100, height: 100 }
 
 /** @type {number} */
 // @ts-ignore
@@ -48,6 +47,7 @@ const shockLogo = require('../assets/images/shocklogo.png')
  * @prop {boolean} fetchingCachedAlias
  * @prop {string} err
  * @prop {string} pass
+ * @prop {Wallet.WalletStatus|null} walletStatus Null when fetching.
  */
 
 /**
@@ -69,6 +69,16 @@ export default class Login extends React.PureComponent {
     fetchingCachedAlias: true,
     err: '',
     pass: '',
+    walletStatus: null,
+  }
+
+  /** @type {React.RefObject<TextInput>} */
+  passwordRef = React.createRef()
+
+  afterAlias = () => {
+    const { current } = this.passwordRef
+
+    current && current.focus()
   }
 
   didFocusSub = {
@@ -76,22 +86,25 @@ export default class Login extends React.PureComponent {
   }
 
   componentDidMount() {
-    this.getCachedAlias()
-    this.didFocusSub = this.props.navigation.addListener(
-      'didFocus',
-      this.getCachedAlias,
-    )
+    this.setup()
+    this.didFocusSub = this.props.navigation.addListener('didFocus', this.setup)
   }
 
   componentWillUnmount() {
     this.didFocusSub.remove()
   }
 
-  getCachedAlias = async () => {
+  setup = async () => {
     this.setState({
       cachedAlias: null,
       fetchingCachedAlias: true,
     })
+
+    const walletStatus = await Wallet.walletStatus()
+
+    if (walletStatus === 'noncreated') {
+      this.props.navigation.navigate(WALLET_MANAGER)
+    }
 
     const sad = await Cache.getStoredAuthData()
 
@@ -103,6 +116,7 @@ export default class Login extends React.PureComponent {
 
     this.setState({
       fetchingCachedAlias: false,
+      walletStatus,
     })
   }
 
@@ -156,9 +170,10 @@ export default class Login extends React.PureComponent {
       cachedAlias,
       fetchingCachedAlias,
       pass,
+      walletStatus,
     } = this.state
 
-    const loading = awaitingRes || fetchingCachedAlias
+    const loading = awaitingRes || fetchingCachedAlias || walletStatus === null
 
     const enabled =
       !loading && (alias.length > 0 || cachedAlias !== null) && pass.length > 0
@@ -215,163 +230,92 @@ export default class Login extends React.PureComponent {
       alias,
       awaitingRes,
       cachedAlias,
+      err,
       fetchingCachedAlias,
       pass,
+      walletStatus,
     } = this.state
-    const loading = awaitingRes || fetchingCachedAlias
+    const loading = awaitingRes || fetchingCachedAlias || walletStatus === null
     const enableUnlockBtn =
       !loading && (alias.length > 0 || cachedAlias !== null) && pass.length > 0
 
     return (
-      <ImageBackground source={shockBG} style={styles.container}>
-        <View style={styles.shockWalletLogoContainer}>
-          <Image style={SHOCK_LOGO_STYLE} source={shockLogo} />
-          <Text style={styles.logoText}>S H O C K W A L L E T</Text>
-        </View>
+      <>
+        <OnboardingScreen loading={loading}>
+          <Text style={titleTextStyle}>Unlock Wallet</Text>
 
-        {loading ? <ActivityIndicator animating size="large" /> : null}
+          <Pad amount={ITEM_SPACING} />
 
-        {!loading ? (
-          <View style={styles.shockWalletCallToActionContainer}>
-            <Text style={styles.callToAction}>Unlock Wallet</Text>
-          </View>
-        ) : null}
-
-        {!loading ? (
-          <View style={styles.formContainer}>
-            {cachedAlias && (
-              <View style={xStyles.cachedAliasContainer}>
-                <Text style={styles.textInputFieldLabel}>
-                  {`Alias:   ${cachedAlias}`}
-                </Text>
-                <Text
-                  onPress={this.dismissCachedAlias}
-                  style={xStyles.changeText}
-                >
-                  Change
-                </Text>
-              </View>
-            )}
-            {!cachedAlias && (
-              <React.Fragment>
-                <Text style={styles.textInputFieldLabel}>Alias</Text>
-                <View style={styles.textInputFieldContainer}>
-                  <TextInput
-                    editable={!loading}
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    onChangeText={this.onChangeAlias}
-                    style={styles.textInputField}
-                    value={alias}
-                  />
-                </View>
-              </React.Fragment>
-            )}
-            <Text style={styles.textInputFieldLabel}>Password</Text>
-            <View style={styles.textInputFieldContainer}>
-              <TextInput
-                autoCapitalize="none"
-                autoCorrect={false}
-                editable={!loading}
-                onChangeText={this.onChangePass}
-                style={styles.textInputField}
-                secureTextEntry
-                value={pass}
-              />
+          {cachedAlias ? (
+            <View style={xStyles.cachedAliasContainer}>
+              <Text style={styles.textInputFieldLabel}>
+                {`Alias:   ${cachedAlias}`}
+              </Text>
+              <Text
+                onPress={this.dismissCachedAlias}
+                style={xStyles.changeText}
+              >
+                Change
+              </Text>
             </View>
+          ) : (
+            <OnboardingInput
+              autoCapitalize="none"
+              autoCorrect={false}
+              onChangeText={this.onChangeAlias}
+              onSubmitEditing={this.afterAlias}
+              placeholder="Alias"
+              returnKeyType="next"
+              value={alias}
+            />
+          )}
 
-            <TouchableOpacity
-              disabled={!enableUnlockBtn}
-              onPress={this.onPressUnlock}
-              style={styles.connectBtn}
-            >
-              <Text style={styles.connectBtnText}>Connect</Text>
-            </TouchableOpacity>
-          </View>
-        ) : null}
+          <Pad amount={ITEM_SPACING} />
 
-        {!(awaitingRes || fetchingCachedAlias) && (
-          <Text
-            onPress={this.onPressCreateNewAlias}
-            style={xStyles.createAliasText}
-          >
-            Create a new Alias
-          </Text>
-        )}
+          <OnboardingInput
+            autoCapitalize="none"
+            autoCorrect={false}
+            onChangeText={this.onChangePass}
+            placeholder="Password"
+            ref={this.passwordRef}
+            secureTextEntry
+            textContentType="password"
+            value={pass}
+          />
+
+          <Pad amount={ITEM_SPACING} />
+
+          <OnboardingBtn
+            disabled={!enableUnlockBtn}
+            onPress={this.onPressUnlock}
+            title="Connect"
+          />
+
+          <Pad amount={ITEM_SPACING} />
+
+          {!(awaitingRes || fetchingCachedAlias) && walletStatus === 'locked' && (
+            <Text onPress={this.onPressCreateNewAlias} style={linkTextStyle}>
+              Create new alias
+            </Text>
+          )}
+        </OnboardingScreen>
 
         <ShockDialog
-          message={this.state.err}
+          message={err}
           onRequestClose={this.dismissDialog}
-          visible={!!this.state.err}
+          visible={!!err}
         />
-      </ImageBackground>
+      </>
     )
   }
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: CSS.Colors.BLUE_DARK,
-    justifyContent: 'space-around',
-    minHeight: 600,
-    paddingLeft: 30,
-    paddingRight: 30,
-  },
-  shockWalletLogoContainer: {
-    alignItems: 'center',
-  },
-  shockWalletCallToActionContainer: {
-    alignItems: 'center',
-  },
-  formContainer: {
-    marginBottom: 30,
-  },
-  connectBtn: {
-    height: 60,
-    backgroundColor: CSS.Colors.ORANGE,
-    borderRadius: 100,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 20,
-  },
-  connectBtnText: {
-    fontSize: 15,
-    letterSpacing: 1.25,
-    color: CSS.Colors.TEXT_WHITE,
-    fontFamily: 'Montserrat-700',
-  },
   textInputFieldLabel: {
     marginBottom: 10,
     marginLeft: 15,
     color: CSS.Colors.TEXT_WHITE,
     fontFamily: 'Montserrat-600',
-  },
-  textInputFieldContainer: {
-    flexDirection: 'row',
-    backgroundColor: CSS.Colors.TEXT_WHITE,
-    height: 50,
-    borderRadius: 100,
-    paddingLeft: 25,
-    marginBottom: 25,
-    elevation: 3,
-    alignItems: 'center',
-  },
-  textInputField: {
-    fontSize: 14,
-    fontFamily: 'Montserrat-600',
-    flex: 1,
-  },
-  logoText: {
-    color: CSS.Colors.TEXT_WHITE,
-    fontWeight: 'bold',
-    fontSize: 20,
-    marginTop: 10,
-  },
-  callToAction: {
-    color: CSS.Colors.TEXT_WHITE,
-    fontFamily: 'Montserrat-700',
-    fontSize: 28,
   },
 })
 
