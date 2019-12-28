@@ -57,6 +57,7 @@ export const styles = StyleSheet.create({
   flexShrinkZero: { flexShrink: 0 },
   flexZero: { flex: 0 },
   flexRow: { flexDirection: 'row' },
+  fontMontserrat: { fontFamily: 'Montserrat-500' },
   fontMontserratBold: { fontFamily: 'Montserrat-700' },
   fontSize16: { fontSize: 16 },
   fontSize18: { fontSize: 18 },
