@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
     backgroundColor: CSS.Colors.BACKGROUND_WHITE,
   },
   recipientInputContainer: {
-    marginBottom: 10,
+    marginBottom: 28,
   },
   btcIcon: {
     height: 30,

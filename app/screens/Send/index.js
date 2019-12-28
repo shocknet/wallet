@@ -10,6 +10,7 @@ import {
   ImageBackground,
   Dimensions,
   ActivityIndicator,
+  Image,
 } from 'react-native'
 // @ts-ignore
 import { Dropdown } from 'react-native-material-dropdown'
@@ -19,6 +20,7 @@ import wavesBG from '../../assets/images/shock-bg.png'
 import Nav from '../../components/Nav'
 import InputGroup from '../../components/InputGroup'
 import ContactsSearch from '../../components/Search/ContactsSearch'
+import BitcoinAccepted from '../../assets/images/bitcoin-accepted.png'
 
 import * as CSS from '../../css'
 import * as Wallet from '../../services/wallet'
@@ -189,41 +191,31 @@ class SendScreen extends Component {
             />
           </View>
           <View style={styles.sendSwipeContainer}>
-            <SwipeVerify
-              width={width - 50}
-              buttonSize={52}
-              buttonColor={CSS.Colors.BUTTON_BLUE}
-              borderColor={CSS.Colors.BUTTON_BLUE}
-              backgroundColor={CSS.Colors.FUN_BLUE}
-              textColor="#37474F"
-              borderRadius={100}
-              style={
-                this.isFilled() ? styles.swipeContainer : styles.disabledSwipe
-              }
-              disabled={!this.isFilled()}
-              onVerified={this.sendRequest}
-            >
-              <View style={styles.sendSwipeTextContainer}>
-                <Text style={styles.sendSwipeText}>Send Transaction</Text>
-                <View style={styles.sendSwipeTextArrows}>
-                  <Ionicons
-                    name="ios-arrow-forward"
-                    color={CSS.Colors.TEXT_WHITE}
-                    size={20}
+            {this.isFilled() ? (
+              <SwipeVerify
+                width="100%"
+                buttonSize={48}
+                height={40}
+                style={styles.swipeBtn}
+                buttonColor={CSS.Colors.BACKGROUND_WHITE}
+                borderColor={CSS.Colors.TRANSPARENT}
+                backgroundColor={CSS.Colors.BACKGROUND_NEAR_WHITE}
+                textColor="#37474F"
+                borderRadius={100}
+                icon={
+                  <Image
+                    source={BitcoinAccepted}
+                    resizeMethod="resize"
+                    resizeMode="contain"
+                    style={styles.btcIcon}
                   />
-                  <Ionicons
-                    name="ios-arrow-forward"
-                    color={CSS.Colors.TEXT_WHITE}
-                    size={20}
-                  />
-                  <Ionicons
-                    name="ios-arrow-forward"
-                    color={CSS.Colors.TEXT_WHITE}
-                    size={20}
-                  />
-                </View>
-              </View>
-            </SwipeVerify>
+                }
+                disabled={!this.isFilled()}
+                onVerified={this.sendRequest}
+              >
+                <Text style={styles.swipeBtnText}>SLIDE TO SEND</Text>
+              </SwipeVerify>
+            ) : null}
           </View>
           {sending ? (
             <View
@@ -278,12 +270,6 @@ const styles = StyleSheet.create({
     elevation: 10,
     zIndex: 1000,
   },
-  swipeContainer: {
-    opacity: 1,
-  },
-  disabledSwipe: {
-    opacity: 0.1,
-  },
   sendingText: {
     color: CSS.Colors.TEXT_GRAY,
     fontSize: 14,
@@ -307,24 +293,11 @@ const styles = StyleSheet.create({
     marginBottom: 60,
     elevation: 10,
   },
-  sendSwipeTextContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   scanBtnText: {
     color: CSS.Colors.TEXT_WHITE,
     fontSize: 14,
     fontFamily: 'Montserrat-700',
     marginRight: 10,
-  },
-  sendSwipeTextArrows: {
-    position: 'absolute',
-    right: -30,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    opacity: 0.2,
   },
   amountContainer: {
     width: '100%',
@@ -359,12 +332,15 @@ const styles = StyleSheet.create({
     height: 60,
     justifyContent: 'center',
   },
-  sendSwipeText: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    color: CSS.Colors.TEXT_WHITE,
-    fontFamily: 'Montserrat-700',
-    opacity: 0.7,
+  swipeBtn: {
+    marginBottom: 10,
+  },
+  btcIcon: {
+    height: 30,
+  },
+  swipeBtnText: {
     fontSize: 12,
+    fontFamily: 'Montserrat-700',
+    color: CSS.Colors.TEXT_GRAY,
   },
 })
