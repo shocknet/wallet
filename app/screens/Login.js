@@ -156,7 +156,14 @@ export default class Login extends React.PureComponent {
 
   /** @private */
   onPressCreateNewAlias = () => {
-    this.props.navigation.navigate(CREATE_WALLET_OR_ALIAS)
+    if (this.state.walletStatus === 'unlocked') {
+      this.setState({
+        err:
+          'LND must be in a locked state to pair a new alias, please restart LND and try again.',
+      })
+    } else {
+      this.props.navigation.navigate(CREATE_WALLET_OR_ALIAS)
+    }
   }
 
   /**
@@ -243,9 +250,7 @@ export default class Login extends React.PureComponent {
       <>
         <OnboardingScreen loading={loading}>
           <Text style={titleTextStyle}>Unlock Wallet</Text>
-
           <Pad amount={ITEM_SPACING} />
-
           {cachedAlias ? (
             <View style={xStyles.cachedAliasContainer}>
               <Text style={styles.textInputFieldLabel}>
@@ -269,9 +274,7 @@ export default class Login extends React.PureComponent {
               value={alias}
             />
           )}
-
           <Pad amount={ITEM_SPACING} />
-
           <OnboardingInput
             autoCapitalize="none"
             autoCorrect={false}
@@ -282,22 +285,16 @@ export default class Login extends React.PureComponent {
             textContentType="password"
             value={pass}
           />
-
           <Pad amount={ITEM_SPACING} />
-
           <OnboardingBtn
             disabled={!enableUnlockBtn}
             onPress={this.onPressUnlock}
             title="Connect"
           />
-
           <Pad amount={ITEM_SPACING} />
-
-          {!(awaitingRes || fetchingCachedAlias) && walletStatus === 'locked' && (
-            <Text onPress={this.onPressCreateNewAlias} style={linkTextStyle}>
-              Create new alias
-            </Text>
-          )}
+          <Text onPress={this.onPressCreateNewAlias} style={linkTextStyle}>
+            Create new alias
+          </Text>
         </OnboardingScreen>
 
         <ShockDialog

@@ -73,6 +73,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  positionAbsolute: { position: 'absolute' },
   textAlignCenter: { textAlign: 'center' },
   textUnderlined: { textDecorationLine: 'underline' },
   textWhite: { color: Colors.TEXT_WHITE },

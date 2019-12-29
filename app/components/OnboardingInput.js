@@ -1,5 +1,12 @@
 import React from 'react'
-import { StyleSheet, Text, TextInput, View } from 'react-native'
+import {
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+  TouchableOpacity,
+} from 'react-native'
+import Ionicons from 'react-native-vector-icons/Ionicons'
 
 import * as CSS from '../res/css'
 
@@ -12,12 +19,15 @@ import * as CSS from '../res/css'
  * @prop {TextInputProps['autoCapitalize']=} autoCapitalize
  * @prop {TextInputProps['autoCorrect']=} autoCorrect
  * @prop {(boolean|null)=} disable
+ * @prop {TextInputProps['keyboardType']=} keyboardType
  * @prop {(string|boolean|null)=} label
  * @prop {TextInputProps['onChangeText']} onChangeText
  * @prop {TextInputProps['onSubmitEditing']=} onSubmitEditing
  * @prop {TextInputProps['placeholder']} placeholder
  * @prop {TextInputProps['returnKeyType']=} returnKeyType
  * @prop {TextInputProps['secureTextEntry']=} secureTextEntry
+ * @prop {((() => void) | boolean | null)=} onPressQRBtn If provided, a QR Btn
+ * will be shown inside the input.
  * @prop {TextInputProps['textContentType']=} textContentType
  * @prop {TextInputProps['value']} value
  */
@@ -27,8 +37,10 @@ export default React.forwardRef((
     autoCapitalize,
     autoCorrect,
     disable,
+    keyboardType,
     label,
     onChangeText,
+    onPressQRBtn,
     onSubmitEditing,
     placeholder,
     returnKeyType,
@@ -46,6 +58,7 @@ export default React.forwardRef((
         editable={!disable}
         autoCapitalize={autoCapitalize}
         autoCorrect={autoCorrect}
+        keyboardType={keyboardType}
         onChangeText={onChangeText}
         onSubmitEditing={onSubmitEditing}
         placeholder={placeholder}
@@ -56,11 +69,39 @@ export default React.forwardRef((
         textContentType={textContentType}
         value={value}
       />
+
+      {typeof onPressQRBtn === 'function' && (
+        <TouchableOpacity style={styles.scanBtn} onPress={onPressQRBtn}>
+          <Ionicons
+            name="ios-barcode"
+            style={CSS.styles.positionAbsolute}
+            size={10}
+            color="#ccc"
+          />
+          <Ionicons
+            name="md-qr-scanner"
+            style={CSS.styles.positionAbsolute}
+            size={20}
+            color="#ccc"
+          />
+        </TouchableOpacity>
+      )}
     </View>
   </>
 ))
 
 const styles = StyleSheet.create({
+  scanBtn: {
+    width: 35,
+    height: 35,
+    flexShrink: 0,
+    backgroundColor: CSS.Colors.GRAY_MEDIUM,
+    borderRadius: 100,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+  },
+
   textInputField: {
     fontSize: 14,
     fontFamily: 'Montserrat-600',
