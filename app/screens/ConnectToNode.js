@@ -229,8 +229,7 @@ export default class ConnectToNode extends React.PureComponent {
 
         {wasBadPing && (
           <Text style={titleTextStyle}>
-            Could not connect, you can still continue if you're sure this is
-            your node's ip.
+            Connection to the specified address failed.
           </Text>
         )}
 

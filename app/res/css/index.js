@@ -26,6 +26,7 @@ export const Colors = {
   BLUE_GRAY: '#50668F',
   GRAY_DARK: '#4E4E4E',
   GRAY_MEDIUM: '#F5F5F5',
+  GRAY_D9: '#D9D9D9',
   GRAY_LIGHT: '#CDCDCD',
   ORANGE: '#F5A623',
   TEAL: '#4285B9',

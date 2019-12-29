@@ -251,7 +251,7 @@ export default class CreateWalletOrAlias extends React.PureComponent {
           <Entypo name="wallet" size={45} color="#4285b9" />
           <Pad amount={10} />
           <Text style={[CSS.styles.textAlignCenter, CSS.styles.fontMontserrat]}>
-            Creating wallet... (this can take a while)
+            Creating wallet, hang tight...
           </Text>
           <Pad amount={10} />
           <ActivityIndicator size="large" color={CSS.Colors.BACKGROUND_BLUE} />
@@ -265,8 +265,8 @@ export default class CreateWalletOrAlias extends React.PureComponent {
           <>
             <Text style={titleTextStyle}>
               {walletStatus === 'noncreated'
-                ? 'Enter Wallet Details'
-                : 'New GUN Alias'}
+                ? 'Create Wallet Profile'
+                : 'New Wallet Alias'}
             </Text>
 
             <Pad amount={ITEM_SPACING} />

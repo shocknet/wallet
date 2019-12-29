@@ -91,15 +91,15 @@ export default class QRScanner extends React.PureComponent {
           <View
             style={[styles.bottomSection, styles.bottomSectionTextContainer]}
           >
-            <Text style={styles.bottomSectionTextHead}>SCAN A NODE IP</Text>
+            <Text style={styles.bottomSectionTextHead}>SCAN NODE IPS</Text>
             <Text style={styles.bottomSectionTextDescription}>
-              Point your camera at a ShockWizard QR Code to scan it.
+              Point your camera at a ShockWizard QR Code to set your IP
             </Text>
             <TouchableOpacity
               onPress={this.props.toggleQRScreen}
               style={styles.bottomSectionCancelBtn}
             >
-              <Text style={styles.bottomSectionCancelBtnText}>Cancel Scan</Text>
+              <Text style={styles.bottomSectionCancelBtnText}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </View>

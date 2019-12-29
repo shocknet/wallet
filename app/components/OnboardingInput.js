@@ -76,13 +76,13 @@ export default React.forwardRef((
             name="ios-barcode"
             style={CSS.styles.positionAbsolute}
             size={10}
-            color="#ccc"
+            color="#808080"
           />
           <Ionicons
             name="md-qr-scanner"
             style={CSS.styles.positionAbsolute}
             size={20}
-            color="#ccc"
+            color="#808080"
           />
         </TouchableOpacity>
       )}
@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
     width: 35,
     height: 35,
     flexShrink: 0,
-    backgroundColor: CSS.Colors.GRAY_MEDIUM,
+    backgroundColor: CSS.Colors.GRAY_D9,
     borderRadius: 100,
     alignItems: 'center',
     justifyContent: 'center',
