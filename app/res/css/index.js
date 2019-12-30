@@ -1,4 +1,9 @@
-import { StyleSheet } from 'react-native'
+import { Dimensions, StyleSheet } from 'react-native'
+export const HEIGHT = Dimensions.get('screen').height
+export const WIDTH = Dimensions.get('window').width
+// If we use the actual height from the design art (68pt) the bar looks too big,
+// let's use a percentage instead
+export const BOTTOM_BAR_HEIGHT = Math.round(HEIGHT * 0.085)
 
 /**
  * @prettier
@@ -20,10 +25,12 @@ export const Colors = {
   BACKGROUND_NEAR_WHITE: '#EFEFEF',
   BORDER_WHITE: '#FFFFFF',
   BORDER_NEAR_WHITE: '#DDD',
+  BLUE_MEDIUM_DARK: '#294F93',
   BLUE_DARK: '#2E4674',
   BLUE_LIGHTEST: '#F4F6FA',
   BLUE_LIGHT: '#267ADB',
   BLUE_GRAY: '#50668F',
+  GRAY_MEDIUM_LIGHT: '#BCBCBC',
   GRAY_DARK: '#4E4E4E',
   GRAY_MEDIUM: '#F5F5F5',
   GRAY_LIGHT: '#CDCDCD',
