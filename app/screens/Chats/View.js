@@ -2,7 +2,7 @@
  * @prettier
  */
 import React from 'react'
-import { FlatList, Text, View } from 'react-native'
+import { FlatList, Text, View, StyleSheet } from 'react-native'
 import moment from 'moment'
 import { Divider, Icon } from 'react-native-elements'
 import Ionicons from 'react-native-vector-icons/Ionicons'
@@ -13,7 +13,7 @@ import QRCodeScanner from '../../components/QRScanner'
 
 import * as API from '../../services/contact-api'
 import UserDetail from '../../components/UserDetail'
-import { Colors, SCREEN_PADDING } from '../../res/css'
+import { Colors, SCREEN_PADDING, styles as Styles } from '../../res/css'
 import ShockDialog from '../../components/ShockDialog'
 
 const ACCEPT_REQUEST_DIALOG_TEXT =
@@ -22,6 +22,12 @@ export const CHATS_ROUTE = 'CHATS_ROUTE'
 /**
  * @typedef {import('.././Chat').Params} ChatParams
  */
+
+const LIST_STYLE = [
+  Styles.traslucentStatusBarPadding,
+  Styles.backgroundWhite,
+  Styles.flex,
+]
 
 /**
  * @param {{ timestamp: number }} a
@@ -364,15 +370,30 @@ export default class ChatsView extends React.PureComponent {
     })
 
     return (
-      <React.Fragment>
+      <>
         <FlatList
           ListHeaderComponent={this.header}
           ItemSeparatorComponent={Divider}
           ListEmptyComponent={NoChatsOrRequests}
-          data={items}
+          data={[
+            {
+              messages: [
+                {
+                  body: '$$__SHOCKWALLET_INITIAL_MSG',
+                  timestamp: Date.now(),
+                  id: Math.random().toString(),
+                  outgoing: false,
+                },
+              ],
+
+              recipientAvatar: null,
+              recipientDisplayName: 'Null',
+              recipientPublicKey: Math.random().toString(),
+            },
+          ]}
           keyExtractor={keyExtractor}
           renderItem={this.itemRenderer}
-          style={styles.list}
+          contentContainerStyle={LIST_STYLE}
         />
 
         <ShockDialog
@@ -388,7 +409,7 @@ export default class ChatsView extends React.PureComponent {
           onRequestClose={onRequestCloseAddDialog}
           visible={showingAddDialog}
         />
-      </React.Fragment>
+      </>
     )
   }
 }
@@ -396,16 +417,14 @@ export default class ChatsView extends React.PureComponent {
 const ITEM_CONTAINER_HORIZONTAL_PADDING = SCREEN_PADDING / 2
 const ITEM_CONTAINER_VERTICAL_PADDING = 15
 
-/**
- * @type {Record<string, import('react-native').ViewStyle>}
- */
-const styles = {
+const styles = StyleSheet.create({
   boldFont: {
     // @ts-ignore
     fontWeight: 'bold',
   },
 
   header: {
+    backgroundColor: Colors.BACKGROUND_WHITE,
     justifyContent: 'flex-end',
     flexDirection: 'row',
     paddingLeft: SCREEN_PADDING,
@@ -425,6 +444,7 @@ const styles = {
 
   noChats: {
     alignItems: 'center',
+    backgroundColor: Colors.BACKGROUND_WHITE,
     flex: 1,
     justifyContent: 'center',
   },
@@ -433,4 +453,4 @@ const styles = {
     flex: 1,
     marginRight: 20,
   },
-}
+})

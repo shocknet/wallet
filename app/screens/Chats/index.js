@@ -2,7 +2,7 @@
  * @prettier
  */
 import React from 'react'
-import { Clipboard } from 'react-native'
+import { Clipboard, StatusBar } from 'react-native'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation
@@ -87,7 +87,18 @@ export default class Chats extends React.PureComponent {
 
   sentReqsUnsubscribe = () => {}
 
+  didFocus = { remove() {} }
+
+  willBlur = { remove() {} }
+
   componentDidMount() {
+    this.didFocus = this.props.navigation.addListener('didFocus', () => {
+      StatusBar.setBackgroundColor(CSS.Colors.BACKGROUND_WHITE)
+      StatusBar.setBarStyle('dark-content')
+    })
+    this.willBlur = this.props.navigation.addListener('willBlur', () => {
+      StatusBar.setBarStyle('light-content')
+    })
     this.chatsUnsubscribe = API.Events.onChats(chats => {
       this.setState({
         chats,
@@ -108,6 +119,8 @@ export default class Chats extends React.PureComponent {
   }
 
   componentWillUnmount() {
+    this.didFocus.remove()
+    this.willBlur.remove()
     this.chatsUnsubscribe()
     this.receivedReqsUnsubscribe()
     this.sentReqsUnsubscribe()
