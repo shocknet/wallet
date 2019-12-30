@@ -2,6 +2,8 @@ apply plugin: "com.android.application"
 
 import com.android.build.OutputFile
 
+apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
+
 /**
  * The react.gradle file registers a task for each build variant (e.g. bundleDebugJsAndAssets
  * and bundleReleaseJsAndAssets).
@@ -151,7 +153,6 @@ dependencies {
     compile project(':react-native-sensitive-info')
     compile project(':@react-native-community_netinfo')
     compile project(':react-native-bootsplash')
-    compile project(':react-native-vector-icons')
     compile project(':react-native-camera')
     compile project(':@react-native-community_async-storage')
     compile project(':react-native-linear-gradient')
