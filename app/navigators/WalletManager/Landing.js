@@ -14,7 +14,7 @@ import { APP } from '../Root'
 
 import { CREATE_WALLET_OR_ALIAS } from './CreateWalletOrAlias'
 import OnboardingScreen from '../../components/OnboardingScreen'
-import ShockDialog from '../../components/ShockDialog'
+import { CONNECT_TO_NODE } from '../../screens/ConnectToNode'
 
 export const LANDING = 'LANDING'
 
@@ -24,17 +24,7 @@ export const LANDING = 'LANDING'
  */
 
 /**
- * @typedef {object} State
- * @prop {string|null} err
- */
-
-/** @type {State} */
-const DEFAULT_STATE = {
-  err: null,
-}
-
-/**
- * @augments React.PureComponent<Props, State>
+ * @augments React.PureComponent<Props, {}>
  */
 export default class CreateWallet extends React.PureComponent {
   /**
@@ -44,37 +34,19 @@ export default class CreateWallet extends React.PureComponent {
     header: null,
   }
 
-  /**
-   * @type {State}
-   */
-  state = DEFAULT_STATE
-
-  willFocusSub = {
-    remove() {},
-  }
-
-  willBlurSub = {
+  didFocus = {
     remove() {},
   }
 
   componentDidMount() {
-    this.willFocusSub = this.props.navigation.addListener(
-      'didFocus',
-      this.setup,
-    )
-    this.willBlurSub = this.props.navigation.addListener('didBlur', () => {
-      this.setState(DEFAULT_STATE)
-    })
+    this.didFocus = this.props.navigation.addListener('didFocus', this.setup)
   }
 
   componentWillUnmount() {
-    this.willFocusSub.remove()
-    this.willBlurSub.remove()
+    this.didFocus.remove()
   }
 
   setup = async () => {
-    this.setState(DEFAULT_STATE)
-
     try {
       const authData = await Cache.getStoredAuthData()
       const walletStatus = await Wallet.walletStatus()
@@ -102,7 +74,7 @@ export default class CreateWallet extends React.PureComponent {
         }
       }
     } catch (e) {
-      this.setState({
+      this.props.navigation.navigate(CONNECT_TO_NODE, {
         err: e.message,
       })
     }
@@ -116,27 +88,7 @@ export default class CreateWallet extends React.PureComponent {
     this.props.navigation.navigate(LOGIN)
   }
 
-  dismissDialog = () => {
-    this.setState({
-      err: null,
-    })
-
-    this.setup()
-  }
-
   render() {
-    const { err } = this.state
-
-    return (
-      <>
-        <OnboardingScreen loading />
-
-        <ShockDialog
-          message={err}
-          onRequestClose={this.dismissDialog}
-          visible={!!err}
-        />
-      </>
-    )
+    return <OnboardingScreen loading />
   }
 }
