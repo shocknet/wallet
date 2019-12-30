@@ -10,6 +10,7 @@ import {
   ToastAndroid,
   View,
   TouchableOpacity,
+  StatusBar,
 } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 import EntypoIcons from 'react-native-vector-icons/Entypo'
@@ -432,6 +433,11 @@ class AdvancedScreen extends Component {
           info={node.nodeInfo}
           onRequestClose={this.closeNodeInfo}
         />
+        <StatusBar
+          translucent
+          backgroundColor="transparent"
+          barStyle="light-content"
+        />
         <LinearGradient
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
@@ -722,6 +728,7 @@ const styles = StyleSheet.create({
     width: '100%',
     elevation: 1,
     zIndex: 10,
+    paddingTop: StatusBar.currentHeight,
   },
   marginBottom15: { marginBottom: 15 },
   nav: {
