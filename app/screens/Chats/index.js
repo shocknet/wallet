@@ -89,15 +89,10 @@ export default class Chats extends React.PureComponent {
 
   didFocus = { remove() {} }
 
-  willBlur = { remove() {} }
-
   componentDidMount() {
     this.didFocus = this.props.navigation.addListener('didFocus', () => {
       StatusBar.setBackgroundColor(CSS.Colors.BACKGROUND_WHITE)
       StatusBar.setBarStyle('dark-content')
-    })
-    this.willBlur = this.props.navigation.addListener('willBlur', () => {
-      StatusBar.setBarStyle('light-content')
     })
     this.chatsUnsubscribe = API.Events.onChats(chats => {
       this.setState({
@@ -120,7 +115,6 @@ export default class Chats extends React.PureComponent {
 
   componentWillUnmount() {
     this.didFocus.remove()
-    this.willBlur.remove()
     this.chatsUnsubscribe()
     this.receivedReqsUnsubscribe()
     this.sentReqsUnsubscribe()

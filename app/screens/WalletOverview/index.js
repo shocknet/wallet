@@ -1085,6 +1085,7 @@ class WalletOverview extends Component {
   componentDidMount() {
     this.didFocus = this.props.navigation.addListener('didFocus', () => {
       StatusBar.setBackgroundColor(CSS.Colors.BLUE_DARK)
+      StatusBar.setBarStyle('light-content')
     })
     Linking.addEventListener('url', this._handleOpenURL)
     Linking.getInitialURL()

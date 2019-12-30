@@ -9,9 +9,13 @@ import {
   ToastAndroid,
   TouchableOpacity,
   View,
+  StatusBar,
 } from 'react-native'
 import EntypoIcons from 'react-native-vector-icons/Entypo'
 import { AirbnbRating } from 'react-native-ratings'
+/**
+ * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation
+ */
 
 import * as API from '../services/contact-api'
 import * as CSS from '../res/css'
@@ -40,7 +44,7 @@ const showCopiedToClipboardToast = () => {
  */
 
 /**
- * @augments React.PureComponent<{}, State, never>
+ * @augments React.PureComponent<{ navigation: Navigation }, State, never>
  */
 export default class MyProfile extends React.PureComponent {
   /**
@@ -74,7 +78,13 @@ export default class MyProfile extends React.PureComponent {
 
   onHandshakeAddressUnsub = () => {}
 
+  didFocus = { remove() {} }
+
   async componentDidMount() {
+    this.didFocus = this.props.navigation.addListener('didFocus', () => {
+      StatusBar.setBackgroundColor(CSS.Colors.BACKGROUND_WHITE)
+      StatusBar.setBarStyle('dark-content')
+    })
     this.onDisplayNameUnsub = API.Events.onDisplayName(dn => {
       this.setState({
         displayName: dn,
@@ -98,6 +108,7 @@ export default class MyProfile extends React.PureComponent {
   }
 
   componentWillUnmount() {
+    this.didFocus.remove()
     this.onDisplayNameUnsub()
     this.onHandshakeAddressUnsub()
   }
