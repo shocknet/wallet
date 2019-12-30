@@ -3,12 +3,12 @@
  */
 import React from 'react'
 import { Clipboard } from 'react-native'
-import EntypoIcons from 'react-native-vector-icons/Entypo'
+import Ionicons from 'react-native-vector-icons/Ionicons'
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation
  */
-
 import * as API from '../../services/contact-api'
+import * as CSS from '../../res/css'
 import { CHAT_ROUTE } from './../Chat'
 
 import ChatsView from './View'
@@ -56,13 +56,15 @@ export default class Chats extends React.PureComponent {
    * @type {import('react-navigation').NavigationBottomTabScreenOptions}
    */
   static navigationOptions = {
-    tabBarIcon: ({ tintColor }) => {
+    tabBarIcon: ({ focused }) => {
       return ((
-        <EntypoIcons
-          color={tintColor === null ? undefined : tintColor}
-          name="chat"
-          // reverseColor={'#CED0CE'}
-          size={22}
+        <Ionicons
+          color={
+            focused ? CSS.Colors.BLUE_MEDIUM_DARK : CSS.Colors.GRAY_MEDIUM_LIGHT
+          }
+          name="md-chatboxes"
+          // This one has to be larger than the others to match the design
+          size={36}
         />
       ))
     },

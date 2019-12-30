@@ -10,7 +10,6 @@ import com.reactnativecommunity.asyncstorage.AsyncStoragePackage;
 import com.BV.LinearGradient.LinearGradientPackage;
 import org.reactnative.camera.RNCameraPackage;
 import com.horcrux.svg.SvgPackage;
-import com.oblador.vectoricons.VectorIconsPackage;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
 import com.facebook.react.shell.MainReactPackage;
@@ -37,8 +36,7 @@ public class MainApplication extends Application implements ReactApplication {
             new LinearGradientPackage(),
             new AsyncStoragePackage(),
             new RNCameraPackage(),
-            new SvgPackage(),
-            new VectorIconsPackage()
+            new SvgPackage()
       );
     }
 

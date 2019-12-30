@@ -121,6 +121,8 @@ export default class CreateWalletOrAlias extends React.PureComponent {
     this.setState({
       msg: null,
     })
+
+    this.checkWalletStatus()
   }
 
   /**
