@@ -375,22 +375,7 @@ export default class ChatsView extends React.PureComponent {
           ListHeaderComponent={this.header}
           ItemSeparatorComponent={Divider}
           ListEmptyComponent={NoChatsOrRequests}
-          data={[
-            {
-              messages: [
-                {
-                  body: '$$__SHOCKWALLET_INITIAL_MSG',
-                  timestamp: Date.now(),
-                  id: Math.random().toString(),
-                  outgoing: false,
-                },
-              ],
-
-              recipientAvatar: null,
-              recipientDisplayName: 'Null',
-              recipientPublicKey: Math.random().toString(),
-            },
-          ]}
+          data={items}
           keyExtractor={keyExtractor}
           renderItem={this.itemRenderer}
           contentContainerStyle={LIST_STYLE}
