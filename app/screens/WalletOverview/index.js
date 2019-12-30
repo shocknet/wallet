@@ -15,7 +15,9 @@ import {
   Linking,
 } from 'react-native'
 import EntypoIcons from 'react-native-vector-icons/Entypo'
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'
 import { connect } from 'react-redux'
+
 //import { compose } from 'redux'
 import { ConnectionContext } from '../../ctx/Connection'
 import QRCodeScanner from '../../components/QRScanner'
@@ -132,13 +134,14 @@ class WalletOverview extends Component {
    * @type {import('react-navigation').NavigationBottomTabScreenOptions}
    */
   static navigationOptions = {
-    tabBarIcon: ({ tintColor }) => {
+    tabBarIcon: ({ focused }) => {
       return ((
-        <EntypoIcons
-          color={tintColor === null ? undefined : tintColor}
+        <FontAwesome5
+          color={
+            focused ? CSS.Colors.BLUE_MEDIUM_DARK : CSS.Colors.GRAY_MEDIUM_LIGHT
+          }
           name="wallet"
-          // reverseColor={'#CED0CE'}
-          size={22}
+          size={32}
         />
       ))
     },

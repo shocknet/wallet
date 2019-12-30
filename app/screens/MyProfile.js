@@ -47,13 +47,15 @@ export default class MyProfile extends React.PureComponent {
    * @type {import('react-navigation').NavigationBottomTabScreenOptions}
    */
   static navigationOptions = {
-    tabBarIcon: ({ tintColor }) => {
+    tabBarIcon: ({ focused }) => {
       return ((
         <EntypoIcons
-          color={tintColor === null ? undefined : tintColor}
+          color={
+            focused ? CSS.Colors.BLUE_MEDIUM_DARK : CSS.Colors.GRAY_MEDIUM_LIGHT
+          }
           name="user"
           // reverseColor={'#CED0CE'}
-          size={22}
+          size={32}
         />
       ))
     },
