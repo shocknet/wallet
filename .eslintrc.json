@@ -97,6 +97,7 @@
     "babel/object-curly-spacing": "off",
     "quotes": "off",
     "babel/quotes": "off",
+    "class-methods-use-this": "off",
     "semi": "off",
     "babel/semi": "off",
     "no-unused-expressions": "off",
