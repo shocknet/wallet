@@ -1,4 +1,4 @@
-import { Dimensions, StyleSheet } from 'react-native'
+import { Dimensions, StyleSheet, StatusBar } from 'react-native'
 export const HEIGHT = Dimensions.get('screen').height
 export const WIDTH = Dimensions.get('window').width
 // If we use the actual height from the design art (68pt) the bar looks too big,
@@ -58,8 +58,9 @@ export const styles = StyleSheet.create({
   alignItemsEnd: { alignItems: 'flex-end' },
   alignSelfStart: { alignSelf: 'flex-start' },
   alignSelfEnd: { alignSelf: 'flex-end' },
-  textBold: { fontWeight: 'bold' },
+  backgroundWhite: { backgroundColor: Colors.BACKGROUND_WHITE },
   backgroundBlueGray: { backgroundColor: Colors.BLUE_GRAY },
+  textBold: { fontWeight: 'bold' },
   flex: { flex: 1 },
   flexBasisZero: { flexBasis: 0 },
   flexShrinkZero: { flexShrink: 0 },
@@ -81,6 +82,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  traslucentStatusBarPadding: { paddingTop: StatusBar.currentHeight },
   positionAbsolute: { position: 'absolute' },
   textAlignCenter: { textAlign: 'center' },
   textUnderlined: { textDecorationLine: 'underline' },
