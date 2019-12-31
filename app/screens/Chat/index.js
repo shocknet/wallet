@@ -11,7 +11,7 @@ import MaterialIcons from 'react-native-vector-icons/MaterialCommunityIcons'
 import * as API from '../../services/contact-api'
 import * as Wallet from '../../services/wallet'
 import * as Cache from '../../services/cache'
-import { Colors } from '../../css'
+import { Colors } from '../../res/css'
 
 import { WALLET_OVERVIEW } from '../WalletOverview'
 /**

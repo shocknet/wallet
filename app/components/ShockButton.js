@@ -5,7 +5,7 @@ import React from 'react'
 import { StyleSheet, Text, TouchableHighlight, View } from 'react-native'
 import { Icon } from 'react-native-elements'
 
-import * as CSS from '../css'
+import * as CSS from '../res/css'
 
 /**
  * @typedef {object} IconProps

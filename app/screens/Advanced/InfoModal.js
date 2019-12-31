@@ -15,7 +15,7 @@ import Entypo from 'react-native-vector-icons/Entypo'
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 
-import * as CSS from '../../css'
+import * as CSS from '../../res/css'
 import ShockModal from '../../components/ShockModal'
 import Pad from '../../components/Pad'
 

@@ -2,30 +2,26 @@
  * @prettier
  */
 import React from 'react'
-import {
-  Image,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-  TouchableOpacity,
-  ImageBackground,
-} from 'react-native'
-import EntypoIcon from 'react-native-vector-icons/Entypo'
-import Ionicons from 'react-native-vector-icons/Ionicons'
+import { Text, View } from 'react-native'
 
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation
  */
 
-import * as CSS from '../css'
+import * as CSS from '../res/css'
 import * as Cache from '../services/cache'
 import * as Conn from '../services/connection'
 import { isValidURL as isValidIP } from '../services/utils'
 import Pad from '../components/Pad'
 import QRScanner from './QRScanner'
-import Loading from './Loading'
 import { WALLET_MANAGER } from '../navigators/WalletManager'
+import OnboardingScreen, {
+  ITEM_SPACING,
+  titleTextStyle,
+  linkTextStyle,
+} from '../components/OnboardingScreen'
+import OnboardingInput from '../components/OnboardingInput'
+import OnboardingBtn from '../components/OnboardingBtn'
 /** @type {number} */
 // @ts-ignore
 const shockBG = require('../assets/images/shock-bg.png')
@@ -192,10 +188,6 @@ export default class ConnectToNode extends React.PureComponent {
       scanningQR,
     } = this.state
 
-    if (checkingCacheForNodeURL) {
-      return <Loading />
-    }
-
     if (scanningQR) {
       return (
         <View style={CSS.styles.flex}>
@@ -208,210 +200,47 @@ export default class ConnectToNode extends React.PureComponent {
     }
 
     return (
-      <ImageBackground
-        resizeMode="cover"
-        resizeMethod="scale"
-        source={shockBG}
-        style={styles.container}
-      >
-        <View style={styles.shockWalletLogoContainer}>
-          <Image style={styles.shockLogo} source={shockLogo} />
-          {!pinging && !wasBadPing && (
-            <Text style={styles.logoText}>SHOCKWALLET</Text>
-          )}
-        </View>
+      <OnboardingScreen loading={checkingCacheForNodeURL || pinging}>
+        <Text style={titleTextStyle}>Welcome</Text>
 
-        <View>
-          {!pinging && !wasBadPing && (
-            <Text style={styles.callToAction}>WELCOME</Text>
-          )}
+        <Pad amount={ITEM_SPACING} />
 
-          <View style={styles.textInputFieldContainer}>
-            <TextInput
-              autoCapitalize="none"
-              autoCorrect={false}
-              editable={!pinging && !wasBadPing}
-              keyboardType="numeric"
-              onChangeText={this.onChangeNodeURL}
-              placeholder="Specify Node IP"
-              placeholderTextColor="grey"
-              style={styles.textInputField}
-              value={nodeURL}
-            />
-            <TouchableOpacity
-              style={styles.scanBtn}
-              onPress={this.toggleQRScreen}
-            >
-              <Ionicons
-                name="ios-barcode"
-                style={styles.positionAbsolute}
-                size={10}
-                color="#eee"
-              />
-              <Ionicons
-                name="md-qr-scanner"
-                style={styles.positionAbsolute}
-                size={20}
-                color="#eee"
-              />
-            </TouchableOpacity>
-          </View>
+        <OnboardingInput
+          autoCapitalize="none"
+          autoCorrect={false}
+          disable={pinging || wasBadPing}
+          keyboardType="numeric"
+          onChangeText={this.onChangeNodeURL}
+          onPressQRBtn={this.toggleQRScreen}
+          placeholder="Specify Node IP"
+          // placeholderTextColor="grey"
+          value={nodeURL}
+        />
 
-          <View>
-            <Text style={styles.msg}>
-              {(() => {
-                if (pinging) {
-                  return 'Checking...'
-                }
+        <Pad amount={ITEM_SPACING} />
 
-                if (wasBadPing) {
-                  return "Could not connect, you can still continue if you're sure this is your node's ip."
-                }
+        <OnboardingBtn
+          disabled={!isValidIP(nodeURL) || pinging}
+          onPress={wasBadPing ? this.onPressTryAgain : this.onPressConnect}
+          title={wasBadPing ? 'Continue' : 'Connect'}
+        />
 
-                return null
-              })()}
-            </Text>
-            <Pad amount={10} />
-            {wasBadPing && (
-              <Text onPress={this.onPressTryAgain} style={styles.msgLink}>
-                Try Again
-              </Text>
-            )}
-          </View>
+        <Pad amount={ITEM_SPACING} />
 
-          {wasBadPing && (
-            <TouchableOpacity onPress={this.onPressContinue}>
-              <View style={styles.shockBtn}>
-                <Text style={styles.shockBtnText}>Continue</Text>
-              </View>
-            </TouchableOpacity>
-          )}
+        {wasBadPing && (
+          <Text style={titleTextStyle}>
+            Connection to the specified address failed.
+          </Text>
+        )}
 
-          {!pinging && !wasBadPing && (
-            <TouchableOpacity
-              disabled={!isValidIP(nodeURL) || pinging}
-              onPress={this.onPressConnect}
-              style={styles.connectBtn}
-            >
-              <Text style={styles.connectBtnText}>Connect</Text>
-            </TouchableOpacity>
-          )}
+        <Pad amount={ITEM_SPACING} />
 
-          {!pinging && !wasBadPing && (
-            <TouchableOpacity disabled>
-              <View style={styles.shockBtn}>
-                <EntypoIcon name="cloud" size={20} color="#274f94" />
-                <Text style={styles.shockBtnText}>Use ShockCloud</Text>
-              </View>
-            </TouchableOpacity>
-          )}
-        </View>
-      </ImageBackground>
+        {wasBadPing && (
+          <Text onPress={this.onPressTryAgain} style={linkTextStyle}>
+            Try Again
+          </Text>
+        )}
+      </OnboardingScreen>
     )
   }
 }
-
-const styles = StyleSheet.create({
-  positionAbsolute: {
-    position: 'absolute',
-  },
-  container: {
-    flex: 1,
-    backgroundColor: CSS.Colors.BLUE_DARK,
-    justifyContent: 'space-around',
-    paddingLeft: 30,
-    paddingRight: 30,
-  },
-  shockLogo: {
-    width: 70,
-    height: 70,
-    marginBottom: 17,
-  },
-  shockWalletLogoContainer: {
-    alignItems: 'center',
-  },
-  textInputFieldContainer: {
-    flexDirection: 'row',
-    backgroundColor: CSS.Colors.TEXT_WHITE,
-    height: 60,
-    borderRadius: 100,
-    paddingLeft: 25,
-    marginBottom: 25,
-    elevation: 3,
-    alignItems: 'center',
-  },
-  textInputField: {
-    fontSize: 14,
-    fontFamily: 'Montserrat-600',
-    flex: 1,
-  },
-  scanBtn: {
-    width: 35,
-    height: 35,
-    flexShrink: 0,
-    backgroundColor: CSS.Colors.GRAY_MEDIUM,
-    borderRadius: 100,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 10,
-  },
-  logoText: {
-    color: CSS.Colors.TEXT_WHITE,
-    fontFamily: 'Montserrat-700',
-    fontSize: 18,
-    letterSpacing: 2.5,
-  },
-  callToAction: {
-    color: CSS.Colors.TEXT_WHITE,
-    fontFamily: 'Montserrat-900',
-    fontSize: 28,
-    textAlign: 'center',
-    marginBottom: 30,
-  },
-  msg: {
-    color: CSS.Colors.TEXT_WHITE,
-    fontFamily: 'Montserrat-500',
-    fontSize: 18,
-    textAlign: 'center',
-    marginBottom: 30,
-  },
-  msgLink: {
-    color: CSS.Colors.TEXT_WHITE,
-    fontFamily: 'Montserrat-700',
-    fontSize: 14,
-    textAlign: 'center',
-    textDecorationLine: 'underline',
-    marginBottom: 30,
-  },
-  connectBtn: {
-    height: 60,
-    backgroundColor: CSS.Colors.ORANGE,
-    borderRadius: 100,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 20,
-  },
-  connectBtnText: {
-    fontSize: 15,
-    letterSpacing: 1.25,
-    color: CSS.Colors.TEXT_WHITE,
-    fontFamily: 'Montserrat-700',
-  },
-  shockBtn: {
-    flexDirection: 'row',
-    height: 60,
-    backgroundColor: CSS.Colors.TEXT_WHITE,
-    borderRadius: 100,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 60,
-    opacity: 0.7,
-  },
-  shockBtnText: {
-    fontSize: 15,
-    letterSpacing: 1,
-    color: CSS.Colors.BLUE_DARK,
-    fontFamily: 'Montserrat-700',
-    marginLeft: 10,
-  },
-})

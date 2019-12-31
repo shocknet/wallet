@@ -5,7 +5,7 @@ import React from 'react'
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
 import { Avatar } from 'react-native-elements'
 
-import { Colors } from '../css'
+import { Colors } from '../res/css'
 
 /**
  * @typedef {object} Props

@@ -16,7 +16,9 @@ import {
   TouchableOpacity,
 } from 'react-native'
 import EntypoIcons from 'react-native-vector-icons/Entypo'
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'
 import { connect } from 'react-redux'
+
 //import { compose } from 'redux'
 import { ConnectionContext } from '../../ctx/Connection'
 import QRCodeScanner from '../../components/QRScanner'
@@ -34,7 +36,7 @@ import UserDetail from '../../components/UserDetail'
 
 import btcConvert from '../../services/convertBitcoin'
 import * as ContactAPI from '../../services/contact-api'
-import * as CSS from '../../css'
+import * as CSS from '../../res/css'
 import * as Wallet from '../../services/wallet'
 
 import { getUSDRate, getWalletBalance } from '../../actions/WalletActions'
@@ -136,13 +138,14 @@ class WalletOverview extends Component {
    * @type {import('react-navigation').NavigationBottomTabScreenOptions}
    */
   static navigationOptions = {
-    tabBarIcon: ({ tintColor }) => {
+    tabBarIcon: ({ focused }) => {
       return ((
-        <EntypoIcons
-          color={tintColor === null ? undefined : tintColor}
+        <FontAwesome5
+          color={
+            focused ? CSS.Colors.BLUE_MEDIUM_DARK : CSS.Colors.GRAY_MEDIUM_LIGHT
+          }
           name="wallet"
-          // reverseColor={'#CED0CE'}
-          size={22}
+          size={32}
         />
       ))
     },

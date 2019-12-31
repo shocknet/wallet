@@ -4,7 +4,7 @@
 import React from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 
-import { Colors } from '../css'
+import { Colors } from '../res/css'
 import * as ContactAPI from '../services/contact-api'
 
 /**
