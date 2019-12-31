@@ -50,6 +50,7 @@ public class NotificationService extends Service {
         @Override
         public void call(final Object... args) {
             Log.d(TAG,args[0].toString());
+            doNotification("You got a new transaction bro");
             /*getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -70,18 +71,18 @@ public class NotificationService extends Service {
         }
     };
     private void attemptSend() {
-        String message = "{'token':'"+NotificationService.token+"'}";
+        String message = "{\"token\":\""+NotificationService.token+"\"}";
     
-        mSocket.emit("ON_AVATAR", message);
+        mSocket.emit("ON_TRANSACTION", message);
     }
     private Runnable runnableCode = new Runnable() {
         @Override
         public void run() {
-            Log.d("MyBroadcastReceiver","yeahhhh");
-            Log.d("MyBroadcastReceiver","Token from run "+token);
+            Log.d(TAG,"yeahhhh");
+            Log.d(TAG,"Token from run "+token);
             try {
                 mSocket = IO.socket("http://"+NotificationService.ip);
-                mSocket.on("ON_AVATAR", onNewMessage);
+                mSocket.on("ON_TRANSACTION", onNewMessage);
                 mSocket.connect();
                 attemptSend();
                 Log.d(TAG, "Done conn");
