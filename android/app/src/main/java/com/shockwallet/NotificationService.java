@@ -38,7 +38,8 @@ import android.os.Bundle;
 
 public class NotificationService extends Service {
 
-    private static final int SERVICE_NOTIFICATION_ID = 12345;
+    private static int SERVICE_NOTIFICATION_ID = 12345;
+    private static final String GROUP_KEY_NOTIF = "GROUP_KEY_NOTIF";
     private static final String CHANNEL_ID = "shock_notif";
     private static final String TAG = "NotificationsDeb";
     //private OkHttpClient client;
@@ -50,7 +51,7 @@ public class NotificationService extends Service {
         @Override
         public void call(final Object... args) {
             Log.d(TAG,args[0].toString());
-            doNotification("You got a new transaction bro");
+            doNotification(args[0].toString());
             /*getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -101,13 +102,14 @@ public class NotificationService extends Service {
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
         NotificationCompat.Builder notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("You got this thing")
+                .setContentTitle("New Transaction")
                 .setContentText(result)
                 .setSmallIcon(R.mipmap.ic_launcher)
-                .setContentIntent(contentIntent);
+                .setContentIntent(contentIntent)
+                .setGroup(GROUP_KEY_NOTIF);
         
         NotificationManagerCompat notificationManager1 = NotificationManagerCompat.from(this);
-        notificationManager1.notify(SERVICE_NOTIFICATION_ID, notification.build());
+        notificationManager1.notify(++SERVICE_NOTIFICATION_ID, notification.build());
     }
     private void createNotificationChannel() {
         // Create the NotificationChannel, but only on API 26+ because
@@ -160,7 +162,9 @@ public class NotificationService extends Service {
                 .setContentText("Running...")
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentIntent(contentIntent)
-                .setOngoing(true);
+                .setOngoing(true)
+                .setGroup(GROUP_KEY_NOTIF)
+                .setGroupSummary(true);
         //notificationManager.notify(SERVICE_NOTIFICATION_ID, notification.build());
         startForeground(SERVICE_NOTIFICATION_ID, notification.build());
         return START_STICKY;
