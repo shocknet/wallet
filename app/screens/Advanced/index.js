@@ -18,7 +18,7 @@ import Http from 'axios'
 import Big from 'big.js'
 import { connect } from 'react-redux'
 
-import * as CSS from '../../css'
+import * as CSS from '../../res/css'
 import * as Cache from '../../services/cache'
 import BasicDialog from '../../components/BasicDialog'
 import ShockInput from '../../components/ShockInput'

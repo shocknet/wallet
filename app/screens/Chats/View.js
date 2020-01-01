@@ -13,7 +13,7 @@ import QRCodeScanner from '../../components/QRScanner'
 
 import * as API from '../../services/contact-api'
 import UserDetail from '../../components/UserDetail'
-import { Colors, SCREEN_PADDING } from '../../css'
+import { Colors, SCREEN_PADDING } from '../../res/css'
 import ShockDialog from '../../components/ShockDialog'
 
 const ACCEPT_REQUEST_DIALOG_TEXT =

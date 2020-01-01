@@ -38,7 +38,8 @@ import android.os.Bundle;
 
 public class NotificationService extends Service {
 
-    private static final int SERVICE_NOTIFICATION_ID = 12345;
+    private static int SERVICE_NOTIFICATION_ID = 12345;
+    private static final String GROUP_KEY_NOTIF = "GROUP_KEY_NOTIF";
     private static final String CHANNEL_ID = "shock_notif";
     private static final String TAG = "NotificationsDeb";
     //private OkHttpClient client;
@@ -46,34 +47,33 @@ public class NotificationService extends Service {
     private static String ip;
     private static String token;
     private Socket mSocket;
-    private Emitter.Listener onNewMessage = new Emitter.Listener() {
+    private Emitter.Listener newTransaction = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
             Log.d(TAG,args[0].toString());
-            doNotification("You got a new transaction bro");
-            /*getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    JSONObject data = (JSONObject) args[0];
-                    String username;
-                    String message;
-                    try {
-                        username = data.getString("username");
-                        message = data.getString("message");
-                    } catch (JSONException e) {
-                        return;
-                    }
-    
-                    // add the message to view
-                    addMessage(username, message);
-                }
-            });*/
+            doNotification("New Transaction",args[0].toString());
+        }
+    };
+    private Emitter.Listener newInvoice = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            Log.d(TAG,args[0].toString());
+            doNotification("New Invoice",args[0].toString());
+        }
+    };
+    private Emitter.Listener newChat = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            Log.d(TAG,args[0].toString());
+            //doNotification("New Invoice",args[0].toString());
         }
     };
     private void attemptSend() {
         String message = "{\"token\":\""+NotificationService.token+"\"}";
     
         mSocket.emit("ON_TRANSACTION", message);
+        mSocket.emit("ON_INVOICE", message);
+       // mSocket.emit("ON_CHATS", message);
     }
     private Runnable runnableCode = new Runnable() {
         @Override
@@ -82,7 +82,9 @@ public class NotificationService extends Service {
             Log.d(TAG,"Token from run "+token);
             try {
                 mSocket = IO.socket("http://"+NotificationService.ip);
-                mSocket.on("ON_TRANSACTION", onNewMessage);
+                mSocket.on("ON_TRANSACTION", newTransaction);
+                mSocket.on("ON_INVOICE", newInvoice);
+                //mSocket.on("ON_CHATS", newChat);
                 mSocket.connect();
                 attemptSend();
                 Log.d(TAG, "Done conn");
@@ -91,7 +93,7 @@ public class NotificationService extends Service {
             }
         }
     };
-    private void doNotification(String result){
+    private void doNotification(String title,String result){
         int importance = NotificationManager.IMPORTANCE_DEFAULT;
         NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "Shock_notify", importance);
         channel.setDescription("CHANEL DESCRIPTION");
@@ -101,13 +103,14 @@ public class NotificationService extends Service {
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
         NotificationCompat.Builder notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("You got this thing")
+                .setContentTitle(title)
                 .setContentText(result)
                 .setSmallIcon(R.mipmap.ic_launcher)
-                .setContentIntent(contentIntent);
+                .setContentIntent(contentIntent)
+                .setGroup(GROUP_KEY_NOTIF);
         
         NotificationManagerCompat notificationManager1 = NotificationManagerCompat.from(this);
-        notificationManager1.notify(SERVICE_NOTIFICATION_ID, notification.build());
+        notificationManager1.notify(++SERVICE_NOTIFICATION_ID, notification.build());
     }
     private void createNotificationChannel() {
         // Create the NotificationChannel, but only on API 26+ because
@@ -132,7 +135,9 @@ public class NotificationService extends Service {
         super.onDestroy();
         this.handler.removeCallbacks(this.runnableCode);
         mSocket.disconnect();
-        mSocket.off("new message", onNewMessage);
+        mSocket.off("ON_TRANSACTION", newTransaction);
+        mSocket.off("ON_INVOICE", newInvoice);
+        //mSocket.off("ON_CHATS", newChat);
     }
 
     @Override
@@ -160,7 +165,9 @@ public class NotificationService extends Service {
                 .setContentText("Running...")
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentIntent(contentIntent)
-                .setOngoing(true);
+                .setOngoing(true)
+                .setGroup(GROUP_KEY_NOTIF)
+                .setGroupSummary(true);
         //notificationManager.notify(SERVICE_NOTIFICATION_ID, notification.build());
         startForeground(SERVICE_NOTIFICATION_ID, notification.build());
         return START_STICKY;

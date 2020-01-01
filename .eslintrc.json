@@ -88,6 +88,7 @@
     "react/jsx-fragments": "off",
     // good rule but it's currently broken
     "react/sort-comp": "off",
+    "react/display-name": "off",
     "no-use-before-define": "off",
     "new-cap": "off",
     "babel/new-cap": "off",
@@ -99,6 +100,8 @@
     "semi": "off",
     "babel/semi": "off",
     "no-unused-expressions": "off",
+    // typescript does this
+    "no-unused-vars": "off",
     "babel/no-unused-expressions": ["error", { "allowShortCircuit": true }],
     "valid-typeof": "off",
     "babel/valid-typeof": 1,

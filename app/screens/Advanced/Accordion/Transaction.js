@@ -2,7 +2,7 @@ import React from 'react'
 import { View, Text, StyleSheet, Image } from 'react-native'
 import Moment from 'moment'
 
-import * as CSS from '../../../css'
+import * as CSS from '../../../res/css'
 /**
  * @typedef {import('../../../services/wallet').Transaction} ITransaction
  */

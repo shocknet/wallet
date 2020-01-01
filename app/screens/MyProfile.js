@@ -14,7 +14,7 @@ import EntypoIcons from 'react-native-vector-icons/Entypo'
 import { AirbnbRating } from 'react-native-ratings'
 
 import * as API from '../services/contact-api'
-import * as CSS from '../css'
+import * as CSS from '../res/css'
 import * as Cache from '../services/cache'
 import * as Utils from '../services/utils'
 import ShockAvatar from '../components/ShockAvatar'
@@ -47,13 +47,15 @@ export default class MyProfile extends React.PureComponent {
    * @type {import('react-navigation').NavigationBottomTabScreenOptions}
    */
   static navigationOptions = {
-    tabBarIcon: ({ tintColor }) => {
+    tabBarIcon: ({ focused }) => {
       return ((
         <EntypoIcons
-          color={tintColor === null ? undefined : tintColor}
+          color={
+            focused ? CSS.Colors.BLUE_MEDIUM_DARK : CSS.Colors.GRAY_MEDIUM_LIGHT
+          }
           name="user"
           // reverseColor={'#CED0CE'}
-          size={22}
+          size={32}
         />
       ))
     },

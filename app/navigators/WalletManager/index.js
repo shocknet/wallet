@@ -1,5 +1,7 @@
 import { createStackNavigator } from 'react-navigation'
 
+import { stackNavConfigMixin } from '../../components/OnboardingScreen'
+
 import CreateWalletOrAlias, {
   CREATE_WALLET_OR_ALIAS,
 } from './CreateWalletOrAlias'
@@ -14,6 +16,7 @@ const WalletManager = createStackNavigator(
   },
   {
     initialRouteName: LANDING,
+    ...stackNavConfigMixin,
   },
 )
 
