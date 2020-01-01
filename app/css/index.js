@@ -47,6 +47,7 @@ export const Colors = {
   FAILURE_RED: '#C1272D',
   CAUTION_YELLOW: '#EFC238',
   TRANSPARENT: 'transparent',
+  GOLD: '#f2a900',
 }
 
 export const styles = StyleSheet.create({

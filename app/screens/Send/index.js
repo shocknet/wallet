@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Text,
   View,
+  ScrollView,
   ImageBackground,
   Dimensions,
   ActivityIndicator,
@@ -39,6 +40,7 @@ export const SEND_SCREEN = 'SEND_SCREEN'
 /**
  * @typedef {object} State
  * @prop {string} destination
+ * @prop {string} description
  * @prop {string} unitSelected
  * @prop {string} amount
  * @prop {string} contactsSearch
@@ -52,6 +54,7 @@ export const SEND_SCREEN = 'SEND_SCREEN'
 class SendScreen extends Component {
   state = {
     destination: '',
+    description: '',
     unitSelected: 'Sats',
     amount: '0',
     contactsSearch: '',
@@ -117,6 +120,7 @@ class SendScreen extends Component {
   render() {
     const {
       destination,
+      description,
       unitSelected,
       amount,
       sending,
@@ -137,99 +141,113 @@ class SendScreen extends Component {
             styles.sendContainer,
             {
               width: width - 50,
-              height: height - 134,
+              height: height - 200,
             },
           ]}
         >
-          {error ? (
-            <View style={styles.errorRow}>
-              <Text style={styles.errorText}>{error}</Text>
+          <ScrollView>
+            <View style={styles.scrollInnerContent}>
+              {error ? (
+                <View style={styles.errorRow}>
+                  <Text style={styles.errorText}>{error}</Text>
+                </View>
+              ) : null}
+              <View style={styles.scanBtn}>
+                <Text style={styles.scanBtnText}>SCAN QR</Text>
+                <Ionicons name="md-qr-scanner" color="gray" size={24} />
+              </View>
+              <InputGroup
+                label="Recipient Address"
+                value={destination}
+                onChange={this.onChange('destination')}
+                style={styles.destination}
+              />
+              <ContactsSearch
+                onChange={this.onChange('contactsSearch')}
+                value={contactsSearch}
+                style={styles.contactsSearch}
+              />
+              <View style={styles.amountContainer}>
+                <InputGroup
+                  label="Enter Amount"
+                  value={amount}
+                  onChange={this.onChange('amount')}
+                  style={styles.amountInput}
+                  type="numeric"
+                />
+                <Dropdown
+                  data={[
+                    {
+                      value: 'Sats',
+                    },
+                    {
+                      value: 'Bits',
+                    },
+                    {
+                      value: 'BTC',
+                    },
+                  ]}
+                  onChangeText={this.onChange('unitSelected')}
+                  containerStyle={styles.amountSelect}
+                  value={unitSelected}
+                  lineWidth={0}
+                  inputContainerStyle={styles.amountSelectInput}
+                  rippleOpacity={0}
+                  pickerStyle={styles.amountPicker}
+                  dropdownOffset={{ top: 8, left: 0 }}
+                  rippleInsets={{ top: 8, bottom: 0, right: 0, left: 0 }}
+                />
+              </View>
+              <InputGroup
+                label="Description"
+                value={description}
+                multiline
+                onChange={this.onChange('description')}
+                inputStyle={styles.descInput}
+              />
+              {sending ? (
+                <View
+                  style={[
+                    styles.sendingOverlay,
+                    {
+                      width: width - 50,
+                      height: height - 194,
+                    },
+                  ]}
+                >
+                  <ActivityIndicator color={CSS.Colors.FUN_BLUE} size="large" />
+                  <Text style={styles.sendingText}>Sending Transaction...</Text>
+                </View>
+              ) : null}
             </View>
-          ) : null}
-          <View style={styles.scanBtn}>
-            <Text style={styles.scanBtnText}>SCAN QR</Text>
-            <Ionicons name="md-qr-scanner" color="white" size={24} />
-          </View>
-          <InputGroup
-            label="Recipient Address"
-            value={destination}
-            onChange={this.onChange('destination')}
-          />
-          <ContactsSearch
-            onChange={this.onChange('contactsSearch')}
-            value={contactsSearch}
-            style={styles.contactsSearch}
-          />
-          <View style={styles.amountContainer}>
-            <InputGroup
-              label="Amount"
-              value={amount}
-              onChange={this.onChange('amount')}
-              style={styles.amountInput}
-            />
-            <Dropdown
-              data={[
-                {
-                  value: 'Sats',
-                },
-                {
-                  value: 'Bits',
-                },
-                {
-                  value: 'BTC',
-                },
-              ]}
-              onChangeText={this.onChange('unitSelected')}
-              containerStyle={styles.amountSelect}
-              value={unitSelected}
-              lineWidth={0}
-              inputContainerStyle={styles.amountSelectInput}
-              rippleOpacity={0}
-              pickerStyle={styles.amountPicker}
-              dropdownOffset={{ top: 8, left: 0 }}
-              rippleInsets={{ top: 8, bottom: 0, right: 0, left: 0 }}
-            />
-          </View>
-          <View style={styles.sendSwipeContainer}>
-            {this.isFilled() ? (
-              <SwipeVerify
-                width="100%"
-                buttonSize={48}
-                height={40}
-                style={styles.swipeBtn}
-                buttonColor={CSS.Colors.BACKGROUND_WHITE}
-                borderColor={CSS.Colors.TRANSPARENT}
-                backgroundColor={CSS.Colors.BACKGROUND_NEAR_WHITE}
-                textColor="#37474F"
-                borderRadius={100}
-                icon={
-                  <Image
-                    source={BitcoinAccepted}
-                    resizeMethod="resize"
-                    resizeMode="contain"
-                    style={styles.btcIcon}
-                  />
-                }
-                disabled={!this.isFilled()}
-                onVerified={this.sendRequest}
-              >
-                <Text style={styles.swipeBtnText}>SLIDE TO SEND</Text>
-              </SwipeVerify>
-            ) : null}
-          </View>
-          {sending ? (
-            <View
-              style={[
-                styles.sendingOverlay,
-                {
-                  width: width - 50,
-                  height: height - 134,
-                },
-              ]}
+          </ScrollView>
+        </View>
+        <View style={styles.sendSwipeContainer}>
+          {this.isFilled() ? (
+            <SwipeVerify
+              width="100%"
+              buttonSize={60}
+              height={50}
+              style={styles.swipeBtn}
+              buttonColor={CSS.Colors.BACKGROUND_WHITE}
+              borderColor={CSS.Colors.TRANSPARENT}
+              backgroundColor={CSS.Colors.BACKGROUND_WHITE}
+              textColor="#37474F"
+              borderRadius={100}
+              swipeColor={CSS.Colors.GOLD}
+              icon={
+                <Image
+                  source={BitcoinAccepted}
+                  resizeMethod="resize"
+                  resizeMode="contain"
+                  style={styles.btcIcon}
+                />
+              }
+              disabled={!this.isFilled()}
+              onVerified={this.sendRequest}
             >
-              <ActivityIndicator color={CSS.Colors.FUN_BLUE} size="large" />
-              <Text style={styles.sendingText}>Sending Transaction...</Text>
-            </View>
+              <Text style={styles.swipeBtnText}>SLIDE TO SEND</Text>
+            </SwipeVerify>
           ) : null}
         </View>
       </ImageBackground>
@@ -241,20 +259,24 @@ export default SendScreen
 
 const styles = StyleSheet.create({
   container: {
+    height: 170,
     flex: 1,
     justifyContent: 'flex-start',
     alignItems: 'center',
   },
-  contactsSearch: { marginBottom: 42, height: 45 },
+  destination: { marginBottom: 30 },
+  contactsSearch: { marginBottom: 20, height: 45 },
   sendContainer: {
-    height: '100%',
-    width: '100%',
     marginTop: 5,
-    paddingVertical: 25,
-    paddingHorizontal: 35,
     backgroundColor: CSS.Colors.BACKGROUND_WHITE,
     borderRadius: 40,
-    overflow: 'hidden',
+  },
+  scrollInnerContent: {
+    height: '100%',
+    width: '100%',
+    paddingVertical: 23,
+    paddingHorizontal: 35,
+    paddingBottom: 0,
   },
   sendingOverlay: {
     position: 'absolute',
@@ -291,16 +313,16 @@ const styles = StyleSheet.create({
   scanBtn: {
     width: '100%',
     flexDirection: 'row',
-    backgroundColor: CSS.Colors.BUTTON_BLUE,
-    paddingVertical: 15,
+    backgroundColor: CSS.Colors.BACKGROUND_WHITE,
+    paddingVertical: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 15,
-    marginBottom: 60,
+    borderRadius: 30,
+    marginBottom: 30,
     elevation: 10,
   },
   scanBtnText: {
-    color: CSS.Colors.TEXT_WHITE,
+    color: CSS.Colors.GRAY,
     fontSize: 14,
     fontFamily: 'Montserrat-700',
     marginRight: 10,
@@ -310,6 +332,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-end',
+    marginBottom: 20,
   },
   amountInput: {
     width: '60%',
@@ -331,12 +354,11 @@ const styles = StyleSheet.create({
   },
   amountPicker: { borderRadius: 15 },
   sendSwipeContainer: {
-    position: 'absolute',
-    bottom: 25,
-    left: 35,
     width: '100%',
-    height: 60,
+    height: 70,
+    paddingHorizontal: 35,
     justifyContent: 'center',
+    marginTop: 10,
   },
   swipeBtn: {
     marginBottom: 10,
@@ -348,5 +370,10 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: 'Montserrat-700',
     color: CSS.Colors.TEXT_GRAY,
+  },
+  descInput: {
+    height: 90,
+    borderRadius: 15,
+    textAlignVertical: 'top',
   },
 })
