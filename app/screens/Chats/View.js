@@ -81,6 +81,8 @@ const keyExtractor = item => {
  * @prop {boolean} showingQRScanner
  * @prop {() => void} onRequestCloseQRScanner
  * @prop {(e: { data: string }) => void} onQRRead
+ *
+ * @prop {string[]} readChatIDs List of chats that do NOT have unread messages.
  */
 
 /**
@@ -135,6 +137,7 @@ export default class ChatsView extends React.PureComponent {
    * @returns {React.ReactElement<any> | null}
    */
   chatRenderer = chat => {
+    const { readChatIDs } = this.props
     const lastMsg = chat.messages[chat.messages.length - 1]
 
     if (typeof lastMsg === 'undefined') {
@@ -145,7 +148,7 @@ export default class ChatsView extends React.PureComponent {
 
     const lastMsgTimestamp = lastMsg.timestamp
 
-    const unread = false
+    const unread = !readChatIDs.includes(chat.recipientPublicKey)
 
     return (
       <View style={styles.itemContainer}>

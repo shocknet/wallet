@@ -299,6 +299,7 @@ export default class Chats extends React.PureComponent {
         showingQRScanner={scanningUserQR}
         onQRRead={this.onQRRead}
         onRequestCloseQRScanner={this.toggleContactQRScanner}
+        readChatIDs={chats.map(c => c.recipientPublicKey)}
       />
     )
   }
