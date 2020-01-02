@@ -47,13 +47,6 @@ const byTimestampFromOldestToNewest = (a, b) => a.timestamp - b.timestamp
  */
 
 /**
- * Add the last message's id of a chat to this set when opening. This will
- * simulate read status.
- * @type {Set<string>}
- */
-const readMsgs = new Set()
-
-/**
  * @augments React.PureComponent<Props, State>
  */
 export default class Chats extends React.PureComponent {
@@ -153,8 +146,6 @@ export default class Chats extends React.PureComponent {
     if (typeof lastMsg === 'undefined') {
       throw new TypeError("typeof lastMsg === 'undefined'")
     }
-
-    readMsgs.add(lastMsg.id)
 
     /** @type {ChatParams} */
     const params = {
