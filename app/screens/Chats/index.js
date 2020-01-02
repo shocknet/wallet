@@ -2,16 +2,17 @@
  * @prettier
  */
 import React from 'react'
-import { Clipboard, StatusBar, View, StyleSheet } from 'react-native'
-import Ionicons from 'react-native-vector-icons/Ionicons'
+import { Clipboard, StatusBar } from 'react-native'
+
 /**
- * @typedef {import('react-navigation').NavigationScreenProp<{}, _Params>} Navigation
+ * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation
  */
 import * as API from '../../services/contact-api'
 import * as CSS from '../../res/css'
 import { CHAT_ROUTE } from './../Chat'
 
 import ChatsView from './View'
+import TabBarIcon from './TabBarIcon'
 
 export const CHATS_ROUTE = 'CHATS_ROUTE'
 /**
@@ -24,11 +25,6 @@ export const CHATS_ROUTE = 'CHATS_ROUTE'
  * @returns {number}
  */
 const byTimestampFromOldestToNewest = (a, b) => a.timestamp - b.timestamp
-
-/**
- * @typedef {object} _Params
- * @prop {boolean} unread
- */
 
 /**
  * @typedef {object} Props
@@ -51,29 +47,13 @@ const byTimestampFromOldestToNewest = (a, b) => a.timestamp - b.timestamp
  */
 export default class Chats extends React.PureComponent {
   /**
-   * @param {{ navigation: Navigation }} args
-   * @returns {import('react-navigation').NavigationBottomTabScreenOptions}
+   * @type {import('react-navigation').NavigationBottomTabScreenOptions}
    */
-  static navigationOptions = ({ navigation }) => ({
+  static navigationOptions = {
     tabBarIcon: ({ focused }) => {
-      return (
-        <View>
-          <Ionicons
-            color={
-              focused
-                ? CSS.Colors.BLUE_MEDIUM_DARK
-                : CSS.Colors.GRAY_MEDIUM_LIGHT
-            }
-            name="md-chatboxes"
-            // This one has to be larger than the others to match the design
-            size={36}
-          />
-
-          {navigation.getParam('unread') && <View style={styles.unreadDot} />}
-        </View>
-      )
+      return <TabBarIcon focused={focused} />
     },
-  })
+  }
 
   /** @type {State} */
   state = {
@@ -307,21 +287,3 @@ export default class Chats extends React.PureComponent {
     )
   }
 }
-
-const unreadDotSize = 8
-const unreadDotRadius = unreadDotSize / 2
-
-/* eslint-disable react-native/no-color-literals */
-const styles = StyleSheet.create({
-  unreadDot: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    backgroundColor: CSS.Colors.CAUTION_YELLOW,
-    height: unreadDotSize,
-    width: unreadDotSize,
-    borderRadius: unreadDotRadius,
-  },
-})
-
-/* eslint-enable react-native/no-color-literals */
