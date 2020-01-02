@@ -106,8 +106,6 @@ export default class Chat extends React.PureComponent {
     }
   }
 
-  mounted = false
-
   /** @type {State} */
   state = {
     messages: [],
@@ -119,6 +117,14 @@ export default class Chat extends React.PureComponent {
 
     sendingInvoice: false,
   }
+
+  mounted = false
+
+  isFocused = false
+
+  didFocus = { remove() {} }
+
+  willBlur = { remove() {} }
 
   toggleSendInvoiceDialog = () => {
     this.setState(({ sendingInvoice }) => ({
@@ -333,6 +339,16 @@ export default class Chat extends React.PureComponent {
   async componentDidMount() {
     const { navigation } = this.props
 
+    this.isFocused = this.props.navigation.isFocused()
+
+    this.didFocus = navigation.addListener('didFocus', () => {
+      this.isFocused = true
+
+      // this.updateLastReadMsg()
+    })
+    this.willBlur = navigation.addListener('willBlur', () => {
+      this.isFocused = false
+    })
     this.chatsUnsub = API.Events.onChats(this.onChats)
     this.displayNameUnsub = API.Events.onDisplayName(displayName => {
       this.mounted &&
@@ -366,6 +382,8 @@ export default class Chat extends React.PureComponent {
     this.mounted = false
     this.chatsUnsub()
     this.displayNameUnsub()
+    this.didFocus.remove()
+    this.willBlur.remove()
   }
 
   chatsUnsub = () => {}
