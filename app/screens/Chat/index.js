@@ -336,7 +336,20 @@ export default class Chat extends React.PureComponent {
     }
   }
 
+  updateLastReadMsg() {
+    const { messages } = this.state
+    const pk = this.props.navigation.getParam('recipientPublicKey')
+
+    const lastMsg = messages[messages.length - 1]
+
+    if (lastMsg && pk && this.isFocused) {
+      Cache.writeLastReadMsg(pk, lastMsg.timestamp)
+    }
+  }
+
   async componentDidMount() {
+    this.mounted = true
+    this.updateLastReadMsg()
     const { navigation } = this.props
 
     this.isFocused = this.props.navigation.isFocused()
@@ -344,7 +357,7 @@ export default class Chat extends React.PureComponent {
     this.didFocus = navigation.addListener('didFocus', () => {
       this.isFocused = true
 
-      // this.updateLastReadMsg()
+      this.updateLastReadMsg()
     })
     this.willBlur = navigation.addListener('willBlur', () => {
       this.isFocused = false
@@ -356,8 +369,6 @@ export default class Chat extends React.PureComponent {
           ownDisplayName: displayName,
         })
     })
-
-    this.mounted = true
 
     this.decodeIncomingInvoices()
     this.fetchOutgoingInvoicesAndUpdateInfo()
@@ -421,6 +432,7 @@ export default class Chat extends React.PureComponent {
             : null,
       },
       () => {
+        this.updateLastReadMsg()
         this.decodeIncomingInvoices()
         this.fetchOutgoingInvoicesAndUpdateInfo()
         this.fetchPaymentsAndUpdatePaymentStatus()
