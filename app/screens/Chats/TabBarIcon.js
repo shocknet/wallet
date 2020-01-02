@@ -43,13 +43,10 @@ export default class TabBarIcon extends React.PureComponent {
       chats.filter(c => {
         const lastMsg = c.messages[c.messages.length - 1]
         const tstamp = lastReads[c.recipientPublicKey]
-        console.warn(`lastMsgs: ${lastMsg.timestamp} -- tstamp: ${tstamp}`)
         return lastMsg && tstamp && lastMsg.timestamp <= tstamp
       }).length === chats.length
 
     const unread = !allRead
-
-    console.warn(lastReads)
 
     return (
       <View>
