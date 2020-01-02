@@ -2,10 +2,10 @@
  * @prettier
  */
 import React from 'react'
-import { Clipboard, StatusBar } from 'react-native'
+import { Clipboard, StatusBar, View, StyleSheet } from 'react-native'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 /**
- * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation
+ * @typedef {import('react-navigation').NavigationScreenProp<{}, _Params>} Navigation
  */
 import * as API from '../../services/contact-api'
 import * as CSS from '../../res/css'
@@ -24,6 +24,11 @@ export const CHATS_ROUTE = 'CHATS_ROUTE'
  * @returns {number}
  */
 const byTimestampFromOldestToNewest = (a, b) => a.timestamp - b.timestamp
+
+/**
+ * @typedef {object} _Params
+ * @prop {boolean} unread
+ */
 
 /**
  * @typedef {object} Props
@@ -53,22 +58,29 @@ const readMsgs = new Set()
  */
 export default class Chats extends React.PureComponent {
   /**
-   * @type {import('react-navigation').NavigationBottomTabScreenOptions}
+   * @param {{ navigation: Navigation }} args
+   * @returns {import('react-navigation').NavigationBottomTabScreenOptions}
    */
-  static navigationOptions = {
+  static navigationOptions = ({ navigation }) => ({
     tabBarIcon: ({ focused }) => {
-      return ((
-        <Ionicons
-          color={
-            focused ? CSS.Colors.BLUE_MEDIUM_DARK : CSS.Colors.GRAY_MEDIUM_LIGHT
-          }
-          name="md-chatboxes"
-          // This one has to be larger than the others to match the design
-          size={36}
-        />
-      ))
+      return (
+        <View>
+          <Ionicons
+            color={
+              focused
+                ? CSS.Colors.BLUE_MEDIUM_DARK
+                : CSS.Colors.GRAY_MEDIUM_LIGHT
+            }
+            name="md-chatboxes"
+            // This one has to be larger than the others to match the design
+            size={36}
+          />
+
+          {navigation.getParam('unread') && <View style={styles.unreadDot} />}
+        </View>
+      )
     },
-  }
+  })
 
   /** @type {State} */
   state = {
@@ -304,3 +316,21 @@ export default class Chats extends React.PureComponent {
     )
   }
 }
+
+const unreadDotSize = 8
+const unreadDotRadius = unreadDotSize / 2
+
+/* eslint-disable react-native/no-color-literals */
+const styles = StyleSheet.create({
+  unreadDot: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    backgroundColor: CSS.Colors.CAUTION_YELLOW,
+    height: unreadDotSize,
+    width: unreadDotSize,
+    borderRadius: unreadDotRadius,
+  },
+})
+
+/* eslint-enable react-native/no-color-literals */
