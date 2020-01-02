@@ -235,6 +235,35 @@ export const getNodeURLTokenPair = async () => ({
   token: await getToken(),
 })
 
+const CHAT_TIMESTAMP = 'CHAT_TIMESTAMP:'
+
+/**
+ * Keep track of the timestamp of the last read message for a given chat.
+ * @param {string} recipientPub
+ * @param {number} timestamp
+ */
+export const writeLastReadMsg = (recipientPub, timestamp) => {
+  return AsyncStorage.setItem(
+    CHAT_TIMESTAMP + recipientPub,
+    timestamp.toString(),
+  )
+}
+
+/**
+ * Keep track of the timestamp of the last read message for a given chat.
+ * @param {string} recipientPub
+ * @returns {Promise<number|null>}
+ */
+export const getLastReadMsg = recipientPub => {
+  return AsyncStorage.getItem(CHAT_TIMESTAMP + recipientPub).then(v => {
+    if (v === null) {
+      return null
+    }
+
+    return Number(v)
+  })
+}
+
 /**
  * @returns {Promise<void>}
  */
