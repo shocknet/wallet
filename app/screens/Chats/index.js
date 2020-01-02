@@ -8,6 +8,7 @@ import { Clipboard, StatusBar } from 'react-native'
  * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation
  */
 import * as API from '../../services/contact-api'
+import * as Cache from '../../services/cache'
 import * as CSS from '../../res/css'
 import { CHAT_ROUTE } from './../Chat'
 
@@ -35,6 +36,7 @@ const byTimestampFromOldestToNewest = (a, b) => a.timestamp - b.timestamp
  * @typedef {object} State
  * @prop {string|null} acceptingRequest
  * @prop {API.Schema.Chat[]} chats
+ * @prop {Cache.LastReadMsgs} lastReadMsgs
  * @prop {API.Schema.SimpleReceivedRequest[]} receivedRequests
  * @prop {API.Schema.SimpleSentRequest[]} sentRequests
  * @prop {boolean} showingAddDialog
@@ -59,6 +61,7 @@ export default class Chats extends React.PureComponent {
   state = {
     acceptingRequest: null,
     chats: [],
+    lastReadMsgs: {},
     receivedRequests: [],
     sentRequests: [],
     showingAddDialog: false,
@@ -74,7 +77,12 @@ export default class Chats extends React.PureComponent {
 
   didFocus = { remove() {} }
 
+  onLastReadMsgsUnsub = () => {}
+
   componentDidMount() {
+    this.onLastReadMsgsUnsub = Cache.onLastReadMsgs(lastReadMsgs => {
+      this.setState({ lastReadMsgs })
+    })
     this.didFocus = this.props.navigation.addListener('didFocus', () => {
       StatusBar.setBackgroundColor(CSS.Colors.BACKGROUND_WHITE)
       StatusBar.setBarStyle('dark-content')
@@ -103,6 +111,7 @@ export default class Chats extends React.PureComponent {
     this.chatsUnsubscribe()
     this.receivedReqsUnsubscribe()
     this.sentReqsUnsubscribe()
+    this.onLastReadMsgsUnsub()
   }
 
   /**
@@ -240,6 +249,7 @@ export default class Chats extends React.PureComponent {
     const {
       acceptingRequest,
       chats,
+      lastReadMsgs,
       receivedRequests,
       sentRequests,
 
@@ -247,6 +257,17 @@ export default class Chats extends React.PureComponent {
 
       scanningUserQR,
     } = this.state
+
+    /**
+     * @type {string[]}
+     */
+    const readChatIDs = chats
+      .filter(c => {
+        const lastMsg = c.messages[c.messages.length - 1]
+        const tstamp = lastReadMsgs[c.recipientPublicKey]
+        return lastMsg && tstamp && lastMsg.timestamp <= tstamp
+      })
+      .map(c => c.recipientPublicKey)
 
     const filteredSentRequests = sentRequests.filter(sr => {
       const chatEstablishedWithRecipient = chats.some(
@@ -282,7 +303,7 @@ export default class Chats extends React.PureComponent {
         showingQRScanner={scanningUserQR}
         onQRRead={this.onQRRead}
         onRequestCloseQRScanner={this.toggleContactQRScanner}
-        readChatIDs={chats.map(c => c.recipientPublicKey)}
+        readChatIDs={readChatIDs}
       />
     )
   }
