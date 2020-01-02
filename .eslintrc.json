@@ -89,6 +89,7 @@
     // good rule but it's currently broken
     "react/sort-comp": "off",
     "react/display-name": "off",
+    "react/prefer-stateless-function": "off",
     "no-use-before-define": "off",
     "new-cap": "off",
     "babel/new-cap": "off",
@@ -97,6 +98,7 @@
     "babel/object-curly-spacing": "off",
     "quotes": "off",
     "babel/quotes": "off",
+    "class-methods-use-this": "off",
     "semi": "off",
     "babel/semi": "off",
     "no-unused-expressions": "off",
