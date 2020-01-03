@@ -3,13 +3,13 @@ import { View, StyleSheet, Text } from 'react-native'
 import { connect } from 'react-redux'
 // @ts-ignore
 import { Dropdown } from 'react-native-material-dropdown'
-import * as CSS from '../../../css'
+import * as CSS from '../../../res/css'
 import InputGroup from '../../../components/InputGroup'
 import {
   setAmount,
   setDescription,
   setUnitSelected,
-} from '../../../../actions/InvoiceActions'
+} from '../../../actions/InvoiceActions'
 
 /**
  * @typedef {ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps} ConnectedRedux

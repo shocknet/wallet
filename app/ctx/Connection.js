@@ -44,7 +44,6 @@ export class ConnectionProvider extends React.PureComponent {
    * @param {boolean} socketConn
    */
   onSocketConn = socketConn => {
-    console.warn(`socketConn: ${socketConn}`)
     this.setState({
       socketConnected: socketConn,
     })

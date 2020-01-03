@@ -1,7 +1,7 @@
 import React from 'react'
 import { View, Text, StyleSheet } from 'react-native'
 
-import * as CSS from '../../css'
+import * as CSS from '../../res/css'
 
 const Suggestion = ({ name = '', style = {} }) => (
   <View style={[styles.inputSuggestion, style]}>

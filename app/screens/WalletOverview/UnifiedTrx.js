@@ -14,7 +14,7 @@ import { connect } from 'react-redux'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 
 import * as Wallet from '../../services/wallet'
-import * as CSS from '../../css'
+import * as CSS from '../../res/css'
 
 import UnifiedTransaction from './UnifiedTransaction'
 

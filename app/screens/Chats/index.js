@@ -2,16 +2,18 @@
  * @prettier
  */
 import React from 'react'
-import { Clipboard } from 'react-native'
-import EntypoIcons from 'react-native-vector-icons/Entypo'
+import { Clipboard, StatusBar } from 'react-native'
+
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation
  */
-
 import * as API from '../../services/contact-api'
+import * as Cache from '../../services/cache'
+import * as CSS from '../../res/css'
 import { CHAT_ROUTE } from './../Chat'
 
 import ChatsView from './View'
+import TabBarIcon from './TabBarIcon'
 
 export const CHATS_ROUTE = 'CHATS_ROUTE'
 /**
@@ -34,19 +36,13 @@ const byTimestampFromOldestToNewest = (a, b) => a.timestamp - b.timestamp
  * @typedef {object} State
  * @prop {string|null} acceptingRequest
  * @prop {API.Schema.Chat[]} chats
+ * @prop {Cache.LastReadMsgs} lastReadMsgs
  * @prop {API.Schema.SimpleReceivedRequest[]} receivedRequests
  * @prop {API.Schema.SimpleSentRequest[]} sentRequests
  * @prop {boolean} showingAddDialog
  *
  * @prop {boolean} scanningUserQR
  */
-
-/**
- * Add the last message's id of a chat to this set when opening. This will
- * simulate read status.
- * @type {Set<string>}
- */
-const readMsgs = new Set()
 
 /**
  * @augments React.PureComponent<Props, State>
@@ -56,15 +52,8 @@ export default class Chats extends React.PureComponent {
    * @type {import('react-navigation').NavigationBottomTabScreenOptions}
    */
   static navigationOptions = {
-    tabBarIcon: ({ tintColor }) => {
-      return ((
-        <EntypoIcons
-          color={tintColor === null ? undefined : tintColor}
-          name="chat"
-          // reverseColor={'#CED0CE'}
-          size={22}
-        />
-      ))
+    tabBarIcon: ({ focused }) => {
+      return <TabBarIcon focused={focused} />
     },
   }
 
@@ -72,6 +61,7 @@ export default class Chats extends React.PureComponent {
   state = {
     acceptingRequest: null,
     chats: [],
+    lastReadMsgs: {},
     receivedRequests: [],
     sentRequests: [],
     showingAddDialog: false,
@@ -85,7 +75,18 @@ export default class Chats extends React.PureComponent {
 
   sentReqsUnsubscribe = () => {}
 
+  didFocus = { remove() {} }
+
+  onLastReadMsgsUnsub = () => {}
+
   componentDidMount() {
+    this.onLastReadMsgsUnsub = Cache.onLastReadMsgs(lastReadMsgs => {
+      this.setState({ lastReadMsgs })
+    })
+    this.didFocus = this.props.navigation.addListener('didFocus', () => {
+      StatusBar.setBackgroundColor(CSS.Colors.BACKGROUND_WHITE)
+      StatusBar.setBarStyle('dark-content')
+    })
     this.chatsUnsubscribe = API.Events.onChats(chats => {
       this.setState({
         chats,
@@ -106,9 +107,11 @@ export default class Chats extends React.PureComponent {
   }
 
   componentWillUnmount() {
+    this.didFocus.remove()
     this.chatsUnsubscribe()
     this.receivedReqsUnsubscribe()
     this.sentReqsUnsubscribe()
+    this.onLastReadMsgsUnsub()
   }
 
   /**
@@ -132,8 +135,6 @@ export default class Chats extends React.PureComponent {
     if (typeof lastMsg === 'undefined') {
       throw new TypeError("typeof lastMsg === 'undefined'")
     }
-
-    readMsgs.add(lastMsg.id)
 
     /** @type {ChatParams} */
     const params = {
@@ -248,6 +249,7 @@ export default class Chats extends React.PureComponent {
     const {
       acceptingRequest,
       chats,
+      lastReadMsgs,
       receivedRequests,
       sentRequests,
 
@@ -255,6 +257,17 @@ export default class Chats extends React.PureComponent {
 
       scanningUserQR,
     } = this.state
+
+    /**
+     * @type {string[]}
+     */
+    const readChatIDs = chats
+      .filter(c => {
+        const lastMsg = c.messages[c.messages.length - 1]
+        const tstamp = lastReadMsgs[c.recipientPublicKey]
+        return lastMsg && tstamp && lastMsg.timestamp <= tstamp
+      })
+      .map(c => c.recipientPublicKey)
 
     const filteredSentRequests = sentRequests.filter(sr => {
       const chatEstablishedWithRecipient = chats.some(
@@ -290,6 +303,7 @@ export default class Chats extends React.PureComponent {
         showingQRScanner={scanningUserQR}
         onQRRead={this.onQRRead}
         onRequestCloseQRScanner={this.toggleContactQRScanner}
+        readChatIDs={readChatIDs}
       />
     )
   }

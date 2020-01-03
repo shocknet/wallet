@@ -9,12 +9,16 @@ import {
   ToastAndroid,
   TouchableOpacity,
   View,
+  StatusBar,
 } from 'react-native'
 import EntypoIcons from 'react-native-vector-icons/Entypo'
 import { AirbnbRating } from 'react-native-ratings'
+/**
+ * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation
+ */
 
 import * as API from '../services/contact-api'
-import * as CSS from '../css'
+import * as CSS from '../res/css'
 import * as Cache from '../services/cache'
 import * as Utils from '../services/utils'
 import ShockAvatar from '../components/ShockAvatar'
@@ -40,20 +44,22 @@ const showCopiedToClipboardToast = () => {
  */
 
 /**
- * @augments React.PureComponent<{}, State, never>
+ * @augments React.PureComponent<{ navigation: Navigation }, State, never>
  */
 export default class MyProfile extends React.PureComponent {
   /**
    * @type {import('react-navigation').NavigationBottomTabScreenOptions}
    */
   static navigationOptions = {
-    tabBarIcon: ({ tintColor }) => {
+    tabBarIcon: ({ focused }) => {
       return ((
         <EntypoIcons
-          color={tintColor === null ? undefined : tintColor}
+          color={
+            focused ? CSS.Colors.BLUE_MEDIUM_DARK : CSS.Colors.GRAY_MEDIUM_LIGHT
+          }
           name="user"
           // reverseColor={'#CED0CE'}
-          size={22}
+          size={32}
         />
       ))
     },
@@ -72,7 +78,13 @@ export default class MyProfile extends React.PureComponent {
 
   onHandshakeAddressUnsub = () => {}
 
+  didFocus = { remove() {} }
+
   async componentDidMount() {
+    this.didFocus = this.props.navigation.addListener('didFocus', () => {
+      StatusBar.setBackgroundColor(CSS.Colors.BACKGROUND_WHITE)
+      StatusBar.setBarStyle('dark-content')
+    })
     this.onDisplayNameUnsub = API.Events.onDisplayName(dn => {
       this.setState({
         displayName: dn,
@@ -96,6 +108,7 @@ export default class MyProfile extends React.PureComponent {
   }
 
   componentWillUnmount() {
+    this.didFocus.remove()
     this.onDisplayNameUnsub()
     this.onHandshakeAddressUnsub()
   }

@@ -11,6 +11,7 @@ import Loading from './app/screens/Loading'
 import React from 'react'
 import RNBootSplash from 'react-native-bootsplash'
 
+import { Socket } from './app/services/contact-api'
 import * as NavigationService from './app/services/navigation'
 import * as Cache from './app/services/cache'
 import configureStore from './store'
@@ -38,6 +39,23 @@ moment.locale('en', {
     yy: '%dY',
   },
 })
+
+Http.interceptors.response.use(
+  res => res,
+  async err => {
+    // catch reference/Cache errors
+    try {
+      if (401 === err.response.status) {
+        Socket.disconnect()
+        await Cache.writeStoredAuthData(null)
+      }
+    } catch (e) {
+      console.warn(`Error inside response interceptor: ${e.message}`)
+    }
+
+    return err
+  },
+)
 
 AppRegistry.registerComponent('shockwallet', () => ShockWallet)
 

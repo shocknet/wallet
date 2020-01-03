@@ -14,9 +14,12 @@ import {
   View,
   Linking,
   ImageBackground,
+  StatusBar,
 } from 'react-native'
 import EntypoIcons from 'react-native-vector-icons/Entypo'
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'
 import { connect } from 'react-redux'
+
 //import { compose } from 'redux'
 import * as Navigation from '../../services/navigation'
 import { ConnectionContext } from '../../ctx/Connection'
@@ -37,12 +40,12 @@ import UserDetail from '../../components/UserDetail'
 
 import btcConvert from '../../services/convertBitcoin'
 import * as ContactAPI from '../../services/contact-api'
-import * as CSS from '../../css'
+import * as CSS from '../../res/css'
 import * as Wallet from '../../services/wallet'
 
-import { getUSDRate, getWalletBalance } from '../../../actions/WalletActions'
-import { fetchNodeInfo } from '../../../actions/NodeActions'
-import { fetchRecentTransactions } from '../../../actions/HistoryActions'
+import { getUSDRate, getWalletBalance } from '../../actions/WalletActions'
+import { fetchNodeInfo } from '../../actions/NodeActions'
+import { fetchRecentTransactions } from '../../actions/HistoryActions'
 
 import { CHATS_ROUTE } from '../../screens/Chats'
 
@@ -63,8 +66,15 @@ import { RECEIVE_SCREEN } from '../Receive'
  */
 
 /**
- * @typedef {ConnectedRedux & object} Props
+ * @typedef {object} Props
  * @prop {Navigation} navigation
+ * @prop {{ USDRate:number , totalBalance: string|null }} wallet
+ * @prop {{ recentTransactions: (Wallet.Invoice|Wallet.Payment|Wallet.Transaction)[] }} history
+ * @prop {{ nodeInfo: import('../../actions/NodeActions').GetInfo }} node
+ * @prop {() => Promise<void>} fetchRecentTransactions
+ * @prop {() => Promise<import('../../actions/WalletActions').WalletBalance>} getWalletBalance
+ * @prop {() => Promise<import('../../actions/NodeActions').GetInfo>} fetchNodeInfo
+ * @prop {() => Promise<number>} getUSDRate
  */
 
 /**
@@ -138,13 +148,14 @@ class WalletOverview extends Component {
    * @type {import('react-navigation').NavigationBottomTabScreenOptions}
    */
   static navigationOptions = {
-    tabBarIcon: ({ tintColor }) => {
+    tabBarIcon: ({ focused }) => {
       return ((
-        <EntypoIcons
-          color={tintColor === null ? undefined : tintColor}
+        <FontAwesome5
+          color={
+            focused ? CSS.Colors.BLUE_MEDIUM_DARK : CSS.Colors.GRAY_MEDIUM_LIGHT
+          }
           name="wallet"
-          // reverseColor={'#CED0CE'}
-          size={22}
+          size={32}
         />
       ))
     },
@@ -625,7 +636,7 @@ class WalletOverview extends Component {
   }
 
   onPressSend = () => {
-    const { totalBalance } = this.props
+    const { totalBalance } = this.props.wallet
 
     if (totalBalance === null) {
       return
@@ -1079,8 +1090,14 @@ class WalletOverview extends Component {
     middle(event.url)
   }
 
+  didFocus = { remove() {} }
+
   componentDidMount() {
     const { fetchNodeInfo } = this.props
+    this.didFocus = this.props.navigation.addListener('didFocus', () => {
+      StatusBar.setBackgroundColor(CSS.Colors.BLUE_DARK)
+      StatusBar.setBarStyle('light-content')
+    })
     Linking.addEventListener('url', this._handleOpenURL)
     Linking.getInitialURL()
       .then(url => {
@@ -1091,13 +1108,17 @@ class WalletOverview extends Component {
       })
       .catch(err => console.error('An error occurred', err))
 
-    this.fetchBalance()
-    this.fetchExchangeRate()
-    this.fetchRecentTransactions()
+    this.balanceIntervalID = setInterval(this.fetchBalance, 4000)
+    this.exchangeRateIntervalID = setInterval(this.fetchExchangeRate, 4000)
+    this.recentTransactionsIntervalID = setInterval(
+      this.fetchRecentTransactions,
+      4000,
+    )
     fetchNodeInfo()
   }
 
   componentWillUnmount() {
+    this.didFocus.remove()
     Linking.removeEventListener('url', this._handleOpenURL)
 
     if (this.balanceIntervalID) {
@@ -1113,36 +1134,16 @@ class WalletOverview extends Component {
     }
   }
 
-  /**
-   * Promisified setTimeout
-   * @param {number} ms
-   */
-  wait = ms =>
-    new Promise(resolve => {
-      /**
-       * Timeout ID
-       * @type {number}
-       */
-      const timeout = setTimeout(() => resolve(timeout), ms)
-    })
-
-  fetchRecentTransactions = async () => {
-    const { fetchRecentTransactions } = this.props
-    await fetchRecentTransactions()
-    await this.wait(4000)
-    this.fetchRecentTransactions()
+  fetchRecentTransactions = () => {
+    this.props.fetchRecentTransactions()
   }
 
-  fetchBalance = async () => {
-    const { getWalletBalance } = this.props
-    await getWalletBalance()
-    await this.wait(4000)
-    this.fetchBalance()
+  fetchBalance = () => {
+    this.props.getWalletBalance()
   }
 
-  fetchExchangeRate = async () => {
-    const { getUSDRate } = this.props
-    await getUSDRate()
+  fetchExchangeRate = () => {
+    this.props.getUSDRate()
   }
 
   onPressRequest = () => {
@@ -1164,8 +1165,9 @@ class WalletOverview extends Component {
     /** @type {boolean} */
     const isConnected = this.context
     const convertedBalance = (
-      Math.round(btcConvert(totalBalance, 'Satoshi', 'BTC') * USDRate * 100) /
-      100
+      Math.round(
+        btcConvert(totalBalance || '0', 'Satoshi', 'BTC') * USDRate * 100,
+      ) / 100
     )
       .toFixed(2)
       .toString()
@@ -1627,7 +1629,7 @@ class WalletOverview extends Component {
 }
 
 /**
- * @param {typeof import('../../../reducers/index').default} state
+ * @param {{ wallet: any, history: any, node: any }} state
  */
 const mapStateToProps = ({ wallet, history, node }) => ({
   wallet,

@@ -5,14 +5,14 @@ import React from 'react'
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
 import { Avatar } from 'react-native-elements'
 
-import { Colors } from '../css'
+import { Colors } from '../res/css'
 
 /**
  * @typedef {object} Props
  * @prop {string=} alternateText
  * @prop {boolean=} alternateTextBold
  * @prop {string} lowerText
- * @prop {import('react-native').ViewStyle=} lowerTextStyle
+ * @prop {import('react-native').TextInputProps['style']=} lowerTextStyle
  * @prop {string|null} image
  * @prop {string} id
  * @prop {string} name

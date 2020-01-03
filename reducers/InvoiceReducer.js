@@ -1,4 +1,4 @@
-import { ACTIONS } from '../actions/InvoiceActions'
+import { ACTIONS } from '../app/actions/InvoiceActions'
 
 /**
  * @typedef {object} State

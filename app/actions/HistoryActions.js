@@ -1,4 +1,4 @@
-import * as Wallet from '../app/services/wallet'
+import * as Wallet from '../services/wallet'
 
 export const ACTIONS = {
   LOAD_CHANNELS: 'channels/load',

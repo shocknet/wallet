@@ -23,7 +23,7 @@ import InputGroup from '../../components/InputGroup'
 import ContactsSearch from '../../components/Search/ContactsSearch'
 import BitcoinAccepted from '../../assets/images/bitcoin-accepted.png'
 
-import * as CSS from '../../css'
+import * as CSS from '../../res/css'
 import * as Wallet from '../../services/wallet'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 export const SEND_SCREEN = 'SEND_SCREEN'

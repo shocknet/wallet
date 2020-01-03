@@ -10,6 +10,7 @@ import {
   ToastAndroid,
   View,
   TouchableOpacity,
+  StatusBar,
 } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 import EntypoIcons from 'react-native-vector-icons/Entypo'
@@ -18,7 +19,7 @@ import Http from 'axios'
 import Big from 'big.js'
 import { connect } from 'react-redux'
 
-import * as CSS from '../../css'
+import * as CSS from '../../res/css'
 import * as Cache from '../../services/cache'
 import BasicDialog from '../../components/BasicDialog'
 import ShockInput from '../../components/ShockInput'
@@ -40,8 +41,8 @@ import {
   fetchPeers,
   fetchTransactions,
   fetchHistory,
-} from '../../../actions/HistoryActions'
-import { fetchNodeInfo } from '../../../actions/NodeActions'
+} from '../../actions/HistoryActions'
+import { fetchNodeInfo } from '../../actions/NodeActions'
 export const ADVANCED_SCREEN = 'ADVANCED_SCREEN'
 
 /**
@@ -437,6 +438,11 @@ class AdvancedScreen extends Component {
           info={node.nodeInfo}
           onRequestClose={this.closeNodeInfo}
         />
+        <StatusBar
+          translucent
+          backgroundColor="transparent"
+          barStyle="light-content"
+        />
         <LinearGradient
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
@@ -727,6 +733,7 @@ const styles = StyleSheet.create({
     width: '100%',
     elevation: 1,
     zIndex: 10,
+    paddingTop: StatusBar.currentHeight,
   },
   marginBottom15: { marginBottom: 15 },
   nav: {

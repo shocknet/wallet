@@ -15,25 +15,13 @@ import Entypo from 'react-native-vector-icons/Entypo'
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 
-import * as CSS from '../../css'
+import * as CSS from '../../res/css'
 import ShockModal from '../../components/ShockModal'
 import Pad from '../../components/Pad'
 
 /**
- * @typedef {object} Info
- * @prop {string[]} uris
- * @prop {boolean} synced_to_chain
- * @prop {boolean} synced_to_graph
- * @prop {string} identity_pubkey
- * @prop {string} best_header_timestamp
- * @prop {number} block_height
- * @prop {number} num_pending_channels
- * @prop {string} version
- */
-
-/**
  * @typedef {object} Props
- * @prop {Info|null} info
+ * @prop {import('../../services/wallet').NodeInfo|null} info
  * @prop {() => void} onRequestClose
  * @prop {boolean} visible
  */

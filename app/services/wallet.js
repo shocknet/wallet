@@ -1,6 +1,4 @@
-/**
- * @format
- */
+import { Socket } from './contact-api'
 
 import * as Cache from './cache'
 import * as Utils from './utils'
@@ -238,6 +236,32 @@ import * as Utils from './utils'
  * @prop {0|1|2|3} type The address type. WITNESS_PUBKEY_HASH 0
  * NESTED_PUBKEY_HASH 1 UNUSED_WITNESS_PUBKEY_HASH 2 UNUSED_NESTED_PUBKEY_HASH 3
  */
+/**
+ * @typedef {object} Chain
+ * @prop {string[]} chan_points	Is the set of all channels that are included in this multi-channel backup.
+ * @prop {bytes} multi_chan_backup	A single encrypted blob containing all the static channel backups of the channel listed above. This can be stored as a single file or blob, and safely be replaced with any prior/future versions. When using REST, this field must be encoded as base64.
+ */
+
+/**
+ * @typedef {object} GetInfo
+ * @prop {string} version	The version of the LND software that the node is running.
+ * @prop {string} identity_pubkey	The identity pubkey of the current node.
+ * @prop {string} alias	If applicable, the alias of the current node, e.g. "bob"
+ * @prop {string} color	The color of the current node in hex code format
+ * @prop {string} num_pending_channels	Number of pending channels
+ * @prop {string} num_active_channels	Number of active channels
+ * @prop {string} num_inactive_channels	Number of inactive channels
+ * @prop {string} num_peers	Number of peers
+ * @prop {string} block_height	The node's current view of the height of the best block
+ * @prop {string} block_hash	The node's current view of the hash of the best block
+ * @prop {string} best_header_timestamp	Timestamp of the block best known to the wallet
+ * @prop {boolean} synced_to_chain	Whether the wallet's view is synced to the main chain
+ * @prop {boolean} synced_to_graph	Whether we consider ourselves synced with the public channel graph.
+ * @prop {boolean} testnet	Whether the current node is connected to testnet. This field is deprecated and the network field should be used instead
+ * @prop {Chain[]} chains Chain	A list of active chains the node is connected to
+ * @prop {string[]} uris string	The URIs of the current node.
+ * @prop {array} features FeaturesEntry	Features that our node has advertised in our init message, node announcements and invoices.
+ */
 
 /**
  * https://api.lightning.community/#grpc-response-newaddressresponse
@@ -342,6 +366,10 @@ export const balance = async () => {
   }
 
   const res = await fetch(endpoint, payload)
+  if (res.status === 401) {
+    Socket.disconnect()
+    await Cache.writeStoredAuthData(null)
+  }
   const body = await res.json()
 
   if (res.ok) {
@@ -377,6 +405,10 @@ export const getTransactions = async request => {
   }
 
   const res = await fetch(endpoint, payload)
+  if (res.status === 401) {
+    Socket.disconnect()
+    await Cache.writeStoredAuthData(null)
+  }
   const body = await res.json()
 
   if (res.ok) {
@@ -419,6 +451,10 @@ export const listPayments = async request => {
   }
 
   const res = await fetch(url, payload)
+  if (res.status === 401) {
+    Socket.disconnect()
+    await Cache.writeStoredAuthData(null)
+  }
   const body = await res.json()
 
   if (res.ok) {
@@ -459,6 +495,10 @@ export const listInvoices = async request => {
   }
 
   const res = await fetch(url, payload)
+  if (res.status === 401) {
+    Socket.disconnect()
+    await Cache.writeStoredAuthData(null)
+  }
   const body = await res.json()
 
   if (res.ok) {
@@ -513,6 +553,10 @@ export const newAddress = async useOlderFormat => {
   }
 
   const res = await fetch(endpoint, payload)
+  if (res.status === 401) {
+    Socket.disconnect()
+    await Cache.writeStoredAuthData(null)
+  }
 
   const body = await res.json()
 
@@ -571,6 +615,10 @@ export const addInvoice = async request => {
   }
 
   const res = await fetch(endpoint, payload)
+  if (res.status === 401) {
+    Socket.disconnect()
+    await Cache.writeStoredAuthData(null)
+  }
 
   const body = await res.json()
 
@@ -618,6 +666,10 @@ export const sendCoins = async request => {
   }
 
   const res = await fetch(endpoint, payload)
+  if (res.status === 401) {
+    Socket.disconnect()
+    await Cache.writeStoredAuthData(null)
+  }
 
   const body = await res.json()
 
@@ -692,6 +744,10 @@ export const CAUTION_payInvoice = async ({ amt, payreq }) => {
   }
 
   const res = await fetch(endpoint, payload)
+  if (res.status === 401) {
+    Socket.disconnect()
+    await Cache.writeStoredAuthData(null)
+  }
 
   const body = await res.json()
 
@@ -751,6 +807,10 @@ export const decodeInvoice = async ({ payReq }) => {
   }
 
   const res = await fetch(endpoint, payload)
+  if (res.status === 401) {
+    Socket.disconnect()
+    await Cache.writeStoredAuthData(null)
+  }
 
   const body = await res.json()
 
@@ -790,6 +850,10 @@ export const listPeers = async () => {
   }
 
   const res = await fetch(endpoint, payload)
+  if (res.status === 401) {
+    Socket.disconnect()
+    await Cache.writeStoredAuthData(null)
+  }
 
   const body = await res.json()
 
@@ -836,6 +900,10 @@ export const listChannels = async () => {
   }
 
   const res = await fetch(endpoint, payload)
+  if (res.status === 401) {
+    Socket.disconnect()
+    await Cache.writeStoredAuthData(null)
+  }
 
   const body = await res.json()
 
@@ -867,19 +935,77 @@ export const listChannels = async () => {
 }
 
 /**
- * @returns {Promise<{ walletExists: boolean , walletStatus: string|null }>}
+ * @typedef {'locked'|'unlocked'|'noncreated'} WalletStatus
+ */
+
+/**
+ * @returns {Promise<WalletStatus>}
  */
 export const walletStatus = async () => {
   const nodeURL = await Cache.getNodeURL()
   const res = await fetch(`http://${nodeURL}/api/lnd/wallet/status`)
   const body = await res.json()
 
-  if (body.code) {
-    throw new Error(`Error code: ${body.code}`)
+  if (!res.ok) {
+    if (res.status === 401) {
+      Socket.disconnect()
+      await Cache.writeStoredAuthData(null)
+    }
+    throw new Error(body.errorMessage || body.message || 'Unknown Error')
   }
 
-  return {
-    walletExists: !!body.walletExists,
-    walletStatus: body.walletStatus,
+  const { walletExists, walletStatus } = body
+
+  if (walletExists) {
+    return walletStatus
   }
+
+  return 'noncreated'
+}
+
+/**
+ * @typedef {object} NodeInfo
+ * @prop {string[]} uris
+ * @prop {boolean} synced_to_chain
+ * @prop {boolean} synced_to_graph
+ * @prop {string} identity_pubkey
+ * @prop {string} best_header_timestamp
+ * @prop {number} block_height
+ * @prop {number} num_pending_channels
+ * @prop {string} version
+ */
+
+/**
+ * @returns {Promise<NodeInfo>}
+ */
+export const nodeInfo = async () => {
+  const nodeURL = await Cache.getNodeURL()
+  const res = await fetch(`http://${nodeURL}/healthz`)
+  const data = await res.json()
+
+  if (!res.ok) {
+    throw new Error(data.errorMessage || data.message || 'Unknown Error')
+  }
+
+  if (typeof data !== 'object') {
+    throw new TypeError(
+      `Error fetching /healthz: data not an object, instead got: ${JSON.stringify(
+        data,
+      )}`,
+    )
+  }
+
+  const { LNDStatus } = data
+  if (typeof LNDStatus !== 'object') {
+    throw new TypeError(`Error fetching /healthz: data.LNDStatus not an object`)
+  }
+
+  const { message } = LNDStatus
+  if (typeof message !== 'object') {
+    throw new TypeError(
+      `Error fetching /healthz: data.LNDStatus.message not an object`,
+    )
+  }
+
+  return message
 }

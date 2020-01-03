@@ -4,7 +4,7 @@ import React from 'react'
 import { View, StyleSheet, TouchableHighlight } from 'react-native'
 import { Text } from 'react-native-elements'
 
-import * as CSS from '../css'
+import * as CSS from '../res/css'
 
 /**
  * @typedef {object} Props

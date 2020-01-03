@@ -9,6 +9,8 @@ import {
   createDrawerNavigator,
 } from 'react-navigation'
 
+import * as CSS from '../res/css'
+
 import Chat, { CHAT_ROUTE } from '../screens/Chat'
 import Chats, { CHATS_ROUTE } from '../screens/Chats'
 import Advanced, { ADVANCED_SCREEN } from '../screens/Advanced'
@@ -38,7 +40,22 @@ const BottomNav = createBottomTabNavigator(
   {
     initialRouteName: WALLET_OVERVIEW,
     tabBarOptions: {
+      allowFontScaling: false,
       showLabel: false,
+      style: {
+        borderTopWidth: 0,
+        backgroundColor: CSS.Colors.BACKGROUND_WHITE,
+        height: CSS.BOTTOM_BAR_HEIGHT,
+        shadowColor: '#000',
+        shadowOffset: {
+          width: 0,
+          height: 12,
+        },
+        shadowOpacity: 0.58,
+        shadowRadius: 16.0,
+
+        elevation: 24,
+      },
     },
   },
 )

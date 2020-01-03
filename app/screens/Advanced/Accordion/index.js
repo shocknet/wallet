@@ -16,7 +16,7 @@ import {
 import LinearGradient from 'react-native-linear-gradient'
 import Icon from 'react-native-vector-icons/Entypo'
 
-import * as CSS from '../../../css'
+import * as CSS from '../../../res/css'
 
 /**
  * @typedef {{ action?: () => void, icon: string, name: string }} Option

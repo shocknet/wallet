@@ -7,8 +7,12 @@ export const ACTIONS = {
 }
 
 /**
+ * @typedef {import('../services/wallet').GetInfo} GetInfo
+ */
+
+/**
  * Fetches the Node's info
- * @returns {import('redux-thunk').ThunkAction<Promise<void>, {}, {}, import('redux').AnyAction>}
+ * @returns {import('redux-thunk').ThunkAction<Promise<GetInfo>, {}, {}, import('redux').AnyAction>}
  */
 export const fetchNodeInfo = () => async dispatch => {
   const { data } = await Http.get(`/api/lnd/getinfo`)

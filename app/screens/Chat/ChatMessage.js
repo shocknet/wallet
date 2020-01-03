@@ -6,7 +6,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
 
 import moment from 'moment'
 
-import { Colors } from '../../css'
+import { Colors } from '../../res/css'
 
 /**
  * @typedef {object} Props

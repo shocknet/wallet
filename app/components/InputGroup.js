@@ -11,7 +11,7 @@ import {
 } from 'react-native'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 
-import * as CSS from '../css'
+import * as CSS from '../res/css'
 
 /**
  * @typedef {object} Props

@@ -4,11 +4,13 @@
 
 import { AsyncStorage } from 'react-native'
 import Http from 'axios'
+import fromPairs from 'lodash/fromPairs'
 
 import { AUTH } from '../navigators/Root'
 
 import * as Navigation from './navigation'
 import * as Utils from './utils'
+import { Socket } from './contact-api'
 /**
  * @typedef {object} AuthData
  * @prop {string} alias
@@ -24,59 +26,12 @@ export const DEFAULT_PORT = 9835
  * @prop {string} nodeIP The node ip for which the auth data is valid.
  */
 
+const ALIAS = 'ALIAS'
 const NODE_URL = 'NODE_URL'
 const STORED_AUTH_DATA = 'STORED_AUTH_DATA'
 const AUTHENTICATED_NODE = 'AUTHENTICATED_NODE'
 
 export const NO_CACHED_NODE_IP = 'NO_CACHED_NODE_IP'
-
-/**
- * @typedef {(sad: StoredAuthData|null) => void} StoredAuthDataListener
- */
-
-/**
- * @type {Array<StoredAuthDataListener>}
- */
-const storedAuthDataListeners = []
-
-const notifySADListeners = () => {
-  getStoredAuthData().then(sad => {
-    storedAuthDataListeners.forEach(l => {
-      l(sad)
-    })
-  })
-}
-
-/**
- *
- * @param {StoredAuthDataListener} listener
- * @returns {() => void}
- */
-export const onSADChange = listener => {
-  if (storedAuthDataListeners.includes(listener)) {
-    throw new Error('Tried to subscribe twice')
-  }
-
-  getStoredAuthData()
-    .then(sad => {
-      if (storedAuthDataListeners.includes(listener)) {
-        listener(sad)
-      }
-    })
-    .catch(e => {
-      console.warn(e)
-    })
-
-  return () => {
-    const idx = storedAuthDataListeners.indexOf(listener)
-
-    if (idx < 0) {
-      throw new Error('tried to unsubscribe twice')
-    }
-
-    storedAuthDataListeners.splice(idx, 1)
-  }
-}
 
 /**
  * @returns {Promise<string|null>}
@@ -130,13 +85,54 @@ export const writeNodeURLOrIP = async urlOrIP => {
 /**
  * @returns {Promise<StoredAuthData|null>}
  */
-export const getStoredAuthData = () =>
-  AsyncStorage.getItem(STORED_AUTH_DATA).then(sad => {
-    if (sad === null) {
-      return null
-    }
-    return JSON.parse(sad)
-  })
+export const getStoredAuthData = async () => {
+  const _sad = await AsyncStorage.getItem(STORED_AUTH_DATA)
+
+  if (_sad === null) {
+    return null
+  }
+
+  /**
+   * @type {StoredAuthData}
+   */
+  const sad = JSON.parse(_sad)
+
+  const currNodeURL = await getNodeURL()
+  if (currNodeURL === null) {
+    AsyncStorage.removeItem(STORED_AUTH_DATA)
+    return null
+  }
+  const [currNodeIP] = currNodeURL.split(':')
+
+  if (sad.nodeIP !== currNodeIP) {
+    await AsyncStorage.removeItem(STORED_AUTH_DATA)
+    return null
+  }
+
+  return {
+    ...sad,
+    authData: {
+      ...sad.authData,
+      alias: /** @type {string} */ (await getCachedAlias()),
+    },
+  }
+}
+
+/**
+ * @param {string|null} alias
+ * @returns {Promise<void>}
+ */
+export const writeCachedAlias = alias => {
+  if (alias === null) {
+    return AsyncStorage.removeItem(ALIAS)
+  }
+  return AsyncStorage.setItem(ALIAS, alias)
+}
+
+/**
+ * @returns {Promise<string|null>}
+ */
+export const getCachedAlias = () => AsyncStorage.getItem(ALIAS)
 
 /**
  * @param {AuthData|null} authData
@@ -147,6 +143,7 @@ export const getStoredAuthData = () =>
 export const writeStoredAuthData = async authData => {
   if (authData === null) {
     Navigation.navigate(AUTH)
+    Socket.disconnect()
     return AsyncStorage.removeItem(STORED_AUTH_DATA)
   }
 
@@ -199,11 +196,10 @@ export const writeStoredAuthData = async authData => {
   }
 
   await Promise.all([
+    writeCachedAlias(authData.alias),
     AsyncStorage.setItem(STORED_AUTH_DATA, JSON.stringify(sad)),
     AsyncStorage.setItem(AUTHENTICATED_NODE, nodeURL),
   ])
-
-  notifySADListeners()
 }
 
 /**
@@ -239,3 +235,108 @@ export const getNodeURLTokenPair = async () => ({
   nodeURL: /** @type {string} */ (await getNodeURL()),
   token: await getToken(),
 })
+
+/**
+ * @typedef {Record<string, number|undefined>} LastReadMsgs
+ */
+
+const CHAT_TIMESTAMP = 'CHAT_TIMESTAMP:'
+
+/**
+ * @type {((lastReadMsgs: LastReadMsgs) => void)[]}
+ */
+const lastReadMsgsListeners = []
+
+/**
+ * @returns {Promise<LastReadMsgs>}
+ */
+export const getAllLastReadMsgs = async () => {
+  const keys = (await AsyncStorage.getAllKeys()).filter(
+    k => k.indexOf(CHAT_TIMESTAMP) === 0,
+  )
+
+  const pairs = await AsyncStorage.multiGet(keys)
+
+  const formattedPairs = pairs.map(
+    ([k, v]) => /** @type {[ string , number]} */ ([
+      k.slice(CHAT_TIMESTAMP.length),
+      Number(v),
+    ]),
+  )
+
+  return fromPairs(formattedPairs)
+}
+
+const notifyLastReadListeners = async () => {
+  const lastReads = await getAllLastReadMsgs()
+
+  lastReadMsgsListeners.forEach(l => {
+    l(lastReads)
+  })
+}
+
+/**
+ * @param {(lastReadMsgs: LastReadMsgs) => void} listener
+ */
+export const onLastReadMsgs = listener => {
+  if (lastReadMsgsListeners.indexOf(listener) > -1) {
+    throw new Error('tried to subscribe twice')
+  }
+
+  lastReadMsgsListeners.push(listener)
+
+  setImmediate(() => {
+    // check listener is still subbed in case unsub is called before next tick
+    if (!lastReadMsgsListeners.includes(listener)) {
+      return
+    }
+
+    getAllLastReadMsgs().then(data => {
+      listener(data)
+    })
+  })
+
+  return () => {
+    const idx = lastReadMsgsListeners.indexOf(listener)
+
+    if (idx < 0) {
+      throw new Error('tried to unsubscribe twice')
+    }
+
+    lastReadMsgsListeners.splice(idx, 1)
+  }
+}
+
+/**
+ * Keep track of the timestamp of the last read message for a given chat.
+ * @param {string} recipientPub
+ * @param {number} timestamp
+ */
+export const writeLastReadMsg = (recipientPub, timestamp) => {
+  return AsyncStorage.setItem(
+    CHAT_TIMESTAMP + recipientPub,
+    timestamp.toString(),
+  ).then(() => {
+    notifyLastReadListeners()
+  })
+}
+
+/**
+ * Keep track of the timestamp of the last read message for a given chat.
+ * @param {string} recipientPub
+ * @returns {Promise<number|null>}
+ */
+export const getLastReadMsg = recipientPub => {
+  return AsyncStorage.getItem(CHAT_TIMESTAMP + recipientPub).then(v => {
+    if (v === null) {
+      return null
+    }
+
+    return Number(v)
+  })
+}
+
+/**
+ * @returns {Promise<void>}
+ */
+export const clearAllStorage = () => AsyncStorage.clear()

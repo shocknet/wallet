@@ -58,3 +58,5 @@ buck-out/
 APK-DEBUG.apk
 APK-RELEASE.apk
 
+# This file is broken, maybe until upgrade react native
+android/app/src/main/assets/index.android.bundle

@@ -1,7 +1,7 @@
 import React from 'react'
 import { View, SafeAreaView, Text, StyleSheet } from 'react-native'
 import Ionicons from 'react-native-vector-icons/Ionicons'
-import { Colors } from '../css'
+import { Colors } from '../res/css'
 
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}, {}>} Navigation

@@ -88,6 +88,8 @@
     "react/jsx-fragments": "off",
     // good rule but it's currently broken
     "react/sort-comp": "off",
+    "react/display-name": "off",
+    "react/prefer-stateless-function": "off",
     "no-use-before-define": "off",
     "new-cap": "off",
     "babel/new-cap": "off",
@@ -96,14 +98,17 @@
     "babel/object-curly-spacing": "off",
     "quotes": "off",
     "babel/quotes": "off",
+    "class-methods-use-this": "off",
     "semi": "off",
     "babel/semi": "off",
     "no-unused-expressions": "off",
+    // typescript does this
+    "no-unused-vars": "off",
     "babel/no-unused-expressions": ["error", { "allowShortCircuit": true }],
     "valid-typeof": "off",
     "babel/valid-typeof": 1,
     // needed for redux reducers function arguments
-    "default-param-last": "off"
+    "default-param-last": 1
   },
   "settings": {
     "react": {

@@ -16,14 +16,14 @@ import Ionicons from 'react-native-vector-icons/Ionicons'
 import SwipeVerify from 'react-native-swipe-verify'
 
 // import Suggestion from '../../../components/Search/Suggestion'
-import * as CSS from '../../../css'
+import * as CSS from '../../../res/css'
 // import ContactsSearch from '../../../components/Search/ContactsSearch'
 import InputGroup from '../../../components/InputGroup'
 import {
   setInvoiceMode,
   addInvoice,
   setRecipientAddress,
-} from '../../../../actions/InvoiceActions'
+} from '../../../actions/InvoiceActions'
 import QR from './QR'
 import BitcoinAccepted from '../../../assets/images/bitcoin-accepted.png'
 

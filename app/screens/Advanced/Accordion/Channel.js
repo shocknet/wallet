@@ -7,7 +7,7 @@ import { View, Text, StyleSheet } from 'react-native'
  * @typedef {import('../../../services/wallet').Channel} Channel
  */
 
-import * as CSS from '../../../css'
+import * as CSS from '../../../res/css'
 
 /**
  * @typedef {object} Props
