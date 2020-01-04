@@ -36,6 +36,9 @@ import com.github.nkzawa.emitter.Emitter;
 //import okio.ByteString;
 import android.os.Bundle;
 
+import org.json.JSONObject;
+import org.json.JSONArray;
+
 public class NotificationService extends Service {
 
     private static int SERVICE_NOTIFICATION_ID = 12345;
@@ -51,21 +54,43 @@ public class NotificationService extends Service {
         @Override
         public void call(final Object... args) {
             Log.d(TAG,args[0].toString());
-            doNotification("New Transaction",args[0].toString());
+            try{
+                JSONObject res = new JSONObject(args[0].toString());
+            
+                doNotification("New Transaction",res.getString("msg"));
+            }catch (Exception e){
+                Log.d(TAG,e.toString());
+            }
         }
     };
     private Emitter.Listener newInvoice = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
             Log.d(TAG,args[0].toString());
-            doNotification("New Invoice",args[0].toString());
+            try{
+                JSONObject res = new JSONObject(args[0].toString());
+                
+                doNotification("New Invoice",res.getString("msg"));
+            }catch (Exception e){
+                Log.d(TAG,e.toString());
+            }
         }
     };
     private Emitter.Listener newChat = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
             Log.d(TAG,args[0].toString());
-            //doNotification("New Invoice",args[0].toString());
+            try{
+                JSONObject res = new JSONObject(args[0].toString());
+                JSONArray data = res.getJSONArray("msg");
+                for(int i =0 ; i<data.length();i++){
+                    JSONObject messages = data.optJSONObject(i);
+                    JSONArray mexArr = messages.getJSONArray("messages");
+                }
+                doNotification("New Message",res.getString("msg"));
+            }catch (Exception e){
+                Log.d(TAG,e.toString());
+            }
         }
     };
     private void attemptSend() {
@@ -73,7 +98,7 @@ public class NotificationService extends Service {
     
         mSocket.emit("ON_TRANSACTION", message);
         mSocket.emit("ON_INVOICE", message);
-       // mSocket.emit("ON_CHATS", message);
+        mSocket.emit("ON_CHATS", message);
     }
     private Runnable runnableCode = new Runnable() {
         @Override
@@ -84,7 +109,7 @@ public class NotificationService extends Service {
                 mSocket = IO.socket("http://"+NotificationService.ip);
                 mSocket.on("ON_TRANSACTION", newTransaction);
                 mSocket.on("ON_INVOICE", newInvoice);
-                //mSocket.on("ON_CHATS", newChat);
+                mSocket.on("ON_CHATS", newChat);
                 mSocket.connect();
                 attemptSend();
                 Log.d(TAG, "Done conn");
@@ -137,7 +162,7 @@ public class NotificationService extends Service {
         mSocket.disconnect();
         mSocket.off("ON_TRANSACTION", newTransaction);
         mSocket.off("ON_INVOICE", newInvoice);
-        //mSocket.off("ON_CHATS", newChat);
+        mSocket.off("ON_CHATS", newChat);
     }
 
     @Override
