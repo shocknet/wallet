@@ -7,6 +7,7 @@ import { ACTIONS } from '../app/actions/InvoiceActions'
  * @prop {boolean} invoiceMode
  * @prop {string} recipientAddress
  * @prop {string} paymentRequest
+ * @prop {string} address
  * @prop {string} unitSelected
  */
 
@@ -24,6 +25,7 @@ const INITIAL_STATE = {
   invoiceMode: true,
   paymentRequest: '',
   recipientAddress: '',
+  address: '',
   unitSelected: 'Sats',
 }
 
@@ -74,6 +76,13 @@ const receive = (state = INITIAL_STATE, action) => {
       return {
         ...state,
         paymentRequest: data,
+      }
+    }
+    case ACTIONS.SET_ADDRESS: {
+      const { data } = action
+      return {
+        ...state,
+        address: data,
       }
     }
     case ACTIONS.RESET_INVOICE: {

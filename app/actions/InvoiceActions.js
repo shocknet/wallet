@@ -6,6 +6,7 @@ export const ACTIONS = {
   SET_INVOICE_MODE: 'invoice/mode',
   SET_RECIPIENT_ADDRESS: 'invoice/recipientAddress',
   SET_UNIT_SELECTED: 'invoice/unit',
+  SET_ADDRESS: 'invoice/address',
 
   ADD_INVOICE: 'invoice/add',
   RESET_INVOICE: 'invoice/reset',
@@ -98,5 +99,17 @@ export const addInvoice = invoice => async dispatch => {
   dispatch({
     type: ACTIONS.ADD_INVOICE,
     data: newInvoice.payment_request,
+  })
+}
+
+/**
+ * Create a new invoice
+ * @returns {import('redux-thunk').ThunkAction<void, {}, {}, import('redux').AnyAction>}
+ */
+export const newAddress = () => async dispatch => {
+  const address = await Wallet.newAddress()
+  dispatch({
+    type: ACTIONS.SET_ADDRESS,
+    data: address,
   })
 }

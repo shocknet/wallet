@@ -24,6 +24,7 @@ import {
   setInvoiceMode,
   addInvoice,
   setRecipientAddress,
+  newAddress,
 } from '../../../actions/InvoiceActions'
 import { resetSelectedContact } from '../../../actions/ChatActions'
 import QR from './QR'
@@ -53,32 +54,26 @@ class SendStep extends Component {
   }
 
   componentDidMount = async () => {
-    const { addInvoice, invoice } = this.props
+    const { addInvoice, newAddress, invoice } = this.props
     const { amount, description } = invoice
-    await addInvoice({
-      value: amount,
-      memo: description,
-      expiry: 1800,
-    })
+    await Promise.all([
+      addInvoice({
+        value: amount,
+        memo: description,
+        expiry: 1800,
+      }),
+      newAddress(),
+    ])
   }
 
   renderQR = () => {
-    const { invoiceMode, paymentRequest } = this.props.invoice
-    const { selectedContact } = this.props.chat
+    const { invoiceMode, paymentRequest, address } = this.props.invoice
     if (invoiceMode && paymentRequest) {
       return <QR logoToShow="shock" value={paymentRequest} size={150} />
     }
 
-    if (!invoiceMode && selectedContact && selectedContact.type === 'btc') {
-      return <QR logoToShow="btc" value={selectedContact.address} size={150} />
-    }
-
-    if (!invoiceMode && (!selectedContact || selectedContact.type !== 'btc')) {
-      return (
-        <Text style={styles.recipientEmpty}>
-          Please specify a BTC Address above
-        </Text>
-      )
+    if (!invoiceMode && address) {
+      return <QR logoToShow="btc" value={address} size={150} />
     }
 
     return <ActivityIndicator size="large" color={CSS.Colors.FUN_BLUE} />
@@ -159,7 +154,7 @@ class SendStep extends Component {
   }
 
   render() {
-    const { setInvoiceMode, invoice } = this.props
+    const { setInvoiceMode, invoice, chat } = this.props
     return (
       <View style={styles.invoiceContainer}>
         {this.renderContactsSearch()}
@@ -221,28 +216,32 @@ class SendStep extends Component {
             </View>
           </View>
         </ScrollView>
-        <SwipeVerify
-          width="100%"
-          buttonSize={48}
-          height={40}
-          style={styles.swipeBtn}
-          buttonColor={CSS.Colors.BACKGROUND_WHITE}
-          borderColor={CSS.Colors.TRANSPARENT}
-          backgroundColor={CSS.Colors.BACKGROUND_NEAR_WHITE}
-          textColor="#37474F"
-          borderRadius={100}
-          icon={
-            <Image
-              source={BitcoinAccepted}
-              resizeMethod="resize"
-              resizeMode="contain"
-              style={styles.btcIcon}
-            />
-          }
-          onVerified={this.sendInvoice}
-        >
-          <Text style={styles.swipeBtnText}>SLIDE TO SEND</Text>
-        </SwipeVerify>
+        {chat.selectedAccount &&
+        chat.selectedAccount.type === 'contact' &&
+        !invoice.invoiceMode ? (
+          <SwipeVerify
+            width="100%"
+            buttonSize={48}
+            height={40}
+            style={styles.swipeBtn}
+            buttonColor={CSS.Colors.BACKGROUND_WHITE}
+            borderColor={CSS.Colors.TRANSPARENT}
+            backgroundColor={CSS.Colors.BACKGROUND_NEAR_WHITE}
+            textColor="#37474F"
+            borderRadius={100}
+            icon={
+              <Image
+                source={BitcoinAccepted}
+                resizeMethod="resize"
+                resizeMode="contain"
+                style={styles.btcIcon}
+              />
+            }
+            onVerified={this.sendInvoice}
+          >
+            <Text style={styles.swipeBtnText}>SLIDE TO SEND</Text>
+          </SwipeVerify>
+        ) : null}
       </View>
     )
   }
@@ -258,6 +257,7 @@ const mapDispatchToProps = {
   setRecipientAddress,
   addInvoice,
   resetSelectedContact,
+  newAddress,
 }
 
 export default connect(
@@ -292,12 +292,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-evenly',
     width: '100%',
     marginVertical: 10,
-  },
-  recipientEmpty: {
-    fontSize: 12,
-    fontFamily: 'Montserrat-700',
-    color: CSS.Colors.TEXT_GRAY_LIGHTER,
-    textAlign: 'center',
   },
   invoiceMode: {
     fontSize: 14,
