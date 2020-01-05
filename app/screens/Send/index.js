@@ -90,6 +90,7 @@ class SendScreen extends Component {
     const { amount } = this.state
     const { selectedContact } = this.props.chat
     return (
+      selectedContact &&
       selectedContact.address &&
       selectedContact.address.length > 0 &&
       parseFloat(amount) > 0
