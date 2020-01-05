@@ -46,6 +46,7 @@ import * as Wallet from '../../services/wallet'
 import { getUSDRate, getWalletBalance } from '../../actions/WalletActions'
 import { fetchNodeInfo } from '../../actions/NodeActions'
 import { fetchRecentTransactions } from '../../actions/HistoryActions'
+import { subscribeOnChats } from '../../actions/ChatActions'
 
 import { CHATS_ROUTE } from '../../screens/Chats'
 
@@ -68,12 +69,13 @@ import { RECEIVE_SCREEN } from '../Receive'
 /**
  * @typedef {object} Props
  * @prop {Navigation} navigation
- * @prop {{ USDRate:number , totalBalance: string|null }} wallet
+ * @prop {{ USDRate: number, totalBalance: string|null }} wallet
  * @prop {{ recentTransactions: (Wallet.Invoice|Wallet.Payment|Wallet.Transaction)[] }} history
  * @prop {{ nodeInfo: import('../../actions/NodeActions').GetInfo }} node
  * @prop {() => Promise<void>} fetchRecentTransactions
  * @prop {() => Promise<import('../../actions/WalletActions').WalletBalance>} getWalletBalance
  * @prop {() => Promise<import('../../actions/NodeActions').GetInfo>} fetchNodeInfo
+ * @prop {() => Promise<ContactAPI.Schema.Chat[]>} subscribeOnChats
  * @prop {() => Promise<number>} getUSDRate
  */
 
@@ -1093,7 +1095,7 @@ class WalletOverview extends Component {
   didFocus = { remove() {} }
 
   componentDidMount() {
-    const { fetchNodeInfo } = this.props
+    const { fetchNodeInfo, subscribeOnChats } = this.props
     this.didFocus = this.props.navigation.addListener('didFocus', () => {
       StatusBar.setBackgroundColor(CSS.Colors.BLUE_DARK)
       StatusBar.setBarStyle('light-content')
@@ -1114,6 +1116,7 @@ class WalletOverview extends Component {
       this.fetchRecentTransactions,
       4000,
     )
+    subscribeOnChats()
     fetchNodeInfo()
   }
 
@@ -1642,6 +1645,7 @@ const mapDispatchToProps = {
   getWalletBalance,
   fetchRecentTransactions,
   fetchNodeInfo,
+  subscribeOnChats,
 }
 
 export default connect(

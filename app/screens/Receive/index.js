@@ -96,12 +96,13 @@ class ReceiveScreen extends Component {
 
   renderStep = () => {
     const { step } = this.state
+    const { navigation } = this.props
     if (step === 1) {
-      return <AmountStep />
+      return <AmountStep navigation={navigation} />
     }
 
     if (step === 2) {
-      return <SendStep editInvoice={this.setStep(1)} />
+      return <SendStep navigation={navigation} editInvoice={this.setStep(1)} />
     }
 
     return null

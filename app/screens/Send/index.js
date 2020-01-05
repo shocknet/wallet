@@ -17,15 +17,18 @@ import {
 import { Dropdown } from 'react-native-material-dropdown'
 // @ts-ignore
 import SwipeVerify from 'react-native-swipe-verify'
+import Ionicons from 'react-native-vector-icons/Ionicons'
+import { connect } from 'react-redux'
 import wavesBG from '../../assets/images/shock-bg.png'
 import Nav from '../../components/Nav'
 import InputGroup from '../../components/InputGroup'
 import ContactsSearch from '../../components/Search/ContactsSearch'
+import Suggestion from '../../components/Search/Suggestion'
 import BitcoinAccepted from '../../assets/images/bitcoin-accepted.png'
 
 import * as CSS from '../../res/css'
 import * as Wallet from '../../services/wallet'
-import Ionicons from 'react-native-vector-icons/Ionicons'
+import { selectContact, resetSelectedContact } from '../../actions/ChatActions'
 export const SEND_SCREEN = 'SEND_SCREEN'
 
 /**
@@ -33,13 +36,19 @@ export const SEND_SCREEN = 'SEND_SCREEN'
  */
 
 /**
+ * @typedef {import('../../actions/ChatActions').Contact | import('../../actions/ChatActions').BTCAddress} ContactTypes
+ */
+
+/**
  * @typedef {object} Props
  * @prop {(Navigation)=} navigation
+ * @prop {import('../../../reducers/ChatReducer').State} chat
+ * @prop {(contact: ContactTypes) => ContactTypes} selectContact
+ * @prop {() => void} resetSelectedContact
  */
 
 /**
  * @typedef {object} State
- * @prop {string} destination
  * @prop {string} description
  * @prop {string} unitSelected
  * @prop {string} amount
@@ -53,7 +62,6 @@ export const SEND_SCREEN = 'SEND_SCREEN'
  */
 class SendScreen extends Component {
   state = {
-    destination: '',
     description: '',
     unitSelected: 'Sats',
     amount: '0',
@@ -79,15 +87,21 @@ class SendScreen extends Component {
   }
 
   isFilled = () => {
-    const { destination, amount } = this.state
-    return destination.length > 0 && parseFloat(amount) > 0
+    const { amount } = this.state
+    const { selectedContact } = this.props.chat
+    return (
+      selectedContact.address &&
+      selectedContact.address.length > 0 &&
+      parseFloat(amount) > 0
+    )
   }
 
-  sendRequest = async () => {
+  sendBTCRequest = async () => {
     try {
-      const { destination, amount } = this.state
+      const { selectedContact } = this.props.chat
+      const { amount } = this.state
 
-      if (destination.length === 0) {
+      if (!selectedContact.address) {
         return
       }
 
@@ -96,7 +110,7 @@ class SendScreen extends Component {
       })
 
       const transactionId = await Wallet.sendCoins({
-        addr: destination,
+        addr: selectedContact.address,
         amount: parseInt(amount, 10),
       })
 
@@ -117,16 +131,54 @@ class SendScreen extends Component {
     }
   }
 
+  // Reserved
+  payLightningInvoice = async () => {}
+
+  resetSearchState = () => {
+    const { resetSelectedContact } = this.props
+    resetSelectedContact()
+    this.setState({
+      contactsSearch: '',
+    })
+  }
+
+  renderContactsSearch = () => {
+    const { chat } = this.props
+    const { contactsSearch } = this.state
+
+    if (!chat.selectedContact) {
+      return (
+        <ContactsSearch
+          onChange={this.onChange('contactsSearch')}
+          value={contactsSearch}
+          style={styles.contactsSearch}
+        />
+      )
+    }
+
+    if (chat.selectedContact.type === 'btc') {
+      return (
+        <Suggestion
+          name={chat.selectedContact.address}
+          onPress={this.resetSearchState}
+          type="btc"
+          style={styles.suggestion}
+        />
+      )
+    }
+
+    return (
+      <Suggestion
+        name={chat.selectedContact.displayName}
+        avatar={chat.selectedContact.avatar}
+        onPress={this.resetSearchState}
+        style={styles.suggestion}
+      />
+    )
+  }
+
   render() {
-    const {
-      destination,
-      description,
-      unitSelected,
-      amount,
-      sending,
-      error,
-      contactsSearch,
-    } = this.state
+    const { description, unitSelected, amount, sending, error } = this.state
     const { navigation } = this.props
     const { width, height } = Dimensions.get('window')
     return (
@@ -141,7 +193,7 @@ class SendScreen extends Component {
             styles.sendContainer,
             {
               width: width - 50,
-              height: height - 200,
+              maxHeight: height - 200,
             },
           ]}
         >
@@ -156,17 +208,7 @@ class SendScreen extends Component {
                 <Text style={styles.scanBtnText}>SCAN QR</Text>
                 <Ionicons name="md-qr-scanner" color="gray" size={24} />
               </View>
-              <InputGroup
-                label="Recipient Address"
-                value={destination}
-                onChange={this.onChange('destination')}
-                style={styles.destination}
-              />
-              <ContactsSearch
-                onChange={this.onChange('contactsSearch')}
-                value={contactsSearch}
-                style={styles.contactsSearch}
-              />
+              {this.renderContactsSearch()}
               <View style={styles.amountContainer}>
                 <InputGroup
                   label="Enter Amount"
@@ -244,7 +286,7 @@ class SendScreen extends Component {
                 />
               }
               disabled={!this.isFilled()}
-              onVerified={this.sendRequest}
+              onVerified={this.sendBTCRequest}
             >
               <Text style={styles.swipeBtnText}>SLIDE TO SEND</Text>
             </SwipeVerify>
@@ -255,7 +297,18 @@ class SendScreen extends Component {
   }
 }
 
-export default SendScreen
+/** @param {import('../../../reducers/index').default} state */
+const mapStateToProps = ({ chat }) => ({ chat })
+
+const mapDispatchToProps = {
+  selectContact,
+  resetSelectedContact,
+}
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(SendScreen)
 
 const styles = StyleSheet.create({
   container: {
@@ -264,11 +317,11 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     alignItems: 'center',
   },
-  destination: { marginBottom: 30 },
-  contactsSearch: { marginBottom: 20, height: 45 },
+  contactsSearch: { marginBottom: 20 },
   sendContainer: {
     marginTop: 5,
     backgroundColor: CSS.Colors.BACKGROUND_WHITE,
+    height: 'auto',
     borderRadius: 40,
   },
   scrollInnerContent: {
@@ -278,6 +331,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 35,
     paddingBottom: 0,
   },
+  suggestion: { marginVertical: 10 },
   sendingOverlay: {
     position: 'absolute',
     left: 0,

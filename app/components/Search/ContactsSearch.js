@@ -7,11 +7,18 @@ import {
   StyleSheet,
   View,
   TextInput,
+  FlatList,
 } from 'react-native'
 import Ionicons from 'react-native-vector-icons/Ionicons'
+import { connect } from 'react-redux'
 import Suggestion from './Suggestion'
+import { selectContact } from '../../actions/ChatActions'
 
 import * as CSS from '../../res/css'
+
+/**
+ * @typedef {import('../../actions/ChatActions').Contact | import('../../actions/ChatActions').BTCAddress} ContactTypes
+ */
 
 /**
  * @typedef {object} Props
@@ -22,24 +29,80 @@ import * as CSS from '../../res/css'
  * @prop {(string)=} icon
  * @prop {(boolean)=} disabled
  * @prop {(boolean)=} multiline
+ * @prop {((contact: ContactTypes) => void)=} selectContact
+ * @prop {{ contacts: import('../../actions/ChatActions').Contact[] }} chat
  */
 
 /**
  * @augments PureComponent<Props, {}, never>
  */
 class ContactsSearch extends PureComponent {
-  state = {
-    focused: false,
+  // state = {
+  //   focused: false,
+  // }
+
+  // setFocus = (focused = false) => () => {
+  //   this.setState({
+  //     focused,
+  //   })
+  // }
+
+  /** @param {import('../../actions/ChatActions').SelectedContact} item */
+  contactKeyExtractor = item => item.pk || item.address
+
+  /** @type {import('react-native').ListRenderItem<any>} */
+  contactRender = contact => {
+    console.log('Contact:', contact)
+    if (contact.item.type === 'btc') {
+      return ((
+        <Suggestion
+          name={contact.item.address}
+          type="btc"
+          onPress={this.setBTCAddress}
+        />
+      ))
+    }
+
+    return ((
+      <Suggestion
+        name={contact.item.displayName}
+        avatar={{ uri: contact.item.avatar }}
+        type="contact"
+        onPress={this.selectContact(contact.item)}
+      />
+    ))
   }
 
-  setFocus = (focused = false) => () => {
-    this.setState({
-      focused,
-    })
+  isBTCAddress = () => {
+    const { value } = this.props
+
+    return /^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$/.test(value)
+  }
+
+  setBTCAddress = () => {
+    const { selectContact, value } = this.props
+    if (selectContact) {
+      selectContact({ address: value, type: 'btc' })
+    }
+  }
+
+  /**
+   * @param {ContactTypes} contact
+   */
+  selectContact = contact => () => {
+    const { selectContact } = this.props
+    if (selectContact) {
+      selectContact(contact)
+    }
+  }
+
+  filterContacts = () => {
+    const { value, chat } = this.props
+    const { contacts } = chat
+    return contacts.filter(contact => contact.displayName.includes(value))
   }
 
   render() {
-    const { focused } = this.state
     const { value, onChange, style, inputStyle, disabled } = this.props
     return (
       <View
@@ -55,7 +118,6 @@ class ContactsSearch extends PureComponent {
               styles.inputContainer,
               inputStyle,
               disabled ? styles.disabledInput : null,
-              focused ? styles.focusedInput : null,
             ]}
           >
             <Ionicons name="md-search" color="#CBC5C5" size={16} />
@@ -65,14 +127,21 @@ class ContactsSearch extends PureComponent {
               editable={!disabled}
               onChangeText={onChange}
               placeholder="Search contacts..."
-              onFocus={this.setFocus(true)}
-              onBlur={this.setFocus(false)}
+              // onFocus={this.setFocus(true)}
+              // onBlur={value.length === 0 ? this.setFocus(false) : undefined}
             />
           </View>
-          {focused ? (
-            <View style={styles.inputSuggestions}>
-              <Suggestion name="Test Contact" />
-            </View>
+          {value.length > 0 ? (
+            <FlatList
+              data={
+                this.isBTCAddress()
+                  ? [{ address: value, type: 'btc' }, ...this.filterContacts()]
+                  : this.filterContacts()
+              }
+              renderItem={this.contactRender}
+              style={styles.inputSuggestions}
+              keyExtractor={this.contactKeyExtractor}
+            />
           ) : null}
         </View>
       </View>
@@ -80,17 +149,26 @@ class ContactsSearch extends PureComponent {
   }
 }
 
-export default ContactsSearch
+/** @param {import('../../../reducers/index').default} state */
+const mapStateToProps = ({ chat }) => ({ chat })
+
+const mapDispatchToProps = {
+  selectContact,
+}
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+  // @ts-ignore
+)(ContactsSearch)
 
 const styles = StyleSheet.create({
   inputGroupContainer: {
     width: '100%',
-    height: 36,
     elevation: 5,
   },
   inputGroup: {
     width: '100%',
-    elevation: 4,
   },
   disabledContainer: {
     opacity: 0.5,
@@ -101,14 +179,10 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingHorizontal: 13,
     borderRadius: 100,
+    height: 45,
+    marginBottom: 10,
     backgroundColor: CSS.Colors.BACKGROUND_LIGHTEST_WHITE,
     overflow: 'hidden',
-  },
-  focusedInput: {
-    borderTopLeftRadius: 15,
-    borderTopRightRadius: 15,
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
   },
   disabledInput: {
     elevation: 0,
@@ -118,13 +192,9 @@ const styles = StyleSheet.create({
     marginLeft: 5,
   },
   inputSuggestions: {
-    position: 'absolute',
     backgroundColor: CSS.Colors.BACKGROUND_LIGHTEST_WHITE,
-    top: 36,
     width: '100%',
     height: 150,
     borderRadius: 15,
-    borderTopLeftRadius: 0,
-    borderTopRightRadius: 0,
   },
 })

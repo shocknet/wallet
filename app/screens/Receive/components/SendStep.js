@@ -9,23 +9,26 @@ import {
   Clipboard,
   ToastAndroid,
   Image,
+  ScrollView,
 } from 'react-native'
 import { connect } from 'react-redux'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 // @ts-ignore
 import SwipeVerify from 'react-native-swipe-verify'
 
-// import Suggestion from '../../../components/Search/Suggestion'
+import Suggestion from '../../../components/Search/Suggestion'
 import * as CSS from '../../../res/css'
-// import ContactsSearch from '../../../components/Search/ContactsSearch'
-import InputGroup from '../../../components/InputGroup'
+import * as API from '../../../services/contact-api'
+import ContactsSearch from '../../../components/Search/ContactsSearch'
 import {
   setInvoiceMode,
   addInvoice,
   setRecipientAddress,
 } from '../../../actions/InvoiceActions'
+import { resetSelectedContact } from '../../../actions/ChatActions'
 import QR from './QR'
 import BitcoinAccepted from '../../../assets/images/bitcoin-accepted.png'
+import { CHATS_ROUTE } from '../../Chats'
 
 /**
  * @typedef {ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps} ConnectedRedux
@@ -37,9 +40,18 @@ import BitcoinAccepted from '../../../assets/images/bitcoin-accepted.png'
  */
 
 /**
- * @augments Component<Props, {}, never>
+ * @typedef {object} State
+ * @prop {string} contactsSearch
+ */
+
+/**
+ * @augments Component<Props, State, never>
  */
 class SendStep extends Component {
+  state = {
+    contactsSearch: '',
+  }
+
   componentDidMount = async () => {
     const { addInvoice, invoice } = this.props
     const { amount, description } = invoice
@@ -51,19 +63,20 @@ class SendStep extends Component {
   }
 
   renderQR = () => {
-    const { invoiceMode, paymentRequest, recipientAddress } = this.props.invoice
+    const { invoiceMode, paymentRequest } = this.props.invoice
+    const { selectedContact } = this.props.chat
     if (invoiceMode && paymentRequest) {
       return <QR logoToShow="shock" value={paymentRequest} size={150} />
     }
 
-    if (!invoiceMode && recipientAddress) {
-      return <QR logoToShow="btc" value={recipientAddress} size={150} />
+    if (!invoiceMode && selectedContact && selectedContact.type === 'btc') {
+      return <QR logoToShow="btc" value={selectedContact.address} size={150} />
     }
 
-    if (!invoiceMode && !recipientAddress) {
+    if (!invoiceMode && (!selectedContact || selectedContact.type !== 'btc')) {
       return (
         <Text style={styles.recipientEmpty}>
-          Please write a recipient address
+          Please specify a BTC Address above
         </Text>
       )
     }
@@ -77,24 +90,81 @@ class SendStep extends Component {
     ToastAndroid.show('Copied!', 500)
   }
 
+  /**
+   * @param {keyof State} key
+   */
+  onChange = key => (value = '') => {
+    /**
+     * @type {Pick<State, keyof State>}
+     */
+    // @ts-ignore TODO: fix typing
+    const updatedState = {
+      [key]: value,
+    }
+    this.setState(updatedState)
+  }
+
+  resetSearchState = () => {
+    const { resetSelectedContact } = this.props
+    resetSelectedContact()
+    this.setState({
+      contactsSearch: '',
+    })
+  }
+
+  renderContactsSearch = () => {
+    const { chat } = this.props
+    const { contactsSearch } = this.state
+    console.log(chat.selectedContact)
+    if (!chat.selectedContact) {
+      return (
+        <ContactsSearch
+          onChange={this.onChange('contactsSearch')}
+          value={contactsSearch}
+          style={styles.contactsSearch}
+        />
+      )
+    }
+
+    if (chat.selectedContact.type === 'btc') {
+      return (
+        <Suggestion
+          name={chat.selectedContact.address}
+          onPress={this.resetSearchState}
+          type="btc"
+          style={styles.suggestion}
+        />
+      )
+    }
+
+    return (
+      <Suggestion
+        name={chat.selectedContact.displayName}
+        avatar={chat.selectedContact.avatar}
+        onPress={this.resetSearchState}
+        style={styles.suggestion}
+      />
+    )
+  }
+
+  sendInvoice = async () => {
+    const { chat, invoice, navigation } = this.props
+    const { selectedContact } = chat
+    const { paymentRequest } = invoice
+    await API.Actions.sendReqWithInitialMsg(
+      selectedContact.pk,
+      '$$__SHOCKWALLET__INVOICE__' + paymentRequest,
+    )
+    navigation.navigate(CHATS_ROUTE)
+  }
+
   render() {
-    const { setInvoiceMode, invoice, setRecipientAddress } = this.props
+    const { setInvoiceMode, invoice } = this.props
     return (
       <View style={styles.invoiceContainer}>
-        <View style={styles.invoiceInfoContainer}>
-          {/* 
-          // Reserved for contacts functionality on API
-          <ContactsSearch />
-          <Suggestion name="Test Contact" style={{ marginVertical: 10 }} /> 
-        */}
+        {this.renderContactsSearch()}
+        <ScrollView contentContainerStyle={styles.invoiceInfoContainer}>
           <View style={styles.recipientContainer}>
-            <InputGroup
-              inputStyle={styles.recipientInput}
-              style={styles.recipientInputContainer}
-              placeholder="Recipient Address"
-              onChange={setRecipientAddress}
-              value={invoice.recipientAddress}
-            />
             <View style={styles.recipientContainer}>
               {this.renderQR()}
               <View style={styles.QRTypeContainer}>
@@ -150,7 +220,7 @@ class SendStep extends Component {
               </View>
             </View>
           </View>
-        </View>
+        </ScrollView>
         <SwipeVerify
           width="100%"
           buttonSize={48}
@@ -169,6 +239,7 @@ class SendStep extends Component {
               style={styles.btcIcon}
             />
           }
+          onVerified={this.sendInvoice}
         >
           <Text style={styles.swipeBtnText}>SLIDE TO SEND</Text>
         </SwipeVerify>
@@ -180,12 +251,13 @@ class SendStep extends Component {
 /**
  * @param {typeof import('../../../../reducers/index').default} state
  */
-const mapStateToProps = ({ invoice }) => ({ invoice })
+const mapStateToProps = ({ invoice, chat }) => ({ invoice, chat })
 
 const mapDispatchToProps = {
   setInvoiceMode,
   setRecipientAddress,
   addInvoice,
+  resetSelectedContact,
 }
 
 export default connect(
@@ -197,10 +269,12 @@ const styles = StyleSheet.create({
   noBorderInvoiceDetail: {
     borderBottomWidth: 0,
   },
+  contactsSearch: { marginBottom: 20 },
   invoiceContainer: {
     flex: 1,
     justifyContent: 'space-between',
   },
+  suggestion: { marginVertical: 10 },
   invoiceInfoContainer: {
     width: '100%',
     alignItems: 'center',
@@ -208,13 +282,6 @@ const styles = StyleSheet.create({
   recipientContainer: {
     width: '95%',
     alignItems: 'center',
-  },
-  recipientInput: {
-    height: 36,
-    backgroundColor: CSS.Colors.BACKGROUND_WHITE,
-  },
-  recipientInputContainer: {
-    marginBottom: 28,
   },
   btcIcon: {
     height: 30,
@@ -289,7 +356,7 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
   swipeBtn: {
-    marginBottom: 10,
+    marginVertical: 15,
   },
   swipeBtnText: {
     fontSize: 12,
