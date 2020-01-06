@@ -50,6 +50,7 @@ public class NotificationService extends Service {
     private static String ip;
     private static String token;
     private Socket mSocket;
+    private boolean chatInit = false;
     private Emitter.Listener newTransaction = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
@@ -80,6 +81,10 @@ public class NotificationService extends Service {
         @Override
         public void call(final Object... args) {
             Log.d(TAG,args[0].toString());
+            if(chatInit == false){
+                chatInit = true;
+                return;
+            }
             try{
                 JSONObject res = new JSONObject(args[0].toString());
                 JSONArray data = res.getJSONArray("msg");
@@ -87,7 +92,7 @@ public class NotificationService extends Service {
                     JSONObject messages = data.optJSONObject(i);
                     JSONArray mexArr = messages.getJSONArray("messages");
                 }
-                doNotification("New Message",res.getString("msg"));
+                doNotification("New Message","You got a GUN message");
             }catch (Exception e){
                 Log.d(TAG,e.toString());
             }

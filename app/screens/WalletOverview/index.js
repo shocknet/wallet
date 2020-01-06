@@ -1089,6 +1089,8 @@ class WalletOverview extends Component {
       })
       .catch(err => console.error('An error occurred', err))
 
+    this.startNotificationService()
+
     this.balanceIntervalID = setInterval(this.fetchBalance, 4000)
     this.exchangeRateIntervalID = setInterval(this.fetchExchangeRate, 4000)
     this.recentTransactionsIntervalID = setInterval(
