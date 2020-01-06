@@ -7,6 +7,7 @@ export const ACTIONS = {
   SET_RECIPIENT_ADDRESS: 'invoice/recipientAddress',
   SET_UNIT_SELECTED: 'invoice/unit',
   SET_ADDRESS: 'invoice/address',
+  DECODE_PAYMENT_REQUEST: 'invoice/load',
 
   ADD_INVOICE: 'invoice/add',
   RESET_INVOICE: 'invoice/reset',
@@ -44,6 +45,22 @@ export const setDescription = description => dispatch => {
 }
 
 /**
+ * Decode payment request
+ * @param {string} paymentRequest
+ * @returns {import('redux-thunk').ThunkAction<void, {}, {}, import('redux').AnyAction>}
+ */
+export const decodePaymentRequest = paymentRequest => async dispatch => {
+  const decodedInvoice = await Wallet.decodeInvoice({ payReq: paymentRequest })
+  dispatch({
+    type: ACTIONS.DECODE_PAYMENT_REQUEST,
+    data: {
+      ...decodedInvoice.decodedRequest,
+      payment_request: paymentRequest,
+    },
+  })
+}
+
+/**
  * Set Invoice Mode
  * @param {boolean} invoiceMode
  * @returns {import('redux-thunk').ThunkAction<void, {}, {}, import('redux').AnyAction>}
@@ -52,18 +69,6 @@ export const setInvoiceMode = invoiceMode => dispatch => {
   dispatch({
     type: ACTIONS.SET_INVOICE_MODE,
     data: invoiceMode,
-  })
-}
-
-/**
- * Set Recipient Address
- * @param {string} recipientAddress
- * @returns {import('redux-thunk').ThunkAction<void, {}, {}, import('redux').AnyAction>}
- */
-export const setRecipientAddress = recipientAddress => dispatch => {
-  dispatch({
-    type: ACTIONS.SET_RECIPIENT_ADDRESS,
-    data: recipientAddress,
   })
 }
 
@@ -103,7 +108,7 @@ export const addInvoice = invoice => async dispatch => {
 }
 
 /**
- * Create a new invoice
+ * Create a new address and set it
  * @returns {import('redux-thunk').ThunkAction<void, {}, {}, import('redux').AnyAction>}
  */
 export const newAddress = () => async dispatch => {

@@ -23,7 +23,6 @@ import ContactsSearch from '../../../components/Search/ContactsSearch'
 import {
   setInvoiceMode,
   addInvoice,
-  setRecipientAddress,
   newAddress,
 } from '../../../actions/InvoiceActions'
 import { resetSelectedContact } from '../../../actions/ChatActions'
@@ -67,21 +66,21 @@ class SendStep extends Component {
   }
 
   renderQR = () => {
-    const { invoiceMode, paymentRequest, address } = this.props.invoice
+    const { invoiceMode, paymentRequest, btcAddress } = this.props.invoice
     if (invoiceMode && paymentRequest) {
       return <QR logoToShow="shock" value={paymentRequest} size={150} />
     }
 
-    if (!invoiceMode && address) {
-      return <QR logoToShow="btc" value={address} size={150} />
+    if (!invoiceMode && btcAddress) {
+      return <QR logoToShow="btc" value={btcAddress} size={150} />
     }
 
     return <ActivityIndicator size="large" color={CSS.Colors.FUN_BLUE} />
   }
 
   copyQRCode = () => {
-    const { invoiceMode, paymentRequest, recipientAddress } = this.props.invoice
-    Clipboard.setString(invoiceMode ? paymentRequest : recipientAddress)
+    const { invoiceMode, paymentRequest, btcAddress } = this.props.invoice
+    Clipboard.setString(invoiceMode ? paymentRequest : btcAddress)
     ToastAndroid.show('Copied!', 500)
   }
 
@@ -115,6 +114,7 @@ class SendStep extends Component {
       return (
         <ContactsSearch
           onChange={this.onChange('contactsSearch')}
+          enabledFeatures={['contacts']}
           value={contactsSearch}
           style={styles.contactsSearch}
         />
@@ -155,6 +155,11 @@ class SendStep extends Component {
 
   render() {
     const { setInvoiceMode, invoice, chat } = this.props
+    console.log(
+      chat.selectedContact,
+      chat.selectedContact ? chat.selectedContact.type : 'No selectedContact',
+      invoice.invoiceMode,
+    )
     return (
       <View style={styles.invoiceContainer}>
         {this.renderContactsSearch()}
@@ -216,9 +221,9 @@ class SendStep extends Component {
             </View>
           </View>
         </ScrollView>
-        {chat.selectedAccount &&
-        chat.selectedAccount.type === 'contact' &&
-        !invoice.invoiceMode ? (
+        {chat.selectedContact &&
+        chat.selectedContact.type === 'contact' &&
+        invoice.invoiceMode ? (
           <SwipeVerify
             width="100%"
             buttonSize={48}
@@ -226,6 +231,7 @@ class SendStep extends Component {
             style={styles.swipeBtn}
             buttonColor={CSS.Colors.BACKGROUND_WHITE}
             borderColor={CSS.Colors.TRANSPARENT}
+            swipeColor={CSS.Colors.GOLD}
             backgroundColor={CSS.Colors.BACKGROUND_NEAR_WHITE}
             textColor="#37474F"
             borderRadius={100}
@@ -254,7 +260,6 @@ const mapStateToProps = ({ invoice, chat }) => ({ invoice, chat })
 
 const mapDispatchToProps = {
   setInvoiceMode,
-  setRecipientAddress,
   addInvoice,
   resetSelectedContact,
   newAddress,

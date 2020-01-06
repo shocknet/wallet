@@ -13,11 +13,16 @@ import Ionicons from 'react-native-vector-icons/Ionicons'
 import { connect } from 'react-redux'
 import Suggestion from './Suggestion'
 import { selectContact } from '../../actions/ChatActions'
+import { decodePaymentRequest } from '../../actions/InvoiceActions'
 
 import * as CSS from '../../res/css'
 
 /**
- * @typedef {import('../../actions/ChatActions').Contact | import('../../actions/ChatActions').BTCAddress} ContactTypes
+ * @typedef {import('../../actions/ChatActions').SelectedContact} ContactTypes
+ */
+
+/**
+ * @typedef {'btc'|'invoice'|'contacts'} EnabledFeatures
  */
 
 /**
@@ -29,7 +34,10 @@ import * as CSS from '../../res/css'
  * @prop {(string)=} icon
  * @prop {(boolean)=} disabled
  * @prop {(boolean)=} multiline
- * @prop {((contact: ContactTypes) => void)=} selectContact
+ * @prop {(EnabledFeatures[])=} enabledFeatures
+ * @prop {(string)=} placeholder
+ * @prop {(contact: ContactTypes) => void} selectContact
+ * @prop {(paymentRequest: string) => void} decodePaymentRequest
  * @prop {{ contacts: import('../../actions/ChatActions').Contact[] }} chat
  */
 
@@ -47,8 +55,33 @@ class ContactsSearch extends PureComponent {
   //   })
   // }
 
-  /** @param {import('../../actions/ChatActions').SelectedContact} item */
-  contactKeyExtractor = item => item.pk || item.address
+  defaultFeatures = ['btc', 'invoice', 'contacts']
+
+  /**
+   * @param {import('../../actions/ChatActions').SelectedContact} item
+   * @param {number} index
+   * @returns {string}
+   */
+  contactKeyExtractor = (item, index) => {
+    if ('pk' in item) {
+      return item.pk
+    }
+
+    if ('address' in item) {
+      return item.address
+    }
+
+    if ('paymentRequest' in item) {
+      return item.paymentRequest
+    }
+
+    return index.toString()
+  }
+
+  decodeInvoice = () => {
+    const { decodePaymentRequest, value } = this.props
+    decodePaymentRequest(value)
+  }
 
   /** @type {import('react-native').ListRenderItem<any>} */
   contactRender = contact => {
@@ -63,12 +96,22 @@ class ContactsSearch extends PureComponent {
       ))
     }
 
+    if (contact.item.type === 'invoice') {
+      return ((
+        <Suggestion
+          name={contact.item.paymentRequest}
+          type="invoice"
+          onPress={this.decodeInvoice}
+        />
+      ))
+    }
+
     return ((
       <Suggestion
         name={contact.item.displayName}
         avatar={{ uri: contact.item.avatar }}
         type="contact"
-        onPress={this.selectContact(contact.item)}
+        onPress={this.selectContact({ ...contact.item, type: 'contact' })}
       />
     ))
   }
@@ -79,11 +122,14 @@ class ContactsSearch extends PureComponent {
     return /^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$/.test(value)
   }
 
+  isLightningInvoice = () => {
+    const { value } = this.props
+    return /^(ln(tb|bc))[0-9][a-z0-9]{180,7089}$/.test(value)
+  }
+
   setBTCAddress = () => {
     const { selectContact, value } = this.props
-    if (selectContact) {
-      selectContact({ address: value, type: 'btc' })
-    }
+    selectContact({ address: value, type: 'btc' })
   }
 
   /**
@@ -91,9 +137,7 @@ class ContactsSearch extends PureComponent {
    */
   selectContact = contact => () => {
     const { selectContact } = this.props
-    if (selectContact) {
-      selectContact(contact)
-    }
+    selectContact({ ...contact, type: 'contact' })
   }
 
   filterContacts = () => {
@@ -102,8 +146,36 @@ class ContactsSearch extends PureComponent {
     return contacts.filter(contact => contact.displayName.includes(value))
   }
 
+  /**
+   * @returns {ContactTypes[]}
+   */
+  getContacts = () => {
+    const { value, enabledFeatures = this.defaultFeatures } = this.props
+    console.log('Enabled Features:', enabledFeatures)
+    const filteredContacts = enabledFeatures.includes('contacts')
+      ? this.filterContacts()
+      : []
+
+    if (enabledFeatures.includes('btc') && this.isBTCAddress()) {
+      return [{ address: value, type: 'btc' }, ...filteredContacts]
+    }
+
+    if (enabledFeatures.includes('invoice') && this.isLightningInvoice()) {
+      return [{ paymentRequest: value, type: 'invoice' }, ...filteredContacts]
+    }
+
+    return filteredContacts
+  }
+
   render() {
-    const { value, onChange, style, inputStyle, disabled } = this.props
+    const {
+      placeholder = 'Search Contacts...',
+      value,
+      onChange,
+      style,
+      inputStyle,
+      disabled,
+    } = this.props
     return (
       <View
         style={[
@@ -126,18 +198,14 @@ class ContactsSearch extends PureComponent {
               value={value}
               editable={!disabled}
               onChangeText={onChange}
-              placeholder="Search contacts..."
+              placeholder={placeholder}
               // onFocus={this.setFocus(true)}
               // onBlur={value.length === 0 ? this.setFocus(false) : undefined}
             />
           </View>
           {value.length > 0 ? (
             <FlatList
-              data={
-                this.isBTCAddress()
-                  ? [{ address: value, type: 'btc' }, ...this.filterContacts()]
-                  : this.filterContacts()
-              }
+              data={this.getContacts()}
               renderItem={this.contactRender}
               style={styles.inputSuggestions}
               keyExtractor={this.contactKeyExtractor}
@@ -154,6 +222,7 @@ const mapStateToProps = ({ chat }) => ({ chat })
 
 const mapDispatchToProps = {
   selectContact,
+  decodePaymentRequest,
 }
 
 export default connect(

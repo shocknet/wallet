@@ -17,7 +17,7 @@ import * as CSS from '../res/css'
  * @typedef {object} Props
  * @prop {(string)=} label
  * @prop {string} value
- * @prop {(text: string) => void} onChange
+ * @prop {((text: string) => void)=} onChange
  * @prop {(object)=} style
  * @prop {(object)=} inputStyle
  * @prop {(string)=} icon
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
     marginBottom: 11,
   },
   disabledContainer: {
-    opacity: 0.5,
+    opacity: 0.7,
   },
   inputContainer: {
     flexDirection: 'row',

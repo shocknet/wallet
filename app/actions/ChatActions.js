@@ -23,8 +23,13 @@ export const ACTIONS = {
  */
 
 /**
- * @typedef {(Contact | BTCAddress) & object} SelectedContact
+ * @typedef {object} Invoice
+ * @prop {string} paymentRequest
  * @prop {string} type
+ */
+
+/**
+ * @typedef {(Contact | BTCAddress | Invoice)} SelectedContact
  */
 
 /**

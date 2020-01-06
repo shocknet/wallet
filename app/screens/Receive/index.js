@@ -48,6 +48,13 @@ class ReceiveScreen extends Component {
     maxStep: 2,
   }
 
+  componentDidMount() {
+    const { invoice, resetInvoice } = this.props
+    if (invoice.paymentRequest) {
+      resetInvoice()
+    }
+  }
+
   /**
    * @param {Props} prevProps
    */

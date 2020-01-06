@@ -19,6 +19,7 @@ import { Dropdown } from 'react-native-material-dropdown'
 import SwipeVerify from 'react-native-swipe-verify'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 import { connect } from 'react-redux'
+import Big from 'big.js'
 import wavesBG from '../../assets/images/shock-bg.png'
 import Nav from '../../components/Nav'
 import InputGroup from '../../components/InputGroup'
@@ -29,6 +30,8 @@ import BitcoinAccepted from '../../assets/images/bitcoin-accepted.png'
 import * as CSS from '../../res/css'
 import * as Wallet from '../../services/wallet'
 import { selectContact, resetSelectedContact } from '../../actions/ChatActions'
+import { resetInvoice } from '../../actions/InvoiceActions'
+import { WALLET_OVERVIEW } from '../WalletOverview'
 export const SEND_SCREEN = 'SEND_SCREEN'
 
 /**
@@ -43,8 +46,10 @@ export const SEND_SCREEN = 'SEND_SCREEN'
  * @typedef {object} Props
  * @prop {(Navigation)=} navigation
  * @prop {import('../../../reducers/ChatReducer').State} chat
+ * @prop {import('../../../reducers/InvoiceReducer').State} invoice
  * @prop {(contact: ContactTypes) => ContactTypes} selectContact
  * @prop {() => void} resetSelectedContact
+ * @prop {() => void} resetInvoice
  */
 
 /**
@@ -54,7 +59,8 @@ export const SEND_SCREEN = 'SEND_SCREEN'
  * @prop {string} amount
  * @prop {string} contactsSearch
  * @prop {boolean} sending
- * @prop {string|null} error
+ * @prop {boolean} paymentSuccessful
+ * @prop {Error|null} error
  */
 
 /**
@@ -66,6 +72,7 @@ class SendScreen extends Component {
     unitSelected: 'Sats',
     amount: '0',
     contactsSearch: '',
+    paymentSuccessful: false,
     sending: false,
     error: null,
   }
@@ -88,12 +95,14 @@ class SendScreen extends Component {
 
   isFilled = () => {
     const { amount } = this.state
+    const { paymentRequest } = this.props.invoice
     const { selectedContact } = this.props.chat
     return (
-      selectedContact &&
-      selectedContact.address &&
-      selectedContact.address.length > 0 &&
-      parseFloat(amount) > 0
+      (selectedContact &&
+        selectedContact.address &&
+        selectedContact.address.length > 0 &&
+        parseFloat(amount) > 0) ||
+      !!paymentRequest
     )
   }
 
@@ -133,24 +142,79 @@ class SendScreen extends Component {
   }
 
   // Reserved
-  payLightningInvoice = async () => {}
+  payLightningInvoice = async () => {
+    try {
+      const { invoice, navigation } = this.props
+      const { amount } = this.state
+      this.setState({
+        sending: true,
+      })
+      await Wallet.CAUTION_payInvoice({
+        amt:
+          invoice.paymentRequest && invoice.amount && Big(invoice.amount).gt(0)
+            ? undefined
+            : parseInt(amount, 10),
+        payreq: invoice.paymentRequest,
+      })
+      this.setState({
+        sending: false,
+        paymentSuccessful: true,
+      })
+      setTimeout(() => {
+        if (navigation) {
+          navigation.navigate(WALLET_OVERVIEW)
+        }
+      }, 500)
+    } catch (err) {
+      this.setState({
+        sending: false,
+        error: err,
+      })
+    }
+  }
 
   resetSearchState = () => {
-    const { resetSelectedContact } = this.props
+    const { resetSelectedContact, resetInvoice } = this.props
     resetSelectedContact()
+    resetInvoice()
     this.setState({
       contactsSearch: '',
     })
   }
 
   renderContactsSearch = () => {
-    const { chat } = this.props
+    const { chat, invoice } = this.props
     const { contactsSearch } = this.state
+
+    if (invoice.paymentRequest) {
+      return (
+        <Suggestion
+          name={invoice.paymentRequest}
+          onPress={this.resetSearchState}
+          type="invoice"
+          style={styles.suggestion}
+        />
+      )
+    }
+
+    if (!contactsSearch || contactsSearch.trim().length === 0) {
+      return (
+        <ContactsSearch
+          onChange={this.onChange('contactsSearch')}
+          enabledFeatures={['btc', 'invoice']}
+          placeholder="Enter invoice or address..."
+          value={contactsSearch}
+          style={styles.contactsSearch}
+        />
+      )
+    }
 
     if (!chat.selectedContact) {
       return (
         <ContactsSearch
           onChange={this.onChange('contactsSearch')}
+          enabledFeatures={['btc', 'invoice']}
+          placeholder="Enter invoice or address..."
           value={contactsSearch}
           style={styles.contactsSearch}
         />
@@ -178,9 +242,31 @@ class SendScreen extends Component {
     )
   }
 
+  getErrorMessage = () => {
+    const { error } = this.state
+    if (!error) {
+      return null
+    }
+
+    // @ts-ignore Typescript is being crazy here
+    if (error.message) {
+      // @ts-ignore
+      return error.message
+    }
+
+    return error
+  }
+
   render() {
-    const { description, unitSelected, amount, sending, error } = this.state
-    const { navigation } = this.props
+    const {
+      description,
+      unitSelected,
+      amount,
+      sending,
+      error,
+      paymentSuccessful,
+    } = this.state
+    const { navigation, invoice } = this.props
     const { width, height } = Dimensions.get('window')
     return (
       <ImageBackground
@@ -202,7 +288,7 @@ class SendScreen extends Component {
             <View style={styles.scrollInnerContent}>
               {error ? (
                 <View style={styles.errorRow}>
-                  <Text style={styles.errorText}>{error}</Text>
+                  <Text style={styles.errorText}>{this.getErrorMessage()}</Text>
                 </View>
               ) : null}
               <View style={styles.scanBtn}>
@@ -210,12 +296,22 @@ class SendScreen extends Component {
                 <Ionicons name="md-qr-scanner" color="gray" size={24} />
               </View>
               {this.renderContactsSearch()}
+              {invoice.paymentRequest ? (
+                <InputGroup
+                  label="Destination"
+                  value={invoice.recipientAddress}
+                  style={styles.destinationInput}
+                  inputStyle={styles.destinationInput}
+                  disabled
+                />
+              ) : null}
               <View style={styles.amountContainer}>
                 <InputGroup
                   label="Enter Amount"
-                  value={amount}
+                  value={invoice.paymentRequest ? invoice.amount : amount}
                   onChange={this.onChange('amount')}
                   style={styles.amountInput}
+                  disabled={!!invoice.paymentRequest}
                   type="numeric"
                 />
                 <Dropdown
@@ -230,9 +326,10 @@ class SendScreen extends Component {
                       value: 'BTC',
                     },
                   ]}
+                  disabled={!!invoice.paymentRequest}
                   onChangeText={this.onChange('unitSelected')}
                   containerStyle={styles.amountSelect}
-                  value={unitSelected}
+                  value={invoice.paymentRequest ? 'Sats' : unitSelected}
                   lineWidth={0}
                   inputContainerStyle={styles.amountSelectInput}
                   rippleOpacity={0}
@@ -243,10 +340,13 @@ class SendScreen extends Component {
               </View>
               <InputGroup
                 label="Description"
-                value={description}
+                value={
+                  invoice.paymentRequest ? invoice.description : description
+                }
                 multiline
                 onChange={this.onChange('description')}
                 inputStyle={styles.descInput}
+                disabled={!!invoice.paymentRequest}
               />
               {sending ? (
                 <View
@@ -260,6 +360,26 @@ class SendScreen extends Component {
                 >
                   <ActivityIndicator color={CSS.Colors.FUN_BLUE} size="large" />
                   <Text style={styles.sendingText}>Sending Transaction...</Text>
+                </View>
+              ) : null}
+              {paymentSuccessful ? (
+                <View
+                  style={[
+                    styles.sendingOverlay,
+                    {
+                      width: width - 50,
+                      height: height - 194,
+                    },
+                  ]}
+                >
+                  <Ionicons
+                    name="md-checkmark-circle-outline"
+                    size={60}
+                    color={CSS.Colors.FUN_BLUE}
+                  />
+                  <Text style={styles.sendingText}>
+                    Transaction sent successfully!
+                  </Text>
                 </View>
               ) : null}
             </View>
@@ -287,7 +407,11 @@ class SendScreen extends Component {
                 />
               }
               disabled={!this.isFilled()}
-              onVerified={this.sendBTCRequest}
+              onVerified={
+                invoice.paymentRequest
+                  ? this.payLightningInvoice
+                  : this.sendBTCRequest
+              }
             >
               <Text style={styles.swipeBtnText}>SLIDE TO SEND</Text>
             </SwipeVerify>
@@ -298,12 +422,13 @@ class SendScreen extends Component {
   }
 }
 
-/** @param {import('../../../reducers/index').default} state */
-const mapStateToProps = ({ chat }) => ({ chat })
+/** @param {{ invoice: import('../../../reducers/InvoiceReducer').State, chat: import('../../../reducers/ChatReducer').State }} state */
+const mapStateToProps = ({ chat, invoice }) => ({ chat, invoice })
 
 const mapDispatchToProps = {
   selectContact,
   resetSelectedContact,
+  resetInvoice,
 }
 
 export default connect(
@@ -324,6 +449,7 @@ const styles = StyleSheet.create({
     backgroundColor: CSS.Colors.BACKGROUND_WHITE,
     height: 'auto',
     borderRadius: 40,
+    overflow: 'hidden',
   },
   scrollInnerContent: {
     height: '100%',
@@ -332,13 +458,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 35,
     paddingBottom: 0,
   },
+  destinationInput: {
+    marginBottom: 10,
+  },
   suggestion: { marginVertical: 10 },
   sendingOverlay: {
     position: 'absolute',
     left: 0,
     top: 0,
     right: 0,
-    bottom: 0,
     width: '100%',
     height: '100%',
     alignItems: 'center',
@@ -356,6 +484,7 @@ const styles = StyleSheet.create({
   errorRow: {
     width: '100%',
     paddingVertical: 5,
+    paddingHorizontal: 15,
     borderRadius: 100,
     backgroundColor: CSS.Colors.BACKGROUND_RED,
     alignItems: 'center',
@@ -364,6 +493,7 @@ const styles = StyleSheet.create({
   errorText: {
     fontFamily: 'Montserrat-700',
     color: CSS.Colors.TEXT_WHITE,
+    textAlign: 'center',
   },
   scanBtn: {
     width: '100%',

@@ -14,7 +14,7 @@ import * as CSS from '../../res/css'
  * @typedef {object} Props
  * @prop {string} name
  * @prop {(import('react-native').ImageSourcePropType)=} avatar
- * @prop {('contact'|'btc')=} type
+ * @prop {('contact'|'btc'|'invoice')=} type
  * @prop {(import('react-native').RegisteredStyle<object>)=} style
  * @prop {((event: import('react-native').GestureResponderEvent) => void)=} onPress
  */
@@ -45,6 +45,19 @@ const Suggestion = ({
         <View style={styles.suggestionAvatar}>
           <Ionicons
             name="logo-bitcoin"
+            color="white"
+            size={18}
+            style={styles.suggestionIcon}
+          />
+        </View>
+      )
+    }
+
+    if (type === 'invoice') {
+      return (
+        <View style={styles.suggestionAvatar}>
+          <Ionicons
+            name="md-list-box"
             color="white"
             size={18}
             style={styles.suggestionIcon}

@@ -7,7 +7,7 @@ import { ACTIONS } from '../app/actions/InvoiceActions'
  * @prop {boolean} invoiceMode
  * @prop {string} recipientAddress
  * @prop {string} paymentRequest
- * @prop {string} address
+ * @prop {string} btcAddress
  * @prop {string} unitSelected
  */
 
@@ -25,7 +25,7 @@ const INITIAL_STATE = {
   invoiceMode: true,
   paymentRequest: '',
   recipientAddress: '',
-  address: '',
+  btcAddress: '',
   unitSelected: 'Sats',
 }
 
@@ -34,7 +34,7 @@ const INITIAL_STATE = {
  * @param {Action} action
  * @returns {State}
  */
-const receive = (state = INITIAL_STATE, action) => {
+const invoice = (state = INITIAL_STATE, action) => {
   switch (action.type) {
     case ACTIONS.SET_AMOUNT: {
       const { data } = action
@@ -82,7 +82,17 @@ const receive = (state = INITIAL_STATE, action) => {
       const { data } = action
       return {
         ...state,
-        address: data,
+        btcAddress: data,
+      }
+    }
+    case ACTIONS.DECODE_PAYMENT_REQUEST: {
+      const { data } = action
+      return {
+        ...state,
+        amount: data.num_satoshis,
+        recipientAddress: data.destination,
+        paymentRequest: data.payment_request,
+        description: data.description,
       }
     }
     case ACTIONS.RESET_INVOICE: {
@@ -93,4 +103,4 @@ const receive = (state = INITIAL_STATE, action) => {
   }
 }
 
-export default receive
+export default invoice
