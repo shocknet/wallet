@@ -4,20 +4,20 @@
 import React, { Component } from 'react'
 import {
   // Clipboard,
-  Image,
   StyleSheet,
   Text,
   ToastAndroid,
   View,
   TouchableOpacity,
   StatusBar,
+  ImageBackground,
 } from 'react-native'
-import LinearGradient from 'react-native-linear-gradient'
 import EntypoIcons from 'react-native-vector-icons/Entypo'
 import Feather from 'react-native-vector-icons/Feather'
 import Http from 'axios'
 import Big from 'big.js'
 import { connect } from 'react-redux'
+import wavesBG from '../../assets/images/waves-bg.png'
 
 import * as CSS from '../../res/css'
 import * as Cache from '../../services/cache'
@@ -26,6 +26,7 @@ import ShockInput from '../../components/ShockInput'
 import IGDialogBtn from '../../components/IGDialogBtn'
 import Pad from '../../components/Pad'
 import ShockDialog from '../../components/ShockDialog'
+import Nav from '../../components/Nav'
 
 import AccordionItem from './Accordion'
 import Transaction from './Accordion/Transaction'
@@ -443,22 +444,12 @@ class AdvancedScreen extends Component {
           backgroundColor="transparent"
           barStyle="light-content"
         />
-        <LinearGradient
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          colors={['#194B93', '#4285B9']}
+        <ImageBackground
+          source={wavesBG}
+          resizeMode="cover"
           style={styles.statsHeader}
         >
-          <View style={styles.nav}>
-            <View>
-              <Image style={styles.navAvatar} source={{}} />
-            </View>
-
-            <Text style={styles.navText}>Channels</Text>
-            <View style={styles.settingsBtn}>
-              <EntypoIcons name="cog" size={30} color="white" />
-            </View>
-          </View>
+          <Nav title="Advanced" style={styles.nav} />
           <View style={styles.statsContainer}>
             <View style={xStyles.channelBalanceContainer}>
               <View style={styles.statIcon}>
@@ -519,7 +510,7 @@ class AdvancedScreen extends Component {
               )}
             </View>
           </View>
-        </LinearGradient>
+        </ImageBackground>
         <View style={styles.accordionsContainer}>
           <AccordionItem
             fetchNextPage={this.fetchNextPage('transactions')}
@@ -734,32 +725,11 @@ const styles = StyleSheet.create({
     elevation: 1,
     zIndex: 10,
     paddingTop: StatusBar.currentHeight,
+    backgroundColor: CSS.Colors.FUN_BLUE,
   },
   marginBottom15: { marginBottom: 15 },
   nav: {
-    width: '100%',
-    paddingHorizontal: 20,
-    paddingVertical: 25,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     marginBottom: 25,
-  },
-  navAvatar: {
-    width: 60,
-    height: 60,
-    borderRadius: 100,
-    backgroundColor: CSS.Colors.BLUE_LIGHT,
-  },
-  navText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: CSS.Colors.TEXT_WHITE,
-  },
-  settingsBtn: {
-    width: 60,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   statsContainer: {
     paddingHorizontal: 30,

@@ -18,6 +18,7 @@ import AmountStep from './components/AmountStep'
 import SendStep from './components/SendStep'
 import wavesBG from '../../assets/images/shock-bg.png'
 import Nav from '../../components/Nav'
+import { resetSelectedContact } from '../../actions/ChatActions'
 import { resetInvoice } from '../../actions/InvoiceActions'
 
 import * as CSS from '../../res/css'
@@ -49,10 +50,9 @@ class ReceiveScreen extends Component {
   }
 
   componentDidMount() {
-    const { invoice, resetInvoice } = this.props
-    if (invoice.paymentRequest) {
-      resetInvoice()
-    }
+    const { resetInvoice, resetSelectedContact } = this.props
+    resetInvoice()
+    resetSelectedContact()
   }
 
   /**
@@ -177,6 +177,7 @@ const mapStateToProps = ({ invoice }) => ({ invoice })
 
 const mapDispatchToProps = {
   resetInvoice,
+  resetSelectedContact,
 }
 
 export default connect(

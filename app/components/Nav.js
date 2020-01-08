@@ -1,6 +1,7 @@
 import React from 'react'
 import { View, SafeAreaView, Text, StyleSheet } from 'react-native'
 import Ionicons from 'react-native-vector-icons/Ionicons'
+import { toggleDrawer } from '../services/navigation'
 import { Colors } from '../res/css'
 
 /**
@@ -50,6 +51,7 @@ const Nav = ({ title = '', style = {}, backButton = false, navigation }) => {
           color={Colors.TEXT_WHITE}
           size={40}
           style={navStyles.navMenu}
+          onPress={toggleDrawer}
         />
       ) : (
         <View style={navStyles.balanceComponent} />

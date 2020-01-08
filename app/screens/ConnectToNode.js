@@ -178,7 +178,7 @@ export default class ConnectToNode extends React.PureComponent {
 
   /**
    * @param {string} ip
-   * @param {number} port
+   * @param {(number)=} port
    */
   onQRRead = (ip, port) => {
     this.setState({
@@ -202,7 +202,7 @@ export default class ConnectToNode extends React.PureComponent {
       return (
         <View style={CSS.styles.flex}>
           <QRScanner
-            connectToNodeIP={this.onQRRead}
+            onQRSuccess={this.onQRRead}
             toggleQRScreen={this.toggleQRScreen}
           />
         </View>

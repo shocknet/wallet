@@ -12,6 +12,7 @@ import {
   Dimensions,
   ActivityIndicator,
   Image,
+  TouchableOpacity,
 } from 'react-native'
 // @ts-ignore
 import { Dropdown } from 'react-native-material-dropdown'
@@ -25,12 +26,16 @@ import Nav from '../../components/Nav'
 import InputGroup from '../../components/InputGroup'
 import ContactsSearch from '../../components/Search/ContactsSearch'
 import Suggestion from '../../components/Search/Suggestion'
+import QRScanner from '../QRScanner'
 import BitcoinAccepted from '../../assets/images/bitcoin-accepted.png'
 
 import * as CSS from '../../res/css'
 import * as Wallet from '../../services/wallet'
 import { selectContact, resetSelectedContact } from '../../actions/ChatActions'
-import { resetInvoice } from '../../actions/InvoiceActions'
+import {
+  resetInvoice,
+  decodePaymentRequest,
+} from '../../actions/InvoiceActions'
 import { WALLET_OVERVIEW } from '../WalletOverview'
 export const SEND_SCREEN = 'SEND_SCREEN'
 
@@ -43,6 +48,10 @@ export const SEND_SCREEN = 'SEND_SCREEN'
  */
 
 /**
+ * @typedef {({ type: 'error', error: Error }|undefined)} DecodeResponse
+ */
+
+/**
  * @typedef {object} Props
  * @prop {(Navigation)=} navigation
  * @prop {import('../../../reducers/ChatReducer').State} chat
@@ -50,6 +59,7 @@ export const SEND_SCREEN = 'SEND_SCREEN'
  * @prop {(contact: ContactTypes) => ContactTypes} selectContact
  * @prop {() => void} resetSelectedContact
  * @prop {() => void} resetInvoice
+ * @prop {(invoice: string) => Promise<DecodeResponse>} decodePaymentRequest
  */
 
 /**
@@ -60,6 +70,7 @@ export const SEND_SCREEN = 'SEND_SCREEN'
  * @prop {string} contactsSearch
  * @prop {boolean} sending
  * @prop {boolean} paymentSuccessful
+ * @prop {boolean} scanningQR
  * @prop {Error|null} error
  */
 
@@ -73,11 +84,16 @@ class SendScreen extends Component {
     amount: '0',
     contactsSearch: '',
     paymentSuccessful: false,
+    scanningQR: false,
     sending: false,
     error: null,
   }
 
   amountOptionList = React.createRef()
+
+  componentDidMount() {
+    this.resetSearchState()
+  }
 
   /**
    * @param {keyof State} key
@@ -197,22 +213,11 @@ class SendScreen extends Component {
       )
     }
 
-    if (!contactsSearch || contactsSearch.trim().length === 0) {
-      return (
-        <ContactsSearch
-          onChange={this.onChange('contactsSearch')}
-          enabledFeatures={['btc', 'invoice']}
-          placeholder="Enter invoice or address..."
-          value={contactsSearch}
-          style={styles.contactsSearch}
-        />
-      )
-    }
-
     if (!chat.selectedContact) {
       return (
         <ContactsSearch
           onChange={this.onChange('contactsSearch')}
+          onError={this.onChange('error')}
           enabledFeatures={['btc', 'invoice']}
           placeholder="Enter invoice or address..."
           value={contactsSearch}
@@ -257,6 +262,53 @@ class SendScreen extends Component {
     return error
   }
 
+  toggleQRScreen = () => {
+    const { scanningQR } = this.state
+
+    this.setState({
+      scanningQR: !scanningQR,
+    })
+  }
+
+  /**
+   * @param {string} value
+   */
+  isBTCAddress = value => /^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$/.test(value)
+
+  /**
+   * @param {string} value
+   */
+  isLightningInvoice = value =>
+    /^(ln(tb|bc))[0-9][a-z0-9]{180,7089}$/.test(value)
+
+  /**
+   * @param {string} data
+   */
+  sanitizeQR = data => data.replace(/((lightning:)|(http(s)?:\/\/))/gi, '')
+
+  onQRRead = async (data = '') => {
+    this.resetSearchState()
+    const { decodePaymentRequest, selectContact } = this.props
+    const sanitizedQR = this.sanitizeQR(data)
+    console.log('QR Value:', sanitizedQR)
+    console.log('Lightning Invoice?', this.isLightningInvoice(sanitizedQR))
+    console.log('BTC Address?', this.isBTCAddress(sanitizedQR))
+    if (this.isLightningInvoice(sanitizedQR)) {
+      const data = await decodePaymentRequest(sanitizedQR)
+      if (data && data.type === 'error') {
+        this.onChange('error')(data.error.message)
+      }
+    }
+
+    if (this.isBTCAddress(sanitizedQR)) {
+      selectContact({ address: sanitizedQR, type: 'btc' })
+    }
+
+    this.onChange('error')('Invalid QR Code')
+
+    this.toggleQRScreen()
+  }
+
   render() {
     const {
       description,
@@ -265,9 +317,26 @@ class SendScreen extends Component {
       sending,
       error,
       paymentSuccessful,
+      scanningQR,
     } = this.state
     const { navigation, invoice } = this.props
     const { width, height } = Dimensions.get('window')
+    const editable =
+      !!(invoice.paymentRequest && Big(invoice.amount).eq(0)) ||
+      !invoice.paymentRequest
+
+    if (scanningQR) {
+      return (
+        <View style={CSS.styles.flex}>
+          <QRScanner
+            onQRSuccess={this.onQRRead}
+            toggleQRScreen={this.toggleQRScreen}
+            type="send"
+          />
+        </View>
+      )
+    }
+
     return (
       <ImageBackground
         source={wavesBG}
@@ -291,10 +360,13 @@ class SendScreen extends Component {
                   <Text style={styles.errorText}>{this.getErrorMessage()}</Text>
                 </View>
               ) : null}
-              <View style={styles.scanBtn}>
+              <TouchableOpacity
+                style={styles.scanBtn}
+                onPress={this.toggleQRScreen}
+              >
                 <Text style={styles.scanBtnText}>SCAN QR</Text>
                 <Ionicons name="md-qr-scanner" color="gray" size={24} />
-              </View>
+              </TouchableOpacity>
               {this.renderContactsSearch()}
               {invoice.paymentRequest ? (
                 <InputGroup
@@ -308,10 +380,10 @@ class SendScreen extends Component {
               <View style={styles.amountContainer}>
                 <InputGroup
                   label="Enter Amount"
-                  value={invoice.paymentRequest ? invoice.amount : amount}
+                  value={!editable ? invoice.amount : amount}
                   onChange={this.onChange('amount')}
                   style={styles.amountInput}
-                  disabled={!!invoice.paymentRequest}
+                  disabled={!editable}
                   type="numeric"
                 />
                 <Dropdown
@@ -326,7 +398,7 @@ class SendScreen extends Component {
                       value: 'BTC',
                     },
                   ]}
-                  disabled={!!invoice.paymentRequest}
+                  disabled={!editable}
                   onChangeText={this.onChange('unitSelected')}
                   containerStyle={styles.amountSelect}
                   value={invoice.paymentRequest ? 'Sats' : unitSelected}
@@ -429,6 +501,7 @@ const mapDispatchToProps = {
   selectContact,
   resetSelectedContact,
   resetInvoice,
+  decodePaymentRequest,
 }
 
 export default connect(

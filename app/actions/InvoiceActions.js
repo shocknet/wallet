@@ -14,6 +14,10 @@ export const ACTIONS = {
 }
 
 /**
+ * @typedef {({ type: 'error', error: Error }|undefined)} DecodeResponse
+ */
+
+/**
  * @typedef {object} WalletBalance
  * @prop {string} confirmedBalance
  * @prop {string} pendingChannelBalance
@@ -47,17 +51,27 @@ export const setDescription = description => dispatch => {
 /**
  * Decode payment request
  * @param {string} paymentRequest
- * @returns {import('redux-thunk').ThunkAction<void, {}, {}, import('redux').AnyAction>}
+ * @returns {import('redux-thunk').ThunkAction<Promise<DecodeResponse>, {}, {}, import('redux').AnyAction>}
  */
 export const decodePaymentRequest = paymentRequest => async dispatch => {
-  const decodedInvoice = await Wallet.decodeInvoice({ payReq: paymentRequest })
-  dispatch({
-    type: ACTIONS.DECODE_PAYMENT_REQUEST,
-    data: {
-      ...decodedInvoice.decodedRequest,
-      payment_request: paymentRequest,
-    },
-  })
+  try {
+    const decodedInvoice = await Wallet.decodeInvoice({
+      payReq: paymentRequest,
+    })
+    dispatch({
+      type: ACTIONS.DECODE_PAYMENT_REQUEST,
+      data: {
+        ...decodedInvoice.decodedRequest,
+        payment_request: paymentRequest,
+      },
+    })
+    return
+  } catch (err) {
+    return {
+      type: 'error',
+      error: err,
+    }
+  }
 }
 
 /**

@@ -1,5 +1,5 @@
 /** @format  */
-import { NavigationActions } from 'react-navigation'
+import { NavigationActions, DrawerActions } from 'react-navigation'
 /**
  * @typedef {import('react-navigation').NavigationNavigateAction} NavigationNavigateAction
  * @typedef {import('react-navigation').NavigationContainerComponent} NavigationContainerComponent
@@ -37,4 +37,16 @@ export const navigate = (routeName, params, action) => {
       action,
     }),
   )
+}
+
+/**
+ * @returns {void}
+ */
+export const toggleDrawer = () => {
+  if (navRef === null) {
+    throw new Error(
+      'called navigate() at navigation service without providing a navigation container component reference first',
+    )
+  }
+  navRef.dispatch(DrawerActions.toggleDrawer())
 }

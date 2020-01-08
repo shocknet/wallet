@@ -26,9 +26,14 @@ import * as CSS from '../../res/css'
  */
 
 /**
+ * @typedef {({ type: 'error', error: Error }|undefined)} DecodeResponse
+ */
+
+/**
  * @typedef {object} Props
  * @prop {string} value
  * @prop {(text: string) => void} onChange
+ * @prop {((error: string|undefined) => void)=} onError
  * @prop {(object)=} style
  * @prop {(object)=} inputStyle
  * @prop {(string)=} icon
@@ -37,7 +42,7 @@ import * as CSS from '../../res/css'
  * @prop {(EnabledFeatures[])=} enabledFeatures
  * @prop {(string)=} placeholder
  * @prop {(contact: ContactTypes) => void} selectContact
- * @prop {(paymentRequest: string) => void} decodePaymentRequest
+ * @prop {(paymentRequest: string) => DecodeResponse} decodePaymentRequest
  * @prop {{ contacts: import('../../actions/ChatActions').Contact[] }} chat
  */
 
@@ -78,9 +83,22 @@ class ContactsSearch extends PureComponent {
     return index.toString()
   }
 
-  decodeInvoice = () => {
-    const { decodePaymentRequest, value } = this.props
-    decodePaymentRequest(value)
+  decodeInvoice = async () => {
+    const { decodePaymentRequest, value, onError } = this.props
+    try {
+      const data = await decodePaymentRequest(value)
+      console.log(data)
+      if (data && data.type === 'error') {
+        if (onError) {
+          onError(data.error.message)
+        }
+      }
+    } catch (err) {
+      console.error(err)
+      if (onError) {
+        onError(err)
+      }
+    }
   }
 
   /** @type {import('react-native').ListRenderItem<any>} */

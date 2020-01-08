@@ -91,12 +91,13 @@ const MainDrawer = createDrawerNavigator(
     [ADVANCED_SCREEN]: {
       screen: Advanced,
       navigationOptions: {
-        title: 'Advanced settings',
+        title: 'Advanced Lightning',
       },
     },
   },
   {
     initialRouteName: WALLET_NAV,
+    drawerPosition: 'right',
   },
 )
 
