@@ -293,18 +293,17 @@ class SendScreen extends Component {
     console.log('QR Value:', sanitizedQR)
     console.log('Lightning Invoice?', this.isLightningInvoice(sanitizedQR))
     console.log('BTC Address?', this.isBTCAddress(sanitizedQR))
+    this.onChange('error')('')
     if (this.isLightningInvoice(sanitizedQR)) {
       const data = await decodePaymentRequest(sanitizedQR)
       if (data && data.type === 'error') {
         this.onChange('error')(data.error.message)
       }
-    }
-
-    if (this.isBTCAddress(sanitizedQR)) {
+    } else if (this.isBTCAddress(sanitizedQR)) {
       selectContact({ address: sanitizedQR, type: 'btc' })
+    } else {
+      this.onChange('error')('Invalid QR Code')
     }
-
-    this.onChange('error')('Invalid QR Code')
 
     this.toggleQRScreen()
   }
@@ -322,8 +321,11 @@ class SendScreen extends Component {
     const { navigation, invoice } = this.props
     const { width, height } = Dimensions.get('window')
     const editable =
-      !!(invoice.paymentRequest && Big(invoice.amount).eq(0)) ||
-      !invoice.paymentRequest
+      !!(
+        invoice.paymentRequest &&
+        invoice.amount &&
+        Big(invoice.amount).eq(0)
+      ) || !invoice.paymentRequest
 
     if (scanningQR) {
       return (
