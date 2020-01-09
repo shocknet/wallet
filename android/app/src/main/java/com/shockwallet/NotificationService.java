@@ -58,7 +58,7 @@ public class NotificationService extends Service {
             try{
                 JSONObject res = new JSONObject(args[0].toString());
             
-                doNotification("New Transaction",res.getString("msg"));
+                doNotification("New Transaction",res.getString("msg"),R.drawable.bolt);
             }catch (Exception e){
                 Log.d(TAG,e.toString());
             }
@@ -71,7 +71,7 @@ public class NotificationService extends Service {
             try{
                 JSONObject res = new JSONObject(args[0].toString());
                 
-                doNotification("New Invoice",res.getString("msg"));
+                doNotification("New Invoice",res.getString("msg"),R.drawable.bolt);
             }catch (Exception e){
                 Log.d(TAG,e.toString());
             }
@@ -110,7 +110,7 @@ public class NotificationService extends Service {
                     }
                 }
                 if(!isMe){
-                    doNotification(latestSender,latestBody);
+                    doNotification(latestSender,latestBody,R.drawable.user);
                 }
             }catch (Exception e){
                 Log.d(TAG,e.toString());
@@ -142,7 +142,7 @@ public class NotificationService extends Service {
             }
         }
     };
-    private void doNotification(String title,String result){
+    private void doNotification(String title,String result,int bigIcon){
         int importance = NotificationManager.IMPORTANCE_DEFAULT;
         NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "Shock_notify", importance);
         channel.setDescription("CHANEL DESCRIPTION");
@@ -154,7 +154,7 @@ public class NotificationService extends Service {
         NotificationCompat.Builder notification = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.bolt)
                 .setLargeIcon(BitmapFactory.decodeResource(this.getResources(),
-                        R.drawable.bolt))
+                        bigIcon))
                 .setContentTitle(title)
                 .setContentText(result)
                 //.setSmallIcon(R.drawable.bolt)
@@ -216,7 +216,7 @@ public class NotificationService extends Service {
                 .setSmallIcon(R.drawable.bolt)
                 .setLargeIcon(BitmapFactory.decodeResource(this.getResources(),
                         R.drawable.bolt))
-                .setContentTitle("Shocknet is listening for updates")
+                .setContentTitle("ShockWallet is listening for updates")
                 .setContentText("Running...")
                 //.setSmallIcon(R.drawable.bolt)
                 .setContentIntent(contentIntent)
