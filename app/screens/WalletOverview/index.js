@@ -13,6 +13,7 @@ import {
   TouchableHighlight,
   View,
   Linking,
+  StatusBar,
   TouchableOpacity,
 } from 'react-native'
 import EntypoIcons from 'react-native-vector-icons/Entypo'
@@ -63,8 +64,13 @@ import * as Cache from '../../services/cache'
  */
 
 /**
- * @typedef {ConnectedRedux & object} Props
+ * @typedef {object} Props
  * @prop {Navigation} navigation
+ * @prop {{ USDRate:number , totalBalance: string|null }} wallet
+ * @prop {{ recentTransactions: (Wallet.Invoice|Wallet.Payment|Wallet.Transaction)[] }} history
+ * @prop {() => Promise<void>} fetchRecentTransactions
+ * @prop {() => Promise<import('../../actions/WalletActions').WalletBalance>} getWalletBalance
+ * @prop {() => Promise<number>} getUSDRate
  */
 
 /**
@@ -626,7 +632,7 @@ class WalletOverview extends Component {
   }
 
   onPressSend = () => {
-    const { totalBalance } = this.props
+    const { totalBalance } = this.props.wallet
 
     if (totalBalance === null) {
       return
@@ -1078,7 +1084,13 @@ class WalletOverview extends Component {
     middle(event.url)
   }
 
+  didFocus = { remove() {} }
+
   componentDidMount() {
+    this.didFocus = this.props.navigation.addListener('didFocus', () => {
+      StatusBar.setBackgroundColor(CSS.Colors.BLUE_DARK)
+      StatusBar.setBarStyle('light-content')
+    })
     Linking.addEventListener('url', this._handleOpenURL)
     Linking.getInitialURL()
       .then(url => {
@@ -1100,6 +1112,7 @@ class WalletOverview extends Component {
   }
 
   componentWillUnmount() {
+    this.didFocus.remove()
     Linking.removeEventListener('url', this._handleOpenURL)
 
     if (this.balanceIntervalID) {
@@ -1332,16 +1345,6 @@ class WalletOverview extends Component {
             </TouchableHighlight>
           </View>
         </View>
-        {/*----------------------------------------------------------------------------------------------*/}
-        <View>
-          <TouchableOpacity onPress={this.startNotificationService}>
-            <Text>Start</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={this.stopNotificationService}>
-            <Text>Stop</Text>
-          </TouchableOpacity>
-        </View>
-        {/*----------------------------------------------------------------------------------------------*/}
         <View style={styles.trxContainer}>
           <UnifiedTrx unifiedTrx={recentTransactions} />
         </View>
@@ -1656,7 +1659,7 @@ class WalletOverview extends Component {
 }
 
 /**
- * @param {typeof import('../../../reducers/index').default} state
+ * @param {{ wallet: any , history: any}} state
  */
 const mapStateToProps = ({ wallet, history }) => ({ wallet, history })
 
