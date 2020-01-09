@@ -14,7 +14,6 @@ import {
   View,
   Linking,
   StatusBar,
-  TouchableOpacity,
 } from 'react-native'
 import EntypoIcons from 'react-native-vector-icons/Entypo'
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'
