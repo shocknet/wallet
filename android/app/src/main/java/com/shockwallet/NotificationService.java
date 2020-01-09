@@ -38,7 +38,7 @@ import android.os.Bundle;
 
 import org.json.JSONObject;
 import org.json.JSONArray;
-
+import android.graphics.BitmapFactory;
 public class NotificationService extends Service {
 
     private static int SERVICE_NOTIFICATION_ID = 12345;
@@ -88,11 +88,30 @@ public class NotificationService extends Service {
             try{
                 JSONObject res = new JSONObject(args[0].toString());
                 JSONArray data = res.getJSONArray("msg");
+                String latestSender = "New Message:";
+                String latestBody = "You received a private message.";
+                Boolean isMe=false;
+                long latestTimestamp = 0;
                 for(int i =0 ; i<data.length();i++){
                     JSONObject messages = data.optJSONObject(i);
                     JSONArray mexArr = messages.getJSONArray("messages");
+                    for(int j=0; j<mexArr.length();j++){
+                        JSONObject message = mexArr.optJSONObject(j);
+                        long timestamp = message.getLong("timestamp");
+                        Log.d(TAG,timestamp + "  |  "+latestTimestamp);
+                        if(timestamp > latestTimestamp){
+                            latestSender = messages.getString("recipientDisplayName");
+                            latestBody = message.getString("body");
+                            isMe = message.getBoolean("outgoing");
+                            Log.d(TAG,latestSender+"  |  "+latestBody+"  |  "+isMe);
+                            
+                            latestTimestamp = timestamp;
+                        }
+                    }
                 }
-                doNotification("New Message","You got a GUN message");
+                if(!isMe){
+                    doNotification(latestSender,latestBody);
+                }
             }catch (Exception e){
                 Log.d(TAG,e.toString());
             }
@@ -133,9 +152,12 @@ public class NotificationService extends Service {
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
         NotificationCompat.Builder notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.bolt)
+                .setLargeIcon(BitmapFactory.decodeResource(this.getResources(),
+                        R.drawable.bolt))
                 .setContentTitle(title)
                 .setContentText(result)
-                .setSmallIcon(R.mipmap.ic_launcher)
+                //.setSmallIcon(R.drawable.bolt)
                 .setContentIntent(contentIntent)
                 .setGroup(GROUP_KEY_NOTIF);
         
@@ -191,9 +213,12 @@ public class NotificationService extends Service {
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
         NotificationCompat.Builder notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.bolt)
+                .setLargeIcon(BitmapFactory.decodeResource(this.getResources(),
+                        R.drawable.bolt))
                 .setContentTitle("Shocknet is listening for updates")
                 .setContentText("Running...")
-                .setSmallIcon(R.mipmap.ic_launcher)
+                //.setSmallIcon(R.drawable.bolt)
                 .setContentIntent(contentIntent)
                 .setOngoing(true)
                 .setGroup(GROUP_KEY_NOTIF)
