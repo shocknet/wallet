@@ -2,7 +2,7 @@
  * @prettier
  */
 import React from 'react'
-import { StyleSheet, View, ActivityIndicator } from 'react-native'
+import { StyleSheet, View, ActivityIndicator, StatusBar } from 'react-native'
 import { Icon, Text } from 'react-native-elements'
 import { GiftedChat, Send } from 'react-native-gifted-chat'
 /**
@@ -12,6 +12,7 @@ import { GiftedChat, Send } from 'react-native-gifted-chat'
 
 import ChatInvoice from './ChatInvoice'
 import ChatMessage from './ChatMessage'
+import * as CSS from '../../res/css'
 import BasicDialog from '../../components/BasicDialog'
 import ShockInput from '../../components/ShockInput'
 import Pad from '../../components/Pad'
@@ -34,9 +35,16 @@ const byTimestampFromOldestToNewest = (a, b) => a.timestamp - b.timestamp
 const byTimestampFromNewestToOldest = (a, b) => b.timestamp - a.timestamp
 
 const Loading = () => (
-  <View style={styles.loading}>
-    <ActivityIndicator />
-  </View>
+  <>
+    <StatusBar
+      backgroundColor={CSS.Colors.BLUE_DARK}
+      barStyle="light-content"
+    />
+
+    <View style={styles.loading}>
+      <ActivityIndicator />
+    </View>
+  </>
 )
 
 /**
@@ -278,6 +286,11 @@ export default class ChatView extends React.PureComponent {
 
     return (
       <React.Fragment>
+        <StatusBar
+          backgroundColor={CSS.Colors.BLUE_DARK}
+          barStyle="light-content"
+        />
+
         <GiftedChat
           isLoadingEarlier={thereAreMoreMessages}
           loadEarlier={thereAreMoreMessages}

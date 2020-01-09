@@ -4,6 +4,7 @@
 
 import { AsyncStorage } from 'react-native'
 import Http from 'axios'
+import fromPairs from 'lodash/fromPairs'
 
 import { AUTH } from '../navigators/Root'
 
@@ -234,6 +235,106 @@ export const getNodeURLTokenPair = async () => ({
   nodeURL: /** @type {string} */ (await getNodeURL()),
   token: await getToken(),
 })
+
+/**
+ * @typedef {Record<string, number|undefined>} LastReadMsgs
+ */
+
+const CHAT_TIMESTAMP = 'CHAT_TIMESTAMP:'
+
+/**
+ * @type {((lastReadMsgs: LastReadMsgs) => void)[]}
+ */
+const lastReadMsgsListeners = []
+
+/**
+ * @returns {Promise<LastReadMsgs>}
+ */
+export const getAllLastReadMsgs = async () => {
+  const keys = (await AsyncStorage.getAllKeys()).filter(
+    k => k.indexOf(CHAT_TIMESTAMP) === 0,
+  )
+
+  const pairs = await AsyncStorage.multiGet(keys)
+
+  const formattedPairs = pairs.map(
+    ([k, v]) => /** @type {[ string , number]} */ ([
+      k.slice(CHAT_TIMESTAMP.length),
+      Number(v),
+    ]),
+  )
+
+  return fromPairs(formattedPairs)
+}
+
+const notifyLastReadListeners = async () => {
+  const lastReads = await getAllLastReadMsgs()
+
+  lastReadMsgsListeners.forEach(l => {
+    l(lastReads)
+  })
+}
+
+/**
+ * @param {(lastReadMsgs: LastReadMsgs) => void} listener
+ */
+export const onLastReadMsgs = listener => {
+  if (lastReadMsgsListeners.indexOf(listener) > -1) {
+    throw new Error('tried to subscribe twice')
+  }
+
+  lastReadMsgsListeners.push(listener)
+
+  setImmediate(() => {
+    // check listener is still subbed in case unsub is called before next tick
+    if (!lastReadMsgsListeners.includes(listener)) {
+      return
+    }
+
+    getAllLastReadMsgs().then(data => {
+      listener(data)
+    })
+  })
+
+  return () => {
+    const idx = lastReadMsgsListeners.indexOf(listener)
+
+    if (idx < 0) {
+      throw new Error('tried to unsubscribe twice')
+    }
+
+    lastReadMsgsListeners.splice(idx, 1)
+  }
+}
+
+/**
+ * Keep track of the timestamp of the last read message for a given chat.
+ * @param {string} recipientPub
+ * @param {number} timestamp
+ */
+export const writeLastReadMsg = (recipientPub, timestamp) => {
+  return AsyncStorage.setItem(
+    CHAT_TIMESTAMP + recipientPub,
+    timestamp.toString(),
+  ).then(() => {
+    notifyLastReadListeners()
+  })
+}
+
+/**
+ * Keep track of the timestamp of the last read message for a given chat.
+ * @param {string} recipientPub
+ * @returns {Promise<number|null>}
+ */
+export const getLastReadMsg = recipientPub => {
+  return AsyncStorage.getItem(CHAT_TIMESTAMP + recipientPub).then(v => {
+    if (v === null) {
+      return null
+    }
+
+    return Number(v)
+  })
+}
 
 /**
  * @returns {Promise<void>}

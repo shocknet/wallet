@@ -12,7 +12,7 @@ import { Colors } from '../res/css'
  * @prop {string=} alternateText
  * @prop {boolean=} alternateTextBold
  * @prop {string} lowerText
- * @prop {import('react-native').ViewStyle=} lowerTextStyle
+ * @prop {import('react-native').TextInputProps['style']=} lowerTextStyle
  * @prop {string|null} image
  * @prop {string} id
  * @prop {string} name

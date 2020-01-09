@@ -3,9 +3,8 @@
  */
 import React from 'react'
 import { Text, View } from 'react-native'
-
 /**
- * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation
+ * @typedef {import('react-navigation').NavigationScreenProp<{}, Params>} Navigation
  */
 
 import * as CSS from '../res/css'
@@ -31,6 +30,11 @@ const shockBG = require('../assets/images/shock-bg.png')
 const shockLogo = require('../assets/images/shocklogo.png')
 
 export const CONNECT_TO_NODE = 'CONNECT_TO_NODE'
+
+/**
+ * @typedef {object} Params
+ * @prop {string|null} err
+ */
 
 /**
  * @typedef {object} Props
@@ -87,8 +91,9 @@ export default class ConnectToNode extends React.PureComponent {
   checkCacheForNodeURL = () => {
     this.setState(DEFAULT_STATE, async () => {
       const nodeURL = await Cache.getNodeURL()
+      const err = this.props.navigation.getParam('err')
 
-      if (nodeURL !== null) {
+      if (nodeURL !== null && !err) {
         this.props.navigation.navigate(WALLET_MANAGER)
       } else {
         this.setState({
@@ -143,6 +148,9 @@ export default class ConnectToNode extends React.PureComponent {
   }
 
   onPressTryAgain = () => {
+    this.props.navigation.setParams({
+      err: null,
+    })
     this.setState({
       wasBadPing: false,
     })
@@ -188,6 +196,8 @@ export default class ConnectToNode extends React.PureComponent {
       scanningQR,
     } = this.state
 
+    const err = this.props.navigation.getParam('err')
+
     if (scanningQR) {
       return (
         <View style={CSS.styles.flex}>
@@ -208,7 +218,7 @@ export default class ConnectToNode extends React.PureComponent {
         <OnboardingInput
           autoCapitalize="none"
           autoCorrect={false}
-          disable={pinging || wasBadPing}
+          disable={pinging || wasBadPing || !!err}
           keyboardType="numeric"
           onChangeText={this.onChangeNodeURL}
           onPressQRBtn={this.toggleQRScreen}
@@ -219,13 +229,19 @@ export default class ConnectToNode extends React.PureComponent {
 
         <Pad amount={ITEM_SPACING} />
 
-        <OnboardingBtn
-          disabled={!isValidIP(nodeURL) || pinging}
-          onPress={wasBadPing ? this.onPressTryAgain : this.onPressConnect}
-          title={wasBadPing ? 'Continue' : 'Connect'}
-        />
+        {!(wasBadPing || !!err) && (
+          <>
+            <OnboardingBtn
+              disabled={!isValidIP(nodeURL) || pinging}
+              onPress={
+                wasBadPing || err ? this.onPressTryAgain : this.onPressConnect
+              }
+              title={wasBadPing || err ? 'Continue' : 'Connect'}
+            />
 
-        <Pad amount={ITEM_SPACING} />
+            <Pad amount={ITEM_SPACING} />
+          </>
+        )}
 
         {wasBadPing && (
           <Text style={titleTextStyle}>
@@ -233,9 +249,11 @@ export default class ConnectToNode extends React.PureComponent {
           </Text>
         )}
 
+        {err && <Text style={titleTextStyle}>{err}</Text>}
+
         <Pad amount={ITEM_SPACING} />
 
-        {wasBadPing && (
+        {(wasBadPing || !!err) && (
           <Text onPress={this.onPressTryAgain} style={linkTextStyle}>
             Try Again
           </Text>
