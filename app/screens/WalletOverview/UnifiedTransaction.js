@@ -12,6 +12,8 @@ import * as CSS from '../../res/css'
 import btcConvert from '../../services/convertBitcoin'
 import Pad from '../../components/Pad'
 
+const OUTBOUND_INDICATOR_RADIUS = 20
+
 /**
  * @typedef {Wallet.Invoice|Wallet.Payment|Wallet.Transaction} IUnifiedTransaction
  */
@@ -102,19 +104,21 @@ export default class UnifiedTransaction extends React.PureComponent {
     return (
       <TouchableOpacity style={styles.item} onPress={this.onPress}>
         <View style={styles.avatar}>
-          {outbound ? (
-            <Ionicons
-              name="ios-arrow-up"
-              size={25}
-              color={CSS.Colors.TEXT_WHITE}
-            />
-          ) : (
-            <Ionicons
-              name="ios-arrow-down"
-              size={25}
-              color={CSS.Colors.TEXT_WHITE}
-            />
-          )}
+          <View style={styles.outboundIndicator}>
+            {outbound ? (
+              <Ionicons
+                name="md-arrow-round-up"
+                size={15}
+                color={CSS.Colors.ICON_RED}
+              />
+            ) : (
+              <Ionicons
+                name="md-arrow-round-down"
+                size={15}
+                color={CSS.Colors.ICON_GREEN}
+              />
+            )}
+          </View>
         </View>
         <Pad amount={10} insideRow />
         <View style={styles.memo}>
@@ -129,7 +133,9 @@ export default class UnifiedTransaction extends React.PureComponent {
         </View>
         <View style={styles.valuesContainer}>
           <Text style={styles.timestamp}>{formattedTimestamp + ' ago'}</Text>
-          <Text style={styles.value}>+{BTCBalance.toLocaleString()}</Text>
+          <Text style={styles.value}>
+            +{BTCBalance.toString().replace(/(\d)(?=(\d{3})+$)/g, '$1,')}
+          </Text>
           <Text style={styles.USDValue}>{convertedBalance} USD</Text>
         </View>
       </TouchableOpacity>
@@ -147,10 +153,24 @@ const styles = StyleSheet.create({
   avatar: {
     width: 45,
     height: 45,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: 'flex-end',
+    justifyContent: 'flex-end',
     backgroundColor: CSS.Colors.FUN_BLUE,
     borderRadius: 100,
+  },
+
+  outboundIndicator: {
+    width: OUTBOUND_INDICATOR_RADIUS,
+    height: OUTBOUND_INDICATOR_RADIUS,
+    elevation: 5,
+    transform: [
+      { translateX: OUTBOUND_INDICATOR_RADIUS / 4 },
+      { translateY: OUTBOUND_INDICATOR_RADIUS / 4 },
+    ],
+    borderRadius: 100,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: CSS.Colors.BACKGROUND_WHITE,
   },
 
   memo: {

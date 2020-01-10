@@ -1192,13 +1192,17 @@ class WalletOverview extends Component {
             !isConnected && styles.yellowText,
           ]}
         >
-          <Text style={styles.balanceValue}>{totalBalance}</Text>{' '}
+          <Text style={styles.balanceValue}>
+            {totalBalance.replace(/(\d)(?=(\d{3})+$)/g, '$1,')}
+          </Text>{' '}
           <Text style={styles.balanceCurrency}>Sats</Text>
         </Text>
         <Text
           style={[styles.balanceUSDValue, !isConnected && styles.yellowText]}
         >
-          {USDRate === null ? 'Loading...' : `${convertedBalance} USD`}
+          {USDRate === null
+            ? 'Loading...'
+            : `${convertedBalance.replace(/\d(?=(\d{3})+\.)/g, '$&,')} USD`}
         </Text>
       </View>
     )

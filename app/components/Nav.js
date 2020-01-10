@@ -13,13 +13,20 @@ import { Colors } from '../res/css'
  * @prop {(string)=} title
  * @prop {(object)=} style
  * @prop {(boolean)=} backButton
+ * @prop {(boolean)=} showAvatar
  * @prop {(Navigation)=} navigation
  */
 
 /**
  * @argument {Props} props
  */
-const Nav = ({ title = '', style = {}, backButton = false, navigation }) => {
+const Nav = ({
+  title = '',
+  style = {},
+  backButton = false,
+  showAvatar = true,
+  navigation,
+}) => {
   const goBack = () => {
     if (navigation) {
       return navigation.goBack()
@@ -40,7 +47,12 @@ const Nav = ({ title = '', style = {}, backButton = false, navigation }) => {
           onPress={goBack}
         />
       ) : (
-        <View style={navStyles.avatarContainer} />
+        <View
+          style={[
+            navStyles.avatarContainer,
+            !showAvatar ? navStyles.hidden : null,
+          ]}
+        />
       )}
       <Text style={navStyles.navTitle}>
         {title ? title.toUpperCase() : 'WALLET'}
@@ -86,6 +98,9 @@ const navStyles = StyleSheet.create({
     height: 40,
     textAlign: 'center',
     textAlignVertical: 'center',
+  },
+  hidden: {
+    opacity: 0,
   },
   // An invisible component to center the Nav's text in a responsive way
   balanceComponent: {

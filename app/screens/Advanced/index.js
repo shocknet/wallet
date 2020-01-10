@@ -91,10 +91,10 @@ class AdvancedScreen extends Component {
   /** @type {State} */
   state = {
     accordions: {
-      transactions: true,
+      transactions: false,
       peers: false,
       invoices: false,
-      channels: false,
+      channels: true,
     },
     addPeerOpen: false,
     addChannelOpen: false,
@@ -449,7 +449,7 @@ class AdvancedScreen extends Component {
           resizeMode="cover"
           style={styles.statsHeader}
         >
-          <Nav title="Advanced" style={styles.nav} />
+          <Nav title="Advanced" style={styles.nav} showAvatar={false} />
           <View style={styles.statsContainer}>
             <View style={xStyles.channelBalanceContainer}>
               <View style={styles.statIcon}>
@@ -513,6 +513,27 @@ class AdvancedScreen extends Component {
         </ImageBackground>
         <View style={styles.accordionsContainer}>
           <AccordionItem
+            data={history.channels}
+            Item={Channel}
+            keyExtractor={channelKeyExtractor}
+            title="Channels"
+            open={accordions.channels}
+            menuOptions={[
+              {
+                name: 'Add Channel',
+                icon: 'link',
+                action: () => {
+                  this.setState({
+                    addChannelOpen: true,
+                  })
+                },
+              },
+            ]}
+            toggleAccordion={this.toggleAccordion('channels')}
+            onPressItem={this.onPressChannel}
+            hideBottomBorder
+          />
+          <AccordionItem
             fetchNextPage={this.fetchNextPage('transactions')}
             data={history.transactions}
             Item={Transaction}
@@ -561,27 +582,6 @@ class AdvancedScreen extends Component {
             toggleAccordion={() => this.toggleAccordion('invoices')}
             keyExtractor={inv => inv.r_hash.data.join('-')}
           /> */}
-          <AccordionItem
-            data={history.channels}
-            Item={Channel}
-            keyExtractor={channelKeyExtractor}
-            title="Channels"
-            open={accordions.channels}
-            menuOptions={[
-              {
-                name: 'Add Channel',
-                icon: 'link',
-                action: () => {
-                  this.setState({
-                    addChannelOpen: true,
-                  })
-                },
-              },
-            ]}
-            toggleAccordion={this.toggleAccordion('channels')}
-            onPressItem={this.onPressChannel}
-            hideBottomBorder
-          />
         </View>
         <BasicDialog
           onRequestClose={this.closeAddPeerDialog}

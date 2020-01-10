@@ -369,7 +369,7 @@ export default class ChatsView extends React.PureComponent {
         bt = b.timestamp
       }
 
-      return at - bt
+      return bt - at
     })
 
     return (
