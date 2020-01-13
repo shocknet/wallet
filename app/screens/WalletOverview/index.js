@@ -52,6 +52,9 @@ import bech32 from 'bech32'
 import { Buffer } from 'safe-buffer'
 import LNURL from './LNURL'
 
+import notificationService from '../../../notificationService'
+import * as Cache from '../../services/cache'
+
 /**
  * @typedef {object} Params
  * @prop {string=} rawInvoice
@@ -1160,6 +1163,8 @@ class WalletOverview extends Component {
       })
       .catch(err => console.error('An error occurred', err))
 
+    this.startNotificationService()
+
     this.balanceIntervalID = setInterval(this.fetchBalance, 4000)
     this.exchangeRateIntervalID = setInterval(this.fetchExchangeRate, 4000)
     this.recentTransactionsIntervalID = setInterval(
@@ -1207,6 +1212,22 @@ class WalletOverview extends Component {
     this.setState({
       displayingReceiveDialog: true,
     })
+  }
+
+  startNotificationService = async () => {
+    const authData = await Cache.getStoredAuthData()
+    const nodeInfo = await Cache.getNodeURL()
+    if (!authData || !nodeInfo) {
+      console.log('error starting service, invalid info')
+    }
+    notificationService.startService(
+      nodeInfo,
+      authData ? authData.authData.token : 'token err',
+    )
+  }
+
+  stopNotificationService = () => {
+    notificationService.stopService()
   }
 
   renderBalance = () => {
@@ -1388,7 +1409,6 @@ class WalletOverview extends Component {
             </TouchableHighlight>
           </View>
         </View>
-
         <View style={styles.trxContainer}>
           <UnifiedTrx unifiedTrx={recentTransactions} />
         </View>
