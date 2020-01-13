@@ -63,8 +63,7 @@
     "redux-thunk": "^2.3.0",
     "scheduler": "0.16.1",
     "socket.io-client": "2.1.1",
-    "tslib": "^1.9.3",
-    "uuid": "^3.3.2"
+    "tslib": "^1.9.3"
   },
   "devDependencies": {
     "@babel/core": "^7.7.4",
@@ -80,7 +79,6 @@
     "@types/react-navigation": "^2.13.10",
     "@types/react-redux": "^6.0.1",
     "@types/socket.io-client": "^1.4.32",
-    "@types/uuid": "^3.4.5",
     "babel-eslint": "^10.0.3",
     "babel-jest": "23.0.1",
     "babel-preset-react-native": "4.0.0",
