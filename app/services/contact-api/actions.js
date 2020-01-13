@@ -222,7 +222,7 @@ export const sendPayment = async (recipientPub, amount, memo) => {
     socket.on(
       Action.SEND_PAYMENT,
       once(res => {
-        if (res.origBody.uuid) {
+        if (res.origBody.uuid === uuid) {
           resolve(res)
         }
       }),
