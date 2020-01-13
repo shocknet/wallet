@@ -85,7 +85,7 @@ const SendRenderer = props => (
  *
  * @prop {boolean} sendingInvoice True when showing the send invoice dialog.
  * @prop {(amount: number, memo: string) => void} onPressSendInvoice
- * @prop {() => void} sendDialogOnRequestClose
+ * @prop {() => void} sendInvoiceDialogOnRequestClose
  */
 
 /**
@@ -234,7 +234,7 @@ export default class ChatView extends React.PureComponent {
 
       sendingInvoice,
 
-      sendDialogOnRequestClose,
+      sendInvoiceDialogOnRequestClose,
     } = this.props
 
     const { sendInvoiceAmount, sendInvoiceMemo } = this.state
@@ -304,7 +304,7 @@ export default class ChatView extends React.PureComponent {
 
         <BasicDialog
           title="Create a Lightning Invoice"
-          onRequestClose={sendDialogOnRequestClose}
+          onRequestClose={sendInvoiceDialogOnRequestClose}
           visible={sendingInvoice}
         >
           <ShockInput

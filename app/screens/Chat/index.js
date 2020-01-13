@@ -565,7 +565,7 @@ export default class Chat extends React.PureComponent {
         recipientDisplayName={recipientDisplayName}
         recipientPublicKey={recipientPublicKey}
         sendingInvoice={sendingInvoice}
-        sendDialogOnRequestClose={this.toggleSendInvoiceDialog}
+        sendInvoiceDialogOnRequestClose={this.toggleSendInvoiceDialog}
       />
     )
   }
