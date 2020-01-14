@@ -151,7 +151,9 @@ android {
 
 dependencies {
     //compile 'com.squareup.okhttp3:okhttp:3.6.0'
-    implementation 'com.github.nkzawa:socket.io-client:0.6.0'
+    implementation ('com.github.nkzawa:socket.io-client:0.6.0',{
+         exclude group:'org.json', module:'json'
+    })
     
     compile project(':react-native-sensitive-info')
     compile project(':@react-native-community_netinfo')
