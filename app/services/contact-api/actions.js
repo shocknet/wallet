@@ -232,6 +232,6 @@ export const sendPayment = async (recipientPub, amount, memo) => {
   console.warn(`res in sendPayment: ${JSON.stringify(res)}`)
 
   if (!res.ok) {
-    throw new Error(res.msg)
+    throw new Error(res.msg || 'Unknown Error')
   }
 }
