@@ -62,8 +62,7 @@
     "redux-persist-sensitive-storage": "^1.0.0",
     "redux-thunk": "^2.3.0",
     "scheduler": "0.16.1",
-    "socket.io-client": "2.1.1",
-    "tslib": "^1.9.3"
+    "socket.io-client": "2.1.1"
   },
   "devDependencies": {
     "@babel/core": "^7.7.4",
