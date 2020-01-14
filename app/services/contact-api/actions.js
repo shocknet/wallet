@@ -193,3 +193,45 @@ export const sendReqWithInitialMsg = async (recipientPublicKey, initialMsg) => {
     throw new Error(res.msg)
   }
 }
+
+/**
+ * @param {string} recipientPub
+ * @param {number} amount
+ * @param {string} memo
+ * @throws {Error} Forwards an error if any from the API.
+ * @returns {Promise<void>}
+ */
+export const sendPayment = async (recipientPub, amount, memo) => {
+  if (!socket.connected) {
+    throw new Error('NOT_CONNECTED')
+  }
+
+  const token = await getToken()
+
+  const uuid = Date.now().toString()
+
+  socket.emit(Action.SEND_PAYMENT, {
+    token,
+    recipientPub,
+    amount,
+    memo,
+    uuid,
+  })
+
+  const res = await new Promise(resolve => {
+    socket.on(
+      Action.SEND_PAYMENT,
+      once(res => {
+        if (res.origBody.uuid === uuid) {
+          resolve(res)
+        }
+      }),
+    )
+  })
+
+  console.warn(`res in sendPayment: ${JSON.stringify(res)}`)
+
+  if (!res.ok) {
+    throw new Error(res.msg || 'Unknown Error')
+  }
+}
