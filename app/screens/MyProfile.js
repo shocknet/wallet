@@ -1,6 +1,4 @@
-/** @format */
 import React from 'react'
-
 import {
   Clipboard,
   Text,
@@ -11,6 +9,8 @@ import {
   View,
   StatusBar,
 } from 'react-native'
+import ImagePicker from 'react-native-image-crop-picker'
+
 import EntypoIcons from 'react-native-vector-icons/Entypo'
 import { AirbnbRating } from 'react-native-ratings'
 /**
@@ -37,6 +37,7 @@ const showCopiedToClipboardToast = () => {
 /**
  * @typedef {object} State
  * @prop {Cache.AuthData|null} authData
+ * @prop {string|null} avatar
  * @prop {string|null} displayName
  * @prop {boolean} displayNameDialogOpen
  * @prop {string} displayNameInput
@@ -68,11 +69,14 @@ export default class MyProfile extends React.PureComponent {
   /** @type {State} */
   state = {
     authData: null,
+    avatar: null,
     displayName: null,
     displayNameDialogOpen: false,
     displayNameInput: '',
     handshakeAddr: null,
   }
+
+  onAvatarUnsub = () => {}
 
   onDisplayNameUnsub = () => {}
 
@@ -94,6 +98,9 @@ export default class MyProfile extends React.PureComponent {
       this.setState({
         handshakeAddr: addr,
       })
+    })
+    this.onAvatarUnsub = API.Events.onAvatar(avatar => {
+      this.setState({ avatar })
     })
 
     const authData = await Cache.getStoredAuthData()
@@ -152,10 +159,57 @@ export default class MyProfile extends React.PureComponent {
     showCopiedToClipboardToast()
   }
 
+  onPressAvatar = () => {
+    const AVATAR_EDGE = 640
+    ImagePicker.openPicker({
+      cropping: true,
+      width: AVATAR_EDGE,
+      height: AVATAR_EDGE,
+      multiple: false,
+      includeBase64: true,
+      cropperCircleOverlay: true,
+      useFrontCamera: true,
+      compressImageMaxWidth: AVATAR_EDGE,
+      compressImageMaxHeight: AVATAR_EDGE,
+      mediaType: 'photo',
+    })
+      .then(image => {
+        if (Array.isArray(image)) {
+          throw new TypeError(
+            'Expected image obtained from image picker to not be an array',
+          )
+        }
+
+        if (image.width > AVATAR_EDGE) {
+          throw new RangeError('Expected image width to not exceed 640')
+        }
+
+        if (image.height > AVATAR_EDGE) {
+          throw new RangeError('Expected image width to not exceed 640')
+        }
+
+        if (image.mime !== 'image/jpeg') {
+          throw new TypeError('Expected image to be jpeg')
+        }
+
+        if (image.data === null) {
+          throw new TypeError('image.data === null')
+        }
+
+        this.setState({ avatar: image.data })
+
+        API.Actions.setAvatar(image.data)
+      })
+      .catch(e => {
+        console.warn(e.message)
+      })
+  }
+
   render() {
     const {
       displayName,
       authData,
+      avatar,
       handshakeAddr,
       displayNameInput,
       displayNameDialogOpen,
@@ -170,7 +224,11 @@ export default class MyProfile extends React.PureComponent {
         <View style={styles.container}>
           <View style={styles.subContainer}>
             <TouchableOpacity>
-              <ShockAvatar height={100} image={null} />
+              <ShockAvatar
+                height={100}
+                image={avatar}
+                onPress={this.onPressAvatar}
+              />
             </TouchableOpacity>
 
             <Pad amount={4} />
