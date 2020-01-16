@@ -108,6 +108,8 @@ android {
         ndk {
             abiFilters "armeabi-v7a", "x86"
         }
+        // react-native-image-crop-picker
+        vectorDrawables.useSupportLibrary = true
     }
     signingConfigs {
         release {
@@ -150,9 +152,10 @@ android {
 }
 
 dependencies {
+    compile project(':react-native-image-crop-picker')
     //compile 'com.squareup.okhttp3:okhttp:3.6.0'
     implementation ('com.github.nkzawa:socket.io-client:0.6.0',{
-        exclude group:'org.json', module:'json'
+         exclude group:'org.json', module:'json'
     })
     
     compile project(':react-native-sensitive-info')

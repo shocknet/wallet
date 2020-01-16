@@ -2,8 +2,9 @@
  * @prettier
  */
 import React from 'react'
-import { ToastAndroid, StyleSheet } from 'react-native'
+import { ToastAndroid, StyleSheet, View } from 'react-native'
 import MaterialIcons from 'react-native-vector-icons/MaterialCommunityIcons'
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}, Params>} Navigation
  */
@@ -11,7 +12,8 @@ import MaterialIcons from 'react-native-vector-icons/MaterialCommunityIcons'
 import * as API from '../../services/contact-api'
 import * as Wallet from '../../services/wallet'
 import * as Cache from '../../services/cache'
-import { Colors } from '../../res/css'
+import * as CSS from '../../res/css'
+const { Colors } = CSS
 
 import { WALLET_OVERVIEW } from '../WalletOverview'
 /**
@@ -19,10 +21,11 @@ import { WALLET_OVERVIEW } from '../WalletOverview'
  */
 
 import ChatView from './View'
+import PaymentDialog from './PaymentDialog'
 
 export const CHAT_ROUTE = 'CHAT_ROUTE'
 
-const sendInvoiceIconStyle = StyleSheet.create({
+const headerIconStyle = StyleSheet.create({
   // eslint-disable-next-line react-native/no-unused-styles
   s: { marginRight: 16 },
 }).s
@@ -32,6 +35,7 @@ const sendInvoiceIconStyle = StyleSheet.create({
  * @prop {string} recipientPublicKey
  * @prop {string=} _title Do not pass this param.
  * @prop {(() => void)=} _onPressSendInvoice Do not pass this param.
+ * @prop {(() => void)=} _onPressSendPayment Do not pass this param.
  */
 
 /**
@@ -87,15 +91,34 @@ export default class Chat extends React.PureComponent {
       )
     }
 
+    const onPressSendPayment = navigation.getParam('_onPressSendPayment')
+
+    if (typeof onPressSendPayment !== 'function') {
+      console.warn(
+        `Chat-> _onPressSendPayment param not a function, instead got: ${typeof onPressSendPayment}`,
+      )
+    }
+
     return {
       headerRight: (
-        <MaterialIcons
-          color={Colors.TEXT_WHITE}
-          name="file-send"
-          onPress={onPressSendInvoice}
-          size={28}
-          style={sendInvoiceIconStyle}
-        />
+        <View style={CSS.styles.flexRow}>
+          <FontAwesome5
+            color={Colors.TEXT_WHITE}
+            name="money-bill-wave"
+            accessibilityHint="Send Money"
+            onPress={onPressSendPayment}
+            size={28}
+            style={headerIconStyle}
+          />
+
+          <MaterialIcons
+            color={Colors.TEXT_WHITE}
+            name="file-send"
+            onPress={onPressSendInvoice}
+            size={28}
+            style={headerIconStyle}
+          />
+        </View>
       ),
       headerStyle: {
         backgroundColor: Colors.BLUE_DARK,
@@ -117,6 +140,9 @@ export default class Chat extends React.PureComponent {
 
     sendingInvoice: false,
   }
+
+  /** @type {React.RefObject<PaymentDialog>} */
+  payDialog = React.createRef()
 
   mounted = false
 
@@ -159,6 +185,12 @@ export default class Chat extends React.PureComponent {
       })
 
     this.toggleSendInvoiceDialog()
+  }
+
+  openSendPaymentDialog = () => {
+    const { current } = this.payDialog
+
+    current && current.open()
   }
 
   decodeIncomingInvoices() {
@@ -376,6 +408,7 @@ export default class Chat extends React.PureComponent {
 
     navigation.setParams({
       _onPressSendInvoice: this.toggleSendInvoiceDialog,
+      _onPressSendPayment: this.openSendPaymentDialog,
     })
 
     const sad = await Cache.getStoredAuthData()
@@ -552,21 +585,28 @@ export default class Chat extends React.PureComponent {
     })()
 
     return (
-      <ChatView
-        msgIDToInvoiceAmount={msgIDToInvoiceAmount}
-        msgIDToInvoiceExpiryDate={msgIDToInvoiceExpiryDate}
-        msgIDToInvoicePaymentStatus={msgIDToInvoicePaymentStatus}
-        messages={messages}
-        onPressSendInvoice={this.sendInvoice}
-        onPressUnpaidIncomingInvoice={this.onPressUnpaidIncomingInvoice}
-        onSendMessage={this.onSend}
-        ownDisplayName={ownDisplayName}
-        ownPublicKey={ownPublicKey}
-        recipientDisplayName={recipientDisplayName}
-        recipientPublicKey={recipientPublicKey}
-        sendingInvoice={sendingInvoice}
-        sendDialogOnRequestClose={this.toggleSendInvoiceDialog}
-      />
+      <>
+        <ChatView
+          msgIDToInvoiceAmount={msgIDToInvoiceAmount}
+          msgIDToInvoiceExpiryDate={msgIDToInvoiceExpiryDate}
+          msgIDToInvoicePaymentStatus={msgIDToInvoicePaymentStatus}
+          messages={messages}
+          onPressSendInvoice={this.sendInvoice}
+          onPressUnpaidIncomingInvoice={this.onPressUnpaidIncomingInvoice}
+          onSendMessage={this.onSend}
+          ownDisplayName={ownDisplayName}
+          ownPublicKey={ownPublicKey}
+          recipientDisplayName={recipientDisplayName}
+          recipientPublicKey={recipientPublicKey}
+          sendingInvoice={sendingInvoice}
+          sendInvoiceDialogOnRequestClose={this.toggleSendInvoiceDialog}
+        />
+
+        <PaymentDialog
+          recipientPublicKey={recipientPublicKey}
+          ref={this.payDialog}
+        />
+      </>
     )
   }
 }
