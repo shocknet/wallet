@@ -2,6 +2,7 @@
  * @format
  */
 import once from 'lodash/once'
+import debounce from 'lodash/debounce'
 
 import * as Cache from '../../services/cache'
 
@@ -312,6 +313,48 @@ export const onUsers = listener => {
   }
 }
 
+/** @typedef {(bio: string|null) => void} BioListener*/
+
+/** @type {string|null} */
+export let currentBio = 'A ShockWallet user'
+
+/**
+ * @type {BioListener[]}
+ */
+const bioListeners = []
+
+const notifyBioListeners = debounce(() => {
+  bioListeners.forEach(l => l(currentBio))
+}, 500)
+
+/**
+ * @param {BioListener} listener
+ */
+export const onBio = listener => {
+  if (bioListeners.indexOf(listener) > -1) {
+    throw new Error('tried to subscribe twice')
+  }
+
+  bioListeners.push(listener)
+
+  setImmediate(async () => {
+    notifyBioListeners() // will provide current value to listener
+    Socket.socket.emit(Event.ON_BIO, {
+      token: await getToken(),
+    })
+  })
+
+  return () => {
+    const idx = bioListeners.indexOf(listener)
+
+    if (idx < 0) {
+      throw new Error('tried to unsubscribe twice')
+    }
+
+    bioListeners.splice(idx, 1)
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ACTION EVENTS ///////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -442,6 +485,13 @@ export const setupEvents = () => {
       usersListeners.forEach(l => {
         l(res.msg)
       })
+    }
+  })
+
+  Socket.socket.on(Event.ON_BIO, res => {
+    if (res.ok) {
+      currentBio = res.msg
+      notifyBioListeners()
     }
   })
 

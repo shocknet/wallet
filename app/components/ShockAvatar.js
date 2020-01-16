@@ -12,24 +12,26 @@ const DEFAULT_USER_IMAGE =
  * @typedef {object} Props
  * @prop {number} height
  * @prop {string|null} image
+ * @prop {(() => void)=} onPress
  */
 
 /**
  * @type {React.FC<Props>}
  */
-const _ShockAvatar = ({ height, image }) => ((
+const _ShockAvatar = ({ height, image, onPress }) => ((
   <Avatar
     height={height}
     rounded
     source={
       image === null || image.length === 0
         ? {
-            uri: 'data:image/png;base64,' + DEFAULT_USER_IMAGE,
+            uri: 'data:image/jpeg;base64,' + DEFAULT_USER_IMAGE,
           }
         : {
-            uri: 'data:image/png;base64,' + image,
+            uri: 'data:image/jpeg;base64,' + image,
           }
     }
+    onPress={onPress}
   />
 ))
 

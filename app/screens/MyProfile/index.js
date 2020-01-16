@@ -1,6 +1,4 @@
-/** @format */
 import React from 'react'
-
 import {
   Clipboard,
   Text,
@@ -11,22 +9,26 @@ import {
   View,
   StatusBar,
 } from 'react-native'
+import ImagePicker from 'react-native-image-crop-picker'
+
 import EntypoIcons from 'react-native-vector-icons/Entypo'
-import { AirbnbRating } from 'react-native-ratings'
+// import { AirbnbRating } from 'react-native-ratings'
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation
  */
 
-import * as API from '../services/contact-api'
-import * as CSS from '../res/css'
-import * as Cache from '../services/cache'
-import * as Utils from '../services/utils'
-import ShockAvatar from '../components/ShockAvatar'
-import QR from './WalletOverview/QR'
-import Pad from '../components/Pad'
-import BasicDialog from '../components/BasicDialog'
-import ShockInput from '../components/ShockInput'
-import IGDialogBtn from '../components/IGDialogBtn'
+import * as API from '../../services/contact-api'
+import * as CSS from '../../res/css'
+import * as Cache from '../../services/cache'
+import * as Utils from '../../services/utils'
+import ShockAvatar from '../../components/ShockAvatar'
+import QR from '../WalletOverview/QR'
+import Pad from '../../components/Pad'
+import BasicDialog from '../../components/BasicDialog'
+import ShockInput from '../../components/ShockInput'
+import IGDialogBtn from '../../components/IGDialogBtn'
+
+import SetBioDialog from './SetBioDialog'
 
 export const MY_PROFILE = 'MY_PROFILE'
 
@@ -37,10 +39,12 @@ const showCopiedToClipboardToast = () => {
 /**
  * @typedef {object} State
  * @prop {Cache.AuthData|null} authData
+ * @prop {string|null} avatar
  * @prop {string|null} displayName
  * @prop {boolean} displayNameDialogOpen
  * @prop {string} displayNameInput
  * @prop {string|null} handshakeAddr
+ * @prop {string|null} bio
  */
 
 /**
@@ -68,15 +72,26 @@ export default class MyProfile extends React.PureComponent {
   /** @type {State} */
   state = {
     authData: null,
+    avatar: null,
     displayName: null,
     displayNameDialogOpen: false,
     displayNameInput: '',
     handshakeAddr: null,
+    bio: API.Events.currentBio,
   }
+
+  /**
+   * @type {React.RefObject<SetBioDialog>}
+   */
+  setBioDialog = React.createRef()
+
+  onAvatarUnsub = () => {}
 
   onDisplayNameUnsub = () => {}
 
   onHandshakeAddressUnsub = () => {}
+
+  onBioUnsub = () => {}
 
   didFocus = { remove() {} }
 
@@ -95,6 +110,10 @@ export default class MyProfile extends React.PureComponent {
         handshakeAddr: addr,
       })
     })
+    this.onAvatarUnsub = API.Events.onAvatar(avatar => {
+      this.setState({ avatar })
+    })
+    this.onBioUnsub = API.Events.onBio(bio => this.setState({ bio }))
 
     const authData = await Cache.getStoredAuthData()
 
@@ -111,6 +130,8 @@ export default class MyProfile extends React.PureComponent {
     this.didFocus.remove()
     this.onDisplayNameUnsub()
     this.onHandshakeAddressUnsub()
+    this.onAvatarUnsub()
+    this.onBioUnsub()
   }
 
   /**
@@ -152,13 +173,76 @@ export default class MyProfile extends React.PureComponent {
     showCopiedToClipboardToast()
   }
 
+  onPressAvatar = () => {
+    const AVATAR_EDGE = 640
+    ImagePicker.openPicker({
+      cropping: true,
+      width: AVATAR_EDGE,
+      height: AVATAR_EDGE,
+      multiple: false,
+      includeBase64: true,
+      cropperCircleOverlay: true,
+      useFrontCamera: true,
+      compressImageMaxWidth: AVATAR_EDGE,
+      compressImageMaxHeight: AVATAR_EDGE,
+      mediaType: 'photo',
+    })
+      .then(image => {
+        if (Array.isArray(image)) {
+          throw new TypeError(
+            'Expected image obtained from image picker to not be an array',
+          )
+        }
+
+        if (image.width > AVATAR_EDGE) {
+          throw new RangeError('Expected image width to not exceed 640')
+        }
+
+        if (image.height > AVATAR_EDGE) {
+          throw new RangeError('Expected image width to not exceed 640')
+        }
+
+        if (image.mime !== 'image/jpeg') {
+          throw new TypeError('Expected image to be jpeg')
+        }
+
+        if (image.data === null) {
+          throw new TypeError('image.data === null')
+        }
+
+        this.setState({ avatar: image.data })
+
+        API.Actions.setAvatar(image.data)
+      })
+      .catch(e => {
+        console.warn(e.message)
+      })
+  }
+
+  onPressBio = () => {
+    const { current } = this.setBioDialog
+
+    current && current.open()
+  }
+
+  /**
+   * @param {string} bio
+   */
+  onSubmitBio = bio => {
+    this.setState({ bio })
+
+    API.Actions.setBio(bio)
+  }
+
   render() {
     const {
       displayName,
       authData,
+      avatar,
       handshakeAddr,
       displayNameInput,
       displayNameDialogOpen,
+      bio,
     } = this.state
 
     if (authData === null) {
@@ -166,11 +250,15 @@ export default class MyProfile extends React.PureComponent {
     }
 
     return (
-      <React.Fragment>
+      <>
         <View style={styles.container}>
           <View style={styles.subContainer}>
             <TouchableOpacity>
-              <ShockAvatar height={100} image={null} />
+              <ShockAvatar
+                height={100}
+                image={avatar}
+                onPress={this.onPressAvatar}
+              />
             </TouchableOpacity>
 
             <Pad amount={4} />
@@ -183,7 +271,7 @@ export default class MyProfile extends React.PureComponent {
               </Text>
             </TouchableOpacity>
 
-            <Pad amount={6} />
+            {/* <Pad amount={6} />
 
             <TouchableOpacity>
               <AirbnbRating
@@ -192,15 +280,12 @@ export default class MyProfile extends React.PureComponent {
                 showRating={false}
                 size={10}
               />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
             <Pad amount={8} />
 
-            <TouchableOpacity>
-              <Text style={styles.bodyText}>
-                Lorem Epsom is simply dummy text for developers and designers
-                Lorem.
-              </Text>
+            <TouchableOpacity onPress={this.onPressBio}>
+              <Text style={styles.bodyText}>{bio || 'ShockWallet User'}</Text>
             </TouchableOpacity>
           </View>
 
@@ -241,7 +326,9 @@ export default class MyProfile extends React.PureComponent {
             />
           </View>
         </BasicDialog>
-      </React.Fragment>
+
+        <SetBioDialog ref={this.setBioDialog} onSubmit={this.onSubmitBio} />
+      </>
     )
   }
 }

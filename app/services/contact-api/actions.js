@@ -235,3 +235,37 @@ export const sendPayment = async (recipientPub, amount, memo) => {
     throw new Error(res.msg || 'Unknown Error')
   }
 }
+
+/**
+ * @param {string} bio
+ * @returns {Promise<void>}
+ */
+export const setBio = async bio => {
+  if (!socket.connected) {
+    throw new Error('NOT_CONNECTED')
+  }
+
+  const token = await getToken()
+  const uuid = Date.now().toString()
+
+  socket.emit(Action.SET_BIO, {
+    token,
+    bio,
+    uuid,
+  })
+
+  const res = await new Promise(resolve => {
+    socket.on(
+      Action.SET_BIO,
+      once(res => {
+        if (res.origBody.uuid === uuid) {
+          resolve(res)
+        }
+      }),
+    )
+  })
+
+  if (!res.ok) {
+    throw new Error(res.msg || 'Unknown Error')
+  }
+}
