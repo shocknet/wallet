@@ -1,7 +1,7 @@
 /**
  * @format
  */
-
+//import 'core-js'
 import React, { Component } from 'react'
 import {
   ActivityIndicator,
@@ -49,7 +49,7 @@ import UnifiedTrx from './UnifiedTrx'
 //import {findlnurl} from 'js-lnurl'
 //@ts-ignore
 import bech32 from 'bech32'
-import { Buffer } from 'safe-buffer'
+//import { Buffer } from 'safe-buffer'
 import LNURL from './LNURL'
 
 import notificationService from '../../../notificationService'
@@ -1094,14 +1094,16 @@ class WalletOverview extends Component {
           this.payLightningInvoice({ invoice: details[0] })
         }
         if (isLnurl.length === 2) {
-          const lnurl = Buffer.from(
-            bech32.fromWords(bech32.decode(details[0], 1500).words),
-          ).toString()
+          const decodedBytes = bech32.fromWords(
+            bech32.decode(details[0], 1500).words,
+          )
+          const lnurl = String.fromCharCode(...decodedBytes)
+
           console.log(lnurl)
           try {
             const res = await fetch(lnurl)
             const json = await res.json()
-            console.log(json)
+            //console.log(json)
             this.setState({
               LNURLdata: json,
             })
@@ -1386,7 +1388,11 @@ class WalletOverview extends Component {
 
     return (
       <View style={styles.container}>
-        <LNURL LNURLdata={LNURLdata} requestClose={this.requestCloseLNURL} />
+        <LNURL
+          LNURLdata={LNURLdata}
+          requestClose={this.requestCloseLNURL}
+          payInvoice={this.payLightningInvoice}
+        />
         <View style={styles.overview}>
           {this.renderBalance()}
 
