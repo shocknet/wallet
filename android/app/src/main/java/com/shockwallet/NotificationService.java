@@ -216,8 +216,8 @@ public class NotificationService extends Service {
                 .setSmallIcon(R.drawable.bolt)
                 .setLargeIcon(BitmapFactory.decodeResource(this.getResources(),
                         R.drawable.bolt))
-                .setContentTitle("ShockWallet is listening for updates")
-                .setContentText("Running...")
+                .setContentTitle("Notification service connected.")
+                .setContentText("Listening...")
                 //.setSmallIcon(R.drawable.bolt)
                 .setContentIntent(contentIntent)
                 .setOngoing(true)
