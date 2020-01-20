@@ -55,6 +55,8 @@ export const createSocket = async () => {
     throw new Error('Tried to connect the socket without a cached node url')
   }
 
+  console.log(`http://${nodeURL}`)
+
   // @ts-ignore
   return SocketIO(`http://${nodeURL}`, {
     autoConnect: false,

@@ -71,6 +71,11 @@
 		<string>Montserrat-700.ttf</string>
 		<string>Montserrat-800.ttf</string>
 		<string>Montserrat-900.ttf</string>
+		<string>AntDesign.ttf</string>
+		<string>FontAwesome5_Brands.ttf</string>
+		<string>FontAwesome5_Regular.ttf</string>
+		<string>FontAwesome5_Solid.ttf</string>
+		<string>Fontisto.ttf</string>
 	</array>
 </dict>
 </plist>

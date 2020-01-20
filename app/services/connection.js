@@ -1,10 +1,17 @@
+import Http from 'axios'
 import { DEFAULT_PORT } from './cache'
 
 /**
- * Chckes that a given node ip is up and that it corresponds to a shockapi
+ * @typedef {object} PingResponse
+ * @prop {boolean} success
+ * @prop {string} sessionId
+ */
+
+/**
+ * Checks that a given node ip is up and that it corresponds to a ShockAPI
  * server.
  * @param {string} urlOrIp
- * @returns {Promise<boolean>}
+ * @returns {Promise<PingResponse>}
  */
 export const pingURL = async urlOrIp => {
   let url = urlOrIp
@@ -15,26 +22,20 @@ export const pingURL = async urlOrIp => {
     /**
      * @type {ReturnType<typeof fetch>}
      */
-    const resP = Promise.race([
-      fetch(`http://${url}/healthz`),
-      new Promise((_, rej) => {
-        setTimeout(() => {
-          rej(new Error('Could not reach the server.'))
-        }, 5000)
-      }),
-    ])
+    console.log('URL:', `http://${url}/healthz`)
+    Http.defaults.baseURL = `http://${url}`
+    console.log('Base URL:', Http.defaults.baseURL)
+    const { data: body, headers } = await Http.get(`/healthz`, {
+      timeout: 5000,
+    })
 
-    const res = await resP
-
-    if (res.ok) {
-      const body = await res.json()
-
-      return typeof body.APIStatus === 'object'
+    console.log('Fetch Body:', body)
+    return {
+      success: typeof body.APIStatus === 'object',
+      sessionId: headers['x-session-id'],
     }
-
-    return false
   } catch (e) {
     console.warn(`Connection.pingURL: ${e.message}`)
-    return false
+    return { success: false, sessionId: e.response.headers['x-session-id'] }
   }
 }

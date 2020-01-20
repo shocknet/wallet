@@ -1,6 +1,7 @@
 import React from 'react'
 import { Text, TextInput, View, ActivityIndicator } from 'react-native'
 import Entypo from 'react-native-vector-icons/Entypo'
+import { connect } from 'react-redux'
 
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation
@@ -23,6 +24,7 @@ import OnboardingScreen, {
 import OnboardingInput from '../../components/OnboardingInput'
 import OnboardingBtn from '../../components/OnboardingBtn'
 import FlexCenter from '../../components/FlexCenter'
+import { exchangeKeyPair } from '../../actions/ConnectionActions'
 
 export const CREATE_WALLET_OR_ALIAS = 'CREATE_WALLET_OR_ALIAS'
 
@@ -46,7 +48,7 @@ export const CREATE_WALLET_OR_ALIAS = 'CREATE_WALLET_OR_ALIAS'
 /**
  * @augments React.PureComponent<Props, State>
  */
-export default class CreateWalletOrAlias extends React.PureComponent {
+class CreateWalletOrAlias extends React.PureComponent {
   /**
    * @type {import('react-navigation').NavigationStackScreenOptions}
    */
@@ -79,6 +81,7 @@ export default class CreateWalletOrAlias extends React.PureComponent {
   }
 
   componentDidMount() {
+    console.log('Hello')
     this.onFocusSub = this.props.navigation.addListener(
       'didFocus',
       this.checkWalletStatus,
@@ -358,3 +361,17 @@ export default class CreateWalletOrAlias extends React.PureComponent {
     )
   }
 }
+
+/**
+ * @param {typeof import('../../../reducers/index').default} state
+ */
+const mapStateToProps = ({ connection }) => ({ connection })
+
+const mapDispatchToProps = {
+  exchangeKeyPair,
+}
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(CreateWalletOrAlias)

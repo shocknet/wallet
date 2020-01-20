@@ -3,6 +3,13 @@ package com.shockwallet;
 import android.app.Application;
 
 import com.facebook.react.ReactApplication;
+import com.oblador.vectoricons.VectorIconsPackage;
+import com.tradle.react.UdpSocketsModule;
+import com.peel.react.TcpSocketsModule;
+import com.bitgo.randombytes.RandomBytesPackage;
+import com.peel.react.rnos.RNOSModule;
+import com.tectiv3.aes.RCTAesPackage;
+import com.RNRSA.RNRSAPackage;
 import com.swmansion.gesturehandler.react.RNGestureHandlerPackage;
 import br.com.classapp.RNSensitiveInfo.RNSensitiveInfoPackage;
 import com.reactnativecommunity.netinfo.NetInfoPackage;
@@ -31,6 +38,13 @@ public class MainApplication extends Application implements ReactApplication {
     protected List<ReactPackage> getPackages() {
       return Arrays.<ReactPackage>asList(
           new MainReactPackage(),
+            new VectorIconsPackage(),
+            new UdpSocketsModule(),
+            new TcpSocketsModule(),
+            new RandomBytesPackage(),
+            new RNOSModule(),
+            new RCTAesPackage(),
+            new RNRSAPackage(),
             new RNGestureHandlerPackage(),
             new RNSensitiveInfoPackage(),
             new NetInfoPackage(),

@@ -4,6 +4,7 @@ import WalletReducer from './WalletReducer'
 import NodeReducer from './NodeReducer'
 import ChatReducer from './ChatReducer'
 import InvoiceReducer from './InvoiceReducer'
+import ConnectionReducer from './ConnectionReducer'
 
 const rootReducer = {
   auth: AuthReducer,
@@ -11,6 +12,7 @@ const rootReducer = {
   wallet: WalletReducer,
   node: NodeReducer,
   chat: ChatReducer,
+  connection: ConnectionReducer,
   invoice: InvoiceReducer,
 }
 
