@@ -6,7 +6,7 @@
     "start": "node node_modules/react-native/local-cli/cli.js start",
     "android": "node node_modules/react-native/local-cli/cli.js run-android",
     "test": "jest",
-    "postinstall": "npx jetifier",
+    "postinstall": "npx jetifier && npx rn-nodeify --hack --install --yarn",
     "typecheck": "tsc",
     "prettify": "prettier --write \"index.js\" \"app/**/*.{js,ts}\"",
     "format": "yarn prettify",
