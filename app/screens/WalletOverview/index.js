@@ -132,6 +132,7 @@ import * as Cache from '../../services/cache'
  * @prop {string} sendingInvoiceToShockUserMsg
  *
  * @prop {object | null} LNURLdata
+ * @prop {boolean} resetLNURL
  */
 
 const { width, height } = Dimensions.get('window')
@@ -220,6 +221,7 @@ class WalletOverview extends Component {
     sendingInvoiceToShockUser: false,
     sendingInvoiceToShockUserMsg: '',
     LNURLdata: null,
+    resetLNURL: false,
   }
 
   closeAllSendDialogs = () => {
@@ -1060,9 +1062,7 @@ class WalletOverview extends Component {
    * @param {{url: string}} event
    */
   _handleOpenURL = event => {
-    this.setState({
-      LNURLdata: null,
-    })
+    this.requestCloseLNURL()
     /**
      * @param {string} url
      */
@@ -1145,6 +1145,13 @@ class WalletOverview extends Component {
   requestCloseLNURL = () => {
     this.setState({
       LNURLdata: null,
+      resetLNURL: true,
+    })
+  }
+
+  refreshLNURL = () => {
+    this.setState({
+      resetLNURL: false,
     })
   }
 
@@ -1355,6 +1362,7 @@ class WalletOverview extends Component {
       sendingInvoiceToShockUser,
       sendingInvoiceToShockUserMsg,
       LNURLdata,
+      resetLNURL,
     } = this.state
 
     const { recentTransactions } = this.props.history
@@ -1392,6 +1400,8 @@ class WalletOverview extends Component {
           LNURLdata={LNURLdata}
           requestClose={this.requestCloseLNURL}
           payInvoice={this.payLightningInvoice}
+          resetLNURL={resetLNURL}
+          refreshLNURL={this.refreshLNURL}
         />
         <View style={styles.overview}>
           {this.renderBalance()}
