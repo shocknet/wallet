@@ -116,17 +116,16 @@ Http.interceptors.request.use(async config => {
   try {
     console.log('Interceptor running', config.url)
     const { connection } = store.getState()
-    if (!config.headers.Authorization) {
-      try {
-        const nodeURL = await Cache.getNodeURL()
-        if (config.url && config.url.indexOf('http') !== 0 && nodeURL) {
-          // eslint-disable-next-line require-atomic-updates
-          config.baseURL = `http://${nodeURL}`
-        }
-      } catch (err) {
-        console.log('Unable to retrieve base URL')
+    try {
+      const nodeURL = await Cache.getNodeURL()
+      if (config.url && config.url.indexOf('http') === -1 && nodeURL) {
+        // eslint-disable-next-line require-atomic-updates
+        config.baseURL = `http://${nodeURL}`
       }
-
+    } catch (err) {
+      console.log('Unable to retrieve base URL')
+    }
+    if (!config.headers.Authorization) {
       try {
         const token = await Cache.getToken()
         // eslint-disable-next-line require-atomic-updates
@@ -235,6 +234,7 @@ const decryptResponse = async response => {
       path !== '/api/security/exchangeKeys' &&
       response.headers['x-session-id']
     ) {
+      console.log('Exchanging Keys...')
       await exchangeKeyPair({
         deviceId: connection.deviceId,
         sessionId: response.headers['x-session-id'],
@@ -252,6 +252,7 @@ const decryptResponse = async response => {
 // Logging for HTTP responses
 Http.interceptors.response.use(
   async response => {
+    console.log('Encrypted Response:', response.data)
     const decryptedResponse = await decryptResponse(response)
 
     try {
@@ -259,7 +260,6 @@ Http.interceptors.response.use(
         const method = decryptedResponse.config.method
           ? decryptedResponse.config.method
           : 'common'
-        console.log('Response:', decryptedResponse)
         console.log(
           `<--- ${method.toUpperCase()} ${decryptedResponse.config.url} (${
             decryptedResponse.status

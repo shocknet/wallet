@@ -19,9 +19,12 @@ export const ACTIONS = {
 
 const getPublicKey = async (keyTag = '') => {
   try {
+    console.log('getPublicKey:', keyTag)
     const publicKey = await RSAKeychain.getPublicKey(keyTag)
+    console.log('publicKey:', publicKey)
     return publicKey
   } catch (err) {
+    console.error(err)
     return null
   }
 }
@@ -44,9 +47,15 @@ export const exchangeKeyPair = ({
   cachedSessionId,
 }) => async dispatch => {
   try {
+    console.log({
+      deviceId,
+      sessionId,
+      cachedSessionId,
+    })
     const keyTag = `com.shocknet.APIKey.${sessionId}`
     const oldKeyTag = `com.shocknet.APIKey.${cachedSessionId}`
     const oldKeypair = await getPublicKey(oldKeyTag)
+    console.log('Old Keypair:', oldKeypair)
 
     if (sessionId === cachedSessionId) {
       return {
