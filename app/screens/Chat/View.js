@@ -127,7 +127,7 @@ export default class ChatView extends React.PureComponent {
     const senderName =
       typeof user.name === 'string' && user.name.length > 0
         ? user.name
-        : user._id
+        : /** @type {string} */ (user._id)
 
     const timestamp =
       typeof currentMessage.createdAt === 'number'
@@ -143,7 +143,7 @@ export default class ChatView extends React.PureComponent {
           <View style={styles.maxWidth}>
             <ChatInvoice
               amount={invoiceToAmount[currentMessage._id]}
-              id={currentMessage._id}
+              id={/** @type {string} */ (currentMessage._id)}
               onPressUnpaidIncomingInvoice={onPressUnpaidIncomingInvoice}
               outgoing={outgoing}
               paymentStatus={msgIDToInvoicePaymentStatus[currentMessage._id]}
@@ -159,7 +159,7 @@ export default class ChatView extends React.PureComponent {
       <View style={outgoing ? styles.alignFlexStart : styles.alignFlexEnd}>
         <View style={styles.maxWidth}>
           <ChatMessage
-            id={currentMessage._id}
+            id={/** @type {string} */ (currentMessage._id)}
             body={currentMessage.text}
             outgoing={outgoing}
             senderName={senderName}
