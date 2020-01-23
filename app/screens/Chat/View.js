@@ -77,7 +77,6 @@ const AlwaysNull = () => null
  * @prop {import('../../services/contact-api').Schema.ChatMessage[]} messages
  * @prop {(msgID: string) => void} onPressUnpaidIncomingInvoice
  * @prop {(text: string) => void} onSendMessage
- * @prop {string|null} ownDisplayName
  * @prop {string|null} ownPublicKey
  * @prop {string|null} recipientDisplayName
  * @prop {string} recipientPublicKey
@@ -274,7 +273,6 @@ export default class ChatView extends React.PureComponent {
   render() {
     const {
       messages,
-      ownDisplayName,
       ownPublicKey,
       recipientDisplayName,
       recipientPublicKey,
@@ -293,7 +291,6 @@ export default class ChatView extends React.PureComponent {
     /** @type {GiftedChatUser} */
     const ownUser = {
       _id: ownPublicKey,
-      name: typeof ownDisplayName === 'string' ? ownDisplayName : ownPublicKey,
     }
 
     /** @type {GiftedChatUser} */
