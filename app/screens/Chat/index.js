@@ -2,9 +2,8 @@
  * @prettier
  */
 import React from 'react'
-import { ToastAndroid, StyleSheet, View } from 'react-native'
-import MaterialIcons from 'react-native-vector-icons/MaterialCommunityIcons'
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'
+import { ToastAndroid, StyleSheet, StatusBar } from 'react-native'
+import Ion from 'react-native-vector-icons/Ionicons'
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}, Params>} Navigation
  */
@@ -22,29 +21,42 @@ import { WALLET_OVERVIEW } from '../WalletOverview'
 
 import ChatView from './View'
 import PaymentDialog from './PaymentDialog'
+/**
+ * @typedef {import('./View').PaymentStatus} PaymentStatus
+ */
 
 export const CHAT_ROUTE = 'CHAT_ROUTE'
 
-const headerIconStyle = StyleSheet.create({
-  // eslint-disable-next-line react-native/no-unused-styles
-  s: { marginRight: 16 },
-}).s
+const styles = StyleSheet.create({
+  backArrow: { marginLeft: 24 },
+  hamburger: { marginRight: 24 },
+})
+
+const headerRight = (
+  <Ion name="ios-menu" color="white" size={36} style={styles.hamburger} />
+)
+
+/** @type {React.FC<{ onPress?: () => void }>} */
+const HeaderLeft = React.memo(({ onPress }) => ((
+  <Ion
+    suppressHighlighting
+    color="white"
+    name="ios-arrow-round-back"
+    onPress={onPress}
+    size={48}
+    style={styles.backArrow}
+  />
+)))
 
 /**
  * @typedef {object} Params
  * @prop {string} recipientPublicKey
  * @prop {string=} _title Do not pass this param.
- * @prop {(() => void)=} _onPressSendInvoice Do not pass this param.
- * @prop {(() => void)=} _onPressSendPayment Do not pass this param.
  */
 
 /**
  * @typedef {object} Props
  * @prop {Navigation} navigation
- */
-
-/**
- * @typedef {import('./View').PaymentStatus} PaymentStatus
  */
 
 /**
@@ -62,8 +74,6 @@ const headerIconStyle = StyleSheet.create({
  * @prop {Partial<Record<string, PaymentStatus>>} rawInvoiceToPaymentStatus
  * @prop {Partial<Record<string, DecodedInvoice>>} rawInvoiceToDecodedInvoice
  * @prop {string|null} recipientDisplayName
- *
- * @prop {boolean} sendingInvoice True when showing the send invoice dialog.
  */
 
 /**
@@ -83,48 +93,25 @@ export default class Chat extends React.PureComponent {
       )
     }
 
-    const onPressSendInvoice = navigation.getParam('_onPressSendInvoice')
-
-    if (typeof onPressSendInvoice !== 'function') {
-      console.warn(
-        `Chat-> _onPressSendInvoice param not a function, instead got: ${typeof onPressSendInvoice}`,
-      )
-    }
-
-    const onPressSendPayment = navigation.getParam('_onPressSendPayment')
-
-    if (typeof onPressSendPayment !== 'function') {
-      console.warn(
-        `Chat-> _onPressSendPayment param not a function, instead got: ${typeof onPressSendPayment}`,
-      )
-    }
-
     return {
-      headerRight: (
-        <View style={CSS.styles.flexRow}>
-          <FontAwesome5
-            color={Colors.TEXT_WHITE}
-            name="money-bill-wave"
-            accessibilityHint="Send Money"
-            onPress={onPressSendPayment}
-            size={28}
-            style={headerIconStyle}
-          />
-
-          <MaterialIcons
-            color={Colors.TEXT_WHITE}
-            name="file-send"
-            onPress={onPressSendInvoice}
-            size={28}
-            style={headerIconStyle}
-          />
-        </View>
-      ),
       headerStyle: {
-        backgroundColor: Colors.BLUE_DARK,
+        backgroundColor: Colors.BLUE_MEDIUM_DARK,
         elevation: 0,
       },
+
+      headerRight,
+
+      headerLeft: props => <HeaderLeft onPress={props.onPress} />,
+
       headerTintColor: Colors.TEXT_WHITE,
+
+      headerTitleStyle: {
+        fontFamily: 'Montserrat-500',
+        // https://github.com/react-navigation/react-navigation/issues/542#issuecomment-283663786
+        fontWeight: 'normal',
+        fontSize: 13,
+      },
+
       title,
     }
   }
@@ -137,8 +124,6 @@ export default class Chat extends React.PureComponent {
     ownDisplayName: null,
     ownPublicKey: null,
     recipientDisplayName: null,
-
-    sendingInvoice: false,
   }
 
   /** @type {React.RefObject<PaymentDialog>} */
@@ -151,12 +136,6 @@ export default class Chat extends React.PureComponent {
   didFocus = { remove() {} }
 
   willBlur = { remove() {} }
-
-  toggleSendInvoiceDialog = () => {
-    this.setState(({ sendingInvoice }) => ({
-      sendingInvoice: !sendingInvoice,
-    }))
-  }
 
   /**
    * @type {import('./View').Props['onPressSendInvoice']}
@@ -183,8 +162,6 @@ export default class Chat extends React.PureComponent {
         console.warn(err.message)
         ToastAndroid.show(`Could not send invoice: ${err.message}`, 1000)
       })
-
-    this.toggleSendInvoiceDialog()
   }
 
   openSendPaymentDialog = () => {
@@ -389,6 +366,9 @@ export default class Chat extends React.PureComponent {
     this.didFocus = navigation.addListener('didFocus', () => {
       this.isFocused = true
 
+      StatusBar.setBackgroundColor(Colors.BLUE_MEDIUM_DARK)
+      StatusBar.setBarStyle('light-content')
+
       this.updateLastReadMsg()
     })
     this.willBlur = navigation.addListener('willBlur', () => {
@@ -405,11 +385,6 @@ export default class Chat extends React.PureComponent {
     this.decodeIncomingInvoices()
     this.fetchOutgoingInvoicesAndUpdateInfo()
     this.fetchPaymentsAndUpdatePaymentStatus()
-
-    navigation.setParams({
-      _onPressSendInvoice: this.toggleSendInvoiceDialog,
-      _onPressSendPayment: this.openSendPaymentDialog,
-    })
 
     const sad = await Cache.getStoredAuthData()
 
@@ -515,8 +490,6 @@ export default class Chat extends React.PureComponent {
       recipientDisplayName,
       rawInvoiceToDecodedInvoice,
       rawInvoiceToPaymentStatus,
-
-      sendingInvoice,
     } = this.state
 
     const recipientPublicKey = this.props.navigation.getParam(
@@ -598,8 +571,7 @@ export default class Chat extends React.PureComponent {
           ownPublicKey={ownPublicKey}
           recipientDisplayName={recipientDisplayName}
           recipientPublicKey={recipientPublicKey}
-          sendingInvoice={sendingInvoice}
-          sendInvoiceDialogOnRequestClose={this.toggleSendInvoiceDialog}
+          onPressSendBTC={this.openSendPaymentDialog}
         />
 
         <PaymentDialog
