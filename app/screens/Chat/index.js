@@ -409,6 +409,7 @@ export default class Chat extends React.PureComponent {
     this.setState(
       {
         chats,
+        cachedSentMessages: [],
       },
       () => {
         this.updateLastReadMsg()
