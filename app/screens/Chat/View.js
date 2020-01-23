@@ -2,21 +2,30 @@
  * @prettier
  */
 import React from 'react'
-import { StyleSheet, View, ActivityIndicator, StatusBar } from 'react-native'
-import { Icon, Text } from 'react-native-elements'
-import { GiftedChat, Send } from 'react-native-gifted-chat'
+import {
+  StyleSheet,
+  View,
+  ActivityIndicator,
+  StatusBar,
+  TouchableWithoutFeedback,
+  Modal,
+} from 'react-native'
+import { Text } from 'react-native-elements'
+import { GiftedChat } from 'react-native-gifted-chat'
 /**
  * @typedef {import('react-native-gifted-chat').IMessage} GiftedChatMessage
  * @typedef {import('react-native-gifted-chat').User} GiftedChatUser
  */
 
-import ChatInvoice from './ChatInvoice'
-import ChatMessage from './ChatMessage'
 import * as CSS from '../../res/css'
 import BasicDialog from '../../components/BasicDialog'
 import ShockInput from '../../components/ShockInput'
 import Pad from '../../components/Pad'
 import ShockButton from '../../components/ShockButton'
+
+import ChatInvoice from './ChatInvoice'
+import ChatMessage from './ChatMessage'
+import InputToolbar from './InputToolbar'
 
 export const CHAT_ROUTE = 'CHAT_ROUTE'
 
@@ -47,17 +56,7 @@ const Loading = () => (
   </>
 )
 
-/**
- * @param {Record<string, any>} props
- */
-const SendRenderer = props => (
-  // eslint-disable-next-line react/jsx-props-no-spreading
-  <Send {...props}>
-    <View style={styles.sendIcon}>
-      <Icon name="paper-plane" type="font-awesome" />
-    </View>
-  </Send>
-)
+const AlwaysNull = () => null
 
 /**
  * @typedef {import('./ChatInvoice').PaymentStatus} PaymentStatus
@@ -78,29 +77,48 @@ const SendRenderer = props => (
  * @prop {import('../../services/contact-api').Schema.ChatMessage[]} messages
  * @prop {(msgID: string) => void} onPressUnpaidIncomingInvoice
  * @prop {(text: string) => void} onSendMessage
- * @prop {string|null} ownDisplayName
  * @prop {string|null} ownPublicKey
  * @prop {string|null} recipientDisplayName
  * @prop {string} recipientPublicKey
  *
- * @prop {boolean} sendingInvoice True when showing the send invoice dialog.
  * @prop {(amount: number, memo: string) => void} onPressSendInvoice
- * @prop {() => void} sendInvoiceDialogOnRequestClose
+ *
+ * @prop {() => void} onPressSendBTC
  */
 
 /**
  * @typedef {object} State
+ * @prop {boolean} actionSheetOpen
+ *
+ * @prop {boolean} sendingInvoice True when showing the send invoice dialog.
  * @prop {number} sendInvoiceAmount
  * @prop {string} sendInvoiceMemo
+ *
+ * @prop {number} inputToolbarHeight
  */
 
 /**
  * @augments React.PureComponent<Props, State, never>
  */
 export default class ChatView extends React.PureComponent {
+  navigationOptions = {
+    headerStyle: {
+      backgroundColor: CSS.Colors.BLUE_DARK,
+      elevation: 0,
+    },
+    headerTintColor: CSS.Colors.TEXT_WHITE,
+    title: 'Talker',
+  }
+
+  /** @type {State} */
   state = {
+    actionSheetOpen: false,
+
+    sendingInvoice: false,
     sendInvoiceAmount: 0,
     sendInvoiceMemo: '',
+
+    inputToolbarHeight: 40,
   }
 
   /**
@@ -127,7 +145,7 @@ export default class ChatView extends React.PureComponent {
     const senderName =
       typeof user.name === 'string' && user.name.length > 0
         ? user.name
-        : user._id
+        : /** @type {string} */ (user._id)
 
     const timestamp =
       typeof currentMessage.createdAt === 'number'
@@ -139,51 +157,47 @@ export default class ChatView extends React.PureComponent {
 
     if (isInvoice) {
       return (
-        <View style={outgoing ? styles.alignFlexStart : styles.alignFlexEnd}>
-          <View style={styles.maxWidth}>
-            <ChatInvoice
-              amount={invoiceToAmount[currentMessage._id]}
-              id={currentMessage._id}
-              onPressUnpaidIncomingInvoice={onPressUnpaidIncomingInvoice}
-              outgoing={outgoing}
-              paymentStatus={msgIDToInvoicePaymentStatus[currentMessage._id]}
-              senderName={senderName}
-              timestamp={timestamp}
-            />
-          </View>
+        <View
+          style={
+            outgoing
+              ? styles.invoiceWrapperOutgoing
+              : styles.invoiceWrapperIncoming
+          }
+        >
+          <ChatInvoice
+            amount={invoiceToAmount[currentMessage._id]}
+            id={/** @type {string} */ (currentMessage._id)}
+            onPressUnpaidIncomingInvoice={onPressUnpaidIncomingInvoice}
+            outgoing={outgoing}
+            paymentStatus={msgIDToInvoicePaymentStatus[currentMessage._id]}
+            senderName={senderName}
+            timestamp={timestamp}
+          />
         </View>
       )
     }
 
     return (
-      <View style={outgoing ? styles.alignFlexStart : styles.alignFlexEnd}>
-        <View style={styles.maxWidth}>
-          <ChatMessage
-            id={currentMessage._id}
-            body={currentMessage.text}
-            outgoing={outgoing}
-            senderName={senderName}
-            timestamp={timestamp}
-          />
-        </View>
+      <View
+        style={outgoing ? styles.msgWrapperOutgoing : styles.msgWrapperIncoming}
+      >
+        <ChatMessage
+          id={/** @type {string} */ (currentMessage._id)}
+          body={currentMessage.text}
+          outgoing={outgoing}
+          timestamp={timestamp}
+        />
       </View>
     )
   }
 
   /**
    * @private
-   * @param {GiftedChatMessage[]} msgs
+   * @param {string} msg
    * @returns {void}
    */
-  onSend = msgs => {
-    const [msg] = msgs
-
-    if (typeof msg === 'undefined') {
-      console.warn("typeof msg === 'undefined'")
-      return
-    }
-
-    this.props.onSendMessage(msg.text)
+  onSend = msg => {
+    this.props.onSendMessage(msg)
   }
 
   /**
@@ -221,20 +235,47 @@ export default class ChatView extends React.PureComponent {
     this.setState({
       sendInvoiceAmount: 0,
       sendInvoiceMemo: '',
+      sendingInvoice: false,
     })
+  }
+
+  toggleInvoiceDialog = () => {
+    this.setState(({ sendingInvoice }) => ({
+      sendingInvoice: !sendingInvoice,
+    }))
+  }
+
+  toggleActionSheet = () => {
+    this.setState(({ actionSheetOpen }) => ({
+      actionSheetOpen: !actionSheetOpen,
+    }))
+  }
+
+  /** @param {number} inputToolbarHeight */
+  onInputToolbarHeight = inputToolbarHeight => {
+    this.setState({ inputToolbarHeight })
+  }
+
+  onPressSendBTC = () => {
+    this.toggleActionSheet()
+    this.props.onPressSendBTC()
+  }
+
+  onPressReceive = () => {
+    this.toggleActionSheet()
+    this.toggleInvoiceDialog()
+  }
+
+  onPressBlock = () => {
+    this.toggleActionSheet()
   }
 
   render() {
     const {
       messages,
-      ownDisplayName,
       ownPublicKey,
       recipientDisplayName,
       recipientPublicKey,
-
-      sendingInvoice,
-
-      sendInvoiceDialogOnRequestClose,
     } = this.props
 
     const { sendInvoiceAmount, sendInvoiceMemo } = this.state
@@ -250,7 +291,6 @@ export default class ChatView extends React.PureComponent {
     /** @type {GiftedChatUser} */
     const ownUser = {
       _id: ownPublicKey,
-      name: typeof ownDisplayName === 'string' ? ownDisplayName : ownPublicKey,
     }
 
     /** @type {GiftedChatUser} */
@@ -285,27 +325,70 @@ export default class ChatView extends React.PureComponent {
       }))
 
     return (
-      <React.Fragment>
+      <>
         <StatusBar
           backgroundColor={CSS.Colors.BLUE_DARK}
           barStyle="light-content"
         />
 
-        <GiftedChat
-          isLoadingEarlier={thereAreMoreMessages}
-          loadEarlier={thereAreMoreMessages}
-          messages={giftedChatMsgs}
+        <Modal
+          onRequestClose={this.toggleActionSheet}
+          transparent
+          visible={this.state.actionSheetOpen}
+        >
+          <TouchableWithoutFeedback onPress={this.toggleActionSheet}>
+            <View style={CSS.styles.flex}>
+              <TouchableWithoutFeedback>
+                <View
+                  style={[
+                    styles.actionSheet,
+                    {
+                      bottom: this.state.inputToolbarHeight,
+                    },
+                  ]}
+                >
+                  <Text style={styles.action} onPress={this.onPressSendBTC}>
+                    Send BTC
+                  </Text>
+                  <Pad amount={10} />
+                  <Text style={styles.action} onPress={this.onPressReceive}>
+                    Receive
+                  </Text>
+                  <Pad amount={10} />
+                  <Text style={styles.action} onPress={this.onPressBlock}>
+                    Block
+                  </Text>
+                </View>
+              </TouchableWithoutFeedback>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
+
+        <View style={xStyles.container}>
+          <GiftedChat
+            alignTop
+            isLoadingEarlier={false}
+            loadEarlier={thereAreMoreMessages}
+            messages={giftedChatMsgs}
+            renderLoading={Loading}
+            renderMessage={this.messageRenderer}
+            user={ownUser}
+            renderInputToolbar={AlwaysNull}
+            minInputToolbarHeight={0}
+          />
+        </View>
+
+        <InputToolbar
+          disableInput={false}
+          onPressActionBtn={this.toggleActionSheet}
           onSend={this.onSend}
-          renderLoading={Loading}
-          renderMessage={this.messageRenderer}
-          renderSend={SendRenderer}
-          user={ownUser}
+          onHeight={this.onInputToolbarHeight}
         />
 
         <BasicDialog
           title="Create a Lightning Invoice"
-          onRequestClose={sendInvoiceDialogOnRequestClose}
-          visible={sendingInvoice}
+          onRequestClose={this.toggleInvoiceDialog}
+          visible={this.state.sendingInvoice}
         >
           <ShockInput
             placeholder="Memo (optional)"
@@ -334,18 +417,44 @@ export default class ChatView extends React.PureComponent {
 
           <ShockButton onPress={this.onPressSendInvoice} title="Send" />
         </BasicDialog>
-      </React.Fragment>
+      </>
     )
   }
 }
 
+const MSG_V_MARGIN = 20
+
+const msgWrapperBase = {
+  paddingLeft: 18,
+  paddingRight: 18,
+  marginTop: MSG_V_MARGIN,
+  marginBottom: MSG_V_MARGIN,
+}
+
+const invoiceWrapperBase = {
+  paddingTop: 42,
+  paddingBottom: 42,
+}
+
 const styles = StyleSheet.create({
-  alignFlexEnd: {
-    alignItems: 'flex-end',
+  action: {
+    color: '#9B9999',
+    fontSize: 11,
+    fontFamily: 'Montserrat-500',
   },
 
-  alignFlexStart: {
-    alignItems: 'flex-start',
+  actionSheet: {
+    backgroundColor: 'white',
+    position: 'absolute',
+    left: 8,
+
+    elevation: 5,
+    paddingTop: 20,
+    paddingBottom: 20,
+    paddingLeft: 22,
+    paddingRight: 20,
+    borderRadius: 30,
+    minWidth: '40%',
   },
 
   loading: {
@@ -354,9 +463,27 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 
-  maxWidth: {
-    maxWidth: '85%',
+  msgWrapperOutgoing: {
+    ...msgWrapperBase,
+    alignSelf: 'flex-end',
   },
 
-  sendIcon: { marginRight: 10, marginBottom: 10 },
+  msgWrapperIncoming: {
+    ...msgWrapperBase,
+    alignSelf: 'flex-start',
+  },
+
+  invoiceWrapperIncoming: {
+    ...invoiceWrapperBase,
+    alignItems: 'flex-start',
+  },
+
+  invoiceWrapperOutgoing: {
+    ...invoiceWrapperBase,
+    alignItems: 'flex-end',
+  },
 })
+
+const xStyles = {
+  container: [CSS.styles.flex, CSS.styles.backgroundWhite],
+}
