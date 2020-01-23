@@ -51,7 +51,7 @@ const HeaderLeft = React.memo(({ onPress }) => ((
 /**
  * @typedef {object} Params
  * @prop {string} recipientPublicKey
- * @prop {string=} _title Do not pass this param.
+ * @prop {string=} _title
  */
 
 /**
@@ -68,8 +68,7 @@ const HeaderLeft = React.memo(({ onPress }) => ((
 
 /**
  * @typedef {object} State
- * @prop {API.Schema.ChatMessage[]} messages
- * @prop {string|null} ownDisplayName
+ * @prop {API.Schema.Chat[]} chats
  * @prop {string|null} ownPublicKey
  * @prop {Partial<Record<string, PaymentStatus>>} rawInvoiceToPaymentStatus
  * @prop {Partial<Record<string, DecodedInvoice>>} rawInvoiceToDecodedInvoice
@@ -118,10 +117,9 @@ export default class Chat extends React.PureComponent {
 
   /** @type {State} */
   state = {
-    messages: [],
+    chats: API.Events.currentChats,
     rawInvoiceToDecodedInvoice: {},
     rawInvoiceToPaymentStatus: {},
-    ownDisplayName: null,
     ownPublicKey: null,
     recipientDisplayName: null,
   }
@@ -171,7 +169,7 @@ export default class Chat extends React.PureComponent {
   }
 
   decodeIncomingInvoices() {
-    const rawIncomingInvoices = this.state.messages
+    const rawIncomingInvoices = this.getMessages()
       .filter(m => !m.outgoing)
       .filter(m => m.body.indexOf('$$__SHOCKWALLET__INVOICE__') === 0)
       .map(m => m.body.slice('$$__SHOCKWALLET__INVOICE__'.length))
@@ -217,11 +215,10 @@ export default class Chat extends React.PureComponent {
 
     this.setState(
       ({
-        messages,
         rawInvoiceToDecodedInvoice: oldRawInvoiceToDecodedInvoice,
         rawInvoiceToPaymentStatus: oldRawInvoiceToPaymentStatus,
       }) => {
-        const rawOutgoingInvoices = messages
+        const rawOutgoingInvoices = this.getMessages()
           .filter(m => m.outgoing)
           .filter(m => m.body.indexOf('$$__SHOCKWALLET__INVOICE__') === 0)
           .map(m => m.body.slice('$$__SHOCKWALLET__INVOICE__'.length))
@@ -276,7 +273,7 @@ export default class Chat extends React.PureComponent {
       return
     }
 
-    const rawIncomingInvoices = this.state.messages
+    const rawIncomingInvoices = this.getMessages()
       .filter(m => !m.outgoing)
       .filter(m => m.body.indexOf('$$__SHOCKWALLET__INVOICE__') === 0)
       .map(m => m.body.slice('$$__SHOCKWALLET__INVOICE__'.length))
@@ -324,7 +321,7 @@ export default class Chat extends React.PureComponent {
       })
     }
 
-    if (prevState.messages !== this.state.messages) {
+    if (prevState.chats !== this.state.chats) {
       this.decodeIncomingInvoices()
     }
 
@@ -346,7 +343,7 @@ export default class Chat extends React.PureComponent {
   }
 
   updateLastReadMsg() {
-    const { messages } = this.state
+    const messages = this.getMessages()
     const pk = this.props.navigation.getParam('recipientPublicKey')
 
     const lastMsg = messages[messages.length - 1]
@@ -375,12 +372,6 @@ export default class Chat extends React.PureComponent {
       this.isFocused = false
     })
     this.chatsUnsub = API.Events.onChats(this.onChats)
-    this.displayNameUnsub = API.Events.onDisplayName(displayName => {
-      this.mounted &&
-        this.setState({
-          ownDisplayName: displayName,
-        })
-    })
 
     this.decodeIncomingInvoices()
     this.fetchOutgoingInvoicesAndUpdateInfo()
@@ -400,14 +391,11 @@ export default class Chat extends React.PureComponent {
   componentWillUnmount() {
     this.mounted = false
     this.chatsUnsub()
-    this.displayNameUnsub()
     this.didFocus.remove()
     this.willBlur.remove()
   }
 
   chatsUnsub = () => {}
-
-  displayNameUnsub = () => {}
 
   /**
    * @private
@@ -415,29 +403,9 @@ export default class Chat extends React.PureComponent {
    * @returns {void}
    */
   onChats = chats => {
-    const { navigation } = this.props
-
-    const recipientPublicKey = navigation.getParam('recipientPublicKey')
-
-    const theChat = chats.find(
-      chat => chat.recipientPublicKey === recipientPublicKey,
-    )
-
-    if (!theChat) {
-      console.warn(
-        `<Chat />.index -> onChats -> no chat found. recipientPublicKey: ${recipientPublicKey}`,
-      )
-      return
-    }
-
     this.setState(
       {
-        messages: theChat.messages,
-        recipientDisplayName:
-          typeof theChat.recipientDisplayName === 'string' &&
-          theChat.recipientDisplayName.length > 0
-            ? theChat.recipientDisplayName
-            : null,
+        chats,
       },
       () => {
         this.updateLastReadMsg()
@@ -446,6 +414,46 @@ export default class Chat extends React.PureComponent {
         this.fetchPaymentsAndUpdatePaymentStatus()
       },
     )
+  }
+
+  /** @returns {API.Schema.ChatMessage[]} */
+  getMessages() {
+    const recipientPublicKey = this.props.navigation.getParam(
+      'recipientPublicKey',
+    )
+
+    const theChat = this.state.chats.find(
+      chat => chat.recipientPublicKey === recipientPublicKey,
+    )
+
+    if (!theChat) {
+      console.warn(
+        `<Chat />.index -> getMessages() -> no chat found. recipientPublicKey: ${recipientPublicKey}`,
+      )
+      return []
+    }
+
+    return theChat.messages
+  }
+
+  /** @returns {string|null} */
+  getRecipientDisplayName() {
+    const recipientPublicKey = this.props.navigation.getParam(
+      'recipientPublicKey',
+    )
+
+    const theChat = this.state.chats.find(
+      chat => chat.recipientPublicKey === recipientPublicKey,
+    )
+
+    if (!theChat) {
+      console.warn(
+        `<Chat />.index -> getRecipientDisplayName -> no chat found. recipientPublicKey: ${recipientPublicKey}`,
+      )
+      return null
+    }
+
+    return theChat.recipientDisplayName
   }
 
   /**
@@ -465,7 +473,7 @@ export default class Chat extends React.PureComponent {
    * @param {string} msgID
    */
   onPressUnpaidIncomingInvoice = msgID => {
-    const msg = /** @type {API.Schema.ChatMessage} */ (this.state.messages.find(
+    const msg = /** @type {API.Schema.ChatMessage} */ (this.getMessages().find(
       m => m.id === msgID,
     ))
 
@@ -484,13 +492,13 @@ export default class Chat extends React.PureComponent {
 
   render() {
     const {
-      messages,
-      ownDisplayName,
       ownPublicKey,
       recipientDisplayName,
       rawInvoiceToDecodedInvoice,
       rawInvoiceToPaymentStatus,
     } = this.state
+
+    const messages = this.getMessages()
 
     const recipientPublicKey = this.props.navigation.getParam(
       'recipientPublicKey',
@@ -567,7 +575,6 @@ export default class Chat extends React.PureComponent {
           onPressSendInvoice={this.sendInvoice}
           onPressUnpaidIncomingInvoice={this.onPressUnpaidIncomingInvoice}
           onSendMessage={this.onSend}
-          ownDisplayName={ownDisplayName}
           ownPublicKey={ownPublicKey}
           recipientDisplayName={recipientDisplayName}
           recipientPublicKey={recipientPublicKey}
