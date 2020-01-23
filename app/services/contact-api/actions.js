@@ -134,19 +134,38 @@ export const sendHandshakeRequest = recipientPublicKey => {
 /**
  * @param {string} recipientPublicKey
  * @param {string} body
+ * @returns {Promise<void>}
  */
-export const sendMessage = (recipientPublicKey, body) => {
+export const sendMessage = async (recipientPublicKey, body) => {
   if (!socket.connected) {
     throw new Error('NOT_CONNECTED')
   }
+
+  const uuid = Math.random().toString() + Date.now().toString()
 
   getToken().then(token => {
     socket.emit(Action.SEND_MESSAGE, {
       token,
       recipientPublicKey,
       body,
+      uuid,
     })
   })
+
+  const res = await new Promise(resolve => {
+    socket.on(
+      Action.SEND_MESSAGE,
+      once(res => {
+        if (res.origBody.uuid === uuid) {
+          resolve(res)
+        }
+      }),
+    )
+  })
+
+  if (!res.ok) {
+    throw new Error(res.msg || 'Unknown Error')
+  }
 }
 
 /**
