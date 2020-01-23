@@ -73,6 +73,8 @@ const HeaderLeft = React.memo(({ onPress }) => ((
  * @prop {Partial<Record<string, PaymentStatus>>} rawInvoiceToPaymentStatus
  * @prop {Partial<Record<string, DecodedInvoice>>} rawInvoiceToDecodedInvoice
  * @prop {string|null} recipientDisplayName
+ * @prop {API.Schema.ChatMessage[]} cachedSentMessages Messages that were *just*
+ * sent but might have not appeared on the onChats() event yet.
  */
 
 /**
@@ -122,6 +124,7 @@ export default class Chat extends React.PureComponent {
     rawInvoiceToPaymentStatus: {},
     ownPublicKey: null,
     recipientDisplayName: null,
+    cachedSentMessages: [],
   }
 
   /** @type {React.RefObject<PaymentDialog>} */
@@ -417,7 +420,7 @@ export default class Chat extends React.PureComponent {
   }
 
   /** @returns {API.Schema.ChatMessage[]} */
-  getMessages() {
+  getMessages = () => {
     const recipientPublicKey = this.props.navigation.getParam(
       'recipientPublicKey',
     )
@@ -433,7 +436,7 @@ export default class Chat extends React.PureComponent {
       return []
     }
 
-    return theChat.messages
+    return [...theChat.messages, ...this.state.cachedSentMessages]
   }
 
   /** @returns {string|null} */
@@ -462,10 +465,20 @@ export default class Chat extends React.PureComponent {
    * @returns {void}
    */
   onSend = text => {
+    this.setState(({ cachedSentMessages }) => ({
+      cachedSentMessages: cachedSentMessages.concat({
+        body: text,
+        id: Math.random().toString() + Date.now().toString(),
+        outgoing: true,
+        timestamp: Date.now(),
+      }),
+    }))
     API.Actions.sendMessage(
       this.props.navigation.getParam('recipientPublicKey'),
       text,
-    )
+    ).catch(e => {
+      console.warn(`Error sending a message with text: ${text} -> ${e.message}`)
+    })
   }
 
   /**
