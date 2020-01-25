@@ -416,6 +416,45 @@ export const onChats = listener => {
   }
 }
 
+/** @typedef {(seedBackup: string|null) => void} SeedBackupListener  */
+
+/** @type {string|null} */
+export let currentSeedBackup = null
+
+/**
+ * @type {SeedBackupListener[]}
+ */
+const seedBackupListeners = []
+
+const notifySeedBackupListeners = debounce(() => {
+  seedBackupListeners.forEach(l => l(currentSeedBackup))
+}, 500)
+
+/**
+ * @param {SeedBackupListener} listener
+ */
+export const onSeedBackup = listener => {
+  if (seedBackupListeners.indexOf(listener) > -1) {
+    throw new Error('tried to subscribe twice')
+  }
+
+  seedBackupListeners.push(listener)
+
+  setImmediate(() => {
+    notifySeedBackupListeners()
+  })
+
+  return () => {
+    const idx = seedBackupListeners.indexOf(listener)
+
+    if (idx < 0) {
+      throw new Error('tried to unsubscribe twice')
+    }
+
+    seedBackupListeners.splice(idx, 1)
+  }
+}
+
 export const setupEvents = () => {
   if (!Socket.socket.connected) {
     throw new Error('Should call setupEvents() after socket is connected.')
@@ -502,6 +541,13 @@ export const setupEvents = () => {
     }
   })
 
+  Socket.socket.on(Event.ON_SEED_BACKUP, res => {
+    if (res.ok) {
+      currentSeedBackup = res.msg
+      notifySeedBackupListeners()
+    }
+  })
+
   // If when receiving a token expired response on response to any data event
   // notify auth listeners that the token expired.
   Object.values(Event).forEach(e => {
@@ -539,6 +585,10 @@ export const setupEvents = () => {
 
   Cache.getToken().then(token => {
     Socket.socket.emit(Event.ON_CHATS, {
+      token,
+    })
+
+    Socket.socket.emit(Event.ON_SEED_BACKUP, {
       token,
     })
   })
