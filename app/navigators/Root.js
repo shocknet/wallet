@@ -15,6 +15,7 @@ import Chat, { CHAT_ROUTE } from '../screens/Chat'
 import Chats, { CHATS_ROUTE } from '../screens/Chats'
 import Advanced, { ADVANCED_SCREEN } from '../screens/Advanced'
 import WalletOverview, { WALLET_OVERVIEW } from '../screens/WalletOverview'
+import SeedBackup, { SEED_BACKUP } from '../screens/SeedBackup'
 
 import Login, { LOGIN } from '../screens/Login'
 
@@ -74,6 +75,12 @@ const MainDrawer = createDrawerNavigator(
       screen: Advanced,
       navigationOptions: {
         title: 'Advanced settings',
+      },
+    },
+    [SEED_BACKUP]: {
+      screen: SeedBackup,
+      navigationOptions: {
+        title: 'Seed Backup',
       },
     },
   },
