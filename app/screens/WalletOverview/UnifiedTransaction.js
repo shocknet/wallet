@@ -96,7 +96,6 @@ export default class UnifiedTransaction extends React.PureComponent {
     }
 
     const formattedTimestamp = moment.unix(timestamp).fromNow()
-    const BTCBalance = btcConvert(value, 'Satoshi', 'bit')
     const convertedBalance = (
       Math.round(btcConvert(value, 'Satoshi', 'BTC') * USDRate * 100) / 100
     ).toLocaleString()
@@ -134,7 +133,7 @@ export default class UnifiedTransaction extends React.PureComponent {
         <View style={styles.valuesContainer}>
           <Text style={styles.timestamp}>{formattedTimestamp + ' ago'}</Text>
           <Text style={styles.value}>
-            +{BTCBalance.toString().replace(/(\d)(?=(\d{3})+$)/g, '$1,')}
+            +{value.toString().replace(/(\d)(?=(\d{3})+$)/g, '$1,')}
           </Text>
           <Text style={styles.USDValue}>{convertedBalance} USD</Text>
         </View>

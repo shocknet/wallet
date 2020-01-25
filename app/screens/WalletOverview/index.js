@@ -117,7 +117,6 @@ import { RECEIVE_SCREEN } from '../Receive'
  * @prop {boolean} displayingInvoiceQR
  * @prop {boolean} displayingOlderFormatBTCAddress
  * @prop {boolean} displayingOlderFormatBTCAddressQR
- * @prop {boolean} displayingReceiveDialog
  * @prop {boolean} fetchingBTCAddress
  * @prop {boolean} fetchingInvoice
  * @prop {boolean} fetchingOlderFormatBTCAddress
@@ -206,7 +205,6 @@ class WalletOverview extends Component {
     displayingInvoiceQR: false,
     displayingOlderFormatBTCAddress: false,
     displayingOlderFormatBTCAddressQR: false,
-    displayingReceiveDialog: false,
     fetchingInvoice: false,
     invoice: null,
     receivingBTCAddress: null,
@@ -257,7 +255,6 @@ class WalletOverview extends Component {
       displayingOlderFormatBTCAddress: false,
       displayingOlderFormatBTCAddressQR: false,
       displayingInvoiceQR: false,
-      displayingReceiveDialog: false,
       fetchingBTCAddress: false,
       fetchingInvoice: false,
       fetchingOlderFormatBTCAddress: false,
@@ -1097,8 +1094,9 @@ class WalletOverview extends Component {
   componentDidMount() {
     const { fetchNodeInfo, subscribeOnChats } = this.props
     this.didFocus = this.props.navigation.addListener('didFocus', () => {
-      StatusBar.setBackgroundColor(CSS.Colors.BLUE_DARK)
+      StatusBar.setBackgroundColor(CSS.Colors.TRANSPARENT)
       StatusBar.setBarStyle('light-content')
+      StatusBar.setTranslucent(true)
     })
     Linking.addEventListener('url', this._handleOpenURL)
     Linking.getInitialURL()
@@ -1121,7 +1119,6 @@ class WalletOverview extends Component {
   }
 
   componentWillUnmount() {
-    this.didFocus.remove()
     Linking.removeEventListener('url', this._handleOpenURL)
 
     if (this.balanceIntervalID) {
@@ -1185,7 +1182,6 @@ class WalletOverview extends Component {
 
     return (
       <View style={styles.balanceContainer}>
-        <Text style={styles.balanceTitle}>Total Balance</Text>
         <Text
           style={[
             styles.balanceValueContainer,
@@ -1234,7 +1230,6 @@ class WalletOverview extends Component {
 
       displayingBTCAddress,
       displayingBTCAddressQR,
-      displayingReceiveDialog,
       displayingCreateInvoiceDialog,
       displayingCreateInvoiceResultDialog,
       displayingInvoiceQR,
@@ -1289,6 +1284,11 @@ class WalletOverview extends Component {
 
     return (
       <View style={styles.container}>
+        <StatusBar
+          translucent
+          backgroundColor="transparent"
+          barStyle="light-content"
+        />
         <ImageBackground
           source={wavesBG}
           resizeMode="cover"
@@ -1325,11 +1325,6 @@ class WalletOverview extends Component {
         <View style={styles.trxContainer}>
           <UnifiedTrx unifiedTrx={recentTransactions} />
         </View>
-        <ShockDialog
-          choiceToHandler={this.receiveDialogChoiceToHandler}
-          onRequestClose={this.closeAllReceiveDialogs}
-          visible={displayingReceiveDialog}
-        />
 
         <ShockDialog
           choiceToHandler={
@@ -1676,24 +1671,19 @@ const styles = StyleSheet.create({
     marginVertical: 32,
     marginBottom: 57,
   },
-  balanceTitle: {
-    fontFamily: 'Montserrat-700',
-    fontSize: 15,
-    marginBottom: 5,
-    color: CSS.Colors.TEXT_WHITE,
-  },
   balanceValueContainer: {
     alignItems: 'flex-end',
     flexDirection: 'row',
     marginBottom: 5,
   },
   balanceValue: {
-    fontSize: 25,
+    fontSize: 30,
+    letterSpacing: 2,
     fontFamily: 'Montserrat-900',
     color: CSS.Colors.TEXT_WHITE,
   },
   balanceCurrency: {
-    fontSize: 12,
+    fontSize: 14,
     fontFamily: 'Montserrat-700',
     color: CSS.Colors.TEXT_WHITE,
   },
@@ -1711,6 +1701,7 @@ const styles = StyleSheet.create({
   },
   overview: {
     width: '100%',
+    paddingTop: 20,
     backgroundColor: CSS.Colors.FUN_BLUE,
   },
   actionButtons: {
