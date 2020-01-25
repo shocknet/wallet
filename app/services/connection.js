@@ -25,7 +25,7 @@ export const pingURL = async urlOrIp => {
     console.log('URL:', `http://${url}/healthz`)
     Http.defaults.baseURL = `http://${url}`
     console.log('Base URL:', Http.defaults.baseURL)
-    const { data: body, headers } = await Http.get(`/healthz`, {
+    const { data: body, headers } = await Http.get(`http://${url}/healthz`, {
       timeout: 5000,
     })
 

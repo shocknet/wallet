@@ -34,6 +34,7 @@ const getPublicKey = async (keyTag = '') => {
  * @prop {string} deviceId
  * @prop {string?} sessionId
  * @prop {string?} cachedSessionId
+ * @prop {(string)=} baseURL
  */
 
 /**
@@ -45,6 +46,7 @@ export const exchangeKeyPair = ({
   deviceId,
   sessionId,
   cachedSessionId,
+  baseURL,
 }) => async dispatch => {
   try {
     console.log({
@@ -74,10 +76,13 @@ export const exchangeKeyPair = ({
       publicKey: keyPair.public,
       deviceId,
     })
-    const exchangedKeys = await Http.post('/api/security/exchangeKeys', {
-      publicKey: keyPair.public,
-      deviceId,
-    })
+    const exchangedKeys = await Http.post(
+      `${baseURL ? baseURL : ''}/api/security/exchangeKeys`,
+      {
+        publicKey: keyPair.public,
+        deviceId,
+      },
+    )
 
     const data = {
       devicePublicKey: keyPair.public,

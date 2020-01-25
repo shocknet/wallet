@@ -787,6 +787,14 @@
   version "15.7.3"
   resolved "https://registry.yarnpkg.com/@types/prop-types/-/prop-types-15.7.3.tgz#2ab0d5da2e5815f94b0b9d4b95d1e5f243ab2ca7"
 
+"@types/react-native-modalbox@^1.4.8":
+  version "1.4.8"
+  resolved "https://registry.yarnpkg.com/@types/react-native-modalbox/-/react-native-modalbox-1.4.8.tgz#e0cdd9e6ab08dcc9f330a9cf418e35298018fb58"
+  integrity sha512-UnkVPFCt4NbloIWpGh+guomHRo3TezzS4vRkjDMZxxFX+PPdFfHHzT/bzw3HZ8Colg6ciaGA3eBwdp+7kFQNkQ==
+  dependencies:
+    "@types/react" "*"
+    "@types/react-native" "*"
+
 "@types/react-native-qrcode@^0.2.2":
   version "0.2.2"
   resolved "https://registry.yarnpkg.com/@types/react-native-qrcode/-/react-native-qrcode-0.2.2.tgz#8b2d6d9518fadc35b04943488bbc8411b6fbe8aa"
@@ -6689,6 +6697,13 @@ react-native-material-textfield@^0.12.0:
   integrity sha1-P7oZ12q4n2cFLIHgghUvwkPYKj8=
   dependencies:
     prop-types "^15.5.9"
+
+react-native-modalbox@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/react-native-modalbox/-/react-native-modalbox-2.0.0.tgz#ff3cddfb73a740e7669c2d2cc80d03cbd4890731"
+  integrity sha512-j0gJTgSGaP+VbOIWPzrHPVNEEaB/TpuY6+KlEZNtdTDEFGp8BNbsZMTr4NPMkioRgZXUvT8bClqaeD63N/BF0g==
+  dependencies:
+    prop-types "^15.5.10"
 
 react-native-os@^1.0.1:
   version "1.2.6"

@@ -239,6 +239,7 @@ const decryptResponse = async response => {
         deviceId: connection.deviceId,
         sessionId: response.headers['x-session-id'],
         cachedSessionId: connection.sessionId,
+        baseURL: response.config.baseURL,
       })(store.dispatch, store.getState, {})
     }
 

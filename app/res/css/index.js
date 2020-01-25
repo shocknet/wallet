@@ -62,6 +62,8 @@ export const Colors = {
   FAILURE_RED: '#C1272D',
   CAUTION_YELLOW: '#EFC238',
   TRANSPARENT: 'transparent',
+  TRANSPARENT_INPUT: 'rgba(0,0,0,0.05)',
+  LOADING_BACKDROP: 'rgba(0,0,0,0.25)',
   GOLD: '#f2a900',
 }
 
