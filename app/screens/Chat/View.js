@@ -59,6 +59,17 @@ const Loading = () => (
   </>
 )
 
+/**
+ * @type {React.FC<import('react-native-gifted-chat').LoadEarlierProps>}
+ */
+const LoadingEarlier = ({ isLoadingEarlier }) =>
+  (isLoadingEarlier ? (
+    <View>
+      <Pad amount={24} />
+      <ActivityIndicator color="gray" />
+    </View>
+  ) : null)
+
 const AlwaysNull = () => null
 
 /**
@@ -361,10 +372,6 @@ export default class ChatView extends React.PureComponent {
 
     const { sendInvoiceAmount, sendInvoiceMemo } = this.state
 
-    if (messages.length === 0) {
-      return <Loading />
-    }
-
     if (ownPublicKey === null) {
       return <Loading />
     }
@@ -384,10 +391,6 @@ export default class ChatView extends React.PureComponent {
     }
 
     const sortedMessages = messages.slice().sort(byTimestampFromOldestToNewest)
-
-    if (sortedMessages.length === 0) {
-      return <Loading />
-    }
 
     const [firstMsg] = sortedMessages
 
@@ -445,14 +448,17 @@ export default class ChatView extends React.PureComponent {
         <View style={xStyles.container}>
           <GiftedChat
             alignTop
-            isLoadingEarlier={false}
-            loadEarlier={thereAreMoreMessages}
+            isLoadingEarlier={thereAreMoreMessages}
             messages={giftedChatMsgs}
             renderLoading={Loading}
             renderMessage={this.messageRenderer}
             user={ownUser}
             renderInputToolbar={AlwaysNull}
             minInputToolbarHeight={0}
+            // Overrides GiftedChat's grey oval box that contains both a load
+            // earliers text and an activity spinner
+            renderLoadEarlier={LoadingEarlier}
+            loadEarlier
           />
         </View>
 
