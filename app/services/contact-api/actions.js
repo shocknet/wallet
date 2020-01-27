@@ -9,6 +9,9 @@ import * as Cache from '../../services/cache'
 
 import Action from './action'
 import Event from './event'
+// new test for instantly reflecting changes (which we know will be transmitted
+// through the socket in the future) after an action is performed.
+import { currentChats, notifyChatsListeners } from './events'
 import { socket } from './socket'
 
 /**
@@ -286,5 +289,48 @@ export const setBio = async bio => {
 
   if (!res.ok) {
     throw new Error(res.msg || 'Unknown Error')
+  }
+}
+
+/**
+ * @param {string} pub
+ * @throws {Error}
+ * @returns {Promise<void>}
+ */
+export const disconnect = async pub => {
+  if (!socket.connected) {
+    throw new Error('NOT_CONNECTED')
+  }
+
+  const token = await getToken()
+  const uuid = Date.now().toString()
+
+  socket.emit(Action.DISCONNECT, {
+    pub,
+    token,
+    uuid,
+  })
+
+  const res = await new Promise(resolve => {
+    socket.on(
+      Action.DISCONNECT,
+      once(res => {
+        if (res.origBody.uuid === uuid) {
+          resolve(res)
+        }
+      }),
+    )
+  })
+
+  if (!res.ok) {
+    throw new Error(res.msg || 'Unknown Error')
+  }
+
+  const chatIdx = currentChats.findIndex(c => c.recipientPublicKey === pub)
+
+  // it's fine if it doesn't exist in our cache
+  if (chatIdx !== -1) {
+    currentChats.splice(chatIdx, 1)
+    notifyChatsListeners()
   }
 }
