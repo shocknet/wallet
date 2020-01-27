@@ -22,12 +22,15 @@ import BasicDialog from '../../components/BasicDialog'
 import ShockInput from '../../components/ShockInput'
 import Pad from '../../components/Pad'
 import ShockButton from '../../components/ShockButton'
+import { Actions } from '../../services/contact-api'
 
 import ChatInvoice from './ChatInvoice'
 import ChatMessage from './ChatMessage'
 import InputToolbar from './InputToolbar'
+import ShockDialog from '../../components/ShockDialog'
 
 export const CHAT_ROUTE = 'CHAT_ROUTE'
+const EMPTY_OBJ = {}
 
 /**
  * @param {{ timestamp: number }} a
@@ -84,6 +87,8 @@ const AlwaysNull = () => null
  * @prop {(amount: number, memo: string) => void} onPressSendInvoice
  *
  * @prop {() => void} onPressSendBTC
+ *
+ * @prop {() => void} onSuccessfulDisconnect
  */
 
 /**
@@ -95,6 +100,9 @@ const AlwaysNull = () => null
  * @prop {string} sendInvoiceMemo
  *
  * @prop {number} inputToolbarHeight
+ *
+ * @prop {'none'|'confirming'|'processing'|'err'} disconnectStatus
+ * @prop {string} disconnectErr Empty string if disconnectStatus !== 'err'
  */
 
 /**
@@ -119,6 +127,28 @@ export default class ChatView extends React.PureComponent {
     sendInvoiceMemo: '',
 
     inputToolbarHeight: 40,
+
+    disconnectStatus: 'none',
+    disconnectErr: '',
+  }
+
+  actionSheetStyle = [
+    styles.actionSheet,
+    {
+      bottom: this.state.inputToolbarHeight,
+    },
+  ]
+
+  /**
+   * @param {unknown} _
+   * @param {State} prevState
+   */
+  componentDidUpdate(_, prevState) {
+    if (prevState.inputToolbarHeight !== this.state.inputToolbarHeight) {
+      // @ts-ignore
+      this.actionSheetStyle[1].bottom = this.state.inputToolbarHeight
+      this.forceUpdate()
+    }
   }
 
   /**
@@ -270,6 +300,57 @@ export default class ChatView extends React.PureComponent {
     this.toggleActionSheet()
   }
 
+  toggleDisconnectDialog = () => {
+    this.setState(({ disconnectStatus }) => {
+      const shouldCloseDialog =
+        disconnectStatus === 'confirming' || disconnectStatus === 'err'
+      const shouldOpenDialog = disconnectStatus === 'none'
+
+      if (shouldCloseDialog) {
+        return {
+          disconnectStatus: 'none',
+          disconnectErr: '',
+        }
+      }
+
+      if (shouldOpenDialog) {
+        return {
+          disconnectStatus: 'confirming',
+          disconnectErr: '',
+        }
+      }
+
+      return null
+    })
+  }
+
+  onPressDisconnect = () => {
+    this.toggleActionSheet()
+    this.toggleDisconnectDialog()
+  }
+
+  disconnectChoices = {
+    Confirm: () => {
+      this.setState(
+        {
+          disconnectStatus: 'processing',
+        },
+        async () => {
+          try {
+            await Actions.disconnect(this.props.recipientPublicKey)
+            this.props.onSuccessfulDisconnect()
+          } catch (e) {
+            this.setState({
+              disconnectStatus: 'err',
+              disconnectErr: e.message || 'Unknown Error',
+            })
+          }
+        },
+      )
+    },
+    'Go Back': this.toggleDisconnectDialog,
+  }
+
   render() {
     const {
       messages,
@@ -339,20 +420,17 @@ export default class ChatView extends React.PureComponent {
           <TouchableWithoutFeedback onPress={this.toggleActionSheet}>
             <View style={CSS.styles.flex}>
               <TouchableWithoutFeedback>
-                <View
-                  style={[
-                    styles.actionSheet,
-                    {
-                      bottom: this.state.inputToolbarHeight,
-                    },
-                  ]}
-                >
+                <View style={this.actionSheetStyle}>
                   <Text style={styles.action} onPress={this.onPressSendBTC}>
                     Send BTC
                   </Text>
                   <Pad amount={10} />
                   <Text style={styles.action} onPress={this.onPressReceive}>
                     Receive
+                  </Text>
+                  <Pad amount={10} />
+                  <Text style={styles.action} onPress={this.onPressDisconnect}>
+                    Disconnect
                   </Text>
                   <Pad amount={10} />
                   <Text style={styles.action} onPress={this.onPressBlock}>
@@ -417,6 +495,33 @@ export default class ChatView extends React.PureComponent {
 
           <ShockButton onPress={this.onPressSendInvoice} title="Send" />
         </BasicDialog>
+
+        <ShockDialog
+          choiceToHandler={
+            this.state.disconnectStatus === 'confirming'
+              ? this.disconnectChoices
+              : EMPTY_OBJ
+          }
+          onRequestClose={this.toggleDisconnectDialog}
+          visible={this.state.disconnectStatus !== 'none'}
+          message={(() => {
+            const { disconnectStatus } = this.state
+
+            if (disconnectStatus === 'confirming') {
+              return 'Removing this contact will delete the conversation, are you sure?'
+            }
+
+            if (disconnectStatus === 'err') {
+              return this.state.disconnectErr || ''
+            }
+
+            if (disconnectStatus === 'processing') {
+              return 'Procesing...'
+            }
+
+            return ''
+          })()}
+        />
       </>
     )
   }
