@@ -524,6 +524,11 @@ export default class Chat extends React.PureComponent {
     this.props.navigation.navigate(WALLET_OVERVIEW, params)
   }
 
+  onSuccessfulDisconnect = () => {
+    this.chatsUnsub()
+    this.props.navigation.goBack()
+  }
+
   render() {
     const {
       ownPublicKey,
@@ -614,6 +619,7 @@ export default class Chat extends React.PureComponent {
           recipientPublicKey={recipientPublicKey}
           onPressSendBTC={this.openSendPaymentDialog}
           recipientAvatar={this.getRecipientAvatar()}
+          onSuccessfulDisconnect={this.onSuccessfulDisconnect}
         />
 
         <PaymentDialog
