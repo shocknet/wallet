@@ -108,12 +108,13 @@ export default class InputToolbar extends React.PureComponent {
   }
 }
 
-const CONTAINER_H_PAD = 6
+export const CONTAINER_H_PAD = 6
 
-const OVAL_V_PAD = 12
+export const OVAL_V_PAD = 12
 const OVAL_HORIZONTAL_PADDING = 16
+export const OVAL_ELEV = 5
 
-const ACTION_BTN_SIZE = 30
+export const ACTION_BTN_SIZE = 30
 
 const styles = StyleSheet.create({
   container: {
@@ -128,7 +129,7 @@ const styles = StyleSheet.create({
   },
 
   oval: {
-    elevation: 5,
+    elevation: OVAL_ELEV,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-end',
