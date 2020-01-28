@@ -303,7 +303,7 @@ export const disconnect = async pub => {
   }
 
   const token = await getToken()
-  const uuid = Date.now().toString()
+  const uuid = Math.random().toString() + Date.now().toString()
 
   socket.emit(Action.DISCONNECT, {
     pub,
