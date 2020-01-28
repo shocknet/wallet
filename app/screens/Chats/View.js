@@ -57,12 +57,7 @@ const NoChatsOrRequests = React.memo(_NoChatsOrRequests)
  * @param {API.Schema.Chat | API.Schema.SimpleReceivedRequest | API.Schema.SimpleSentRequest} item
  * @returns {string}
  */
-const keyExtractor = item => {
-  if (API.Schema.isChat(item)) {
-    return item.recipientPublicKey
-  }
-  return item.id
-}
+const keyExtractor = item => item.id
 
 /**
  * @typedef {object} Props
