@@ -101,6 +101,12 @@ const MainDrawer = createDrawerNavigator(
         title: 'Seed Backup',
       },
     },
+    [SEED_BACKUP]: {
+      screen: SeedBackup,
+      navigationOptions: {
+        title: 'Seed Backup',
+      },
+    },
   },
   {
     initialRouteName: WALLET_NAV,
