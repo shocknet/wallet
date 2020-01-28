@@ -68,7 +68,7 @@ const keyExtractor = item => item.id
  * @prop {API.Schema.SimpleReceivedRequest[]} receivedRequests
  * @prop {API.Schema.SimpleSentRequest[]} sentRequests
  *
- * @prop {(recipientPublicKey: string) => void} onPressChat
+ * @prop {(id: string) => void} onPressChat
  * @prop {(requestID: string) => void} onPressRequest
  *
  * @prop {() => void} onPressAcceptRequest
@@ -105,10 +105,10 @@ export default class ChatsView extends React.PureComponent {
 
   /**
    * @private
-   * @param {string} recipientPublicKey
+   * @param {string} id
    */
-  onPressChat = recipientPublicKey => {
-    this.props.onPressChat(recipientPublicKey)
+  onPressChat = id => {
+    this.props.onPressChat(id)
   }
 
   /**
@@ -155,7 +155,7 @@ export default class ChatsView extends React.PureComponent {
       <TouchableOpacity
         // eslint-disable-next-line react/jsx-no-bind
         onPress={() => {
-          this.onPressChat(chat.recipientPublicKey)
+          this.onPressChat(chat.id)
         }}
       >
         <View style={styles.itemContainer}>
@@ -163,7 +163,7 @@ export default class ChatsView extends React.PureComponent {
             <UserDetail
               alternateText={`(${moment(lastMsgTimestamp).fromNow()})`}
               alternateTextBold={unread}
-              id={chat.recipientPublicKey}
+              id={chat.id}
               image={chat.recipientAvatar}
               lowerText={(() => {
                 if (lastMsg.body === '$$__SHOCKWALLET__INITIAL__MESSAGE') {
@@ -183,6 +183,7 @@ export default class ChatsView extends React.PureComponent {
                   : chat.recipientDisplayName
               }
               nameBold={unread}
+              onPress={this.onPressChat}
             />
           </View>
           <Icon
