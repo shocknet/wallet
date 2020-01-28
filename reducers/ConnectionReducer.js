@@ -1,3 +1,4 @@
+// @ts-ignore
 import uuid from 'uuid/v4'
 import { ACTIONS } from '../app/actions/ConnectionActions'
 

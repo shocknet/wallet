@@ -1,5 +1,11 @@
 import React from 'react'
-import { Text, TextInput, View, ActivityIndicator } from 'react-native'
+import {
+  Text,
+  TextInput,
+  View,
+  ActivityIndicator,
+  StatusBar,
+} from 'react-native'
 import Entypo from 'react-native-vector-icons/Entypo'
 import { connect } from 'react-redux'
 
@@ -252,15 +258,23 @@ class CreateWalletOrAlias extends React.PureComponent {
 
     if (creatingWallet) {
       return (
-        <FlexCenter>
-          <Entypo name="wallet" size={45} color="#4285b9" />
-          <Pad amount={10} />
-          <Text style={[CSS.styles.textAlignCenter, CSS.styles.fontMontserrat]}>
-            Creating wallet, hang tight...
-          </Text>
-          <Pad amount={10} />
-          <ActivityIndicator size="large" color={CSS.Colors.BACKGROUND_BLUE} />
-        </FlexCenter>
+        <>
+          <StatusBar barStyle="dark-content" />
+          <FlexCenter>
+            <Entypo name="wallet" size={45} color="#4285b9" />
+            <Pad amount={10} />
+            <Text
+              style={[CSS.styles.textAlignCenter, CSS.styles.fontMontserrat]}
+            >
+              Creating wallet, hang tight...
+            </Text>
+            <Pad amount={10} />
+            <ActivityIndicator
+              size="large"
+              color={CSS.Colors.BACKGROUND_BLUE}
+            />
+          </FlexCenter>
+        </>
       )
     }
 

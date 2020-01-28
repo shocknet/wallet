@@ -100,6 +100,7 @@ class ConnectToNode extends React.PureComponent {
       } else {
         this.setState({
           checkingCacheForNodeURL: false,
+          nodeURL: nodeURL || '',
         })
       }
     })

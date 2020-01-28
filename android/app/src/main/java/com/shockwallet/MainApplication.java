@@ -11,6 +11,7 @@ import com.peel.react.rnos.RNOSModule;
 import com.tectiv3.aes.RCTAesPackage;
 import com.RNRSA.RNRSAPackage;
 import com.swmansion.gesturehandler.react.RNGestureHandlerPackage;
+import com.reactnative.ivpusic.imagepicker.PickerPackage;
 import br.com.classapp.RNSensitiveInfo.RNSensitiveInfoPackage;
 import com.reactnativecommunity.netinfo.NetInfoPackage;
 import com.zoontek.rnbootsplash.RNBootSplashPackage;
@@ -22,6 +23,7 @@ import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
 import com.facebook.react.shell.MainReactPackage;
 import com.facebook.soloader.SoLoader;
+import com.shockwallet.NotificationPackage;
 
 import java.util.Arrays;
 import java.util.List;
@@ -46,13 +48,15 @@ public class MainApplication extends Application implements ReactApplication {
             new RCTAesPackage(),
             new RNRSAPackage(),
             new RNGestureHandlerPackage(),
+            new PickerPackage(),
             new RNSensitiveInfoPackage(),
             new NetInfoPackage(),
             new RNBootSplashPackage(),
             new LinearGradientPackage(),
             new AsyncStoragePackage(),
             new RNCameraPackage(),
-            new SvgPackage()
+            new SvgPackage(),
+            new NotificationPackage()
       );
     }
 

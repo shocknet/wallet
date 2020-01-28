@@ -134,19 +134,38 @@ export const sendHandshakeRequest = recipientPublicKey => {
 /**
  * @param {string} recipientPublicKey
  * @param {string} body
+ * @returns {Promise<void>}
  */
-export const sendMessage = (recipientPublicKey, body) => {
+export const sendMessage = async (recipientPublicKey, body) => {
   if (!socket.connected) {
     throw new Error('NOT_CONNECTED')
   }
+
+  const uuid = Math.random().toString() + Date.now().toString()
 
   getToken().then(token => {
     socket.emit(Action.SEND_MESSAGE, {
       token,
       recipientPublicKey,
       body,
+      uuid,
     })
   })
+
+  const res = await new Promise(resolve => {
+    socket.on(
+      Action.SEND_MESSAGE,
+      once(res => {
+        if (res.origBody.uuid === uuid) {
+          resolve(res)
+        }
+      }),
+    )
+  })
+
+  if (!res.ok) {
+    throw new Error(res.msg || 'Unknown Error')
+  }
 }
 
 /**
@@ -191,5 +210,81 @@ export const sendReqWithInitialMsg = async (recipientPublicKey, initialMsg) => {
 
   if (!res.ok) {
     throw new Error(res.msg)
+  }
+}
+
+/**
+ * @param {string} recipientPub
+ * @param {number} amount
+ * @param {string} memo
+ * @throws {Error} Forwards an error if any from the API.
+ * @returns {Promise<void>}
+ */
+export const sendPayment = async (recipientPub, amount, memo) => {
+  if (!socket.connected) {
+    throw new Error('NOT_CONNECTED')
+  }
+
+  const token = await getToken()
+
+  const uuid = Date.now().toString()
+
+  socket.emit(Action.SEND_PAYMENT, {
+    token,
+    recipientPub,
+    amount,
+    memo,
+    uuid,
+  })
+
+  const res = await new Promise(resolve => {
+    socket.on(
+      Action.SEND_PAYMENT,
+      once(res => {
+        if (res.origBody.uuid === uuid) {
+          resolve(res)
+        }
+      }),
+    )
+  })
+
+  console.warn(`res in sendPayment: ${JSON.stringify(res)}`)
+
+  if (!res.ok) {
+    throw new Error(res.msg || 'Unknown Error')
+  }
+}
+
+/**
+ * @param {string} bio
+ * @returns {Promise<void>}
+ */
+export const setBio = async bio => {
+  if (!socket.connected) {
+    throw new Error('NOT_CONNECTED')
+  }
+
+  const token = await getToken()
+  const uuid = Date.now().toString()
+
+  socket.emit(Action.SET_BIO, {
+    token,
+    bio,
+    uuid,
+  })
+
+  const res = await new Promise(resolve => {
+    socket.on(
+      Action.SET_BIO,
+      once(res => {
+        if (res.origBody.uuid === uuid) {
+          resolve(res)
+        }
+      }),
+    )
+  })
+
+  if (!res.ok) {
+    throw new Error(res.msg || 'Unknown Error')
   }
 }

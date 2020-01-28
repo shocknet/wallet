@@ -1,8 +1,19 @@
+
 # ShockWallet Alpha
 
-Lightning Wallet that connects to a remote node and leverages GUN for a decentralized social layer.
+ShockWallet connects to a remote node and leverages [GUN](https://github.com/amark/gun) for a decentralized social layer.
 
 Requires [Shock API](https://github.com/shocknet/api) backend, and [LND](https://github.com/lightningnetwork/lnd)
+
+## Features:
+
+- Provider-less mobile notifications
+- LNURL Pay, Withdraw, Channel
+- GUN Identities
+- Private Encrypted Messaging
+- SendSide Payments
+- Invoice Auto-Responder
+
 
 ## [Download Android APK](https://github.com/shocknet/wallet/releases/download/pre1/APK-RELEASE.apk)
 
@@ -32,4 +43,4 @@ Help Wanted
 **If you find any issues with this project, or would like to suggest an enhancement, please [tell us](https://github.com/shocknet/Wizard/issues).**
 
 [ISC License](https://opensource.org/licenses/ISC)
-© 2019 [Shock Network, Inc.](http://shock.network)
+© 2020 [Shock Network, Inc.](http://shock.network)

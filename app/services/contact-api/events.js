@@ -2,6 +2,7 @@
  * @format
  */
 import once from 'lodash/once'
+import debounce from 'lodash/debounce'
 
 import * as Cache from '../../services/cache'
 
@@ -81,7 +82,6 @@ export const onConnection = listener => {
 ////////////////////////////////////////////////////////////////////////////////
 
 /** @typedef {(avatar: string|null) => void} AvatarListener */
-/** @typedef {(chats: Schema.Chat[]) => void} ChatsListener  */
 /** @typedef {(handshakeAddress: string|null) => void} HandshakeAddrListener */
 /** @typedef {(displayName: string|null) => void} DisplayNameListener */
 /** @typedef {(receivedRequests: Schema.SimpleReceivedRequest[]) => void} ReceivedRequestsListener */
@@ -92,11 +92,6 @@ export const onConnection = listener => {
  * @type {AvatarListener[]}
  */
 const avatarListeners = []
-
-/**
- * @type {ChatsListener[]}
- */
-const chatsListeners = []
 
 /**
  * @type {HandshakeAddrListener[]}
@@ -147,33 +142,6 @@ export const onAvatar = listener => {
     }
 
     avatarListeners.splice(idx, 1)
-  }
-}
-
-/**
- * @param {ChatsListener} listener
- */
-export const onChats = listener => {
-  if (chatsListeners.indexOf(listener) > -1) {
-    throw new Error('tried to subscribe twice')
-  }
-
-  chatsListeners.push(listener)
-
-  setImmediate(async () => {
-    Socket.socket.emit(Event.ON_CHATS, {
-      token: await getToken(),
-    })
-  })
-
-  return () => {
-    const idx = chatsListeners.indexOf(listener)
-
-    if (idx < 0) {
-      throw new Error('tried to unsubscribe twice')
-    }
-
-    chatsListeners.splice(idx, 1)
   }
 }
 
@@ -312,6 +280,48 @@ export const onUsers = listener => {
   }
 }
 
+/** @typedef {(bio: string|null) => void} BioListener*/
+
+/** @type {string|null} */
+export let currentBio = 'A ShockWallet user'
+
+/**
+ * @type {BioListener[]}
+ */
+const bioListeners = []
+
+const notifyBioListeners = debounce(() => {
+  bioListeners.forEach(l => l(currentBio))
+}, 500)
+
+/**
+ * @param {BioListener} listener
+ */
+export const onBio = listener => {
+  if (bioListeners.indexOf(listener) > -1) {
+    throw new Error('tried to subscribe twice')
+  }
+
+  bioListeners.push(listener)
+
+  setImmediate(async () => {
+    notifyBioListeners() // will provide current value to listener
+    Socket.socket.emit(Event.ON_BIO, {
+      token: await getToken(),
+    })
+  })
+
+  return () => {
+    const idx = bioListeners.indexOf(listener)
+
+    if (idx < 0) {
+      throw new Error('tried to unsubscribe twice')
+    }
+
+    bioListeners.splice(idx, 1)
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ACTION EVENTS ///////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -365,6 +375,86 @@ export const onRegister = listener => {
   }
 }
 
+/** @typedef {(chats: Schema.Chat[]) => void} ChatsListener  */
+
+/** @type {Schema.Chat[]} */
+export let currentChats = []
+
+/**
+ * @type {ChatsListener[]}
+ */
+const chatsListeners = []
+
+const notifyChatsListeners = debounce(() => {
+  chatsListeners.forEach(l => l(currentChats))
+}, 500)
+
+/**
+ * @param {ChatsListener} listener
+ */
+export const onChats = listener => {
+  if (chatsListeners.indexOf(listener) > -1) {
+    throw new Error('tried to subscribe twice')
+  }
+
+  chatsListeners.push(listener)
+
+  setImmediate(() => {
+    notifyChatsListeners() // will provide current value to listener
+    // unlike the bio listener let's test out not re-emitting the event here
+    // to a void an unnecessary refresh
+  })
+
+  return () => {
+    const idx = chatsListeners.indexOf(listener)
+
+    if (idx < 0) {
+      throw new Error('tried to unsubscribe twice')
+    }
+
+    chatsListeners.splice(idx, 1)
+  }
+}
+
+/** @typedef {(seedBackup: string|null) => void} SeedBackupListener  */
+
+/** @type {string|null} */
+export let currentSeedBackup = null
+
+/**
+ * @type {SeedBackupListener[]}
+ */
+const seedBackupListeners = []
+
+const notifySeedBackupListeners = debounce(() => {
+  seedBackupListeners.forEach(l => l(currentSeedBackup))
+}, 500)
+
+/**
+ * @param {SeedBackupListener} listener
+ */
+export const onSeedBackup = listener => {
+  if (seedBackupListeners.indexOf(listener) > -1) {
+    throw new Error('tried to subscribe twice')
+  }
+
+  seedBackupListeners.push(listener)
+
+  setImmediate(() => {
+    notifySeedBackupListeners()
+  })
+
+  return () => {
+    const idx = seedBackupListeners.indexOf(listener)
+
+    if (idx < 0) {
+      throw new Error('tried to unsubscribe twice')
+    }
+
+    seedBackupListeners.splice(idx, 1)
+  }
+}
+
 export const setupEvents = () => {
   if (!Socket.socket.connected) {
     throw new Error('Should call setupEvents() after socket is connected.')
@@ -399,9 +489,8 @@ export const setupEvents = () => {
 
   Socket.socket.on(Event.ON_CHATS, res => {
     if (res.ok) {
-      chatsListeners.forEach(l => {
-        l(res.msg)
-      })
+      currentChats = res.msg
+      notifyChatsListeners()
     }
   })
 
@@ -445,6 +534,20 @@ export const setupEvents = () => {
     }
   })
 
+  Socket.socket.on(Event.ON_BIO, res => {
+    if (res.ok) {
+      currentBio = res.msg
+      notifyBioListeners()
+    }
+  })
+
+  Socket.socket.on(Event.ON_SEED_BACKUP, res => {
+    if (res.ok) {
+      currentSeedBackup = res.msg
+      notifySeedBackupListeners()
+    }
+  })
+
   // If when receiving a token expired response on response to any data event
   // notify auth listeners that the token expired.
   Object.values(Event).forEach(e => {
@@ -478,5 +581,15 @@ export const setupEvents = () => {
 
   connectionListeners.forEach(l => {
     l(Socket.socket.connected)
+  })
+
+  Cache.getToken().then(token => {
+    Socket.socket.emit(Event.ON_CHATS, {
+      token,
+    })
+
+    Socket.socket.emit(Event.ON_SEED_BACKUP, {
+      token,
+    })
   })
 }

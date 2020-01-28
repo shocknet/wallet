@@ -64,7 +64,8 @@
     "react-native-deep-linking": "^2.2.0",
     "react-native-elements": "^0.19.1",
     "react-native-gesture-handler": "^1.5.3",
-    "react-native-gifted-chat": "^0.9.3",
+    "react-native-gifted-chat": "^0.13.0",
+    "react-native-image-crop-picker": "0.24.x",
     "react-native-keyboard-aware-scroll-view": "^0.6.0",
     "react-native-level-fs": "^3.0.0",
     "react-native-linear-gradient": "^2.5.6",
@@ -117,7 +118,6 @@
     "@types/react-navigation": "^2.13.10",
     "@types/react-redux": "^6.0.1",
     "@types/socket.io-client": "^1.4.32",
-    "@types/uuid": "^3.4.5",
     "babel-eslint": "^10.0.3",
     "babel-jest": "23.0.1",
     "babel-preset-react-native": "4.0.0",
@@ -134,7 +134,7 @@
     "prettier": "^1.17.1",
     "react-test-renderer": "16.3.1",
     "rn-nodeify": "^10.2.0",
-    "typescript": "^3.7.3"
+    "typescript": "^3.7.4"
   },
   "jest": {
     "preset": "react-native",

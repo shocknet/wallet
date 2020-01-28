@@ -60,7 +60,7 @@ export default class Chats extends React.PureComponent {
   /** @type {State} */
   state = {
     acceptingRequest: null,
-    chats: [],
+    chats: API.Events.currentChats,
     lastReadMsgs: {},
     receivedRequests: [],
     sentRequests: [],
@@ -124,11 +124,13 @@ export default class Chats extends React.PureComponent {
     const { chats } = this.state
 
     // CAST: If user is pressing on a chat, that chat exists
-    const { messages } = /** @type {API.Schema.Chat} */ (chats.find(
+    const chat = /** @type {API.Schema.Chat} */ (chats.find(
       chat => chat.recipientPublicKey === recipientPublicKey,
     ))
 
-    const sortedMessages = messages.slice().sort(byTimestampFromOldestToNewest)
+    const sortedMessages = chat.messages
+      .slice()
+      .sort(byTimestampFromOldestToNewest)
 
     const lastMsg = sortedMessages[sortedMessages.length - 1]
 
@@ -139,6 +141,8 @@ export default class Chats extends React.PureComponent {
     /** @type {ChatParams} */
     const params = {
       recipientPublicKey,
+      // performance
+      _title: chat.recipientDisplayName || recipientPublicKey,
     }
 
     this.props.navigation.navigate(CHAT_ROUTE, params)
