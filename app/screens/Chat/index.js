@@ -429,10 +429,6 @@ export default class Chat extends React.PureComponent {
     const matchingChat = this.state.chats.find(c => c.id === id)
 
     if (!matchingChat) {
-      return
-    }
-
-    if (!matchingChat) {
       this.props.navigation.goBack()
     }
 
