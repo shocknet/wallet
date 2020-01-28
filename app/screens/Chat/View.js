@@ -9,6 +9,8 @@ import {
   StatusBar,
   TouchableWithoutFeedback,
   Modal,
+  TouchableOpacity,
+  ToastAndroid,
 } from 'react-native'
 import { Text } from 'react-native-elements'
 import { GiftedChat } from 'react-native-gifted-chat'
@@ -26,7 +28,12 @@ import { Actions } from '../../services/contact-api'
 
 import ChatInvoice from './ChatInvoice'
 import ChatMessage from './ChatMessage'
-import InputToolbar from './InputToolbar'
+import InputToolbar, {
+  ACTION_BTN_SIZE,
+  OVAL_V_PAD,
+  CONTAINER_H_PAD,
+  OVAL_ELEV,
+} from './InputToolbar'
 import ShockDialog from '../../components/ShockDialog'
 
 export const CHAT_ROUTE = 'CHAT_ROUTE'
@@ -99,7 +106,7 @@ const AlwaysNull = () => null
  *
  * @prop {() => void} onPressSendBTC
  *
- * @prop {() => void} onSuccessfulDisconnect
+ * @prop {boolean} didDisconnect
  */
 
 /**
@@ -349,7 +356,6 @@ export default class ChatView extends React.PureComponent {
         async () => {
           try {
             await Actions.disconnect(this.props.recipientPublicKey)
-            this.props.onSuccessfulDisconnect()
           } catch (e) {
             this.setState({
               disconnectStatus: 'err',
@@ -362,12 +368,24 @@ export default class ChatView extends React.PureComponent {
     'Go Back': this.toggleDisconnectDialog,
   }
 
+  onPressRemove = () => {
+    Actions.disconnect(this.props.recipientPublicKey)
+      .then(() => {
+        ToastAndroid.show('Removed', 800)
+      })
+      .catch(e => {
+        ToastAndroid.show('Could not remove', 800)
+        console.warn(e.message || 'unknown error')
+      })
+  }
+
   render() {
     const {
       messages,
       ownPublicKey,
       recipientDisplayName,
       recipientPublicKey,
+      didDisconnect,
     } = this.props
 
     const { sendInvoiceAmount, sendInvoiceMemo } = this.state
@@ -395,10 +413,16 @@ export default class ChatView extends React.PureComponent {
     const [firstMsg] = sortedMessages
 
     const thereAreMoreMessages =
-      firstMsg.body !== '$$__SHOCKWALLET__INITIAL__MESSAGE'
+      firstMsg.body !== '$$__SHOCKWALLET__INITIAL__MESSAGE' && !didDisconnect
 
     /** @type {GiftedChatMessage[]} */
     const giftedChatMsgs = sortedMessages
+      .filter(m => {
+        if (didDisconnect) {
+          return m.outgoing
+        }
+        return true
+      })
       .filter(msg => msg.body !== '$$__SHOCKWALLET__INITIAL__MESSAGE')
       .sort(byTimestampFromNewestToOldest)
       .map(msg => ({
@@ -462,12 +486,29 @@ export default class ChatView extends React.PureComponent {
           />
         </View>
 
-        <InputToolbar
-          disableInput={false}
-          onPressActionBtn={this.toggleActionSheet}
-          onSend={this.onSend}
-          onHeight={this.onInputToolbarHeight}
-        />
+        {!didDisconnect && (
+          <InputToolbar
+            disableInput={false}
+            onPressActionBtn={this.toggleActionSheet}
+            onSend={this.onSend}
+            onHeight={this.onInputToolbarHeight}
+          />
+        )}
+
+        {didDisconnect && (
+          <View style={styles.disconnectNotice}>
+            <Text style={CSS.styles.fontMontserrat}>Contact Disconnected</Text>
+
+            <Pad amount={24} />
+
+            <TouchableOpacity
+              style={styles.removeConvBtn}
+              onPress={this.onPressRemove}
+            >
+              <Text style={xStyles.removeConv}>Remove Conversation</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
         <BasicDialog
           title="Create a Lightning Invoice"
@@ -593,8 +634,30 @@ const styles = StyleSheet.create({
     ...invoiceWrapperBase,
     alignItems: 'flex-end',
   },
+
+  disconnectNotice: {
+    position: 'absolute',
+    bottom: 24,
+
+    paddingLeft: CONTAINER_H_PAD,
+    paddingRight: CONTAINER_H_PAD,
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  removeConvBtn: {
+    backgroundColor: CSS.Colors.BACKGROUND_NEAR_WHITE,
+    elevation: OVAL_ELEV,
+    height: OVAL_V_PAD * 2 + ACTION_BTN_SIZE,
+    width: '60%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 30,
+  },
 })
 
 const xStyles = {
   container: [CSS.styles.flex, CSS.styles.backgroundWhite],
+  removeConv: [CSS.styles.fontMontserratBold, CSS.styles.fontSize12],
 }
