@@ -115,9 +115,9 @@ export default class Chats extends React.PureComponent {
   }
 
   /**
-   * @param {string} recipientPublicKey
+   * @param {string} id
    */
-  onPressChat = recipientPublicKey => {
+  onPressChat = id => {
     // CAST: If user is pressing on a chat, chats are loaded and not null.
     // TS wants the expression to be casted to `unknown` first. Not possible
     // with jsdoc
@@ -125,7 +125,7 @@ export default class Chats extends React.PureComponent {
 
     // CAST: If user is pressing on a chat, that chat exists
     const chat = /** @type {API.Schema.Chat} */ (chats.find(
-      chat => chat.recipientPublicKey === recipientPublicKey,
+      chat => chat.id === id,
     ))
 
     const sortedMessages = chat.messages
@@ -140,9 +140,9 @@ export default class Chats extends React.PureComponent {
 
     /** @type {ChatParams} */
     const params = {
-      recipientPublicKey,
+      id,
       // performance
-      _title: chat.recipientDisplayName || recipientPublicKey,
+      _title: chat.recipientDisplayName || chat.recipientPublicKey,
     }
 
     this.props.navigation.navigate(CHAT_ROUTE, params)
