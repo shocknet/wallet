@@ -57,9 +57,6 @@ import { RECEIVE_SCREEN } from '../Receive'
 import notificationService from '../../../notificationService'
 import * as Cache from '../../services/cache'
 
-import notificationService from '../../../notificationService'
-import * as Cache from '../../services/cache'
-
 /**
  * @typedef {object} Params
  * @prop {string=} rawInvoice
@@ -1166,22 +1163,6 @@ class WalletOverview extends Component {
     // this.setState({
     //   displayingReceiveDialog: true,
     // })
-  }
-
-  startNotificationService = async () => {
-    const authData = await Cache.getStoredAuthData()
-    const nodeInfo = await Cache.getNodeURL()
-    if (!authData || !nodeInfo) {
-      console.log('error starting service, invalid info')
-    }
-    notificationService.startService(
-      nodeInfo,
-      authData ? authData.authData.token : 'token err',
-    )
-  }
-
-  stopNotificationService = () => {
-    notificationService.stopService()
   }
 
   startNotificationService = async () => {
