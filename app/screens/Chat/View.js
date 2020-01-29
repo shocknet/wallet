@@ -123,10 +123,11 @@ const AlwaysNull = () => null
  * @prop {string} disconnectErr Empty string if disconnectStatus !== 'err'
  */
 
+// TODO: Component instead of PureComponent is a temp fix
 /**
- * @augments React.PureComponent<Props, State, never>
+ * @augments React.Component<Props, State, never>
  */
-export default class ChatView extends React.PureComponent {
+export default class ChatView extends React.Component {
   navigationOptions = {
     headerStyle: {
       backgroundColor: CSS.Colors.BLUE_DARK,

@@ -44,10 +44,12 @@ const byTimestampFromOldestToNewest = (a, b) => a.timestamp - b.timestamp
  * @prop {boolean} scanningUserQR
  */
 
+// TODO: Component vs PureComponent
+
 /**
- * @augments React.PureComponent<Props, State>
+ * @augments React.Component<Props, State>
  */
-export default class Chats extends React.PureComponent {
+export default class Chats extends React.Component {
   /**
    * @type {import('react-navigation').NavigationBottomTabScreenOptions}
    */
