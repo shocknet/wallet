@@ -77,10 +77,12 @@ const HeaderLeft = React.memo(({ onPress }) => ((
  * sent but might have not appeared on the onChats() event yet.
  */
 
+// TODO: COMPONENT HERE IS A TEMP FIX
+
 /**
- * @augments React.PureComponent<Props, State>
+ * @augments React.Component<Props, State>
  */
-export default class Chat extends React.PureComponent {
+export default class Chat extends React.Component {
   /**
    * @param {{ navigation: Navigation }} args
    * @returns {import('react-navigation').NavigationStackScreenOptions}
