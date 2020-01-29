@@ -72,7 +72,8 @@ const keyExtractor = item => item.id
  * @prop {(requestID: string) => void} onPressRequest
  *
  * @prop {() => void} onPressAcceptRequest
- * @prop {() => void} onPressIgnoreRequest
+ * @prop {() => void} onPressRejectRequest
+ * @prop {() => void} onRequestCloseRequestDialog
  *
  * @prop {() => void} onPressAdd
  * @prop {boolean} showingAddDialog
@@ -98,8 +99,8 @@ export default class ChatsView extends React.Component {
     Accept: () => {
       this.props.onPressAcceptRequest()
     },
-    Ignore: () => {
-      this.props.onPressIgnoreRequest()
+    'Reject (This will change your handshake address, thus rejecting all other pending requests)': () => {
+      this.props.onPressRejectRequest()
     },
   }
 
@@ -395,7 +396,7 @@ export default class ChatsView extends React.Component {
         <ShockDialog
           choiceToHandler={this.choiceToHandler}
           message={ACCEPT_REQUEST_DIALOG_TEXT}
-          onRequestClose={this.props.onPressIgnoreRequest}
+          onRequestClose={this.props.onRequestCloseRequestDialog}
           visible={!!acceptingRequest}
         />
 

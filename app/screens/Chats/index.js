@@ -186,6 +186,11 @@ export default class Chats extends React.Component {
     })
   }
 
+  onPressRejectRequest = () => {
+    API.Actions.generateNewHandshakeNode()
+    this.cancelAcceptingRequest()
+  }
+
   ///
 
   toggleAddDialog = () => {
@@ -300,7 +305,8 @@ export default class Chats extends React.Component {
         receivedRequests={filteredReceivedRequests}
         onPressRequest={this.onPressReceivedRequest}
         onPressAcceptRequest={this.acceptRequest}
-        onPressIgnoreRequest={this.cancelAcceptingRequest}
+        onRequestCloseRequestDialog={this.cancelAcceptingRequest}
+        onPressRejectRequest={this.onPressRejectRequest}
         onPressAdd={this.toggleAddDialog}
         showingAddDialog={showingAddDialog}
         onRequestCloseAddDialog={this.toggleAddDialog}
