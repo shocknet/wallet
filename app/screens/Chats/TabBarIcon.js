@@ -18,9 +18,9 @@ import * as CSS from '../../res/css'
  */
 
 /**
- * @augments React.PureComponent<Props, State, never>
+ * @augments React.Component<Props, State, never>
  */
-export default class TabBarIcon extends React.PureComponent {
+export default class TabBarIcon extends React.Component {
   /** @type {State} */
   state = {
     chats: [],
