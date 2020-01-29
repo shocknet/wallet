@@ -99,7 +99,7 @@ export default class ChatsView extends React.Component {
     Accept: () => {
       this.props.onPressAcceptRequest()
     },
-    'Reject (This will change your handshake address, thus rejecting all other pending requests)': () => {
+    Reject: () => {
       this.props.onPressRejectRequest()
     },
   }
@@ -167,6 +167,10 @@ export default class ChatsView extends React.Component {
               id={chat.id}
               image={chat.recipientAvatar}
               lowerText={(() => {
+                if (chat.didDisconnect) {
+                  return 'Contact Disconnected'
+                }
+
                 if (lastMsg.body === '$$__SHOCKWALLET__INITIAL__MESSAGE') {
                   return 'Empty conversation'
                 }
