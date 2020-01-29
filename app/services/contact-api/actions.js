@@ -41,6 +41,10 @@ export const acceptRequest = requestID => {
       token,
       requestID,
     })
+
+    socket.emit(Event.ON_CHATS, {
+      token,
+    })
   })
 }
 
