@@ -302,6 +302,17 @@ export const setBio = async bio => {
  * @returns {Promise<void>}
  */
 export const disconnect = async pub => {
+  const chatIdx = currentChats.findIndex(c => c.recipientPublicKey === pub)
+
+  /** @type {import('./schema').Chat[]} */
+  let deletedChat = []
+
+  // it's fine if it doesn't exist in our cache
+  if (chatIdx !== -1) {
+    deletedChat = currentChats.splice(chatIdx, 1)
+    notifyChatsListeners()
+  }
+
   if (!socket.connected) {
     throw new Error('NOT_CONNECTED')
   }
@@ -327,14 +338,10 @@ export const disconnect = async pub => {
   })
 
   if (!res.ok) {
+    if (deletedChat.length) {
+      currentChats.push(deletedChat[0])
+      notifyChatsListeners()
+    }
     throw new Error(res.msg || 'Unknown Error')
-  }
-
-  const chatIdx = currentChats.findIndex(c => c.recipientPublicKey === pub)
-
-  // it's fine if it doesn't exist in our cache
-  if (chatIdx !== -1) {
-    currentChats.splice(chatIdx, 1)
-    notifyChatsListeners()
   }
 }
