@@ -1,4 +1,4 @@
-import { Socket } from './contact-api'
+import Http from 'axios'
 
 import * as Cache from './cache'
 import * as Utils from './utils'
@@ -75,6 +75,7 @@ import * as Utils from './utils'
  * @prop {string} payment_request  The optional payment request being fulfilled.
  * @prop {'UNKNOWN'|'IN_FLIGHT'|'SUCCEEDED'|'FAILED'} status  The status of the
  * payment.
+ * @prop {(DecodedPayReq)=} decodedPayment The decoded payment request
  * @prop {(Int64)=} fee_sat  The fee paid for this payment in satoshis
  * @prop {(Int64)=} fee_msat  The fee paid for this payment in milli-satoshis
  */
@@ -235,6 +236,32 @@ import * as Utils from './utils'
  * @prop {0|1|2|3} type The address type. WITNESS_PUBKEY_HASH 0
  * NESTED_PUBKEY_HASH 1 UNUSED_WITNESS_PUBKEY_HASH 2 UNUSED_NESTED_PUBKEY_HASH 3
  */
+/**
+ * @typedef {object} Chain
+ * @prop {string[]} chan_points	Is the set of all channels that are included in this multi-channel backup.
+ * @prop {bytes} multi_chan_backup	A single encrypted blob containing all the static channel backups of the channel listed above. This can be stored as a single file or blob, and safely be replaced with any prior/future versions. When using REST, this field must be encoded as base64.
+ */
+
+/**
+ * @typedef {object} GetInfo
+ * @prop {string} version	The version of the LND software that the node is running.
+ * @prop {string} identity_pubkey	The identity pubkey of the current node.
+ * @prop {string} alias	If applicable, the alias of the current node, e.g. "bob"
+ * @prop {string} color	The color of the current node in hex code format
+ * @prop {string} num_pending_channels	Number of pending channels
+ * @prop {string} num_active_channels	Number of active channels
+ * @prop {string} num_inactive_channels	Number of inactive channels
+ * @prop {string} num_peers	Number of peers
+ * @prop {string} block_height	The node's current view of the height of the best block
+ * @prop {string} block_hash	The node's current view of the hash of the best block
+ * @prop {string} best_header_timestamp	Timestamp of the block best known to the wallet
+ * @prop {boolean} synced_to_chain	Whether the wallet's view is synced to the main chain
+ * @prop {boolean} synced_to_graph	Whether we consider ourselves synced with the public channel graph.
+ * @prop {boolean} testnet	Whether the current node is connected to testnet. This field is deprecated and the network field should be used instead
+ * @prop {Chain[]} chains Chain	A list of active chains the node is connected to
+ * @prop {string[]} uris string	The URIs of the current node.
+ * @prop {array} features FeaturesEntry	Features that our node has advertised in our init message, node announcements and invoices.
+ */
 
 /**
  * https://api.lightning.community/#grpc-response-newaddressresponse
@@ -288,67 +315,45 @@ export const isTransaction = item => {
 /**
  * @returns {Promise<number>}
  */
-export const USDExchangeRate = () => {
-  // return Promise.resolve(8140.9567)
+export const USDExchangeRate = async () => {
   const endpoint = 'https://api.coindesk.com/v1/bpi/currentprice.json'
+  const { data } = await Http.get(endpoint)
 
-  const payload = {
-    method: 'GET',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-    },
+  const er = data.bpi.USD.rate_float
+
+  if (typeof er !== 'number') {
+    throw new TypeError('Exchange rate obtained from server not a number')
   }
 
-  return fetch(endpoint, payload)
-    .then(res => {
-      if (res.status === 200) {
-        return res.json()
-      }
-      throw new Error('Status not 200')
-    })
-    .then(res => {
-      const er = res.bpi.USD.rate_float
-
-      if (typeof er !== 'number') {
-        throw new TypeError('Exchange rate obtained from server not a number')
-      }
-
-      return er
-    })
+  return er
 }
 
 /**
  * @returns {Promise<WalletBalanceResponse>}
  */
 export const balance = async () => {
-  const { nodeURL, token } = await Cache.getNodeURLTokenPair()
+  const { token } = await Cache.getNodeURLTokenPair()
 
   if (typeof token !== 'string') {
     throw new TypeError(NO_CACHED_TOKEN)
   }
 
-  const endpoint = `http://${nodeURL}/api/lnd/balance`
+  try {
+    const endpoint = `/api/lnd/balance`
 
-  const payload = {
-    method: 'GET',
-    headers: {
-      Accept: 'application/json',
-      Authorization: token,
-    },
-  }
+    const { data } = await Http.get(endpoint, {
+      headers: {
+        Authorization: token,
+      },
+    })
 
-  const res = await fetch(endpoint, payload)
-  if (res.status === 401) {
-    Socket.disconnect()
-    await Cache.writeStoredAuthData(null)
+    return data
+  } catch (err) {
+    const { response } = err
+    throw new Error(
+      response.data.errorMessage || response.data.message || 'Unknown error.',
+    )
   }
-  const body = await res.json()
-
-  if (res.ok) {
-    return body
-  }
-  throw new Error(body.errorMessage || body.message || 'Unknown error.')
 }
 
 /**
@@ -361,33 +366,25 @@ export const balance = async () => {
  * @returns {Promise<PaginatedTransactionsResponse>}
  */
 export const getTransactions = async request => {
-  const { nodeURL, token } = await Cache.getNodeURLTokenPair()
+  const { token } = await Cache.getNodeURLTokenPair()
 
   if (typeof token !== 'string') {
     throw new TypeError(NO_CACHED_TOKEN)
   }
 
-  const endpoint = `http://${nodeURL}/api/lnd/transactions?paginate=true&page=${request.page}&itemsPerPage=${request.itemsPerPage}`
+  try {
+    const { data } = await Http.get(
+      `/api/lnd/transactions?paginate=true&page=${request.page}&itemsPerPage=${request.itemsPerPage}`,
+      { headers: { Authorization: token } },
+    )
 
-  const payload = {
-    method: 'GET',
-    headers: {
-      Accept: 'application/json',
-      Authorization: token,
-    },
+    return data
+  } catch (err) {
+    const { response } = err
+    throw new Error(
+      response.data.errorMessage || response.data.message || 'Unknown error.',
+    )
   }
-
-  const res = await fetch(endpoint, payload)
-  if (res.status === 401) {
-    Socket.disconnect()
-    await Cache.writeStoredAuthData(null)
-  }
-  const body = await res.json()
-
-  if (res.ok) {
-    return body
-  }
-  throw new Error(body.errorMessage || body.message || 'Unknown error.')
 }
 
 /**
@@ -403,37 +400,28 @@ export const getRegularBitcoinTransactions = getTransactions
  * @returns {Promise<PaginatedListPaymentsResponse>}
  */
 export const listPayments = async request => {
-  const { nodeURL, token } = await Cache.getNodeURLTokenPair()
+  const { token } = await Cache.getNodeURLTokenPair()
 
   if (typeof token !== 'string') {
     throw new TypeError(NO_CACHED_TOKEN)
   }
 
-  const url = `http://${nodeURL}/api/lnd/listpayments?paginate=true&page=${
+  const url = `/api/lnd/listpayments?paginate=true&page=${
     request.page
   }&itemsPerPage=${request.itemsPerPage}${
     request.include_incomplete ? '&include_incomplete' : ''
   }`
 
-  const payload = {
-    method: 'GET',
-    headers: {
-      Accept: 'application/json',
-      Authorization: token,
-    },
-  }
+  try {
+    const { data } = await Http.get(url, { headers: { Authorization: token } })
 
-  const res = await fetch(url, payload)
-  if (res.status === 401) {
-    Socket.disconnect()
-    await Cache.writeStoredAuthData(null)
+    return data
+  } catch (err) {
+    const { response } = err
+    throw new Error(
+      response.data.errorMessage || response.data.message || 'Unknown error.',
+    )
   }
-  const body = await res.json()
-
-  if (res.ok) {
-    return body
-  }
-  throw new Error(body.errorMessage || body.message || 'Unknown error.')
 }
 
 /**
@@ -449,35 +437,34 @@ export const listPayments = async request => {
  * @returns {Promise<PaginatedListInvoicesResponse>}
  */
 export const listInvoices = async request => {
-  const { nodeURL, token } = await Cache.getNodeURLTokenPair()
+  const { token } = await Cache.getNodeURLTokenPair()
 
   if (typeof token !== 'string') {
     throw new TypeError(NO_CACHED_TOKEN)
   }
 
-  const endpoint = `http://${nodeURL}/api/lnd/listinvoices`
+  const endpoint = `/api/lnd/listinvoices`
 
   const url = Utils.getQueryParams(endpoint, request)
 
-  const payload = {
-    method: 'GET',
-    headers: {
-      Accept: 'application/json',
-      Authorization: token,
-    },
-  }
+  try {
+    const { data } = await Http.get(url, {
+      headers: {
+        Authorization: token,
+      },
+    })
 
-  const res = await fetch(url, payload)
-  if (res.status === 401) {
-    Socket.disconnect()
-    await Cache.writeStoredAuthData(null)
-  }
-  const body = await res.json()
+    return data
+  } catch (err) {
+    const { response } = err
+    if (!response) {
+      throw err
+    }
 
-  if (res.ok) {
-    return body
+    throw new Error(
+      response.data.errorMessage || response.data.message || 'Unknown error.',
+    )
   }
-  throw new Error(body.errorMessage || body.message || 'Unknown error.')
 }
 
 /**
@@ -507,36 +494,28 @@ export const newAddress = async useOlderFormat => {
     type: useOlderFormat ? 1 : 0,
   }
 
-  const { nodeURL, token } = await Cache.getNodeURLTokenPair()
+  const { token } = await Cache.getNodeURLTokenPair()
 
   if (typeof token !== 'string') {
     throw new TypeError(NO_CACHED_TOKEN)
   }
 
-  const endpoint = `http://${nodeURL}/api/lnd/newaddress`
+  const endpoint = `/api/lnd/newaddress`
 
-  const payload = {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      Authorization: token,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(req),
+  try {
+    const { data } = await Http.post(endpoint, req, {
+      headers: {
+        Authorization: token,
+      },
+    })
+
+    return /** @type {NewAddressResponse} */ data.address
+  } catch (err) {
+    const { response } = err
+    throw new Error(
+      response.data.errorMessage || response.data.message || 'Unknown error.',
+    )
   }
-
-  const res = await fetch(endpoint, payload)
-  if (res.status === 401) {
-    Socket.disconnect()
-    await Cache.writeStoredAuthData(null)
-  }
-
-  const body = await res.json()
-
-  if (res.ok) {
-    return /** @type {NewAddressResponse} */ (body).address
-  }
-  throw new Error(body.errorMessage || body.message || 'Unknown error.')
 }
 
 /**
@@ -569,36 +548,28 @@ export const newAddress = async useOlderFormat => {
  * @returns {Promise<AddInvoiceResponse>}
  */
 export const addInvoice = async request => {
-  const { nodeURL, token } = await Cache.getNodeURLTokenPair()
+  const { token } = await Cache.getNodeURLTokenPair()
 
   if (typeof token !== 'string') {
     throw new TypeError(NO_CACHED_TOKEN)
   }
 
-  const endpoint = `http://${nodeURL}/api/lnd/addinvoice`
+  const endpoint = `/api/lnd/addinvoice`
 
-  const payload = {
-    method: 'POST',
-    headers: {
-      // Accept: 'application/json',
-      Authorization: token,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(request),
+  try {
+    const { data } = await Http.post(endpoint, request, {
+      headers: {
+        Authorization: token,
+      },
+    })
+
+    return data
+  } catch (err) {
+    const { response } = err
+    throw new Error(
+      response.data.errorMessage || response.data.message || 'Unknown error.',
+    )
   }
-
-  const res = await fetch(endpoint, payload)
-  if (res.status === 401) {
-    Socket.disconnect()
-    await Cache.writeStoredAuthData(null)
-  }
-
-  const body = await res.json()
-
-  if (res.ok) {
-    return body
-  }
-  throw new Error(body.errorMessage || body.message || 'Unknown error.')
 }
 
 /**
@@ -621,35 +592,27 @@ export const addInvoice = async request => {
  * @returns {Promise<string>}
  */
 export const sendCoins = async request => {
-  const { nodeURL, token } = await Cache.getNodeURLTokenPair()
+  const { token } = await Cache.getNodeURLTokenPair()
   if (typeof token !== 'string') {
     throw new TypeError(NO_CACHED_TOKEN)
   }
 
-  const endpoint = `http://${nodeURL}/api/lnd/sendcoins`
+  const endpoint = `/api/lnd/sendcoins`
 
-  const payload = {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      Authorization: token,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(request),
+  try {
+    const { data } = await Http.post(endpoint, request, {
+      headers: {
+        Authorization: token,
+      },
+    })
+
+    return data
+  } catch (err) {
+    const { response } = err
+    throw new Error(
+      response.data.errorMessage || response.data.message || 'Unknown error.',
+    )
   }
-
-  const res = await fetch(endpoint, payload)
-  if (res.status === 401) {
-    Socket.disconnect()
-    await Cache.writeStoredAuthData(null)
-  }
-
-  const body = await res.json()
-
-  if (res.ok) {
-    return body
-  }
-  throw new Error(body.errorMessage || body.message || 'Unknown error.')
 }
 
 /**
@@ -698,36 +661,32 @@ export const sendCoins = async request => {
  * @returns {Promise<SendResponse>}
  */
 export const CAUTION_payInvoice = async ({ amt, payreq }) => {
-  const { nodeURL, token } = await Cache.getNodeURLTokenPair()
+  const { token } = await Cache.getNodeURLTokenPair()
 
   if (typeof token !== 'string') {
     throw new TypeError(NO_CACHED_TOKEN)
   }
 
-  const endpoint = `http://${nodeURL}/api/lnd/sendpayment`
+  const endpoint = `/api/lnd/sendpayment`
 
-  const payload = {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      Authorization: token,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ amt, payreq }),
+  try {
+    const { data } = await Http.post(
+      endpoint,
+      { amt, payreq },
+      {
+        headers: {
+          Authorization: token,
+        },
+      },
+    )
+
+    return data
+  } catch (err) {
+    const { response } = err
+    throw new Error(
+      response.data.errorMessage || response.data.message || 'Unknown error.',
+    )
   }
-
-  const res = await fetch(endpoint, payload)
-  if (res.status === 401) {
-    Socket.disconnect()
-    await Cache.writeStoredAuthData(null)
-  }
-
-  const body = await res.json()
-
-  if (res.ok) {
-    return body
-  }
-  throw new Error(body.errorMessage || body.message || 'Unknown error.')
 }
 
 /**
@@ -761,36 +720,32 @@ export const CAUTION_payInvoice = async ({ amt, payreq }) => {
  * @returns {Promise<DecodeInvoiceResponse>}
  */
 export const decodeInvoice = async ({ payReq }) => {
-  const { nodeURL, token } = await Cache.getNodeURLTokenPair()
+  const { token } = await Cache.getNodeURLTokenPair()
 
   if (typeof token !== 'string') {
     throw new TypeError(NO_CACHED_TOKEN)
   }
 
-  const endpoint = `http://${nodeURL}/api/lnd/decodePayReq`
+  const endpoint = `/api/lnd/decodePayReq`
 
-  const payload = {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      Authorization: token,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ payReq }),
+  try {
+    const { data } = await Http.post(
+      endpoint,
+      { payReq },
+      {
+        headers: {
+          Authorization: token,
+        },
+      },
+    )
+
+    return data
+  } catch (err) {
+    const { response } = err
+    throw new Error(
+      response.data.errorMessage || response.data.message || 'Unknown error.',
+    )
   }
-
-  const res = await fetch(endpoint, payload)
-  if (res.status === 401) {
-    Socket.disconnect()
-    await Cache.writeStoredAuthData(null)
-  }
-
-  const body = await res.json()
-
-  if (res.ok) {
-    return body
-  }
-  throw new Error(body.errorMessage || body.message || 'Unknown error.')
 }
 
 /**
@@ -806,39 +761,32 @@ export const decodeInvoice = async ({ payReq }) => {
  * @returns {Promise<Peer[]>}
  */
 export const listPeers = async () => {
-  const { nodeURL, token } = await Cache.getNodeURLTokenPair()
+  const { token } = await Cache.getNodeURLTokenPair()
 
   if (typeof token !== 'string') {
     throw new TypeError(NO_CACHED_TOKEN)
   }
 
-  const endpoint = `http://${nodeURL}/api/lnd/listpeers`
+  const endpoint = `/api/lnd/listpeers`
 
-  const payload = {
-    method: 'GET',
-    headers: {
-      Accept: 'application/json',
-      Authorization: token,
-    },
-  }
+  try {
+    const { data } = await Http.get(endpoint, {
+      headers: {
+        Authorization: token,
+      },
+    })
 
-  const res = await fetch(endpoint, payload)
-  if (res.status === 401) {
-    Socket.disconnect()
-    await Cache.writeStoredAuthData(null)
-  }
-
-  const body = await res.json()
-
-  if (res.ok) {
-    if (!Array.isArray(body.peers)) {
+    if (!Array.isArray(data.peers)) {
       throw new Error('Wallet.listPeers() -> body.peers not an array')
     }
 
-    return body.peers
+    return data.peers
+  } catch (err) {
+    const { response } = err
+    throw new Error(
+      response.data.errorMessage || response.data.message || 'Unknown error.',
+    )
   }
-
-  throw new Error(body.errorMessage || body.message || 'Unknown error.')
 }
 
 /**
@@ -856,32 +804,23 @@ export const listPeers = async () => {
  * @returns {Promise<Channel[]>}
  */
 export const listChannels = async () => {
-  const { nodeURL, token } = await Cache.getNodeURLTokenPair()
+  const { token } = await Cache.getNodeURLTokenPair()
 
   if (typeof token !== 'string') {
     throw new TypeError(NO_CACHED_TOKEN)
   }
 
-  const endpoint = `http://${nodeURL}/api/lnd/listchannels`
+  const endpoint = `/api/lnd/listchannels`
 
-  const payload = {
-    method: 'GET',
-    headers: {
-      Accept: 'application/json',
-      Authorization: token,
-    },
-  }
+  try {
+    const { data } = await Http.get(endpoint, {
+      headers: {
+        Accept: 'application/json',
+        Authorization: token,
+      },
+    })
 
-  const res = await fetch(endpoint, payload)
-  if (res.status === 401) {
-    Socket.disconnect()
-    await Cache.writeStoredAuthData(null)
-  }
-
-  const body = await res.json()
-
-  if (res.ok) {
-    const { channels } = body
+    const { channels } = data
 
     if (!Array.isArray(channels)) {
       throw new Error('Wallet.listChannels() -> body.channels not an array.')
@@ -899,12 +838,14 @@ export const listChannels = async () => {
         ip: matchingPeer ? matchingPeer.address : '???.???.???.???',
       }
     })
+  } catch (err) {
+    const { response } = err
+    throw new Error(
+      'listChannels() -> ' + response.data.errorMessage ||
+        response.data.message ||
+        'Unknown error.',
+    )
   }
-  throw new Error(
-    'listChannels() -> ' + body.errorMessage ||
-      body.message ||
-      'Unknown error.',
-  )
 }
 
 /**
@@ -915,25 +856,22 @@ export const listChannels = async () => {
  * @returns {Promise<WalletStatus>}
  */
 export const walletStatus = async () => {
-  const nodeURL = await Cache.getNodeURL()
-  const res = await fetch(`http://${nodeURL}/api/lnd/wallet/status`)
-  const body = await res.json()
+  try {
+    const { data } = await Http.get(`/api/lnd/wallet/status`)
 
-  if (!res.ok) {
-    if (res.status === 401) {
-      Socket.disconnect()
-      await Cache.writeStoredAuthData(null)
+    const { walletExists, walletStatus } = data
+
+    if (walletExists) {
+      return walletStatus
     }
-    throw new Error(body.errorMessage || body.message || 'Unknown Error')
+
+    return 'noncreated'
+  } catch (err) {
+    const { response } = err
+    throw new Error(
+      response.data.errorMessage || response.data.message || 'Unknown Error',
+    )
   }
-
-  const { walletExists, walletStatus } = body
-
-  if (walletExists) {
-    return walletStatus
-  }
-
-  return 'noncreated'
 }
 
 /**
@@ -952,33 +890,49 @@ export const walletStatus = async () => {
  * @returns {Promise<NodeInfo>}
  */
 export const nodeInfo = async () => {
-  const nodeURL = await Cache.getNodeURL()
-  const res = await fetch(`http://${nodeURL}/healthz`)
-  const data = await res.json()
+  try {
+    const { data } = await Http.get(`/healthz`)
 
-  if (!res.ok) {
-    throw new Error(data.errorMessage || data.message || 'Unknown Error')
+    if (!data || !data.LNDStatus || !data.LNDStatus.message) {
+      // eslint-disable-next-line no-throw-literal
+      throw {
+        response: {
+          data,
+        },
+      }
+    }
+
+    const { message } = data.LNDStatus
+
+    return message
+  } catch (err) {
+    const { response } = err
+    if (response) {
+      const { data } = response
+      if (typeof data !== 'object') {
+        throw new TypeError(
+          `Error fetching /healthz: data not an object, instead got: ${JSON.stringify(
+            data,
+          )}`,
+        )
+      }
+
+      const { LNDStatus } = data
+      if (typeof LNDStatus !== 'object') {
+        throw new TypeError(
+          `Error fetching /healthz: data.LNDStatus not an object`,
+        )
+      }
+
+      const { message } = LNDStatus
+      if (typeof message !== 'object') {
+        throw new TypeError(
+          `Error fetching /healthz: data.LNDStatus.message not an object`,
+        )
+      }
+
+      throw new Error(data.errorMessage || data.message || 'Unknown Error')
+    }
+    throw new Error('Unable to connect to ShockAPI')
   }
-
-  if (typeof data !== 'object') {
-    throw new TypeError(
-      `Error fetching /healthz: data not an object, instead got: ${JSON.stringify(
-        data,
-      )}`,
-    )
-  }
-
-  const { LNDStatus } = data
-  if (typeof LNDStatus !== 'object') {
-    throw new TypeError(`Error fetching /healthz: data.LNDStatus not an object`)
-  }
-
-  const { message } = LNDStatus
-  if (typeof message !== 'object') {
-    throw new TypeError(
-      `Error fetching /healthz: data.LNDStatus.message not an object`,
-    )
-  }
-
-  return message
 }

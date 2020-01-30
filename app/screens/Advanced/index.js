@@ -4,35 +4,34 @@
 import React, { Component } from 'react'
 import {
   // Clipboard,
-  Image,
   StyleSheet,
   Text,
   ToastAndroid,
   View,
   TouchableOpacity,
   StatusBar,
+  ImageBackground,
+  Keyboard,
 } from 'react-native'
-import LinearGradient from 'react-native-linear-gradient'
 import EntypoIcons from 'react-native-vector-icons/Entypo'
 import Feather from 'react-native-vector-icons/Feather'
 import Http from 'axios'
 import Big from 'big.js'
 import { connect } from 'react-redux'
+import wavesBG from '../../assets/images/waves-bg.png'
 
 import * as CSS from '../../res/css'
-import * as Cache from '../../services/cache'
-import BasicDialog from '../../components/BasicDialog'
-import ShockInput from '../../components/ShockInput'
-import IGDialogBtn from '../../components/IGDialogBtn'
 import Pad from '../../components/Pad'
 import ShockDialog from '../../components/ShockDialog'
+import Nav from '../../components/Nav'
 
 import AccordionItem from './Accordion'
-// import Transaction from './Accordion/Transaction'
+import Transaction from './Accordion/Transaction'
 import Channel from './Accordion/Channel'
 // import Invoice from './Accordion/Invoice'
 import Peer from './Accordion/Peer'
 import InfoModal from './InfoModal'
+import AddChannelModal from './Modals/AddChannel'
 // import { Icon } from 'react-native-elements'
 import {
   fetchChannels,
@@ -43,6 +42,7 @@ import {
   fetchHistory,
 } from '../../actions/HistoryActions'
 import { fetchNodeInfo } from '../../actions/NodeActions'
+import AddPeerModal from './Modals/AddPeer'
 export const ADVANCED_SCREEN = 'ADVANCED_SCREEN'
 
 /**
@@ -62,14 +62,15 @@ export const ADVANCED_SCREEN = 'ADVANCED_SCREEN'
 /**
  * @typedef {object} State
  * @prop {Accordions} accordions
- * @prop {boolean} addPeerOpen
- * @prop {boolean} addChannelOpen: false,
  * @prop {string} peerPublicKey
  * @prop {string} host
  * @prop {string} channelPublicKey
  * @prop {string} channelCapacity
  * @prop {string} channelPushAmount
  * @prop {string} err
+ * @prop {boolean} modalLoading
+ * @prop {boolean} keyboardOpen
+ * @prop {number} keyboardHeight
  * @prop {ChannelPoint|null} willCloseChannelPoint
  *
  * @prop {boolean} nodeInfoModal
@@ -80,23 +81,24 @@ export const ADVANCED_SCREEN = 'ADVANCED_SCREEN'
  */
 
 /**
- * @typedef {ConnectedRedux & object} Props
+ * @typedef {object} Props
  */
 
 /**
- * @augments React.Component<Props, State, never>
+ * @augments React.Component<ConnectedRedux & Props, State, never>
  */
 class AdvancedScreen extends Component {
   /** @type {State} */
   state = {
     accordions: {
-      transactions: true,
+      transactions: false,
       peers: false,
       invoices: false,
-      channels: false,
+      channels: true,
     },
-    addPeerOpen: false,
-    addChannelOpen: false,
+    keyboardOpen: false,
+    modalLoading: false,
+    keyboardHeight: 0,
     peerPublicKey: '',
     host: '',
     channelPublicKey: '',
@@ -108,8 +110,46 @@ class AdvancedScreen extends Component {
     nodeInfoModal: false,
   }
 
+  addChannelModal = React.createRef()
+
+  addPeerModal = React.createRef()
+
+  /**
+   * @param {keyof State} key
+   * @returns {(value: any) => void}
+   */
+  onChange = key => value => {
+    this.setState(prevState => ({
+      ...prevState,
+      [key]: value,
+    }))
+  }
+
   componentDidMount() {
     this.fetchData()
+    this.keyboardDidShow = Keyboard.addListener('keyboardDidShow', e => {
+      console.log(e.endCoordinates.height)
+      this.setState({
+        keyboardOpen: true,
+        keyboardHeight: e.endCoordinates.height,
+      })
+    })
+    this.keyboardDidHide = Keyboard.addListener('keyboardDidHide', () => {
+      this.setState({
+        keyboardOpen: false,
+        keyboardHeight: 0,
+      })
+    })
+  }
+
+  componentWillUnmount() {
+    if (this.keyboardDidShow) {
+      this.keyboardDidShow.remove()
+    }
+
+    if (this.keyboardDidHide) {
+      this.keyboardDidHide.remove()
+    }
   }
 
   convertBTCToUSD = () => {
@@ -154,7 +194,7 @@ class AdvancedScreen extends Component {
   /**
    * @param {keyof Accordions} name
    */
-  toggleAccordion = name => {
+  toggleAccordion = name => () => {
     const { accordions } = this.state
     if (!(name in accordions)) {
       throw new Error(
@@ -195,7 +235,7 @@ class AdvancedScreen extends Component {
    *
    * @param {string} routeName
    */
-  fetchNextPage = routeName => {
+  fetchNextPage = routeName => () => {
     const {
       history,
       fetchInvoices,
@@ -233,25 +273,15 @@ class AdvancedScreen extends Component {
       const { peerPublicKey, host } = this.state
       const { fetchPeers } = this.props
       this.setState({
-        addPeerOpen: false,
+        modalLoading: true,
         peerPublicKey: '',
         host: '',
       })
 
-      const token = await Cache.getToken()
-
-      const res = await Http.post(
-        `/api/lnd/connectpeer`,
-        {
-          host,
-          pubkey: peerPublicKey,
-        },
-        {
-          headers: {
-            Authorization: token,
-          },
-        },
-      )
+      const res = await Http.post(`/api/lnd/connectpeer`, {
+        host,
+        pubkey: peerPublicKey,
+      })
 
       if (res.status !== 200) {
         throw new Error(res.data.errorMessage || 'Unknown error.')
@@ -260,12 +290,14 @@ class AdvancedScreen extends Component {
       ToastAndroid.show('Added successfully', 800)
 
       fetchPeers()
+      this.addPeerModal.current.close()
     } catch (err) {
-      this.showErr(err.message)
+      this.showErr(err.response.data.errorMessage)
       console.error(Http.defaults.baseURL, err.response)
     } finally {
       this.setState({
         host: '',
+        modalLoading: false,
         peerPublicKey: '',
       })
     }
@@ -281,34 +313,28 @@ class AdvancedScreen extends Component {
       const { fetchChannels } = this.props
 
       this.setState({
-        addChannelOpen: false,
+        modalLoading: true,
         channelPublicKey: '',
         channelCapacity: '',
         channelPushAmount: '',
       })
 
-      const res = await Http.post(`/api/lnd/openchannel`, {
+      await Http.post(`/api/lnd/openchannel`, {
         pubkey: channelPublicKey,
         channelCapacity,
         channelPushAmount,
       })
 
-      if (res.status !== 200) {
-        throw new Error(res.data.errorMessage || 'Unknown error.')
-      }
-
       ToastAndroid.show('Added successfully', 800)
 
       fetchChannels()
-    } catch (err) {
-      this.setState({
-        addChannelOpen: false,
-      })
 
-      this.showErr(err.message)
+      this.addChannelModal.current.close()
+    } catch (err) {
+      this.showErr(err.response.data.errorMessage)
     } finally {
       this.setState({
-        addChannelOpen: false,
+        modalLoading: false,
         channelPublicKey: '',
         channelCapacity: '',
         channelPushAmount: '',
@@ -329,6 +355,7 @@ class AdvancedScreen extends Component {
    * @param {string} err
    */
   showErr = err => {
+    console.log('Setting Error message:', err)
     this.setState({
       err,
     })
@@ -357,7 +384,6 @@ class AdvancedScreen extends Component {
    */
   openChannelPeer = pubKey => {
     this.setState({
-      addChannelOpen: true,
       channelPublicKey: pubKey,
     })
   }
@@ -374,18 +400,6 @@ class AdvancedScreen extends Component {
   onPressChannel = channelPoint => {
     const [fundingTX, outputIndex] = channelPoint.split(':')
     this.willCloseChannel({ fundingTX, outputIndex })
-  }
-
-  closeAddChannelDialog = () => {
-    this.setState({
-      addChannelOpen: false,
-    })
-  }
-
-  closeAddPeerDialog = () => {
-    this.setState({
-      addPeerOpen: false,
-    })
   }
 
   /** @param {string} text */
@@ -409,17 +423,24 @@ class AdvancedScreen extends Component {
     this.handleInputChange('channelPushAmount', text)
   }
 
+  /**
+   * @param {import('../../services/wallet').Transaction} transaction
+   */
+  transactionKeyExtractor = transaction => transaction.tx_hash
+
   render() {
     const { node, wallet, history, fetchChannels } = this.props
     const {
       accordions,
-      addPeerOpen,
-      addChannelOpen,
       peerPublicKey,
       channelPublicKey,
       host,
       channelCapacity,
       channelPushAmount,
+      keyboardOpen,
+      keyboardHeight,
+      modalLoading,
+      err,
 
       willCloseChannelPoint,
 
@@ -427,268 +448,209 @@ class AdvancedScreen extends Component {
     } = this.state
     const { confirmedBalanceUSD, channelBalanceUSD } = this.convertBTCToUSD()
     return (
-      <View style={styles.container}>
-        <InfoModal
-          visible={nodeInfoModal}
-          info={node.nodeInfo}
-          onRequestClose={this.closeNodeInfo}
-        />
-        <StatusBar
-          translucent
-          backgroundColor="transparent"
-          barStyle="light-content"
-        />
-        <LinearGradient
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          colors={['#194B93', '#4285B9']}
-          style={styles.statsHeader}
-        >
-          <View style={styles.nav}>
-            <View>
-              <Image style={styles.navAvatar} source={{}} />
-            </View>
-
-            <Text style={styles.navText}>Channels</Text>
-            <View style={styles.settingsBtn}>
-              <EntypoIcons name="cog" size={30} color="white" />
-            </View>
-          </View>
-          <View style={styles.statsContainer}>
-            <View style={xStyles.channelBalanceContainer}>
-              <View style={styles.statIcon}>
-                <EntypoIcons name="flash" color="#F5A623" size={20} />
-              </View>
-              <View>
-                <Text style={styles.statTextPrimary}>
-                  {wallet.USDRate
-                    ? wallet.channelBalance.replace(/(\d)(?=(\d{3})+$)/g, '$1,')
-                    : 'Loading...'}{' '}
-                  sats
-                </Text>
-                <Text style={styles.statTextSecondary}>
-                  {wallet.USDRate
-                    ? channelBalanceUSD.replace(/\d(?=(\d{3})+\.)/g, '$&,')
-                    : 'Loading...'}{' '}
-                  USD
-                </Text>
-              </View>
-            </View>
-            <View style={styles.stat}>
-              <View style={styles.statIcon}>
-                <EntypoIcons name="link" color="#F5A623" size={20} />
-              </View>
-              <View>
-                <Text style={styles.statTextPrimary}>
-                  {wallet.USDRate
-                    ? wallet.confirmedBalance.replace(
-                        /(\d)(?=(\d{3})+$)/g,
-                        '$1,',
-                      )
-                    : 'Loading...'}{' '}
-                  sats
-                </Text>
-                <Text style={styles.statTextSecondary}>
-                  {wallet.USDRate
-                    ? confirmedBalanceUSD.replace(/\d(?=(\d{3})+\.)/g, '$&,')
-                    : 'Loading...'}{' '}
-                  USD
-                </Text>
-              </View>
-            </View>
-            <View style={styles.getInfoHolder}>
-              {node.nodeInfo !== null ? (
-                <TouchableOpacity onPress={this.openNodeInfo}>
-                  <View style={styles.centeredRow}>
-                    <Text style={styles.getInfoText}>Get Info</Text>
-                    <Pad insideRow amount={10} />
-                    <Feather
-                      name="info"
-                      color={CSS.Colors.TEXT_WHITE}
-                      size={24}
-                    />
-                  </View>
-                </TouchableOpacity>
-              ) : (
-                <Text style={styles.whiteText}>Loading...</Text>
-              )}
-            </View>
-          </View>
-        </LinearGradient>
-        <View style={styles.accordionsContainer}>
-          {/* <AccordionItem
-            fetchNextPage={() => this.fetchNextPage('payments', 'transactions')}
-            data={history.transactions}
-            Item={Transaction}
-            title="Transactions"
-            open={accordions['transactions']}
-            menuOptions={[
-              {
-                name: 'Generate',
-                icon: 'link',
-              },
-              {
-                name: 'Send',
-                icon: 'flash',
-              },
-            ]}
-            toggleAccordion={() => this.toggleAccordion('transactions')}
-            keyExtractor={transaction => transaction.tx_hash}
-          /> */}
-          <AccordionItem
-            data={history.peers}
-            Item={Peer}
-            title="Peers"
-            open={accordions.peers}
-            menuOptions={[
-              {
-                name: 'Add Peer',
-                icon: 'link',
-                action: () => {
-                  console.log('addPeerOpen')
-                  this.setState({
-                    addPeerOpen: true,
-                  })
-                },
-              },
-            ]}
-            onPressItem={this.openChannelPeer}
-            toggleAccordion={this.togglePeerAccordion}
-            keyExtractor={peerKeyExtractor}
+      <>
+        <View style={styles.container}>
+          <InfoModal
+            visible={nodeInfoModal}
+            info={node.nodeInfo}
+            onRequestClose={this.closeNodeInfo}
           />
-          {/* <AccordionItem
-            fetchNextPage={() => this.fetchNextPage('invoices', 'invoices')}
-            data={history.invoices}
-            Item={Invoice}
-            title="Invoices"
-            open={accordions['invoices']}
-            toggleAccordion={() => this.toggleAccordion('invoices')}
-            keyExtractor={inv => inv.r_hash.data.join('-')}
-          /> */}
-          <AccordionItem
-            data={history.channels}
-            Item={Channel}
-            keyExtractor={channelKeyExtractor}
-            title="Channels"
-            open={accordions.channels}
-            menuOptions={[
-              {
-                name: 'Add Channel',
-                icon: 'link',
-                action: () => {
-                  this.setState({
-                    addChannelOpen: true,
-                  })
+          <StatusBar
+            translucent
+            backgroundColor="transparent"
+            barStyle="light-content"
+          />
+          <ImageBackground
+            source={wavesBG}
+            resizeMode="cover"
+            style={styles.statsHeader}
+          >
+            <Nav title="Advanced" style={styles.nav} showAvatar={false} />
+            <View style={styles.statsContainer}>
+              <View style={xStyles.channelBalanceContainer}>
+                <View style={styles.statIcon}>
+                  <EntypoIcons name="flash" color="#F5A623" size={20} />
+                </View>
+                <View>
+                  <Text style={styles.statTextPrimary}>
+                    {wallet.USDRate
+                      ? wallet.channelBalance.replace(
+                          /(\d)(?=(\d{3})+$)/g,
+                          '$1,',
+                        )
+                      : 'Loading...'}{' '}
+                    sats
+                  </Text>
+                  <Text style={styles.statTextSecondary}>
+                    {wallet.USDRate
+                      ? channelBalanceUSD.replace(/\d(?=(\d{3})+\.)/g, '$&,')
+                      : 'Loading...'}{' '}
+                    USD
+                  </Text>
+                </View>
+              </View>
+              <View style={styles.stat}>
+                <View style={styles.statIcon}>
+                  <EntypoIcons name="link" color="#F5A623" size={20} />
+                </View>
+                <View>
+                  <Text style={styles.statTextPrimary}>
+                    {wallet.USDRate
+                      ? wallet.confirmedBalance.replace(
+                          /(\d)(?=(\d{3})+$)/g,
+                          '$1,',
+                        )
+                      : 'Loading...'}{' '}
+                    sats
+                  </Text>
+                  <Text style={styles.statTextSecondary}>
+                    {wallet.USDRate
+                      ? confirmedBalanceUSD.replace(/\d(?=(\d{3})+\.)/g, '$&,')
+                      : 'Loading...'}{' '}
+                    USD
+                  </Text>
+                </View>
+              </View>
+              <View style={styles.getInfoHolder}>
+                {node.nodeInfo !== null ? (
+                  <TouchableOpacity onPress={this.openNodeInfo}>
+                    <View style={styles.centeredRow}>
+                      <Text style={styles.getInfoText}>Get Info</Text>
+                      <Pad insideRow amount={10} />
+                      <Feather
+                        name="info"
+                        color={CSS.Colors.TEXT_WHITE}
+                        size={24}
+                      />
+                    </View>
+                  </TouchableOpacity>
+                ) : (
+                  <Text style={styles.whiteText}>Loading...</Text>
+                )}
+              </View>
+            </View>
+          </ImageBackground>
+          <View style={styles.accordionsContainer}>
+            <AccordionItem
+              data={history.channels}
+              Item={Channel}
+              keyExtractor={channelKeyExtractor}
+              title="Channels"
+              open={accordions.channels}
+              menuOptions={[
+                {
+                  name: 'Add Channel',
+                  icon: 'link',
+                  action: () => {
+                    this.addChannelModal.current.open()
+                    this.setState({
+                      err: '',
+                    })
+                  },
                 },
+              ]}
+              toggleAccordion={this.toggleAccordion('channels')}
+              onPressItem={this.onPressChannel}
+              hideBottomBorder
+            />
+            <AccordionItem
+              fetchNextPage={this.fetchNextPage('transactions')}
+              data={history.transactions}
+              Item={Transaction}
+              title="Transactions"
+              open={accordions.transactions}
+              toggleAccordion={this.toggleAccordion('transactions')}
+              keyExtractor={this.transactionKeyExtractor}
+            />
+            <AccordionItem
+              data={history.peers}
+              Item={Peer}
+              title="Peers"
+              open={accordions.peers}
+              menuOptions={[
+                {
+                  name: 'Add Peer',
+                  icon: 'link',
+                  action: () => {
+                    console.log('addPeerOpen')
+                    this.addPeerModal.current.open()
+                  },
+                },
+              ]}
+              onPressItem={this.openChannelPeer}
+              toggleAccordion={this.toggleAccordion('peers')}
+              keyExtractor={peerKeyExtractor}
+            />
+            {/* 
+              <AccordionItem
+                fetchNextPage={() => this.fetchNextPage('invoices', 'invoices')}
+                data={history.invoices}
+                Item={Invoice}
+                title="Invoices"
+                open={accordions['invoices']}
+                toggleAccordion={() => this.toggleAccordion('invoices')}
+                keyExtractor={inv => inv.r_hash.data.join('-')}
+              /> 
+            */}
+          </View>
+
+          <ShockDialog
+            choiceToHandler={{
+              Confirm: async () => {
+                this.setState({
+                  willCloseChannelPoint: null,
+                })
+
+                if (willCloseChannelPoint) {
+                  try {
+                    const res = await Http.post(`/api/lnd/closechannel`, {
+                      channelPoint: willCloseChannelPoint.fundingTX,
+                      outputIndex: willCloseChannelPoint.outputIndex,
+                    })
+
+                    if (res.status !== 200) {
+                      throw new Error(res.data.errorMessage || 'Unknown error.')
+                    }
+
+                    fetchChannels()
+
+                    ToastAndroid.show('Closed successfully', 800)
+                  } catch (err) {
+                    this.showErr(err.response.data.errorMessage)
+                  }
+                }
               },
-            ]}
-            toggleAccordion={this.toggleChannelsAccordion}
-            onPressItem={this.onPressChannel}
-            hideBottomBorder
+              'Go back': this.closeCloseChannelDialog,
+            }}
+            onRequestClose={this.closeCloseChannelDialog}
+            message="Close this channel?"
+            visible={!!willCloseChannelPoint}
           />
         </View>
-        <BasicDialog
-          onRequestClose={this.closeAddPeerDialog}
-          visible={addPeerOpen}
-        >
-          <View>
-            <ShockInput
-              placeholder="Public Key"
-              onChangeText={this.onChangePeerPublicKey}
-              value={peerPublicKey}
-            />
-
-            <Pad amount={10} />
-
-            <ShockInput
-              placeholder="Host"
-              onChangeText={this.onChangeHost}
-              value={host}
-            />
-
-            <IGDialogBtn
-              disabled={!host || !peerPublicKey}
-              onPress={this.addPeer}
-              title="Add Peer"
-            />
-          </View>
-        </BasicDialog>
-        <BasicDialog
-          onRequestClose={this.closeAddChannelDialog}
-          visible={addChannelOpen}
-        >
-          <View>
-            <ShockInput
-              placeholder="Public Key"
-              onChangeText={this.onChangeChannelPublicKey}
-              value={channelPublicKey}
-            />
-
-            <ShockInput
-              placeholder="Channel Capacity"
-              keyboardType="number-pad"
-              onChangeText={this.onChangeChannelCapacity}
-              value={channelCapacity}
-            />
-
-            <ShockInput
-              placeholder="Push Amount"
-              keyboardType="number-pad"
-              onChangeText={this.onChangeChannelPushAmount}
-              value={channelPushAmount}
-            />
-
-            <IGDialogBtn
-              disabled={
-                !channelPublicKey || !channelCapacity || !channelPushAmount
-              }
-              onPress={this.addChannel}
-              title="Add Channel"
-            />
-          </View>
-        </BasicDialog>
-        <BasicDialog
-          onRequestClose={this.dismissErr}
-          visible={!!this.state.err}
-        >
-          <View>
-            <Text>{this.state.err}</Text>
-          </View>
-        </BasicDialog>
-
-        <ShockDialog
-          choiceToHandler={{
-            Confirm: async () => {
-              this.setState({
-                willCloseChannelPoint: null,
-              })
-
-              if (willCloseChannelPoint) {
-                try {
-                  const res = await Http.post(`/api/lnd/closechannel`, {
-                    channelPoint: willCloseChannelPoint.fundingTX,
-                    outputIndex: willCloseChannelPoint.outputIndex,
-                  })
-
-                  if (res.status !== 200) {
-                    throw new Error(res.data.errorMessage || 'Unknown error.')
-                  }
-
-                  fetchChannels()
-
-                  ToastAndroid.show('Closed successfully', 800)
-                } catch (err) {
-                  this.showErr(err.message)
-                }
-              }
-            },
-            'Go back': this.closeCloseChannelDialog,
-          }}
-          onRequestClose={this.closeCloseChannelDialog}
-          message="Close this channel?"
-          visible={!!willCloseChannelPoint}
+        <AddChannelModal
+          modalRef={this.addChannelModal}
+          onChange={this.onChange}
+          loading={modalLoading}
+          channelPublicKey={channelPublicKey}
+          channelCapacity={channelCapacity}
+          channelPushAmount={channelPushAmount}
+          submit={this.addChannel}
+          error={err}
+          keyboardOpen={keyboardOpen}
+          keyboardHeight={keyboardHeight}
         />
-      </View>
+        <AddPeerModal
+          modalRef={this.addPeerModal}
+          onChange={this.onChange}
+          loading={modalLoading}
+          peerPublicKey={peerPublicKey}
+          host={host}
+          submit={this.addPeer}
+          error={err}
+          keyboardOpen={keyboardOpen}
+          keyboardHeight={keyboardHeight}
+        />
+      </>
     )
   }
 }
@@ -729,32 +691,11 @@ const styles = StyleSheet.create({
     elevation: 1,
     zIndex: 10,
     paddingTop: StatusBar.currentHeight,
+    backgroundColor: CSS.Colors.FUN_BLUE,
   },
   marginBottom15: { marginBottom: 15 },
   nav: {
-    width: '100%',
-    paddingHorizontal: 20,
-    paddingVertical: 25,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     marginBottom: 25,
-  },
-  navAvatar: {
-    width: 60,
-    height: 60,
-    borderRadius: 100,
-    backgroundColor: CSS.Colors.BLUE_LIGHT,
-  },
-  navText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: CSS.Colors.TEXT_WHITE,
-  },
-  settingsBtn: {
-    width: 60,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   statsContainer: {
     paddingHorizontal: 30,

@@ -151,11 +151,11 @@ export const fetchHistory = () => dispatch =>
   ])
 
 /**
- * Fetches the Node's info
+ * Fetches the recent transactions
  * @returns {import('redux-thunk').ThunkAction<Promise<void>, {}, {}, import('redux').AnyAction>}
  */
 export const fetchRecentTransactions = () => async dispatch => {
-  const [invoiceResponse, payments, transactions] = await Promise.all([
+  const [invoiceResponse, payments] = await Promise.all([
     Wallet.listInvoices({
       itemsPerPage: 100,
       page: 1,
@@ -166,17 +166,20 @@ export const fetchRecentTransactions = () => async dispatch => {
       page: 1,
       paginate: true,
     }),
-    Wallet.getTransactions({
-      itemsPerPage: 100,
-      page: 1,
-      paginate: true,
-    }),
   ])
+
+  const decodedRequests = await Promise.all(
+    payments.content.map(payment =>
+      Wallet.decodeInvoice({ payReq: payment.payment_request }),
+    ),
+  )
 
   const recentTransactions = [
     ...invoiceResponse.content,
-    ...payments.content,
-    ...transactions.content,
+    ...payments.content.map((payment, key) => ({
+      ...payment,
+      decodedPayment: decodedRequests[key],
+    })),
   ]
 
   dispatch({

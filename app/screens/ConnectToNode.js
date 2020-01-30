@@ -3,6 +3,7 @@
  */
 import React from 'react'
 import { Text, View } from 'react-native'
+import { connect } from 'react-redux'
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}, Params>} Navigation
  */
@@ -21,6 +22,7 @@ import OnboardingScreen, {
 } from '../components/OnboardingScreen'
 import OnboardingInput from '../components/OnboardingInput'
 import OnboardingBtn from '../components/OnboardingBtn'
+import { exchangeKeyPair } from '../actions/ConnectionActions'
 /** @type {number} */
 // @ts-ignore
 const shockBG = require('../assets/images/shock-bg.png')
@@ -62,7 +64,7 @@ const DEFAULT_STATE = {
 /**
  * @augments React.PureComponent<Props, State, never>
  */
-export default class ConnectToNode extends React.PureComponent {
+class ConnectToNode extends React.PureComponent {
   /**
    * @type {import('react-navigation').NavigationScreenOptions}
    */
@@ -126,9 +128,8 @@ export default class ConnectToNode extends React.PureComponent {
         try {
           const wasGoodPing = await Conn.pingURL(nodeURL)
 
-          if (wasGoodPing) {
+          if (wasGoodPing.success) {
             await Cache.writeNodeURLOrIP(nodeURL)
-
             this.props.navigation.navigate(WALLET_MANAGER)
           } else {
             this.setState({
@@ -142,7 +143,7 @@ export default class ConnectToNode extends React.PureComponent {
             wasBadPing: true,
           })
 
-          console.warn(err.message)
+          console.error(err)
         }
       },
     )
@@ -179,7 +180,7 @@ export default class ConnectToNode extends React.PureComponent {
 
   /**
    * @param {string} ip
-   * @param {number} port
+   * @param {(number)=} port
    */
   onQRRead = (ip, port) => {
     this.setState({
@@ -203,7 +204,7 @@ export default class ConnectToNode extends React.PureComponent {
       return (
         <View style={CSS.styles.flex}>
           <QRScanner
-            connectToNodeIP={this.onQRRead}
+            onQRSuccess={this.onQRRead}
             toggleQRScreen={this.toggleQRScreen}
           />
         </View>
@@ -263,3 +264,17 @@ export default class ConnectToNode extends React.PureComponent {
     )
   }
 }
+
+/**
+ * @param {typeof import('../../reducers/index').default} state
+ */
+const mapStateToProps = ({ connection }) => ({ connection })
+
+const mapDispatchToProps = {
+  exchangeKeyPair,
+}
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(ConnectToNode)

@@ -381,7 +381,7 @@ export default class ChatsView extends React.PureComponent {
         bt = b.timestamp
       }
 
-      return at - bt
+      return bt - at
     })
 
     return (
@@ -393,7 +393,7 @@ export default class ChatsView extends React.PureComponent {
           data={items}
           keyExtractor={keyExtractor}
           renderItem={this.itemRenderer}
-          contentContainerStyle={LIST_STYLE}
+          style={LIST_STYLE}
         />
 
         <ShockDialog

@@ -1,4 +1,5 @@
 import once from 'lodash/once'
+import Http from 'axios'
 
 import * as Cache from './cache'
 import * as Wallet from './wallet'
@@ -27,7 +28,7 @@ export const isGunAuthed = async () => {
   const timeout = new Promise((_, rej) => {
     setTimeout(() => {
       rej(new Error('Could not retrieve gun auth status in under 5 seconds'))
-    }, 5000)
+    }, 15000)
   })
 
   // ideally we would place socket.disconnect() inside a finally clause, but
@@ -61,35 +62,31 @@ export const unlockWallet = async (alias, password) => {
     throw new TypeError('nodeURL === null')
   }
 
-  const res = await fetch(`http://${nodeURL}/api/lnd/auth`, {
-    method: 'POST',
-    body: JSON.stringify({
+  try {
+    const { data } = await Http.post(`http://${nodeURL}/api/lnd/auth`, {
       alias,
       password,
-    }),
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  })
+    })
 
-  const body = await res.json()
-
-  if (res.ok) {
-    if (typeof body.authorization !== 'string') {
-      throw new TypeError("typeof body.authorization !== 'string'")
+    if (typeof data.authorization !== 'string') {
+      throw new TypeError("typeof data.authorization !== 'string'")
     }
 
-    if (typeof body.user.publicKey !== 'string') {
-      throw new TypeError("typeof body.user.publicKey !== 'string'")
+    if (typeof data.user.publicKey !== 'string') {
+      throw new TypeError("typeof data.user.publicKey !== 'string'")
     }
 
     return {
-      publicKey: body.user.publicKey,
-      token: body.authorization,
+      publicKey: data.user.publicKey,
+      token: data.authorization,
     }
+  } catch (err) {
+    throw new Error(
+      err.response
+        ? err.response.data.errorMessage || err.response.data.message
+        : 'Unknown error.',
+    )
   }
-
-  throw new Error(body.errorMessage || body.message || 'Unknown error.')
 }
 
 /**
@@ -104,20 +101,13 @@ export const registerExistingWallet = async (alias, password) => {
     throw new TypeError('nodeURL === null')
   }
 
-  const res = await fetch(`http://${nodeURL}/api/lnd/wallet/existing`, {
-    method: 'POST',
-    body: JSON.stringify({
-      alias,
-      password,
-    }),
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  })
+  try {
+    const { data: body } = await Http.post(
+      `/api/lnd/wallet/existing`,
+      { alias, password },
+      { headers: { 'Content-Type': 'application/json' } },
+    )
 
-  const body = await res.json()
-
-  if (res.ok) {
     if (typeof body.authorization !== 'string') {
       throw new TypeError("typeof body.authorization !== 'string'")
     }
@@ -132,9 +122,10 @@ export const registerExistingWallet = async (alias, password) => {
       publicKey: body.user.publicKey,
       token: body.authorization,
     }
+  } catch (err) {
+    const body = err.response.data
+    throw new Error(body.errorMessage || body.message || 'Unknown error.')
   }
-
-  throw new Error(body.errorMessage || body.message || 'Unknown error.')
 }
 
 /**
@@ -149,33 +140,28 @@ export const createWallet = async (alias, password) => {
   if (nodeURL === null) {
     throw new TypeError('nodeURL === null')
   }
-
-  const res = await fetch(`http://${nodeURL}/api/lnd/wallet`, {
-    method: 'POST',
-    body: JSON.stringify({
+  try {
+    const { data } = await Http.post(`http://${nodeURL}/api/lnd/wallet`, {
       alias,
       password,
-    }),
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  })
+    })
 
-  const body = await res.json()
-
-  if (res.ok) {
-    if (typeof body.authorization !== 'string') {
-      throw new TypeError("typeof body.authorization !== 'string'")
-    } else if (typeof body.user.publicKey !== 'string') {
-      throw new TypeError("typeof body.user.publicKey !== 'string'")
+    if (typeof data.authorization !== 'string') {
+      throw new TypeError("typeof data.authorization !== 'string'")
+    } else if (typeof data.user.publicKey !== 'string') {
+      throw new TypeError("typeof data.user.publicKey !== 'string'")
     } else {
       return {
-        publicKey: body.user.publicKey,
-        token: body.authorization,
+        publicKey: data.user.publicKey,
+        token: data.authorization,
       }
     }
-  } else {
-    throw new Error(body.errorMessage || body.message || 'Unknown error.')
+  } catch (err) {
+    throw new Error(
+      err.response
+        ? err.response.data.errorMessage || err.response.data.message
+        : 'Unknown error.',
+    )
   }
 }
 
@@ -197,25 +183,20 @@ export const newGUNAlias = async (alias, pass) => {
 
   const nodeURL = await Cache.getNodeURL()
 
-  const res = await fetch(`http://${nodeURL}/api/lnd/wallet/existing`, {
-    method: 'POST',
-    body: JSON.stringify({
-      alias,
-      password: pass,
-    }),
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  })
-  const body = await res.json()
+  try {
+    const { data: body } = await Http.post(
+      `http://${nodeURL}/api/lnd/wallet/existing`,
+      { alias, password: pass },
+      { headers: { 'Content-Type': 'application/json' } },
+    )
 
-  if (!res.ok) {
+    return {
+      publicKey: body.user.publicKey,
+      token: body.authorization,
+    }
+  } catch (err) {
+    const body = err.response.data
     console.warn(`here: ${JSON.stringify(body)}`)
     throw new Error(body.errorMessage || body.message || 'Unknown error.')
-  }
-
-  return {
-    publicKey: body.user.publicKey,
-    token: body.authorization,
   }
 }

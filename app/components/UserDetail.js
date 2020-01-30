@@ -13,7 +13,7 @@ import { Colors } from '../res/css'
  * @prop {boolean=} alternateTextBold
  * @prop {string} lowerText
  * @prop {import('react-native').TextInputProps['style']=} lowerTextStyle
- * @prop {string|null} image
+ * @prop {string?} image
  * @prop {string} id
  * @prop {string} name
  * @prop {boolean=} nameBold
@@ -70,13 +70,14 @@ export default class UserDetail extends React.PureComponent {
       lowerTextStyle,
       name,
       title,
+      image,
     } = this.props
 
     return (
       <TouchableOpacity onPress={this.onPress}>
         <View style={styles.container}>
           <View style={xStyles.avatarSubContainer}>
-            <Avatar rounded medium source={{}} />
+            <Avatar rounded medium source={image ? { uri: image } : {}} />
           </View>
 
           <View style={xStyles.nameContainer}>
