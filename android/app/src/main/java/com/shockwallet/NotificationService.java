@@ -68,6 +68,7 @@ public class NotificationService extends Service {
     private static final String CHANNEL_ID = "shock_notif";
     private static final String TAG = "NotificationsDeb";
     private static String ApiPubKey;
+    private static String deviceId;
     //private OkHttpClient client;
     private Handler handler = new Handler();
     private static String ip;
@@ -168,10 +169,12 @@ public class NotificationService extends Service {
             Log.d(TAG,"yeahhhh");
             Log.d(TAG,"Token from run "+token);
             try{
-                rsa = new RSA("Pimp my tag");
+                createDeviceId();
+                rsa = new RSA("shocknet.tag.cc."+deviceId);
+                
                 rsa.generate(4096);
                 String rsaPub = rsa.getPublicKey();
-                String deviceId = "7601a723-b6d4-4020-95a6-6113fb40e2f8";
+                //String deviceId = "7601a723-b6d4-4020-95a6-6113fb40e2f8";
                 //Log.d(TAG,rsaPub);
                 HashMap<String,String> rawData = new HashMap<String,String>();
                 rawData.put("publicKey",rsaPub);
@@ -352,15 +355,9 @@ public class NotificationService extends Service {
                     Boolean success = resJson.getBoolean("success");
                     if(success) {
                         NotificationService.ApiPubKey = resJson.getString("APIPublicKey");
-                        //Log.d(TAG,NotificationService.ApiPubKey);
-                        IO.Options opts = new IO.Options();
-                        HashMap<String,String> queryP = new HashMap<String,String>();
-                        queryP.put("x-shockwallet-device-id","7601a723-b6d4-4020-95a6-6113fb40e2f8");
-                        JSONObject queryJ = new JSONObject(queryP);
 
-                        //opts.query = "{\"x-shockwallet-device-id\":\"7601a723-b6d4-4020-95a6-6113fb40e2f8\"}";
-                        //opts.query.put("x-shockwallet-device-id","7601a723-b6d4-4020-95a6-6113fb40e2f8");
-                        mSocket = IO.socket("http://"+NotificationService.ip+"?x-shockwallet-device-id=7601a723-b6d4-4020-95a6-6113fb40e2f8");
+                        //mSocket = IO.socket("http://"+NotificationService.ip+"?x-shockwallet-device-id=7601a723-b6d4-4020-95a6-6113fb40e2f8");
+                        mSocket = IO.socket("http://"+NotificationService.ip+"?x-shockwallet-device-id="+deviceId);
                         mSocket.on("ON_TRANSACTION", newTransaction);
                         mSocket.on("ON_INVOICE", newInvoice);
                         mSocket.on("ON_CHATS", newChat);
@@ -375,6 +372,29 @@ public class NotificationService extends Service {
             }
         });
     }
+    private void createDeviceId(){
+        byte[] p1 = new byte[4];
+        byte[] p2 = new byte[2];
+        byte[] p3 = new byte[1];
+        byte[] p4 = new byte[1];
+        byte[] p5 = new byte[6];
+        SecureRandom sc = new SecureRandom();
+        sc.nextBytes(p1);
+        sc.nextBytes(p2);
+        sc.nextBytes(p3);
+        sc.nextBytes(p4);
+        sc.nextBytes(p5);
+        String p1s = bytesToHex(p1);
+        String p2s = bytesToHex(p2);
+        String p3s = bytesToHex(p3);
+        String p4s = bytesToHex(p4);
+        String p5s = bytesToHex(p5);
+        String res = p1s + "-" + p2s + "-40" + p3s +"-95" + p4s + "-" + p5s;
+        Log.d(TAG,res);
+        NotificationService.deviceId =  res;
+
+    }
+
     private static String bytesToHex(byte[] hashInBytes) {
 
         StringBuilder sb = new StringBuilder();
@@ -384,6 +404,9 @@ public class NotificationService extends Service {
         return sb.toString();
 
     }
+
+    
+
     private static byte[] hexToBytes(String str){
       byte[] val = new byte[str.length() / 2];
       for (int i = 0; i < val.length; i++) {
