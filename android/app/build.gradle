@@ -176,6 +176,7 @@ dependencies {
     implementation project(':@react-native-community_async-storage')
     implementation project(':react-native-image-crop-picker')
     //compile 'com.squareup.okhttp3:okhttp:3.6.0'
+    implementation 'com.squareup.okhttp3:okhttp:3.10.0'
     implementation ('com.github.nkzawa:socket.io-client:0.6.0',{
          exclude group:'org.json', module:'json'
     })
