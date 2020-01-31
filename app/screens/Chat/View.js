@@ -84,6 +84,7 @@ const AlwaysNull = () => null
  * @prop {(amount: number, memo: string) => void} onPressSendInvoice
  *
  * @prop {() => void} onPressSendBTC
+ * @prop {string|null} recipientAvatar
  */
 
 /**
@@ -186,6 +187,7 @@ export default class ChatView extends React.PureComponent {
           body={currentMessage.text}
           outgoing={outgoing}
           timestamp={timestamp}
+          avatar={this.props.recipientAvatar}
         />
       </View>
     )

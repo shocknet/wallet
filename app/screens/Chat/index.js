@@ -441,6 +441,26 @@ export default class Chat extends React.PureComponent {
   }
 
   /** @returns {string|null} */
+  getRecipientAvatar() {
+    const recipientPublicKey = this.props.navigation.getParam(
+      'recipientPublicKey',
+    )
+
+    const theChat = this.state.chats.find(
+      chat => chat.recipientPublicKey === recipientPublicKey,
+    )
+
+    if (!theChat) {
+      console.warn(
+        `<Chat />.index -> getRecipientAvatar -> no chat found. recipientPublicKey: ${recipientPublicKey}`,
+      )
+      return null
+    }
+
+    return theChat.recipientAvatar
+  }
+
+  /** @returns {string|null} */
   getRecipientDisplayName() {
     const recipientPublicKey = this.props.navigation.getParam(
       'recipientPublicKey',
@@ -593,6 +613,7 @@ export default class Chat extends React.PureComponent {
           recipientDisplayName={recipientDisplayName}
           recipientPublicKey={recipientPublicKey}
           onPressSendBTC={this.openSendPaymentDialog}
+          recipientAvatar={this.getRecipientAvatar()}
         />
 
         <PaymentDialog
