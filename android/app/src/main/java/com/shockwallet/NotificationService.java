@@ -172,7 +172,7 @@ public class NotificationService extends Service {
                 createDeviceId();
                 rsa = new RSA("shocknet.tag.cc."+deviceId);
                 
-                rsa.generate(4096);
+                rsa.generate(2048);
                 String rsaPub = rsa.getPublicKey();
                 //String deviceId = "7601a723-b6d4-4020-95a6-6113fb40e2f8";
                 //Log.d(TAG,rsaPub);

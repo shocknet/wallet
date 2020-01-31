@@ -70,7 +70,7 @@ export const exchangeKeyPair = ({
     }
 
     console.log('Generating new key...')
-    const keyPair = await RSAKeychain.generateKeys(keyTag, 4096)
+    const keyPair = await RSAKeychain.generateKeys(keyTag, 2048)
     console.log('New key generated')
     console.log('New Keypair', {
       publicKey: keyPair.public,
