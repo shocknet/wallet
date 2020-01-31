@@ -19,6 +19,7 @@ const BUBBLE_TRIANGLE_VERTICAL_OFFSET = 6
  * @prop {((id: string) => void)=} onPress
  * @prop {boolean=} outgoing
  * @prop {number} timestamp
+ * @prop {string|null} avatar
  */
 
 /**
@@ -60,7 +61,7 @@ export default class ChatMessage extends React.PureComponent {
         {!outgoing && (
           <>
             <View style={styles.avatarContainer}>
-              <ShockAvatar height={40} image={null} />
+              <ShockAvatar height={40} image={this.props.avatar} />
             </View>
             <Pad insideRow amount={20} />
           </>

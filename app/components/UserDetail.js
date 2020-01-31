@@ -34,19 +34,6 @@ export default class UserDetail extends React.PureComponent {
     onPress && onPress(id)
   }
 
-  avatarSrc = {}
-
-  /** @param {Props} props */
-  constructor(props) {
-    super(props)
-    this.avatarSrc = {
-      uri:
-        props.image === null
-          ? 'data:image/png;base64,' + DEFAULT_USER_IMAGE
-          : 'data:image/png;base64,' + props.image,
-    }
-  }
-
   /** @param {Props} prevProps */
   componentDidUpdate(prevProps) {
     const { image } = this.props
@@ -73,11 +60,18 @@ export default class UserDetail extends React.PureComponent {
       image,
     } = this.props
 
+    const avatarSrc = {
+      uri:
+        image === null
+          ? 'data:image/jpeg;base64,' + DEFAULT_USER_IMAGE
+          : 'data:image/jpeg;base64,' + image,
+    }
+
     return (
       <TouchableOpacity onPress={this.onPress}>
         <View style={styles.container}>
           <View style={xStyles.avatarSubContainer}>
-            <Avatar rounded medium source={image ? { uri: image } : {}} />
+            <Avatar rounded medium source={avatarSrc} />
           </View>
 
           <View style={xStyles.nameContainer}>
