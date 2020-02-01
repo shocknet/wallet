@@ -465,17 +465,13 @@ export default class Chat extends React.Component {
 
   /** @returns {string|null} */
   getRecipientAvatar() {
-    const recipientPublicKey = this.props.navigation.getParam(
-      'recipientPublicKey',
-    )
+    const chatId = this.props.navigation.getParam('id')
 
-    const theChat = this.state.chats.find(
-      chat => chat.recipientPublicKey === recipientPublicKey,
-    )
+    const theChat = this.state.chats.find(chat => chat.id === chatId)
 
     if (!theChat) {
       console.warn(
-        `<Chat />.index -> getRecipientAvatar -> no chat found. recipientPublicKey: ${recipientPublicKey}`,
+        `<Chat />.index -> getRecipientAvatar -> no chat found. chatId: ${chatId}`,
       )
       return null
     }
