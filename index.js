@@ -200,6 +200,7 @@ Http.interceptors.request.use(async config => {
  */
 const decryptResponse = async response => {
   try {
+    const decryptionTime = Date.now()
     const { connection } = store.getState()
     const path =
       response.config && response.config.url && response.config.baseURL
@@ -226,6 +227,7 @@ const decryptResponse = async response => {
       })
       console.log('API Public Key:', connection.APIPublicKey)
       console.log('Decrypted data:', decryptedData)
+      console.log(`Decrypted data in: ${Date.now() - decryptionTime}ms`)
       return {
         ...response,
         data: JSON.parse(decryptedData),

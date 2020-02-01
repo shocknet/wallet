@@ -17,18 +17,6 @@ export const ACTIONS = {
  * @prop {boolean} success
  */
 
-const getPublicKey = async (keyTag = '') => {
-  try {
-    console.log('getPublicKey:', keyTag)
-    const publicKey = await RSAKeychain.getPublicKey(keyTag)
-    console.log('publicKey:', publicKey)
-    return publicKey
-  } catch (err) {
-    console.error(err)
-    return null
-  }
-}
-
 /**
  * @typedef {object} ExchangeKeyPairParams
  * @prop {string} deviceId
@@ -56,7 +44,7 @@ export const exchangeKeyPair = ({
     })
     const keyTag = `com.shocknet.APIKey.${sessionId}`
     const oldKeyTag = `com.shocknet.APIKey.${cachedSessionId}`
-    const oldKeypair = await getPublicKey(oldKeyTag)
+    const oldKeypair = await RSAKeychain.keyExists(oldKeyTag)
     console.log('Old Keypair:', oldKeypair)
 
     if (sessionId === cachedSessionId) {
@@ -70,7 +58,7 @@ export const exchangeKeyPair = ({
     }
 
     console.log('Generating new key...')
-    const keyPair = await RSAKeychain.generateKeys(keyTag, 4096)
+    const keyPair = await RSAKeychain.generateKeys(keyTag, 2048)
     console.log('New key generated')
     console.log('New Keypair', {
       publicKey: keyPair.public,

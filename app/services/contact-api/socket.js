@@ -71,11 +71,13 @@ export const disconnect = () => {
  */
 export const encryptSocketData = async data => {
   const { APIPublicKey } = store.getState().connection
+
   if (!APIPublicKey) {
     throw new Error(
       'Please exchange keys with the API before sending any data through WebSockets',
     )
   }
+
   if (data) {
     console.log('encryptSocketData APIPublicKey:', APIPublicKey, data)
     const stringifiedData = JSON.stringify(data)
@@ -96,6 +98,7 @@ export const encryptSocketData = async data => {
  */
 export const decryptSocketData = async data => {
   if (data && data.encryptedKey) {
+    const decryptionTime = Date.now()
     console.log('Decrypting Data...', data)
     const { sessionId } = store.getState().connection
     const decryptedKey = await Encryption.decryptKey(
@@ -107,6 +110,7 @@ export const decryptSocketData = async data => {
       key: decryptedKey,
       iv: data.iv,
     })
+    console.log(`Decryption took: ${Date.now() - decryptionTime}ms`)
     return JSON.parse(decryptedData)
   }
 
@@ -140,6 +144,11 @@ export const encryptSocketInstance = socket => ({
        * @param {any} data
        */
       async data => {
+        if (Encryption.isNonEncrypted(eventName)) {
+          cb(data)
+          return
+        }
+
         console.log('Listening to Event:', eventName)
         const decryptedData = await decryptSocketData(data)
         cb(decryptedData)
@@ -151,6 +160,11 @@ export const encryptSocketInstance = socket => ({
    * @param {any} data
    */
   emit: async (eventName, data) => {
+    if (Encryption.isNonEncrypted(eventName)) {
+      socket.emit(eventName, data)
+      return
+    }
+
     console.log('Encrypting socket...', eventName, data)
     const encryptedData = await encryptSocketData(data)
     console.log('Encrypted Socket Data:', encryptedData)
