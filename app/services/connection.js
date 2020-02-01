@@ -36,6 +36,10 @@ export const pingURL = async urlOrIp => {
     }
   } catch (e) {
     console.warn(`Connection.pingURL: ${e.message}`)
-    return { success: false, sessionId: e.response.headers['x-session-id'] }
+    if (e.response && e.response.headers) {
+      return { success: false, sessionId: e.response.headers['x-session-id'] }
+    }
+
+    return { success: false, sessionId: '' }
   }
 }
