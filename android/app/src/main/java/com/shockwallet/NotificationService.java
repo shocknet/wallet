@@ -141,6 +141,9 @@ public class NotificationService extends Service {
                     }
                 }
                 if(!isMe){
+                    if(latestBody.equals("$$__SHOCKWALLET__INITIAL__MESSAGE")){
+                        latestBody = "Chat initialized";
+                    }
                     doNotification(latestSender,latestBody,R.drawable.user);
                 }
             }catch (Exception e){
