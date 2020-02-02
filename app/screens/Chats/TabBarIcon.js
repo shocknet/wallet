@@ -1,7 +1,6 @@
 import React from 'react'
 import { View, StyleSheet } from 'react-native'
-import Ionicons from 'react-native-vector-icons/Ionicons'
-
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'
 import * as API from '../../services/contact-api'
 import * as Cache from '../../services/cache'
 import * as CSS from '../../res/css'
@@ -50,11 +49,11 @@ export default class TabBarIcon extends React.PureComponent {
 
     return (
       <View>
-        <Ionicons
+        <FontAwesome5
           color={
             focused ? CSS.Colors.BLUE_MEDIUM_DARK : CSS.Colors.GRAY_MEDIUM_LIGHT
           }
-          name="md-chatboxes"
+          name="comments"
           // This one has to be larger than the others to match the design
           size={36}
         />

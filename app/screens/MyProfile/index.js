@@ -10,8 +10,7 @@ import {
   StatusBar,
 } from 'react-native'
 import ImagePicker from 'react-native-image-crop-picker'
-
-import EntypoIcons from 'react-native-vector-icons/Entypo'
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'
 // import { AirbnbRating } from 'react-native-ratings'
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation
@@ -57,11 +56,11 @@ export default class MyProfile extends React.PureComponent {
   static navigationOptions = {
     tabBarIcon: ({ focused }) => {
       return ((
-        <EntypoIcons
+        <FontAwesome5
           color={
             focused ? CSS.Colors.BLUE_MEDIUM_DARK : CSS.Colors.GRAY_MEDIUM_LIGHT
           }
-          name="user"
+          name="user-circle"
           // reverseColor={'#CED0CE'}
           size={32}
         />

@@ -1483,7 +1483,7 @@ class WalletOverview extends Component {
             <ShockInput
               keyboardType="number-pad"
               onChangeText={this.onChangeSendBTCAmount}
-              placeholder="Amount in Sats"
+              placeholder="Amount in sats"
               value={
                 sendToBTCAmount === 0 ? undefined : sendToBTCAmount.toString()
               }
@@ -1697,18 +1697,20 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   balanceValue: {
-    fontSize: 30,
-    letterSpacing: 2,
-    fontFamily: 'Montserrat-900',
+    fontSize: 36,
+    letterSpacing: 3,
+    fontFamily: 'Montserrat-700',
     color: CSS.Colors.TEXT_WHITE,
   },
   balanceCurrency: {
-    fontSize: 14,
+    fontSize: 16,
+    letterSpacing: 1,
     fontFamily: 'Montserrat-700',
     color: CSS.Colors.TEXT_WHITE,
   },
   balanceUSDValue: {
-    fontSize: 14,
+    fontSize: 16,
+    letterSpacing: 2,
     fontFamily: 'Montserrat-600',
     color: CSS.Colors.TEXT_ORANGE,
   },
