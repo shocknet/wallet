@@ -16,7 +16,7 @@ import { ACTIONS } from '../app/actions/NodeActions'
 
 /** @type {State} */
 const INITIAL_STATE = {
-  nodeInfo: null,
+  nodeInfo: {},
   nodeHealth: null,
   connectionStatus: 'online',
 }

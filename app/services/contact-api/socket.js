@@ -7,6 +7,7 @@ import once from 'lodash/once'
 import * as Cache from '../../services/cache'
 
 import * as Events from './events'
+import * as Encryption from '../encryption'
 
 // TO DO: move to common repo
 /**
@@ -25,8 +26,13 @@ import * as Events from './events'
  * @prop {() => void} connect
  * @prop {boolean} connected
  * @prop {() => void} disconnect
+ * @prop {boolean} disconnected
  * @prop {(eventName: string, data: Record<string, any>) => void} emit
  * @prop {(eventName: string, handler: (data: Emission) => void) => void} on
+ */
+
+/**
+ * @typedef {import('redux').Store<{ connection: import('../../../reducers/ConnectionReducer').State } & import('redux-persist/es/persistReducer').PersistPartial, import('redux').Action<any>> & { dispatch: any; }} ReduxStore
  */
 
 /**
@@ -34,6 +40,22 @@ import * as Events from './events'
  */
 // eslint-disable-next-line init-declarations
 export let socket
+
+/**
+ * @type {ReduxStore}
+ */
+// eslint-disable-next-line init-declarations
+export let store
+
+/**
+ * Set Redux Store for use along with end-to-end encryption
+ * @param {ReduxStore} initializedStore
+ * @returns {ReduxStore} Returns the initialized Redux store
+ */
+export const setStore = initializedStore => {
+  store = initializedStore
+  return store
+}
 
 export const disconnect = () => {
   if (socket) {
@@ -43,6 +65,112 @@ export const disconnect = () => {
     socket.off()
   }
 }
+
+/**
+ * @param {object} data
+ */
+export const encryptSocketData = async data => {
+  const { APIPublicKey } = store.getState().connection
+
+  if (!APIPublicKey) {
+    throw new Error(
+      'Please exchange keys with the API before sending any data through WebSockets',
+    )
+  }
+
+  if (data) {
+    console.log('encryptSocketData APIPublicKey:', APIPublicKey, data)
+    const stringifiedData = JSON.stringify(data)
+    const encryptedData = await Encryption.encryptData(
+      stringifiedData,
+      APIPublicKey,
+    )
+    console.log('Original Data:', data)
+    console.log('Encrypted Data:', encryptedData)
+    return encryptedData
+  }
+
+  return data
+}
+
+/**
+ * @param {object} data
+ */
+export const decryptSocketData = async data => {
+  if (data && data.encryptedKey) {
+    const decryptionTime = Date.now()
+    console.log('Decrypting Data...', data)
+    const { sessionId } = store.getState().connection
+    const decryptedKey = await Encryption.decryptKey(
+      data.encryptedKey,
+      sessionId,
+    )
+    const { decryptedData } = await Encryption.decryptData({
+      encryptedData: data.encryptedData,
+      key: decryptedKey,
+      iv: data.iv,
+    })
+    console.log(`Decryption took: ${Date.now() - decryptionTime}ms`)
+    return JSON.parse(decryptedData)
+  }
+
+  console.log('Data is non-encrypted', data)
+
+  return data
+}
+
+/**
+ * @param {SocketIOClient.Socket} socket
+ */
+export const encryptSocketInstance = socket => ({
+  connect: () => socket.connect(),
+  get connected() {
+    return socket.connected
+  },
+  disconnect: () => socket.disconnect(),
+  get disconnected() {
+    return socket.disconnected
+  },
+  // @ts-ignore
+  binary: b => encryptSocketInstance(socket.binary(b)),
+  /**
+   * @param {string} eventName
+   * @param {(handler: any) => void} cb
+   */
+  on: (eventName, cb) => {
+    socket.on(
+      eventName,
+      /**
+       * @param {any} data
+       */
+      async data => {
+        if (Encryption.isNonEncrypted(eventName)) {
+          cb(data)
+          return
+        }
+
+        console.log('Listening to Event:', eventName)
+        const decryptedData = await decryptSocketData(data)
+        cb(decryptedData)
+      },
+    )
+  },
+  /**
+   * @param {string} eventName
+   * @param {any} data
+   */
+  emit: async (eventName, data) => {
+    if (Encryption.isNonEncrypted(eventName)) {
+      socket.emit(eventName, data)
+      return
+    }
+
+    console.log('Encrypting socket...', eventName, data)
+    const encryptedData = await encryptSocketData(data)
+    console.log('Encrypted Socket Data:', encryptedData)
+    socket.emit(eventName, encryptedData)
+  },
+})
 
 /**
  * Use outside of this module if need to create a single use socket.
@@ -55,12 +183,18 @@ export const createSocket = async () => {
     throw new Error('Tried to connect the socket without a cached node url')
   }
 
+  console.log(`http://${nodeURL}`)
+
   // @ts-ignore
-  return SocketIO(`http://${nodeURL}`, {
+  const socket = SocketIO(`http://${nodeURL}`, {
     autoConnect: false,
     transports: ['websocket'],
+    query: {
+      'x-shockwallet-device-id': store.getState().connection.deviceId,
+    },
     jsonp: false,
   })
+  return encryptSocketInstance(socket)
 }
 
 /**

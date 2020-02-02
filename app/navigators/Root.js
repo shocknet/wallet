@@ -15,6 +15,7 @@ import Chat, { CHAT_ROUTE } from '../screens/Chat'
 import Chats, { CHATS_ROUTE } from '../screens/Chats'
 import Advanced, { ADVANCED_SCREEN } from '../screens/Advanced'
 import WalletOverview, { WALLET_OVERVIEW } from '../screens/WalletOverview'
+import SeedBackup, { SEED_BACKUP } from '../screens/SeedBackup'
 
 import Login, { LOGIN } from '../screens/Login'
 
@@ -23,11 +24,15 @@ import Loading, { LOADING } from '../screens/Loading'
 
 import WalletManager, { WALLET_MANAGER } from './WalletManager'
 import ConnectToNode, { CONNECT_TO_NODE } from '../screens/ConnectToNode'
+import SendScreen, { SEND_SCREEN } from '../screens/Send'
+import ReceiveScreen, { RECEIVE_SCREEN } from '../screens/Receive'
 
 export const APP = 'APP'
-export const MAIN_NAV = 'MAIN_NAV'
+export const BOTTOM_NAV = 'BOTTOM_NAV'
+export const WALLET_NAV = 'WALLET_NAV'
+export const WALLET = 'WALLET'
 
-const MainNav = createBottomTabNavigator(
+const BottomNav = createBottomTabNavigator(
   {
     [WALLET_OVERVIEW]: WalletOverview,
     [CHATS_ROUTE]: Chats,
@@ -56,7 +61,21 @@ const MainNav = createBottomTabNavigator(
   },
 )
 
-MainNav.navigationOptions = {
+const WalletNav = createStackNavigator(
+  {
+    [BOTTOM_NAV]: BottomNav,
+    [SEND_SCREEN]: SendScreen,
+    [RECEIVE_SCREEN]: ReceiveScreen,
+  },
+  {
+    initialRouteName: BOTTOM_NAV,
+    navigationOptions: {
+      header: null,
+    },
+  },
+)
+
+BottomNav.navigationOptions = {
   header: null,
 }
 
@@ -64,8 +83,8 @@ const MAIN_DRAWER = 'MAIN_DRAWER'
 
 const MainDrawer = createDrawerNavigator(
   {
-    [MAIN_NAV]: {
-      screen: MainNav,
+    [WALLET_NAV]: {
+      screen: WalletNav,
       navigationOptions: {
         title: 'Home',
       },
@@ -73,12 +92,25 @@ const MainDrawer = createDrawerNavigator(
     [ADVANCED_SCREEN]: {
       screen: Advanced,
       navigationOptions: {
-        title: 'Advanced settings',
+        title: 'Advanced Lightning',
+      },
+    },
+    [SEED_BACKUP]: {
+      screen: SeedBackup,
+      navigationOptions: {
+        title: 'Seed Backup',
+      },
+    },
+    [SEED_BACKUP]: {
+      screen: SeedBackup,
+      navigationOptions: {
+        title: 'Seed Backup',
       },
     },
   },
   {
-    initialRouteName: MAIN_NAV,
+    initialRouteName: WALLET_NAV,
+    drawerPosition: 'right',
   },
 )
 

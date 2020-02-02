@@ -90,6 +90,9 @@
     "react/sort-comp": "off",
     "react/display-name": "off",
     "react/prefer-stateless-function": "off",
+    "react/sort-prop-types": "off",
+    "react/forbid-prop-types": "off",
+    "react-native/no-color-literals": "off",
     "no-use-before-define": "off",
     "new-cap": "off",
     "babel/new-cap": "off",
@@ -108,7 +111,7 @@
     "valid-typeof": "off",
     "babel/valid-typeof": 1,
     // needed for redux reducers function arguments
-    "default-param-last": 1
+    "default-param-last": "off"
   },
   "settings": {
     "react": {

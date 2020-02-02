@@ -3,10 +3,14 @@
  */
 import React from 'react'
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
-
 import moment from 'moment'
+import { Svg, Polygon } from 'react-native-svg'
 
-import { Colors } from '../../res/css'
+import { Colors, WIDTH } from '../../res/css'
+import ShockAvatar from '../../components/ShockAvatar'
+import Pad from '../../components/Pad'
+
+const BUBBLE_TRIANGLE_VERTICAL_OFFSET = 6
 
 /**
  * @typedef {object} Props
@@ -14,8 +18,8 @@ import { Colors } from '../../res/css'
  * @prop {string} id
  * @prop {((id: string) => void)=} onPress
  * @prop {boolean=} outgoing
- * @prop {string} senderName
  * @prop {number} timestamp
+ * @prop {string|null} avatar
  */
 
 /**
@@ -37,68 +41,127 @@ export default class ChatMessage extends React.PureComponent {
 
   onPress = () => {
     const { id, onPress } = this.props
-
     onPress && onPress(id)
   }
 
   render() {
-    const { body, outgoing, senderName, timestamp } = this.props
+    const { body, outgoing, timestamp } = this.props
+
+    const formattedTime = moment(timestamp).format('hh:mm')
+
+    const SVG_EDGE = 25
+    const UNIT = SVG_EDGE / 5
+    const ZERO = UNIT * 0
+    const THREE = UNIT * 3
+    const FOUR = UNIT * 4
+    const FIVE = UNIT * 5
 
     return (
-      <TouchableOpacity onPress={this.onPress}>
-        <View style={outgoing ? styles.container : styles.containerOutgoing}>
-          <Text style={outgoing ? styles.name : styles.nameOutgoing}>
-            {senderName}
-          </Text>
+      <View style={styles.container}>
+        {!outgoing && (
+          <>
+            <View style={styles.avatarContainer}>
+              <ShockAvatar height={40} image={this.props.avatar} />
+            </View>
+            <Pad insideRow amount={20} />
+          </>
+        )}
 
-          <Text style={styles.timestamp}>{moment(timestamp).fromNow()}</Text>
+        {outgoing && (
+          <>
+            <Text style={styles.timestamp}>{formattedTime}</Text>
+            <Pad insideRow amount={12} />
+          </>
+        )}
 
-          <Text style={styles.body}>{body}</Text>
+        <View>
+          <View style={[styles.bubble, outgoing && styles.bubbleOutgoing]}>
+            <TouchableOpacity onPress={this.onPress}>
+              <Text style={styles.body}>{body}</Text>
+            </TouchableOpacity>
+          </View>
+
+          <Svg
+            height={SVG_EDGE}
+            width={SVG_EDGE}
+            style={outgoing ? styles.arrowOutgoing : styles.arrow}
+          >
+            <Polygon
+              points={
+                outgoing
+                  ? `${ZERO},${THREE} ${FOUR},${ZERO} ${FIVE},${FIVE}`
+                  : `${ZERO},${FIVE} ${UNIT},${ZERO} ${FIVE},${THREE}`
+              }
+              fill={outgoing ? Colors.ORANGE : Colors.BLUE_MEDIUM_DARK}
+              strokeWidth="0"
+            />
+          </Svg>
         </View>
-      </TouchableOpacity>
+
+        {!outgoing && (
+          <>
+            <Pad insideRow amount={12} />
+            <Text style={styles.timestamp}>{formattedTime}</Text>
+          </>
+        )}
+      </View>
     )
   }
 }
 
-const name = {
-  color: Colors.BLUE_DARK,
-  fontSize: 14,
-  fontWeight: /** @type {'bold'} */ ('bold'),
-}
-
-const CONTAINER_HORIZONTAL_PADDING = 12
-const CONTAINER_VERTICAL_PADDING = 18
-
-const container = {
-  alignItems: /** @type {'flex-start'} */ ('flex-start'),
-  backgroundColor: Colors.BLUE_LIGHTEST,
-  borderRadius: 10,
-  justifyContent: /** @type {'center'} */ ('center'),
-  margin: 15,
-  paddingBottom: CONTAINER_VERTICAL_PADDING,
-  paddingLeft: CONTAINER_HORIZONTAL_PADDING,
-  paddingRight: CONTAINER_HORIZONTAL_PADDING,
-  paddingTop: CONTAINER_VERTICAL_PADDING,
-}
+const BUBBLE_VERTICAL_PADDING = 14
+const BUBBLE_HORIZONTAL_PADDING = 22.5
 
 const styles = StyleSheet.create({
+  container: {
+    alignItems: 'flex-end',
+    flexDirection: 'row',
+    paddingBottom: BUBBLE_TRIANGLE_VERTICAL_OFFSET,
+  },
+
+  avatarContainer: {
+    marginBottom: -BUBBLE_TRIANGLE_VERTICAL_OFFSET,
+  },
+
+  arrow: {
+    position: 'absolute',
+    bottom: -BUBBLE_TRIANGLE_VERTICAL_OFFSET,
+    left: 0,
+  },
+
+  arrowOutgoing: {
+    position: 'absolute',
+    bottom: -BUBBLE_TRIANGLE_VERTICAL_OFFSET,
+    right: 0,
+  },
+
+  bubble: {
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+    maxWidth: WIDTH * 0.55,
+    minWidth: WIDTH * 0.18,
+    paddingTop: BUBBLE_VERTICAL_PADDING,
+    paddingBottom: BUBBLE_VERTICAL_PADDING,
+    paddingLeft: BUBBLE_HORIZONTAL_PADDING,
+    paddingRight: BUBBLE_HORIZONTAL_PADDING,
+    backgroundColor: Colors.BLUE_MEDIUM_DARK,
+    borderRadius: 24,
+  },
+
+  bubbleOutgoing: {
+    backgroundColor: Colors.ORANGE,
+  },
+
   body: {
-    color: Colors.TEXT_STANDARD,
-    fontSize: 15,
-    marginTop: 8,
+    color: Colors.TEXT_WHITE,
+    fontSize: 10,
+    fontFamily: 'Montserrat-700',
   },
-  container,
-  containerOutgoing: {
-    ...container,
-    backgroundColor: Colors.GRAY_MEDIUM,
-  },
-  name,
-  nameOutgoing: {
-    ...name,
-    color: Colors.TEXT_STANDARD,
-  },
+
   timestamp: {
-    fontSize: 12,
-    color: Colors.TEXT_LIGHT,
+    alignSelf: 'center',
+    fontSize: 10,
+    fontFamily: 'Montserrat-500',
+    color: '#A59797',
   },
 })

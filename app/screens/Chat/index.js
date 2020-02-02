@@ -2,9 +2,8 @@
  * @prettier
  */
 import React from 'react'
-import { ToastAndroid, StyleSheet, View } from 'react-native'
-import MaterialIcons from 'react-native-vector-icons/MaterialCommunityIcons'
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'
+import { ToastAndroid, StyleSheet, StatusBar } from 'react-native'
+import Ion from 'react-native-vector-icons/Ionicons'
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}, Params>} Navigation
  */
@@ -22,29 +21,42 @@ import { WALLET_OVERVIEW } from '../WalletOverview'
 
 import ChatView from './View'
 import PaymentDialog from './PaymentDialog'
+/**
+ * @typedef {import('./View').PaymentStatus} PaymentStatus
+ */
 
 export const CHAT_ROUTE = 'CHAT_ROUTE'
 
-const headerIconStyle = StyleSheet.create({
-  // eslint-disable-next-line react-native/no-unused-styles
-  s: { marginRight: 16 },
-}).s
+const styles = StyleSheet.create({
+  backArrow: { marginLeft: 24 },
+  hamburger: { marginRight: 24 },
+})
+
+const headerRight = (
+  <Ion name="ios-menu" color="white" size={36} style={styles.hamburger} />
+)
+
+/** @type {React.FC<{ onPress?: () => void }>} */
+const HeaderLeft = React.memo(({ onPress }) => ((
+  <Ion
+    suppressHighlighting
+    color="white"
+    name="ios-arrow-round-back"
+    onPress={onPress}
+    size={48}
+    style={styles.backArrow}
+  />
+)))
 
 /**
  * @typedef {object} Params
  * @prop {string} recipientPublicKey
- * @prop {string=} _title Do not pass this param.
- * @prop {(() => void)=} _onPressSendInvoice Do not pass this param.
- * @prop {(() => void)=} _onPressSendPayment Do not pass this param.
+ * @prop {string=} _title
  */
 
 /**
  * @typedef {object} Props
  * @prop {Navigation} navigation
- */
-
-/**
- * @typedef {import('./View').PaymentStatus} PaymentStatus
  */
 
 /**
@@ -56,14 +68,13 @@ const headerIconStyle = StyleSheet.create({
 
 /**
  * @typedef {object} State
- * @prop {API.Schema.ChatMessage[]} messages
- * @prop {string|null} ownDisplayName
+ * @prop {API.Schema.Chat[]} chats
  * @prop {string|null} ownPublicKey
  * @prop {Partial<Record<string, PaymentStatus>>} rawInvoiceToPaymentStatus
  * @prop {Partial<Record<string, DecodedInvoice>>} rawInvoiceToDecodedInvoice
  * @prop {string|null} recipientDisplayName
- *
- * @prop {boolean} sendingInvoice True when showing the send invoice dialog.
+ * @prop {API.Schema.ChatMessage[]} cachedSentMessages Messages that were *just*
+ * sent but might have not appeared on the onChats() event yet.
  */
 
 /**
@@ -83,62 +94,37 @@ export default class Chat extends React.PureComponent {
       )
     }
 
-    const onPressSendInvoice = navigation.getParam('_onPressSendInvoice')
-
-    if (typeof onPressSendInvoice !== 'function') {
-      console.warn(
-        `Chat-> _onPressSendInvoice param not a function, instead got: ${typeof onPressSendInvoice}`,
-      )
-    }
-
-    const onPressSendPayment = navigation.getParam('_onPressSendPayment')
-
-    if (typeof onPressSendPayment !== 'function') {
-      console.warn(
-        `Chat-> _onPressSendPayment param not a function, instead got: ${typeof onPressSendPayment}`,
-      )
-    }
-
     return {
-      headerRight: (
-        <View style={CSS.styles.flexRow}>
-          <FontAwesome5
-            color={Colors.TEXT_WHITE}
-            name="money-bill-wave"
-            accessibilityHint="Send Money"
-            onPress={onPressSendPayment}
-            size={28}
-            style={headerIconStyle}
-          />
-
-          <MaterialIcons
-            color={Colors.TEXT_WHITE}
-            name="file-send"
-            onPress={onPressSendInvoice}
-            size={28}
-            style={headerIconStyle}
-          />
-        </View>
-      ),
       headerStyle: {
-        backgroundColor: Colors.BLUE_DARK,
+        backgroundColor: Colors.BLUE_MEDIUM_DARK,
         elevation: 0,
       },
+
+      headerRight,
+
+      headerLeft: props => <HeaderLeft onPress={props.onPress} />,
+
       headerTintColor: Colors.TEXT_WHITE,
+
+      headerTitleStyle: {
+        fontFamily: 'Montserrat-500',
+        // https://github.com/react-navigation/react-navigation/issues/542#issuecomment-283663786
+        fontWeight: 'normal',
+        fontSize: 13,
+      },
+
       title,
     }
   }
 
   /** @type {State} */
   state = {
-    messages: [],
+    chats: API.Events.currentChats,
     rawInvoiceToDecodedInvoice: {},
     rawInvoiceToPaymentStatus: {},
-    ownDisplayName: null,
     ownPublicKey: null,
     recipientDisplayName: null,
-
-    sendingInvoice: false,
+    cachedSentMessages: [],
   }
 
   /** @type {React.RefObject<PaymentDialog>} */
@@ -151,12 +137,6 @@ export default class Chat extends React.PureComponent {
   didFocus = { remove() {} }
 
   willBlur = { remove() {} }
-
-  toggleSendInvoiceDialog = () => {
-    this.setState(({ sendingInvoice }) => ({
-      sendingInvoice: !sendingInvoice,
-    }))
-  }
 
   /**
    * @type {import('./View').Props['onPressSendInvoice']}
@@ -183,8 +163,6 @@ export default class Chat extends React.PureComponent {
         console.warn(err.message)
         ToastAndroid.show(`Could not send invoice: ${err.message}`, 1000)
       })
-
-    this.toggleSendInvoiceDialog()
   }
 
   openSendPaymentDialog = () => {
@@ -194,7 +172,7 @@ export default class Chat extends React.PureComponent {
   }
 
   decodeIncomingInvoices() {
-    const rawIncomingInvoices = this.state.messages
+    const rawIncomingInvoices = this.getMessages()
       .filter(m => !m.outgoing)
       .filter(m => m.body.indexOf('$$__SHOCKWALLET__INVOICE__') === 0)
       .map(m => m.body.slice('$$__SHOCKWALLET__INVOICE__'.length))
@@ -240,11 +218,10 @@ export default class Chat extends React.PureComponent {
 
     this.setState(
       ({
-        messages,
         rawInvoiceToDecodedInvoice: oldRawInvoiceToDecodedInvoice,
         rawInvoiceToPaymentStatus: oldRawInvoiceToPaymentStatus,
       }) => {
-        const rawOutgoingInvoices = messages
+        const rawOutgoingInvoices = this.getMessages()
           .filter(m => m.outgoing)
           .filter(m => m.body.indexOf('$$__SHOCKWALLET__INVOICE__') === 0)
           .map(m => m.body.slice('$$__SHOCKWALLET__INVOICE__'.length))
@@ -299,7 +276,7 @@ export default class Chat extends React.PureComponent {
       return
     }
 
-    const rawIncomingInvoices = this.state.messages
+    const rawIncomingInvoices = this.getMessages()
       .filter(m => !m.outgoing)
       .filter(m => m.body.indexOf('$$__SHOCKWALLET__INVOICE__') === 0)
       .map(m => m.body.slice('$$__SHOCKWALLET__INVOICE__'.length))
@@ -347,7 +324,7 @@ export default class Chat extends React.PureComponent {
       })
     }
 
-    if (prevState.messages !== this.state.messages) {
+    if (prevState.chats !== this.state.chats) {
       this.decodeIncomingInvoices()
     }
 
@@ -369,7 +346,7 @@ export default class Chat extends React.PureComponent {
   }
 
   updateLastReadMsg() {
-    const { messages } = this.state
+    const messages = this.getMessages()
     const pk = this.props.navigation.getParam('recipientPublicKey')
 
     const lastMsg = messages[messages.length - 1]
@@ -389,27 +366,19 @@ export default class Chat extends React.PureComponent {
     this.didFocus = navigation.addListener('didFocus', () => {
       this.isFocused = true
 
+      StatusBar.setBackgroundColor(Colors.BLUE_MEDIUM_DARK)
+      StatusBar.setBarStyle('light-content')
+
       this.updateLastReadMsg()
     })
     this.willBlur = navigation.addListener('willBlur', () => {
       this.isFocused = false
     })
     this.chatsUnsub = API.Events.onChats(this.onChats)
-    this.displayNameUnsub = API.Events.onDisplayName(displayName => {
-      this.mounted &&
-        this.setState({
-          ownDisplayName: displayName,
-        })
-    })
 
     this.decodeIncomingInvoices()
     this.fetchOutgoingInvoicesAndUpdateInfo()
     this.fetchPaymentsAndUpdatePaymentStatus()
-
-    navigation.setParams({
-      _onPressSendInvoice: this.toggleSendInvoiceDialog,
-      _onPressSendPayment: this.openSendPaymentDialog,
-    })
 
     const sad = await Cache.getStoredAuthData()
 
@@ -425,14 +394,11 @@ export default class Chat extends React.PureComponent {
   componentWillUnmount() {
     this.mounted = false
     this.chatsUnsub()
-    this.displayNameUnsub()
     this.didFocus.remove()
     this.willBlur.remove()
   }
 
   chatsUnsub = () => {}
-
-  displayNameUnsub = () => {}
 
   /**
    * @private
@@ -440,29 +406,10 @@ export default class Chat extends React.PureComponent {
    * @returns {void}
    */
   onChats = chats => {
-    const { navigation } = this.props
-
-    const recipientPublicKey = navigation.getParam('recipientPublicKey')
-
-    const theChat = chats.find(
-      chat => chat.recipientPublicKey === recipientPublicKey,
-    )
-
-    if (!theChat) {
-      console.warn(
-        `<Chat />.index -> onChats -> no chat found. recipientPublicKey: ${recipientPublicKey}`,
-      )
-      return
-    }
-
     this.setState(
       {
-        messages: theChat.messages,
-        recipientDisplayName:
-          typeof theChat.recipientDisplayName === 'string' &&
-          theChat.recipientDisplayName.length > 0
-            ? theChat.recipientDisplayName
-            : null,
+        chats,
+        cachedSentMessages: [],
       },
       () => {
         this.updateLastReadMsg()
@@ -473,16 +420,86 @@ export default class Chat extends React.PureComponent {
     )
   }
 
+  /** @returns {API.Schema.ChatMessage[]} */
+  getMessages = () => {
+    const recipientPublicKey = this.props.navigation.getParam(
+      'recipientPublicKey',
+    )
+
+    const theChat = this.state.chats.find(
+      chat => chat.recipientPublicKey === recipientPublicKey,
+    )
+
+    if (!theChat) {
+      console.warn(
+        `<Chat />.index -> getMessages() -> no chat found. recipientPublicKey: ${recipientPublicKey}`,
+      )
+      return []
+    }
+
+    return [...theChat.messages, ...this.state.cachedSentMessages]
+  }
+
+  /** @returns {string|null} */
+  getRecipientAvatar() {
+    const recipientPublicKey = this.props.navigation.getParam(
+      'recipientPublicKey',
+    )
+
+    const theChat = this.state.chats.find(
+      chat => chat.recipientPublicKey === recipientPublicKey,
+    )
+
+    if (!theChat) {
+      console.warn(
+        `<Chat />.index -> getRecipientAvatar -> no chat found. recipientPublicKey: ${recipientPublicKey}`,
+      )
+      return null
+    }
+
+    return theChat.recipientAvatar
+  }
+
+  /** @returns {string|null} */
+  getRecipientDisplayName() {
+    const recipientPublicKey = this.props.navigation.getParam(
+      'recipientPublicKey',
+    )
+
+    const theChat = this.state.chats.find(
+      chat => chat.recipientPublicKey === recipientPublicKey,
+    )
+
+    if (!theChat) {
+      console.warn(
+        `<Chat />.index -> getRecipientDisplayName -> no chat found. recipientPublicKey: ${recipientPublicKey}`,
+      )
+      return null
+    }
+
+    return theChat.recipientDisplayName
+  }
+
   /**
    * @private
    * @param {string} text
    * @returns {void}
    */
   onSend = text => {
+    this.setState(({ cachedSentMessages }) => ({
+      cachedSentMessages: cachedSentMessages.concat({
+        body: text,
+        id: Math.random().toString() + Date.now().toString(),
+        outgoing: true,
+        timestamp: Date.now(),
+      }),
+    }))
     API.Actions.sendMessage(
       this.props.navigation.getParam('recipientPublicKey'),
       text,
-    )
+    ).catch(e => {
+      console.warn(`Error sending a message with text: ${text} -> ${e.message}`)
+    })
   }
 
   /**
@@ -490,7 +507,7 @@ export default class Chat extends React.PureComponent {
    * @param {string} msgID
    */
   onPressUnpaidIncomingInvoice = msgID => {
-    const msg = /** @type {API.Schema.ChatMessage} */ (this.state.messages.find(
+    const msg = /** @type {API.Schema.ChatMessage} */ (this.getMessages().find(
       m => m.id === msgID,
     ))
 
@@ -509,15 +526,13 @@ export default class Chat extends React.PureComponent {
 
   render() {
     const {
-      messages,
-      ownDisplayName,
       ownPublicKey,
       recipientDisplayName,
       rawInvoiceToDecodedInvoice,
       rawInvoiceToPaymentStatus,
-
-      sendingInvoice,
     } = this.state
+
+    const messages = this.getMessages()
 
     const recipientPublicKey = this.props.navigation.getParam(
       'recipientPublicKey',
@@ -594,12 +609,11 @@ export default class Chat extends React.PureComponent {
           onPressSendInvoice={this.sendInvoice}
           onPressUnpaidIncomingInvoice={this.onPressUnpaidIncomingInvoice}
           onSendMessage={this.onSend}
-          ownDisplayName={ownDisplayName}
           ownPublicKey={ownPublicKey}
           recipientDisplayName={recipientDisplayName}
           recipientPublicKey={recipientPublicKey}
-          sendingInvoice={sendingInvoice}
-          sendInvoiceDialogOnRequestClose={this.toggleSendInvoiceDialog}
+          onPressSendBTC={this.openSendPaymentDialog}
+          recipientAvatar={this.getRecipientAvatar()}
         />
 
         <PaymentDialog

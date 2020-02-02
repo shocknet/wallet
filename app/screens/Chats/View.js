@@ -2,7 +2,13 @@
  * @prettier
  */
 import React from 'react'
-import { FlatList, Text, View, StyleSheet } from 'react-native'
+import {
+  FlatList,
+  Text,
+  View,
+  StyleSheet,
+  TouchableOpacity,
+} from 'react-native'
 import moment from 'moment'
 import { Divider, Icon } from 'react-native-elements'
 import Ionicons from 'react-native-vector-icons/Ionicons'
@@ -151,41 +157,47 @@ export default class ChatsView extends React.PureComponent {
     const unread = !readChatIDs.includes(chat.recipientPublicKey)
 
     return (
-      <View style={styles.itemContainer}>
-        <View style={styles.userDetailContainer}>
-          <UserDetail
-            alternateText={`(${moment(lastMsgTimestamp).fromNow()})`}
-            alternateTextBold={unread}
-            id={chat.recipientPublicKey}
-            image={chat.recipientAvatar}
-            lowerText={(() => {
-              if (lastMsg.body === '$$__SHOCKWALLET__INITIAL__MESSAGE') {
-                return 'Empty conversation'
-              }
+      <TouchableOpacity
+        // eslint-disable-next-line react/jsx-no-bind
+        onPress={() => {
+          this.onPressChat(chat.recipientPublicKey)
+        }}
+      >
+        <View style={styles.itemContainer}>
+          <View style={styles.userDetailContainer}>
+            <UserDetail
+              alternateText={`(${moment(lastMsgTimestamp).fromNow()})`}
+              alternateTextBold={unread}
+              id={chat.recipientPublicKey}
+              image={chat.recipientAvatar}
+              lowerText={(() => {
+                if (lastMsg.body === '$$__SHOCKWALLET__INITIAL__MESSAGE') {
+                  return 'Empty conversation'
+                }
 
-              if (lastMsg.body.indexOf('$$__SHOCKWALLET__INVOICE__') === 0) {
-                return 'Invoice'
-              }
+                if (lastMsg.body.indexOf('$$__SHOCKWALLET__INVOICE__') === 0) {
+                  return 'Invoice'
+                }
 
-              return lastMsg.body
-            })()}
-            lowerTextStyle={unread ? styles.boldFont : undefined}
-            name={
-              chat.recipientDisplayName === null
-                ? chat.recipientPublicKey
-                : chat.recipientDisplayName
-            }
-            nameBold={unread}
-            onPress={this.onPressChat}
+                return lastMsg.body
+              })()}
+              lowerTextStyle={unread ? styles.boldFont : undefined}
+              name={
+                chat.recipientDisplayName === null
+                  ? chat.recipientPublicKey
+                  : chat.recipientDisplayName
+              }
+              nameBold={unread}
+            />
+          </View>
+          <Icon
+            color={Colors.ORANGE}
+            name="chevron-right"
+            size={28}
+            type="font-awesome"
           />
         </View>
-        <Icon
-          color={Colors.ORANGE}
-          name="chevron-right"
-          size={28}
-          type="font-awesome"
-        />
-      </View>
+      </TouchableOpacity>
     )
   }
 
@@ -369,7 +381,7 @@ export default class ChatsView extends React.PureComponent {
         bt = b.timestamp
       }
 
-      return at - bt
+      return bt - at
     })
 
     return (
@@ -381,7 +393,7 @@ export default class ChatsView extends React.PureComponent {
           data={items}
           keyExtractor={keyExtractor}
           renderItem={this.itemRenderer}
-          contentContainerStyle={LIST_STYLE}
+          style={LIST_STYLE}
         />
 
         <ShockDialog

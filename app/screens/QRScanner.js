@@ -10,9 +10,14 @@ import Ionicons from 'react-native-vector-icons/Ionicons'
 import * as CSS from '../res/css'
 
 /**
+ * @typedef {(data: string, port?: number) => void} QRScanSuccess
+ */
+
+/**
  * @typedef {object} Props
- * @prop {(ip: string, port: number) => void} connectToNodeIP
+ * @prop {(QRScanSuccess)} onQRSuccess
  * @prop {() => void} toggleQRScreen
+ * @prop {(string)=} type
  */
 
 /**
@@ -27,18 +32,54 @@ export default class QRScanner extends React.PureComponent {
    * @param {{ data: string }} e
    */
   onQRRead = e => {
-    const { connectToNodeIP } = this.props
+    const { type = 'nodeIP', onQRSuccess } = this.props
     console.log('Scanning...', e)
-    const parsedData = JSON.parse(e.data)
-    console.log('parsedData', parsedData, e)
+    if (type === 'nodeIP') {
+      const parsedData = JSON.parse(e.data)
+      console.log('parsedData', parsedData, e)
+      return this.connectNode(parsedData)
+    }
+
+    onQRSuccess(e.data)
+  }
+
+  /**
+   * @param {{ internalIP: string; walletPort: number; externalIP: string; }} connection
+   */
+  connectNode = connection => {
+    const { onQRSuccess } = this.props
     try {
-      connectToNodeIP(parsedData.internalIP, parsedData.walletPort)
+      onQRSuccess(connection.internalIP, connection.walletPort)
     } catch (err) {
-      connectToNodeIP(parsedData.externalIP, parsedData.walletPort)
+      onQRSuccess(connection.externalIP, connection.walletPort)
+    }
+  }
+
+  getPromptText = (type = 'nodeIP') => {
+    if (type === 'send') {
+      return {
+        title: 'SCAN ADDRESS OR INVOICE',
+        description:
+          'Point your camera at a BTC Address or Lightning Invoice QR Code',
+      }
+    }
+
+    if (type === 'receive') {
+      return {
+        title: 'Scan Public Key',
+        description: "Point your camera at a ShockWallet Contact's public key",
+      }
+    }
+
+    return {
+      title: 'SCAN NODE IPS',
+      description: 'Point your camera at a ShockWizard QR Code to set your IP',
     }
   }
 
   render() {
+    const { type = 'nodeIP' } = this.props
+    const content = this.getPromptText(type)
     return (
       <View style={styles.container}>
         <View style={styles.toolbar}>
@@ -91,9 +132,9 @@ export default class QRScanner extends React.PureComponent {
           <View
             style={[styles.bottomSection, styles.bottomSectionTextContainer]}
           >
-            <Text style={styles.bottomSectionTextHead}>SCAN NODE IPS</Text>
+            <Text style={styles.bottomSectionTextHead}>{content.title}</Text>
             <Text style={styles.bottomSectionTextDescription}>
-              Point your camera at a ShockWizard QR Code to set your IP
+              {content.description}
             </Text>
             <TouchableOpacity
               onPress={this.props.toggleQRScreen}
