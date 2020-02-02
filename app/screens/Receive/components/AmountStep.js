@@ -42,10 +42,7 @@ const AmountStep = ({
         <Dropdown
           data={[
             {
-              value: 'Sats',
-            },
-            {
-              value: 'Bits',
+              value: 'sats',
             },
             {
               value: 'BTC',
@@ -53,7 +50,7 @@ const AmountStep = ({
           ]}
           onChangeText={setUnitSelected}
           containerStyle={styles.amountSelect}
-          value={invoice.unitSelected}
+          value={invoice.unitSelected ? 'sats' : invoice.unitSelected}
           lineWidth={0}
           inputContainerStyle={styles.amountSelectInput}
           rippleOpacity={0}

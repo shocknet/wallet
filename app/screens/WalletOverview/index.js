@@ -1212,7 +1212,7 @@ class WalletOverview extends Component {
           <Text style={styles.balanceValue}>
             {totalBalance.replace(/(\d)(?=(\d{3})+$)/g, '$1,')}
           </Text>{' '}
-          <Text style={styles.balanceCurrency}>Sats</Text>
+          <Text style={styles.balanceCurrency}>sats</Text>
         </Text>
         <Text
           style={[styles.balanceUSDValue, !isConnected && styles.yellowText]}
