@@ -219,13 +219,19 @@ export const onReceivedRequests = listener => {
 
 /** @typedef {(sentRequests: Schema.SimpleSentRequest[]) => void} SentRequestsListener */
 
+/** @type {Set<SentRequestsListener>} */
+const sentReqsListeners = new Set()
+
 /** @type {Schema.SimpleSentRequest[]} */
 let currSentReqs = []
 
 export const getCurrSentReqs = () => currSentReqs
 
-/** @type {Set<SentRequestsListener>} */
-const sentReqsListeners = new Set()
+/** @param {Schema.SimpleSentRequest[]} sentReqs */
+export const setSentReqs = sentReqs => {
+  currSentReqs = sentReqs
+  sentReqsListeners.forEach(l => l(currSentReqs))
+}
 
 /**
  * @param {SentRequestsListener} listener
@@ -368,17 +374,21 @@ export const onRegister = listener => {
 
 /** @typedef {(chats: Schema.Chat[]) => void} ChatsListener  */
 
-/** @type {Schema.Chat[]} */
-export let currentChats = []
-
 /**
  * @type {ChatsListener[]}
  */
 const chatsListeners = []
 
-export const notifyChatsListeners = debounce(() => {
+/** @type {Schema.Chat[]} */
+export let currentChats = []
+
+export const getCurrChats = () => currentChats
+
+/** @param {Schema.Chat[]} chats */
+export const setChats = chats => {
+  currentChats = chats
   chatsListeners.forEach(l => l(currentChats))
-}, 500)
+}
 
 /**
  * @param {ChatsListener} listener
@@ -390,11 +400,7 @@ export const onChats = listener => {
 
   chatsListeners.push(listener)
 
-  setImmediate(() => {
-    notifyChatsListeners() // will provide current value to listener
-    // unlike the bio listener let's test out not re-emitting the event here
-    // to a void an unnecessary refresh
-  })
+  listener(currentChats)
 
   return () => {
     const idx = chatsListeners.indexOf(listener)
@@ -480,8 +486,7 @@ export const setupEvents = () => {
 
   Socket.socket.on(Event.ON_CHATS, res => {
     if (res.ok) {
-      currentChats = res.msg
-      notifyChatsListeners()
+      setChats(res.msg)
     }
   })
 
@@ -510,8 +515,7 @@ export const setupEvents = () => {
 
   Socket.socket.on(Event.ON_SENT_REQUESTS, res => {
     if (res.ok) {
-      currSentReqs = res.msg
-      sentReqsListeners.forEach(l => l(currSentReqs))
+      setSentReqs(res.msg)
     }
   })
 
