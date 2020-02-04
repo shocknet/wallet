@@ -4,7 +4,7 @@
 import once from 'lodash/once'
 import debounce from 'lodash/debounce'
 
-import * as Cache from '../../services/cache'
+import * as Cache from '../cache'
 
 import Action from './action'
 import Event from './event'
@@ -104,11 +104,6 @@ const handshakeAddrListeners = []
 const displayNameListeners = []
 
 /**
- * @type {ReceivedRequestsListener[]}
- */
-const receivedRequestsListeners = []
-
-/**
  * @type {SentRequestsListener[]}
  */
 const sentRequestsListeners = []
@@ -199,30 +194,29 @@ export const onDisplayName = listener => {
   }
 }
 
+/** @type {Schema.SimpleReceivedRequest[]} */
+let currentReceivedReqs = []
+
+export const currReceivedReqs = () => currReceivedReqs
+
+/** @type {Set<ReceivedRequestsListener>} */
+const receivedReqsListeners = new Set()
+
 /**
  * @param {ReceivedRequestsListener} listener
+ * @returns {() => void}
  */
 export const onReceivedRequests = listener => {
-  if (receivedRequestsListeners.indexOf(listener) > -1) {
-    throw new Error('tried to subscribe twice')
+  if (!receivedReqsListeners.add(listener)) {
+    throw new Error('Tried to subscribe twice')
   }
 
-  receivedRequestsListeners.push(listener)
-
-  setImmediate(async () => {
-    Socket.socket.emit(Event.ON_RECEIVED_REQUESTS, {
-      token: await getToken(),
-    })
-  })
+  listener(currentReceivedReqs)
 
   return () => {
-    const idx = receivedRequestsListeners.indexOf(listener)
-
-    if (idx < 0) {
-      throw new Error('tried to unsubscribe twice')
+    if (!receivedReqsListeners.delete(listener)) {
+      throw new Error('Tried to unsubscribe twice')
     }
-
-    receivedRequestsListeners.splice(idx, 1)
   }
 }
 
@@ -512,9 +506,8 @@ export const setupEvents = () => {
 
   Socket.socket.on(Event.ON_RECEIVED_REQUESTS, res => {
     if (res.ok) {
-      receivedRequestsListeners.forEach(l => {
-        l(res.msg)
-      })
+      currentReceivedReqs = res.msg
+      receivedReqsListeners.forEach(l => l(currentReceivedReqs))
     }
   })
 
@@ -589,6 +582,10 @@ export const setupEvents = () => {
     })
 
     Socket.socket.emit(Event.ON_SEED_BACKUP, {
+      token,
+    })
+
+    Socket.socket.emit(Event.ON_RECEIVED_REQUESTS, {
       token,
     })
   })
