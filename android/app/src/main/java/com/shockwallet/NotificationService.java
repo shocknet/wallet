@@ -112,7 +112,7 @@ public class NotificationService extends Service {
             
             if(chatInit == false){
                 chatInit = true;
-                return;
+                //return;
             }
             try{
                 String mex = DecryptMessage(args[0].toString());
@@ -143,6 +143,9 @@ public class NotificationService extends Service {
                 if(!isMe){
                     if(latestBody.equals("$$__SHOCKWALLET__INITIAL__MESSAGE")){
                         latestBody = "Chat initialized";
+                    }
+                    if(latestBody.startsWith("$$__SHOCKWALLET__INVOICE__")){
+                        latestBody = "Sent and invoice";
                     }
                     doNotification(latestSender,latestBody,R.drawable.user);
                 }
