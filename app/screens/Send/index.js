@@ -80,7 +80,7 @@ export const SEND_SCREEN = 'SEND_SCREEN'
 class SendScreen extends Component {
   state = {
     description: '',
-    unitSelected: 'Sats',
+    unitSelected: 'sats',
     amount: '0',
     contactsSearch: '',
     paymentSuccessful: false,
@@ -391,10 +391,7 @@ class SendScreen extends Component {
                 <Dropdown
                   data={[
                     {
-                      value: 'Sats',
-                    },
-                    {
-                      value: 'Bits',
+                      value: 'sats',
                     },
                     {
                       value: 'BTC',
@@ -403,7 +400,7 @@ class SendScreen extends Component {
                   disabled={!editable}
                   onChangeText={this.onChange('unitSelected')}
                   containerStyle={styles.amountSelect}
-                  value={invoice.paymentRequest ? 'Sats' : unitSelected}
+                  value={invoice.paymentRequest ? 'sats' : unitSelected}
                   lineWidth={0}
                   inputContainerStyle={styles.amountSelectInput}
                   rippleOpacity={0}
