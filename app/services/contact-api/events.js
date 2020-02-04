@@ -85,7 +85,7 @@ export const onConnection = listener => {
 /** @typedef {(handshakeAddress: string|null) => void} HandshakeAddrListener */
 /** @typedef {(displayName: string|null) => void} DisplayNameListener */
 /** @typedef {(receivedRequests: Schema.SimpleReceivedRequest[]) => void} ReceivedRequestsListener */
-/** @typedef {(sentRequests: Schema.SimpleSentRequest[]) => void} SentRequestsListener */
+
 /** @typedef {(users: Schema.User[]) => void} UsersListener  */
 
 /**
@@ -102,11 +102,6 @@ const handshakeAddrListeners = []
  * @type {DisplayNameListener[]}
  */
 const displayNameListeners = []
-
-/**
- * @type {SentRequestsListener[]}
- */
-const sentRequestsListeners = []
 
 /**
  * @type {UsersListener[]}
@@ -197,7 +192,7 @@ export const onDisplayName = listener => {
 /** @type {Schema.SimpleReceivedRequest[]} */
 let currentReceivedReqs = []
 
-export const currReceivedReqs = () => currReceivedReqs
+export const currReceivedReqs = () => currentReceivedReqs
 
 /** @type {Set<ReceivedRequestsListener>} */
 const receivedReqsListeners = new Set()
@@ -220,30 +215,32 @@ export const onReceivedRequests = listener => {
   }
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
+/** @typedef {(sentRequests: Schema.SimpleSentRequest[]) => void} SentRequestsListener */
+
+/** @type {Schema.SimpleSentRequest[]} */
+let currSentReqs = []
+
+export const getCurrSentReqs = () => currSentReqs
+
+/** @type {Set<SentRequestsListener>} */
+const sentReqsListeners = new Set()
+
 /**
  * @param {SentRequestsListener} listener
  */
 export const onSentRequests = listener => {
-  if (sentRequestsListeners.indexOf(listener) > -1) {
-    throw new Error('tried to subscribe twice')
+  if (!sentReqsListeners.add(listener)) {
+    throw new Error('Tried to subscribe twice')
   }
 
-  sentRequestsListeners.push(listener)
-
-  setImmediate(async () => {
-    Socket.socket.emit(Event.ON_SENT_REQUESTS, {
-      token: await getToken(),
-    })
-  })
+  listener(currSentReqs)
 
   return () => {
-    const idx = sentRequestsListeners.indexOf(listener)
-
-    if (idx < 0) {
-      throw new Error('tried to unsubscribe twice')
+    if (!sentReqsListeners.delete(listener)) {
+      throw new Error('Tried to unsubscribe twice')
     }
-
-    sentRequestsListeners.splice(idx, 1)
   }
 }
 
@@ -513,9 +510,8 @@ export const setupEvents = () => {
 
   Socket.socket.on(Event.ON_SENT_REQUESTS, res => {
     if (res.ok) {
-      sentRequestsListeners.forEach(l => {
-        l(res.msg)
-      })
+      currSentReqs = res.msg
+      sentReqsListeners.forEach(l => l(currSentReqs))
     }
   })
 
@@ -586,6 +582,10 @@ export const setupEvents = () => {
     })
 
     Socket.socket.emit(Event.ON_RECEIVED_REQUESTS, {
+      token,
+    })
+
+    Socket.socket.emit(Event.ON_SENT_REQUESTS, {
       token,
     })
   })

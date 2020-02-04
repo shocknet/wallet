@@ -64,8 +64,8 @@ export default class Chats extends React.Component {
     acceptingRequest: null,
     chats: API.Events.currentChats,
     lastReadMsgs: {},
-    receivedRequests: [],
-    sentRequests: [],
+    receivedRequests: API.Events.currReceivedReqs(),
+    sentRequests: API.Events.getCurrSentReqs(),
     showingAddDialog: false,
 
     scanningUserQR: false,
