@@ -762,24 +762,21 @@ export const addPeer = async uri => {
   }
 
   const endpoint = `http://${nodeURL}/api/lnd/connectpeer`
-  const payload = {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      Authorization: token,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(req),
+
+  try {
+    const { data } = await Http.post(endpoint, req, {
+      headers: {
+        Authorization: token,
+      },
+    })
+
+    return data
+  } catch (err) {
+    const { response } = err
+    throw new Error(
+      response.data.errorMessage || response.data.message || 'Unknown error.',
+    )
   }
-  const res = await fetch(endpoint, payload)
-
-  const body = await res.json()
-
-  if (res.ok) {
-    return body
-  }
-
-  throw new Error(body.errorMessage || body.message || 'Unknown error.')
 }
 
 /**

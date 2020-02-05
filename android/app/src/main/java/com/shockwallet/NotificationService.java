@@ -112,7 +112,7 @@ public class NotificationService extends Service {
             
             if(chatInit == false){
                 chatInit = true;
-                //return;
+                return;
             }
             try{
                 String mex = DecryptMessage(args[0].toString());
@@ -173,7 +173,7 @@ public class NotificationService extends Service {
         @Override
         public void run() {
             Log.d(TAG,"yeahhhh");
-            Log.d(TAG,"Token from run "+token);
+            //Log.d(TAG,"Token from run "+token);
             try{
                 createDeviceId();
                 rsa = new RSA("shocknet.tag.cc."+deviceId);
@@ -254,7 +254,7 @@ public class NotificationService extends Service {
         if(bundle != null){
             String token = (String) bundle.get("token");
             String ip = (String) bundle.get("ip");
-            Log.d(TAG, "ip: "+ip + " token: "+token);
+            //Log.d(TAG, "ip: "+ip + " token: "+token);
             NotificationService.token = token;
             NotificationService.ip = ip;
         }
@@ -374,7 +374,7 @@ public class NotificationService extends Service {
                 } catch (Exception e) {
                     Log.d(TAG,e.toString());
                 }
-                Log.e(TAG, mMessage);
+                //Log.e(TAG, mMessage);
             }
         });
     }

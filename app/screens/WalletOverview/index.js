@@ -1106,12 +1106,19 @@ class WalletOverview extends Component {
           const decodedBytes = bech32.fromWords(
             bech32.decode(details[0], 1500).words,
           )
-          const lnurl = String.fromCharCode(...decodedBytes)
 
+          const lnurl = String.fromCharCode(...decodedBytes)
+          console.log('OMG_MY_LOG')
           console.log(lnurl)
+          console.log('OMG_MY_LOG')
+
           try {
             const res = await fetch(lnurl)
             const json = await res.json()
+
+            const authData = await Cache.getStoredAuthData()
+
+            json.shockPubKey = authData?.authData.publicKey
             //console.log(json)
             this.setState({
               LNURLdata: json,

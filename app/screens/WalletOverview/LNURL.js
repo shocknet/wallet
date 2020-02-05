@@ -13,7 +13,8 @@ import * as CSS from '../../res/css'
  *              callback:string,
  *              minSendable:number,
  *              maxSendable:number,
- *              maxWithdrawable:number
+ *              maxWithdrawable:number,
+ *              shockPubKey:string,
  *          }} LNURLdataType */
 export default class LNURL extends React.PureComponent {
   /**@param {object} props */
@@ -85,9 +86,14 @@ export default class LNURL extends React.PureComponent {
    * @const {boolean} privateChan
    */
   confirmChannelReq = async () => {
+    const { uri, callback, k1 } = this.props.LNURLdata
+    let newK1 = k1
+    if (k1 === 'shock' && this.props.LNURLdata.shockPubKey) {
+      newK1 = `$$__SHOCKWALLET__USER__${this.props.LNURLdata.shockPubKey}`
+    }
     try {
-      const { uri, callback, k1 } = this.props.LNURLdata
       await addPeer(uri)
+
       console.log('connect')
       //console.log(connect)
       const node = await nodeInfo()
@@ -95,7 +101,7 @@ export default class LNURL extends React.PureComponent {
 
       const nodeId = node.identity_pubkey
       const priv = this.state.privateChannel ? 1 : 0
-      const completeUrl = `${callback}?k1=${k1}&remoteid=${nodeId}&private=${priv}`
+      const completeUrl = `${callback}?k1=${newK1}&remoteid=${nodeId}&private=${priv}`
       console.log(completeUrl)
       const res = await fetch(completeUrl)
       const json = await res.json()
@@ -112,7 +118,7 @@ export default class LNURL extends React.PureComponent {
     } catch (e) {
       console.log(e)
       this.setState({
-        error: e,
+        error: e.toString(),
       })
     }
   }
@@ -348,6 +354,8 @@ export default class LNURL extends React.PureComponent {
     if (visible === false) {
       return null
     }
+    console.log('LNURL')
+    console.log(this.props.LNURLdata)
     const { done, error } = this.state
     return (
       <ShockModal visible={visible} onRequestClose={this.props.requestClose}>
