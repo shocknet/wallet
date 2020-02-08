@@ -88,7 +88,7 @@ export default class LNURL extends React.PureComponent {
   confirmChannelReq = async () => {
     const { uri, callback, k1 } = this.props.LNURLdata
     let newK1 = k1
-    if (k1 === 'shock' && this.props.LNURLdata.shockPubKey) {
+    if (k1 === 'gun' && this.props.LNURLdata.shockPubKey) {
       newK1 = `$$__SHOCKWALLET__USER__${this.props.LNURLdata.shockPubKey}`
     }
     try {
