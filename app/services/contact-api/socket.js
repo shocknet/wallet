@@ -127,6 +127,8 @@ export const encryptSocketInstance = socket => ({
   get connected() {
     return socket.connected
   },
+  // @ts-ignore
+  off: () => socket.off(),
   disconnect: () => socket.disconnect(),
   get disconnected() {
     return socket.disconnected
