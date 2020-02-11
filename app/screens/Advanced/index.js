@@ -22,7 +22,6 @@ import wavesBG from '../../assets/images/waves-bg.png'
 
 import * as CSS from '../../res/css'
 import Pad from '../../components/Pad'
-import ShockDialog from '../../components/ShockDialog'
 import Nav from '../../components/Nav'
 
 import AccordionItem from './Accordion'
@@ -43,6 +42,7 @@ import {
 } from '../../actions/HistoryActions'
 import { fetchNodeInfo } from '../../actions/NodeActions'
 import AddPeerModal from './Modals/AddPeer'
+import CloseChannelModal from './Modals/CloseChannel'
 export const ADVANCED_SCREEN = 'ADVANCED_SCREEN'
 
 /**
@@ -74,6 +74,7 @@ export const ADVANCED_SCREEN = 'ADVANCED_SCREEN'
  * @prop {ChannelPoint|null} willCloseChannelPoint
  *
  * @prop {boolean} nodeInfoModal
+ * @prop {boolean} forceCloseChannel
  */
 
 /**
@@ -108,9 +109,12 @@ class AdvancedScreen extends Component {
     willCloseChannelPoint: null,
 
     nodeInfoModal: false,
+    forceCloseChannel: false,
   }
 
   addChannelModal = React.createRef()
+
+  closeChannelModal = React.createRef()
 
   addPeerModal = React.createRef()
 
@@ -346,9 +350,38 @@ class AdvancedScreen extends Component {
    * @param {ChannelPoint} channelPoint
    */
   willCloseChannel = channelPoint => {
+    this.closeChannelModal.current.open()
     this.setState({
       willCloseChannelPoint: channelPoint,
     })
+  }
+
+  confirmedCloseChannel = async () => {
+    const { willCloseChannelPoint, forceCloseChannel } = this.state
+    const { fetchChannels } = this.props
+    this.setState({
+      willCloseChannelPoint: null,
+    })
+
+    if (willCloseChannelPoint) {
+      try {
+        const res = await Http.post(`/api/lnd/closechannel`, {
+          channelPoint: willCloseChannelPoint.fundingTX,
+          outputIndex: willCloseChannelPoint.outputIndex,
+          force: forceCloseChannel,
+        })
+
+        if (res.status !== 200) {
+          throw new Error(res.data.errorMessage || 'Unknown error.')
+        }
+        this.closeChannelModal.current.close()
+        fetchChannels()
+
+        ToastAndroid.show('Closed successfully', 800)
+      } catch (err) {
+        this.showErr(err.response.data.errorMessage)
+      }
+    }
   }
 
   /**
@@ -429,7 +462,7 @@ class AdvancedScreen extends Component {
   transactionKeyExtractor = transaction => transaction.tx_hash
 
   render() {
-    const { node, wallet, history, fetchChannels } = this.props
+    const { node, wallet, history } = this.props
     const {
       accordions,
       peerPublicKey,
@@ -441,8 +474,7 @@ class AdvancedScreen extends Component {
       keyboardHeight,
       modalLoading,
       err,
-
-      willCloseChannelPoint,
+      forceCloseChannel,
 
       nodeInfoModal,
     } = this.state
@@ -593,7 +625,7 @@ class AdvancedScreen extends Component {
               /> 
             */}
           </View>
-
+          {/*
           <ShockDialog
             choiceToHandler={{
               Confirm: async () => {
@@ -625,8 +657,18 @@ class AdvancedScreen extends Component {
             onRequestClose={this.closeCloseChannelDialog}
             message="Close this channel?"
             visible={!!willCloseChannelPoint}
-          />
+          />*/}
         </View>
+        <CloseChannelModal
+          modalRef={this.closeChannelModal}
+          onChange={this.onChange}
+          loading={modalLoading}
+          submit={this.confirmedCloseChannel}
+          error={err}
+          keyboardOpen={keyboardOpen}
+          keyboardHeight={keyboardHeight}
+          forceCloseChannel={forceCloseChannel}
+        />
         <AddChannelModal
           modalRef={this.addChannelModal}
           onChange={this.onChange}

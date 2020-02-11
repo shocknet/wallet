@@ -2,7 +2,7 @@
  * @prettier
  */
 import React from 'react'
-import { StyleSheet, Text, TextInput, View } from 'react-native'
+import { StyleSheet, Text, TextInput, View, ToastAndroid } from 'react-native'
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation
  */
@@ -224,9 +224,10 @@ export default class Login extends React.PureComponent {
             this.setState({
               awaitingRes: false,
             })
-            this.setState({
+            /*this.setState({
               err: e.message,
-            })
+            })*/
+            ToastAndroid.show(e.message, 800)
           })
       },
     )
