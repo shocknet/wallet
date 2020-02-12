@@ -34,12 +34,13 @@ const styles = StyleSheet.create({
   modalHead: {
     paddingVertical: 12,
     width: '100%',
+    height: 50,
     flexShrink: 0,
     borderTopLeftRadius: 15,
     borderTopRightRadius: 15,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#ccc',
+    backgroundColor: '#e0e0e0',
   },
   modalCloseBtn: {
     position: 'absolute',
