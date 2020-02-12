@@ -14,7 +14,7 @@ const LOADING_BACKDROP = 'rgba(0,0,0,0.25)'
  * @param {{
  *   modalRef: React.RefObject<any>,
  *   onChange: (key: keyof import("../index").State) => (value: any) => void,
- *   peerPublicKey: string,
+ *   peerURI: string,
  *   host: string,
  *   loading: boolean,
  *   submit: () => void,
@@ -28,8 +28,7 @@ class AddPeerModal extends React.Component {
     const {
       modalRef,
       onChange,
-      peerPublicKey,
-      host,
+      peerURI,
       submit,
       keyboardHeight = 0,
       keyboardOpen,
@@ -56,21 +55,18 @@ class AddPeerModal extends React.Component {
             <ActivityIndicator color="white" size="large" />
           </View>
         ) : null}
-        <Head>
+        <Head
+          closeModal={modalRef.current ? modalRef.current.close : undefined}
+        >
           <Icon name="md-add" color="white" size={35} />
         </Head>
         <Body>
           <Text style={styles.modalTitle}>Add Peer</Text>
           {error ? <Text style={styles.modalError}>{error}</Text> : null}
           <ModalInput
-            placeholder="Peer Public Key"
-            value={peerPublicKey}
-            onChange={onChange('peerPublicKey')}
-          />
-          <ModalInput
-            placeholder="Host"
-            value={host}
-            onChange={onChange('host')}
+            placeholder="pubkey@ip:port"
+            value={peerURI}
+            onChange={onChange('peerURI')}
           />
         </Body>
         <Footer value="Add Peer" onPress={submit} />
@@ -87,10 +83,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     elevation: 10,
     zIndex: 100,
-    height: 280,
+    height: 200,
     width: '80%',
     borderRadius: 15,
-    overflow: 'hidden',
   },
   modalLoading: {
     position: 'absolute',

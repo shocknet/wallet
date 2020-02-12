@@ -59,7 +59,9 @@ class AddChannelModal extends React.Component {
             <ActivityIndicator color="white" size="large" />
           </View>
         ) : null}
-        <Head>
+        <Head
+          closeModal={modalRef.current ? modalRef.current.close : undefined}
+        >
           <Icon name="ios-link" color="white" size={35} />
         </Head>
         <Body>
@@ -98,7 +100,6 @@ const styles = StyleSheet.create({
     height: 325,
     width: '80%',
     borderRadius: 15,
-    overflow: 'hidden',
   },
   modalLoading: {
     position: 'absolute',
