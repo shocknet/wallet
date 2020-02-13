@@ -10,7 +10,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons'
 import * as CSS from '../res/css'
 
 /**
- * @typedef {(data: string, port?: number) => void} QRScanSuccess
+ * @typedef {(data: any) => any} QRScanSuccess
  */
 
 /**
@@ -49,9 +49,9 @@ export default class QRScanner extends React.PureComponent {
   connectNode = connection => {
     const { onQRSuccess } = this.props
     try {
-      onQRSuccess(connection.internalIP, connection.walletPort)
+      onQRSuccess(connection)
     } catch (err) {
-      onQRSuccess(connection.externalIP, connection.walletPort)
+      onQRSuccess(connection)
     }
   }
 

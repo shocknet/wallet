@@ -22,8 +22,10 @@ const Footer = ({ style = {}, value, onPress }) => {
 
 const styles = StyleSheet.create({
   modalFooter: {
-    height: '14%',
+    height: 40,
     width: '100%',
+    borderBottomLeftRadius: 15,
+    borderBottomRightRadius: 15,
     flexShrink: 0,
     alignItems: 'center',
     justifyContent: 'center',

@@ -1,7 +1,6 @@
 import React from 'react'
 import { View, StyleSheet, Text, ActivityIndicator } from 'react-native'
 import Modal from 'react-native-modalbox'
-import Icon from 'react-native-vector-icons/Ionicons'
 import ModalInput from '../../../components/PopupModal/Input'
 import Head from '../../../components/PopupModal/Head'
 import Body from '../../../components/PopupModal/Body'
@@ -59,11 +58,13 @@ class AddChannelModal extends React.Component {
             <ActivityIndicator color="white" size="large" />
           </View>
         ) : null}
-        <Head>
-          <Icon name="ios-link" color="white" size={35} />
+        <Head
+          closeModal={modalRef.current ? modalRef.current.close : undefined}
+        >
+          {/* <Icon name="ios-link" color="white" size={35} /> */}
+          <Text style={styles.modalTitle}>Add Channel</Text>
         </Head>
         <Body>
-          <Text style={styles.modalTitle}>Add Channel</Text>
           {error ? <Text style={styles.modalError}>{error}</Text> : null}
           <ModalInput
             placeholder="Public Key"
@@ -95,10 +96,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     elevation: 10,
     zIndex: 100,
-    height: 325,
+    height: 280,
     width: '80%',
     borderRadius: 15,
-    overflow: 'hidden',
   },
   modalLoading: {
     position: 'absolute',
@@ -114,8 +114,6 @@ const styles = StyleSheet.create({
     color: Colors.TEXT_GRAY,
     textAlign: 'center',
     width: '100%',
-    marginBottom: 15,
-    marginTop: 8,
     fontSize: 16,
   },
   modalError: {

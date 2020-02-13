@@ -3,6 +3,7 @@
  */
 import SocketIO from 'socket.io-client'
 import once from 'lodash/once'
+import isEmpty from 'lodash/isEmpty'
 
 import * as Cache from '../../services/cache'
 
@@ -72,13 +73,15 @@ export const disconnect = () => {
 export const encryptSocketData = async data => {
   const { APIPublicKey } = store.getState().connection
 
-  if (!APIPublicKey) {
+  console.log('APIPublicKey', APIPublicKey)
+
+  if (!APIPublicKey && !isEmpty(data)) {
     throw new Error(
       'Please exchange keys with the API before sending any data through WebSockets',
     )
   }
 
-  if (data) {
+  if (APIPublicKey && !isEmpty(data)) {
     console.log('encryptSocketData APIPublicKey:', APIPublicKey, data)
     const stringifiedData = JSON.stringify(data)
     const encryptedData = await Encryption.encryptData(
@@ -90,7 +93,7 @@ export const encryptSocketData = async data => {
     return encryptedData
   }
 
-  return data
+  return null
 }
 
 /**

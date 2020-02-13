@@ -44,9 +44,17 @@ export const CONNECT_TO_NODE = 'CONNECT_TO_NODE'
  */
 
 /**
+ * @typedef {object} QRData
+ * @prop {string} internalIP
+ * @prop {string} externalIP
+ * @prop {(number)=} walletPort
+ */
+
+/**
  * @typedef {object} State
  * @prop {boolean} checkingCacheForNodeURL
  * @prop {string} nodeURL
+ * @prop {string} externalURL
  * @prop {boolean} pinging
  * @prop {boolean} wasBadPing
  * @prop {boolean} scanningQR
@@ -56,6 +64,7 @@ export const CONNECT_TO_NODE = 'CONNECT_TO_NODE'
 const DEFAULT_STATE = {
   checkingCacheForNodeURL: true,
   nodeURL: '',
+  externalURL: '',
   pinging: false,
   wasBadPing: false,
   scanningQR: false,
@@ -116,9 +125,23 @@ class ConnectToNode extends React.PureComponent {
     })
   }
 
+  connectURL = async (url = '') => {
+    const wasGoodPing = await Conn.pingURL(url)
+
+    if (wasGoodPing.success) {
+      await Cache.writeNodeURLOrIP(url)
+      this.setState({
+        nodeURL: url,
+      })
+      this.props.navigation.navigate(WALLET_MANAGER)
+    } else {
+      throw new Error('Ping failed')
+    }
+  }
+
   /** @private */
   onPressConnect = () => {
-    const { nodeURL } = this.state
+    const { nodeURL, externalURL } = this.state
 
     this.setState(
       {
@@ -126,24 +149,18 @@ class ConnectToNode extends React.PureComponent {
       },
       async () => {
         try {
-          const wasGoodPing = await Conn.pingURL(nodeURL)
-
-          if (wasGoodPing.success) {
-            await Cache.writeNodeURLOrIP(nodeURL)
-            this.props.navigation.navigate(WALLET_MANAGER)
-          } else {
+          await this.connectURL(nodeURL)
+        } catch (err) {
+          try {
+            await this.connectURL(externalURL)
+          } catch (err) {
             this.setState({
               pinging: false,
               wasBadPing: true,
             })
-          }
-        } catch (err) {
-          this.setState({
-            pinging: false,
-            wasBadPing: true,
-          })
 
-          console.error(err)
+            console.error(err)
+          }
         }
       },
     )
@@ -164,29 +181,23 @@ class ConnectToNode extends React.PureComponent {
     }))
   }
 
-  onPressContinue = () => {
-    this.setState(
-      {
-        // show an spinner
-        pinging: true,
-      },
-      async () => {
-        await Cache.writeNodeURLOrIP(this.state.nodeURL)
-
-        this.props.navigation.navigate(WALLET_MANAGER)
-      },
-    )
-  }
-
   /**
-   * @param {string} ip
-   * @param {(number)=} port
+   * @param {(QRData | string)=} data
    */
-  onQRRead = (ip, port) => {
-    this.setState({
-      scanningQR: false,
-      nodeURL: ip + ':' + port,
-    })
+  onQRRead = data => {
+    if (data && typeof data === 'object') {
+      const { internalIP, externalIP, walletPort } = data
+      this.setState(
+        {
+          scanningQR: false,
+          nodeURL: internalIP + ':' + walletPort,
+          externalURL: `${externalIP}:${walletPort}`,
+        },
+        () => {
+          this.onPressConnect()
+        },
+      )
+    }
   }
 
   render() {
@@ -206,6 +217,7 @@ class ConnectToNode extends React.PureComponent {
           <QRScanner
             onQRSuccess={this.onQRRead}
             toggleQRScreen={this.toggleQRScreen}
+            type="nodeIP"
           />
         </View>
       )
