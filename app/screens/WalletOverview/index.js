@@ -1,7 +1,7 @@
 /**
  * @format
  */
-
+//import 'core-js'
 import React, { Component } from 'react'
 import {
   ActivityIndicator,
@@ -51,6 +51,11 @@ import { subscribeOnChats } from '../../actions/ChatActions'
 import { CHATS_ROUTE } from '../../screens/Chats'
 
 import UnifiedTrx from './UnifiedTrx'
+//import {findlnurl} from 'js-lnurl'
+//@ts-ignore
+import bech32 from 'bech32'
+//import { Buffer } from 'safe-buffer'
+import LNURL from './LNURL'
 import { SEND_SCREEN } from '../Send'
 import { RECEIVE_SCREEN } from '../Receive'
 
@@ -134,6 +139,9 @@ import * as Cache from '../../services/cache'
  *
  * @prop {boolean} sendingInvoiceToShockUser
  * @prop {string} sendingInvoiceToShockUserMsg
+ *
+ * @prop {object | null} LNURLdata
+ * @prop {boolean} resetLNURL
  */
 
 const { height } = Dimensions.get('window')
@@ -220,6 +228,8 @@ class WalletOverview extends Component {
 
     sendingInvoiceToShockUser: false,
     sendingInvoiceToShockUserMsg: '',
+    LNURLdata: null,
+    resetLNURL: false,
   }
 
   closeAllSendDialogs = () => {
@@ -1061,10 +1071,11 @@ class WalletOverview extends Component {
    * @param {{url: string}} event
    */
   _handleOpenURL = event => {
+    this.requestCloseLNURL()
     /**
      * @param {string} url
      */
-    const middle = url => {
+    const middle = async url => {
       //const url = event.url
       console.log(url)
       const protocol = url.split(':')
@@ -1076,7 +1087,7 @@ class WalletOverview extends Component {
         return
       }
       const details = protocol[1].split('?amount=')
-      console.log(details)
+
       const hasDetails = details.length > 1
       if (protocol[0] === 'bitcoin') {
         this.sendToBTCAddress({
@@ -1086,10 +1097,78 @@ class WalletOverview extends Component {
       }
       if (protocol[0] === 'lightning') {
         //lightningInvoiceInput
-        this.payLightningInvoice({ invoice: details[0] })
+        const isLnurl = details[0].split('LNURL')
+
+        if (isLnurl.length === 1) {
+          this.payLightningInvoice({ invoice: details[0] })
+        }
+        if (isLnurl.length === 2) {
+          const decodedBytes = bech32.fromWords(
+            bech32.decode(details[0], 1500).words,
+          )
+
+          const lnurl = String.fromCharCode(...decodedBytes)
+          console.log('OMG_MY_LOG')
+          console.log(lnurl)
+          console.log('OMG_MY_LOG')
+
+          try {
+            const res = await fetch(lnurl)
+            const json = await res.json()
+
+            const authData = await Cache.getStoredAuthData()
+
+            json.shockPubKey = authData?.authData.publicKey
+            //console.log(json)
+            this.setState({
+              LNURLdata: json,
+            })
+
+            switch (json.tag) {
+              case 'channelRequest': {
+                console.log('this url is a channel request')
+                break
+              }
+              case 'withdrawRequest': {
+                console.log('this url is a withdrawal request')
+                break
+              }
+              case 'hostedChannelRequest': {
+                console.log('this url is a hosted channel request')
+                break
+              }
+              case 'login': {
+                console.log('this url is a login ')
+                break
+              }
+              case 'payRequest': {
+                console.log('this url is a pay request')
+                break
+              }
+              default: {
+                console.log('unknown tag')
+              }
+            }
+          } catch (e) {
+            console.log(e)
+          }
+        }
       }
     }
     middle(event.url)
+  }
+
+  requestCloseLNURL = () => {
+    this.setState({
+      LNURLdata: null,
+      resetLNURL: true,
+    })
+  }
+
+  refreshLNURL = () => {
+    this.setState({
+      resetLNURL: false,
+    })
   }
 
   didFocus = { remove() {} }
@@ -1270,6 +1349,8 @@ class WalletOverview extends Component {
 
       sendingInvoiceToShockUser,
       sendingInvoiceToShockUserMsg,
+      LNURLdata,
+      resetLNURL,
     } = this.state
 
     const { nodeInfo } = this.props.node
@@ -1305,6 +1386,13 @@ class WalletOverview extends Component {
 
     return (
       <View style={styles.container}>
+        <LNURL
+          LNURLdata={LNURLdata}
+          requestClose={this.requestCloseLNURL}
+          payInvoice={this.payLightningInvoice}
+          resetLNURL={resetLNURL}
+          refreshLNURL={this.refreshLNURL}
+        />
         <StatusBar
           translucent
           backgroundColor="transparent"
