@@ -50,7 +50,7 @@ const HeaderLeft = React.memo(({ onPress }) => ((
 
 /**
  * @typedef {object} Params
- * @prop {string} id
+ * @prop {string} recipientPublicKey
  * @prop {string=} _title
  */
 
@@ -77,12 +77,10 @@ const HeaderLeft = React.memo(({ onPress }) => ((
  * sent but might have not appeared on the onChats() event yet.
  */
 
-// TODO: COMPONENT HERE IS A TEMP FIX
-
 /**
- * @augments React.Component<Props, State>
+ * @augments React.PureComponent<Props, State>
  */
-export default class Chat extends React.Component {
+export default class Chat extends React.PureComponent {
   /**
    * @param {{ navigation: Navigation }} args
    * @returns {import('react-navigation').NavigationStackScreenOptions}
@@ -146,14 +144,9 @@ export default class Chat extends React.Component {
   sendInvoice = (amount, memo) => {
     console.warn(`amount: ${amount} - memo: ${memo}`)
 
-    const id = this.props.navigation.getParam('id')
-    const theChat = (this.state.chats.find(c => c.id === id))
-
-    if (!theChat) {
-      return
-    }
-
-    const { recipientPublicKey } = theChat
+    const recipientPublicKey = this.props.navigation.getParam(
+      'recipientPublicKey',
+    )
 
     Wallet.addInvoice({
       expiry: 1800,
@@ -322,14 +315,7 @@ export default class Chat extends React.Component {
   componentDidUpdate(_, prevState) {
     const { navigation } = this.props
     const { recipientDisplayName } = this.state
-    const id = this.props.navigation.getParam('id')
-    const theChat = this.state.chats.find(c => c.id === id)
-
-    if (!theChat) {
-      return
-    }
-
-    const { recipientPublicKey: recipientPK } = theChat
+    const recipientPK = navigation.getParam('recipientPublicKey')
 
     const oldTitle = navigation.getParam('_title')
     if (typeof oldTitle === 'undefined') {
@@ -361,14 +347,7 @@ export default class Chat extends React.Component {
 
   updateLastReadMsg() {
     const messages = this.getMessages()
-    const id = this.props.navigation.getParam('id')
-    const theChat = this.state.chats.find(c => c.id === id)
-
-    if (!theChat) {
-      return
-    }
-
-    const { recipientPublicKey: pk } = theChat
+    const pk = this.props.navigation.getParam('recipientPublicKey')
 
     const lastMsg = messages[messages.length - 1]
 
@@ -427,13 +406,6 @@ export default class Chat extends React.Component {
    * @returns {void}
    */
   onChats = chats => {
-    const id = this.props.navigation.getParam('id')
-    const matchingChat = this.state.chats.find(c => c.id === id)
-
-    if (!matchingChat) {
-      this.props.navigation.goBack()
-    }
-
     this.setState(
       {
         chats,
@@ -450,12 +422,17 @@ export default class Chat extends React.Component {
 
   /** @returns {API.Schema.ChatMessage[]} */
   getMessages = () => {
-    const id = this.props.navigation.getParam('id')
-    const theChat = this.state.chats.find(c => c.id === id)
+    const recipientPublicKey = this.props.navigation.getParam(
+      'recipientPublicKey',
+    )
+
+    const theChat = this.state.chats.find(
+      chat => chat.recipientPublicKey === recipientPublicKey,
+    )
 
     if (!theChat) {
       console.warn(
-        `<Chat />.index -> getMessages() -> no chat found. id: ${id}`,
+        `<Chat />.index -> getMessages() -> no chat found. recipientPublicKey: ${recipientPublicKey}`,
       )
       return []
     }
@@ -465,13 +442,17 @@ export default class Chat extends React.Component {
 
   /** @returns {string|null} */
   getRecipientAvatar() {
-    const chatId = this.props.navigation.getParam('id')
+    const recipientPublicKey = this.props.navigation.getParam(
+      'recipientPublicKey',
+    )
 
-    const theChat = this.state.chats.find(chat => chat.id === chatId)
+    const theChat = this.state.chats.find(
+      chat => chat.recipientPublicKey === recipientPublicKey,
+    )
 
     if (!theChat) {
       console.warn(
-        `<Chat />.index -> getRecipientAvatar -> no chat found. chatId: ${chatId}`,
+        `<Chat />.index -> getRecipientAvatar -> no chat found. recipientPublicKey: ${recipientPublicKey}`,
       )
       return null
     }
@@ -481,32 +462,22 @@ export default class Chat extends React.Component {
 
   /** @returns {string|null} */
   getRecipientDisplayName() {
-    const id = this.props.navigation.getParam('id')
-    const theChat = this.state.chats.find(c => c.id === id)
+    const recipientPublicKey = this.props.navigation.getParam(
+      'recipientPublicKey',
+    )
+
+    const theChat = this.state.chats.find(
+      chat => chat.recipientPublicKey === recipientPublicKey,
+    )
 
     if (!theChat) {
       console.warn(
-        `<Chat />.index -> getRecipientDisplayName -> no chat found. id: ${id}`,
+        `<Chat />.index -> getRecipientDisplayName -> no chat found. recipientPublicKey: ${recipientPublicKey}`,
       )
       return null
     }
 
     return theChat.recipientDisplayName
-  }
-
-  /** @returns {boolean} */
-  getDidDisconnect = () => {
-    const id = this.props.navigation.getParam('id')
-    const theChat = this.state.chats.find(c => c.id === id)
-
-    if (!theChat) {
-      console.warn(
-        `<Chat />.index -> getRecipientDisplayName -> no chat found. id: ${id}`,
-      )
-      return false
-    }
-
-    return theChat.didDisconnect
   }
 
   /**
@@ -523,17 +494,10 @@ export default class Chat extends React.Component {
         timestamp: Date.now(),
       }),
     }))
-
-    const id = this.props.navigation.getParam('id')
-    const theChat = this.state.chats.find(c => c.id === id)
-
-    if (!theChat) {
-      return
-    }
-
-    const { recipientPublicKey } = theChat
-
-    API.Actions.sendMessage(recipientPublicKey, text).catch(e => {
+    API.Actions.sendMessage(
+      this.props.navigation.getParam('recipientPublicKey'),
+      text,
+    ).catch(e => {
       console.warn(`Error sending a message with text: ${text} -> ${e.message}`)
     })
   }
@@ -549,21 +513,12 @@ export default class Chat extends React.Component {
 
     const rawInvoice = msg.body.slice('$$__SHOCKWALLET__INVOICE__'.length)
 
-    const id = this.props.navigation.getParam('id')
-    const theChat = this.state.chats.find(c => c.id === id)
-
-    if (!theChat) {
-      return
-    }
-
-    const { recipientPublicKey } = theChat
-
     /** @type {WalletOverviewParams} */
     const params = {
       rawInvoice,
       recipientAvatar: null,
       recipientDisplayName: this.state.recipientDisplayName,
-      recipientPublicKey,
+      recipientPublicKey: this.props.navigation.getParam('recipientPublicKey'),
     }
 
     this.props.navigation.navigate(WALLET_OVERVIEW, params)
@@ -579,14 +534,9 @@ export default class Chat extends React.Component {
 
     const messages = this.getMessages()
 
-    const id = this.props.navigation.getParam('id')
-    const theChat = this.state.chats.find(c => c.id === id)
-
-    if (!theChat) {
-      return null
-    }
-
-    const { recipientPublicKey } = theChat
+    const recipientPublicKey = this.props.navigation.getParam(
+      'recipientPublicKey',
+    )
 
     const msgIDToInvoiceAmount = (() => {
       /** @type {import('./View').Props['msgIDToInvoiceAmount']} */
@@ -664,7 +614,6 @@ export default class Chat extends React.Component {
           recipientPublicKey={recipientPublicKey}
           onPressSendBTC={this.openSendPaymentDialog}
           recipientAvatar={this.getRecipientAvatar()}
-          didDisconnect={this.getDidDisconnect()}
         />
 
         <PaymentDialog

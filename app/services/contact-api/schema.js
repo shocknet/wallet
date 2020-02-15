@@ -20,8 +20,6 @@
  * @prop {string} recipientPublicKey A way to uniquely identify each chat.
  * @prop {ChatMessage[]} messages Sorted from most recent to least recent.
  * @prop {string|null} recipientDisplayName
- * @prop {boolean} didDisconnect True if the recipient performed a disconnect.
- * @prop {string} id
  */
 
 /**
@@ -141,14 +139,6 @@ export const isChat = o => {
 
   if (obj.recipientPublicKey.length === 0) {
     console.warn(`isChat-> obj.recipientPublicKey.length === 0`)
-    return false
-  }
-
-  if (typeof obj.didDisconnect !== 'boolean') {
-    return false
-  }
-
-  if (typeof obj.id !== 'string') {
     return false
   }
 

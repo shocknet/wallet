@@ -385,7 +385,7 @@ export let currentChats = []
  */
 const chatsListeners = []
 
-export const notifyChatsListeners = debounce(() => {
+const notifyChatsListeners = debounce(() => {
   chatsListeners.forEach(l => l(currentChats))
 }, 500)
 
