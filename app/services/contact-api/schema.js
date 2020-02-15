@@ -165,10 +165,6 @@ export const isSimpleReceivedRequest = o => {
     return false
   }
 
-  if (typeof obj.response !== 'string') {
-    return false
-  }
-
   if (typeof obj.timestamp !== 'number') {
     return false
   }
