@@ -45,6 +45,7 @@ import javax.crypto.spec.IvParameterSpec;
 import org.json.JSONObject;
 import org.json.JSONArray;
 import android.graphics.BitmapFactory;
+import android.graphics.Bitmap;
 import com.shockwallet.RSA;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
@@ -85,7 +86,7 @@ public class NotificationService extends Service {
                 Log.d(TAG,mex);
                 JSONObject res = new JSONObject(mex);
             
-                doNotification("New Transaction",res.getString("msg"),R.drawable.bolt);
+                doNotification("New Transaction",res.getString("msg"),R.drawable.bolt,"");
             }catch (Exception e){
                 Log.d(TAG,e.toString());
             }
@@ -100,7 +101,7 @@ public class NotificationService extends Service {
                 Log.d(TAG,mex);
                 JSONObject res = new JSONObject(mex);
                 
-                doNotification("New Invoice",res.getString("msg"),R.drawable.bolt);
+                doNotification("New Invoice",res.getString("msg"),R.drawable.bolt,"");
             }catch (Exception e){
                 Log.d(TAG,e.toString());
             }
@@ -112,7 +113,7 @@ public class NotificationService extends Service {
             
             if(chatInit == false){
                 chatInit = true;
-                return;
+                //return;
             }
             try{
                 String mex = DecryptMessage(args[0].toString());
@@ -121,6 +122,7 @@ public class NotificationService extends Service {
                 JSONArray data = res.getJSONArray("msg");
                 String latestSender = "New Message:";
                 String latestBody = "You received a private message.";
+                String latestAvatar = "";
                 Boolean isMe=false;
                 long latestTimestamp = 0;
                 for(int i =0 ; i<data.length();i++){
@@ -129,9 +131,10 @@ public class NotificationService extends Service {
                     for(int j=0; j<mexArr.length();j++){
                         JSONObject message = mexArr.optJSONObject(j);
                         long timestamp = message.getLong("timestamp");
-                        Log.d(TAG,timestamp + "  |  "+latestTimestamp);
+                        //Log.d(TAG,messages.getString("recipientAvatar"));
                         if(timestamp > latestTimestamp){
                             latestSender = messages.getString("recipientDisplayName");
+                            latestAvatar = messages.getString("recipientAvatar");
                             latestBody = message.getString("body");
                             isMe = message.getBoolean("outgoing");
                             Log.d(TAG,latestSender+"  |  "+latestBody+"  |  "+isMe);
@@ -144,7 +147,7 @@ public class NotificationService extends Service {
                     if(latestBody.equals("$$__SHOCKWALLET__INITIAL__MESSAGE")){
                         latestBody = "Chat initialized";
                     }
-                    doNotification(latestSender,latestBody,R.drawable.user);
+                    doNotification(latestSender,latestBody,R.drawable.user,latestAvatar);
                 }
             }catch (Exception e){
                 Log.d(TAG,e.toString());
@@ -192,7 +195,7 @@ public class NotificationService extends Service {
             }
         }
     };
-    private void doNotification(String title,String result,int bigIcon){
+    private void doNotification(String title,String result,int bigIcon, String icon64){
         int importance = NotificationManager.IMPORTANCE_DEFAULT;
         NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "Shock_notify", importance);
         channel.setDescription("CHANEL DESCRIPTION");
@@ -203,13 +206,21 @@ public class NotificationService extends Service {
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
         NotificationCompat.Builder notification = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.bolt)
-                .setLargeIcon(BitmapFactory.decodeResource(this.getResources(),
-                        bigIcon))
+                //.setLargeIcon(BitmapFactory.decodeResource(this.getResources(),
+                //        bigIcon))
                 .setContentTitle(title)
                 .setContentText(result)
                 //.setSmallIcon(R.drawable.bolt)
                 .setContentIntent(contentIntent)
                 .setGroup(GROUP_KEY_NOTIF);
+        if(icon64.equals("")){
+            notification.setLargeIcon(BitmapFactory.decodeResource(this.getResources(),
+                    bigIcon));
+        } else {
+            byte[] decodedString = Base64.decode(icon64, Base64.DEFAULT);
+            Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+            notification.setLargeIcon(decodedByte);
+        }
         
         NotificationManagerCompat notificationManager1 = NotificationManagerCompat.from(this);
         notificationManager1.notify(++SERVICE_NOTIFICATION_ID, notification.build());

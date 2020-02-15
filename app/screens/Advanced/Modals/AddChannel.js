@@ -1,5 +1,7 @@
 import React from 'react'
 import { View, StyleSheet, Text, ActivityIndicator } from 'react-native'
+// @ts-ignore
+import { Dropdown } from 'react-native-material-dropdown'
 import Modal from 'react-native-modalbox'
 import Icon from 'react-native-vector-icons/Ionicons'
 import ModalInput from '../../../components/PopupModal/Input'
@@ -7,12 +9,11 @@ import Head from '../../../components/PopupModal/Head'
 import Body from '../../../components/PopupModal/Body'
 import Footer from '../../../components/PopupModal/Footer'
 import { Colors } from '../../../res/css'
-
 /**
  * @typedef {object} Props
  * @prop {React.RefObject<any>} modalRef
  * @prop {(key: keyof import("../index").State) => (value: any) => void} onChange
- * @prop {string} channelPublicKey
+ * @prop {[{pub_key : string}]} peers
  * @prop {string} channelCapacity
  * @prop {string} channelPushAmount
  * @prop {() => void} submit
@@ -20,6 +21,7 @@ import { Colors } from '../../../res/css'
  * @prop {number} keyboardHeight
  * @prop {boolean} loading
  * @prop {string} error
+ * @prop {() => void} closeModal
  */
 
 /**
@@ -30,15 +32,25 @@ class AddChannelModal extends React.Component {
     const {
       modalRef,
       onChange,
-      channelPublicKey,
       channelCapacity,
       channelPushAmount,
+      peers,
       submit,
       keyboardHeight = 0,
       keyboardOpen,
       loading,
       error,
+      closeModal,
     } = this.props
+    console.log(peers)
+    /**
+     * @var {[{value : string}]} peersData
+     */
+    const peersData = [{ value: 'choose a peer' }]
+    peers.map(peer => {
+      peersData.push({ value: peer.pub_key })
+      return {}
+    })
     return (
       <Modal
         position="center"
@@ -60,15 +72,28 @@ class AddChannelModal extends React.Component {
           </View>
         ) : null}
         <Head>
+          <View style={styles.close}>
+            <Icon
+              name="md-close"
+              color="white"
+              size={20}
+              onPress={closeModal}
+            />
+          </View>
           <Icon name="ios-link" color="white" size={35} />
         </Head>
         <Body>
           <Text style={styles.modalTitle}>Add Channel</Text>
           {error ? <Text style={styles.modalError}>{error}</Text> : null}
-          <ModalInput
-            placeholder="Public Key"
-            value={channelPublicKey}
-            onChange={onChange('channelPublicKey')}
+          <Dropdown
+            data={peersData}
+            onChangeText={onChange('channelPublicKey')}
+            containerStyle={styles.dropdown}
+            value="choose a peer"
+            lineWidth={0}
+            rippleOpacity={0}
+            dropdownOffset={{ top: 8, left: 0 }}
+            rippleInsets={{ top: 8, bottom: 0, right: 0, left: 0 }}
           />
           <ModalInput
             placeholder="Capacity"
@@ -129,5 +154,15 @@ const styles = StyleSheet.create({
     width: '90%',
     borderRadius: 15,
     fontSize: 11,
+  },
+  dropdown: {
+    width: '80%',
+    textAlign: 'center',
+  },
+  close: {
+    width: '80%',
+    display: 'flex',
+    flexDirection: 'row-reverse',
+    alignItems: 'flex-end',
   },
 })

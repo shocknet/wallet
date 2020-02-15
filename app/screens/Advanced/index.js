@@ -54,9 +54,12 @@ export const ADVANCED_SCREEN = 'ADVANCED_SCREEN'
  */
 
 /**
- * @typedef {object} ChannelPoint
+ * @typedef {object} Channel
  * @prop {string} fundingTX
  * @prop {string} outputIndex
+ * @prop {string} chan_id
+ * @prop {number} local_balance
+ * @prop {number} remote_balance
  */
 
 /**
@@ -71,7 +74,7 @@ export const ADVANCED_SCREEN = 'ADVANCED_SCREEN'
  * @prop {boolean} modalLoading
  * @prop {boolean} keyboardOpen
  * @prop {number} keyboardHeight
- * @prop {ChannelPoint|null} willCloseChannelPoint
+ * @prop {Channel|null} willCloseChannelPoint
  *
  * @prop {boolean} nodeInfoModal
  * @prop {boolean} forceCloseChannel
@@ -347,12 +350,12 @@ class AdvancedScreen extends Component {
   }
 
   /**
-   * @param {ChannelPoint} channelPoint
+   * @param {Channel} channel
    */
-  willCloseChannel = channelPoint => {
+  willCloseChannel = channel => {
     this.closeChannelModal.current.open()
     this.setState({
-      willCloseChannelPoint: channelPoint,
+      willCloseChannelPoint: channel,
     })
   }
 
@@ -422,17 +425,47 @@ class AdvancedScreen extends Component {
   }
 
   closeCloseChannelDialog = () => {
+    this.closeChannelModal.current.close()
     this.setState({
       willCloseChannelPoint: null,
     })
   }
 
+  closeAddChannelModal = () => {
+    this.addChannelModal.current.close()
+    this.setState({
+      modalLoading: true,
+      channelPublicKey: '',
+      channelCapacity: '',
+      channelPushAmount: '',
+    })
+  }
+
+  closeAddPeerModal = () => {
+    this.addPeerModal.current.close()
+    this.setState({
+      peerPublicKey: '',
+      host: '',
+    })
+  }
+
   /**
-   * @param {string} channelPoint
+   * @param {string} channelString
+   *
    */
-  onPressChannel = channelPoint => {
+  onPressChannel = channelString => {
+    /**@var {Channel} channel*/
+    const channel = JSON.parse(channelString)
+    console.log(channel)
+    const channelPoint = channel.channel_point
     const [fundingTX, outputIndex] = channelPoint.split(':')
-    this.willCloseChannel({ fundingTX, outputIndex })
+    this.willCloseChannel({
+      fundingTX,
+      outputIndex,
+      chan_id: channel.chan_id,
+      local_balance: channel.local_balance,
+      remote_balance: channel.remote_balance,
+    })
   }
 
   /** @param {string} text */
@@ -475,9 +508,12 @@ class AdvancedScreen extends Component {
       modalLoading,
       err,
       forceCloseChannel,
+      willCloseChannelPoint,
 
       nodeInfoModal,
     } = this.state
+    //console.log(history.channels)
+    console.log(channelPublicKey)
     const { confirmedBalanceUSD, channelBalanceUSD } = this.convertBTCToUSD()
     return (
       <>
@@ -625,39 +661,6 @@ class AdvancedScreen extends Component {
               /> 
             */}
           </View>
-          {/*
-          <ShockDialog
-            choiceToHandler={{
-              Confirm: async () => {
-                this.setState({
-                  willCloseChannelPoint: null,
-                })
-
-                if (willCloseChannelPoint) {
-                  try {
-                    const res = await Http.post(`/api/lnd/closechannel`, {
-                      channelPoint: willCloseChannelPoint.fundingTX,
-                      outputIndex: willCloseChannelPoint.outputIndex,
-                    })
-
-                    if (res.status !== 200) {
-                      throw new Error(res.data.errorMessage || 'Unknown error.')
-                    }
-
-                    fetchChannels()
-
-                    ToastAndroid.show('Closed successfully', 800)
-                  } catch (err) {
-                    this.showErr(err.response.data.errorMessage)
-                  }
-                }
-              },
-              'Go back': this.closeCloseChannelDialog,
-            }}
-            onRequestClose={this.closeCloseChannelDialog}
-            message="Close this channel?"
-            visible={!!willCloseChannelPoint}
-          />*/}
         </View>
         <CloseChannelModal
           modalRef={this.closeChannelModal}
@@ -668,18 +671,23 @@ class AdvancedScreen extends Component {
           keyboardOpen={keyboardOpen}
           keyboardHeight={keyboardHeight}
           forceCloseChannel={forceCloseChannel}
+          closeModal={this.closeCloseChannelDialog}
+          chanId={willCloseChannelPoint?.chan_id}
+          localBalance={willCloseChannelPoint?.local_balance}
+          remoteBalance={willCloseChannelPoint?.remote_balance}
         />
         <AddChannelModal
           modalRef={this.addChannelModal}
           onChange={this.onChange}
           loading={modalLoading}
-          channelPublicKey={channelPublicKey}
           channelCapacity={channelCapacity}
           channelPushAmount={channelPushAmount}
+          peers={history.peers}
           submit={this.addChannel}
           error={err}
           keyboardOpen={keyboardOpen}
           keyboardHeight={keyboardHeight}
+          closeModal={this.closeAddChannelModal}
         />
         <AddPeerModal
           modalRef={this.addPeerModal}
@@ -691,6 +699,7 @@ class AdvancedScreen extends Component {
           error={err}
           keyboardOpen={keyboardOpen}
           keyboardHeight={keyboardHeight}
+          closeModal={this.closeAddPeerModal}
         />
       </>
     )
@@ -794,7 +803,7 @@ const xStyles = {
 /**
  * @param {import('../../services/wallet').Channel} channel
  */
-const channelKeyExtractor = channel => channel.channel_point
+const channelKeyExtractor = channel => JSON.stringify(channel) //channel.channel_point
 
 /**
  * @param {import('../../services/wallet').Peer} p

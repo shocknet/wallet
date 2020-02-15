@@ -20,7 +20,8 @@ const LOADING_BACKDROP = 'rgba(0,0,0,0.25)'
  *   submit: () => void,
  *   keyboardOpen: boolean,
  *   keyboardHeight: number,
- *   error: string
+ *   error: string,
+ *   closeModal: () => void,
  * }} Props
  */
 class AddPeerModal extends React.Component {
@@ -35,6 +36,7 @@ class AddPeerModal extends React.Component {
       keyboardOpen,
       loading,
       error,
+      closeModal,
     } = this.props
     return (
       <Modal
@@ -57,6 +59,14 @@ class AddPeerModal extends React.Component {
           </View>
         ) : null}
         <Head>
+          <View style={styles.close}>
+            <Icon
+              name="md-close"
+              color="white"
+              size={20}
+              onPress={closeModal}
+            />
+          </View>
           <Icon name="md-add" color="white" size={35} />
         </Head>
         <Body>
@@ -121,5 +131,11 @@ const styles = StyleSheet.create({
     width: '90%',
     borderRadius: 15,
     fontSize: 11,
+  },
+  close: {
+    width: '80%',
+    display: 'flex',
+    flexDirection: 'row-reverse',
+    alignItems: 'flex-end',
   },
 })

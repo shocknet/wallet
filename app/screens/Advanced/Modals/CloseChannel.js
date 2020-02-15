@@ -17,6 +17,10 @@ import { Colors } from '../../../res/css'
  * @prop {number} keyboardHeight
  * @prop {boolean} loading
  * @prop {string} error
+ * @prop {string|undefined} chanId
+ * @prop {number|undefined} localBalance
+ * @prop {number|undefined} remoteBalance
+ * @prop {() => void} closeModal
  */
 
 /**
@@ -33,7 +37,12 @@ class CloseChannelModal extends React.Component {
       keyboardOpen,
       loading,
       error,
+      closeModal,
+      chanId,
+      remoteBalance,
+      localBalance,
     } = this.props
+
     return (
       <Modal
         position="center"
@@ -55,12 +64,32 @@ class CloseChannelModal extends React.Component {
           </View>
         ) : null}
         <Head>
+          <View style={styles.close}>
+            <Icon
+              name="md-close"
+              color="white"
+              size={20}
+              onPress={closeModal}
+            />
+          </View>
           <Icon name="ios-link" color="white" size={35} />
         </Head>
         <Body>
           <Text style={styles.modalTitle}>Close Channel?</Text>
           {error ? <Text style={styles.modalError}>{error}</Text> : null}
-          <View style={styles.switch}>
+          <View style={styles.content}>
+            <Text>Channel ID:</Text>
+            <Text style={styles.bold}>{chanId}</Text>
+          </View>
+          <View style={styles.content}>
+            <Text>Local Balance:</Text>
+            <Text style={styles.bold}>{localBalance}</Text>
+          </View>
+          <View style={styles.content}>
+            <Text>Remote Balance:</Text>
+            <Text style={styles.bold}>{remoteBalance}</Text>
+          </View>
+          <View style={styles.content}>
             <Text>Force</Text>
             <Switch
               value={forceCloseChannel}
@@ -82,7 +111,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     elevation: 10,
     zIndex: 100,
-    height: 200,
+    height: 300,
     width: '80%',
     borderRadius: 15,
     overflow: 'hidden',
@@ -117,10 +146,20 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     fontSize: 11,
   },
-  switch: {
+  close: {
+    width: '80%',
+    display: 'flex',
+    flexDirection: 'row-reverse',
+    alignItems: 'flex-end',
+  },
+  content: {
+    width: '80%',
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
+  },
+  bold: {
+    fontWeight: 'bold',
   },
 })
