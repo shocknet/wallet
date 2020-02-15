@@ -9,6 +9,8 @@ import {
   StatusBar,
   TouchableWithoutFeedback,
   Modal,
+  TouchableOpacity,
+  ToastAndroid,
 } from 'react-native'
 import { Text } from 'react-native-elements'
 import { GiftedChat } from 'react-native-gifted-chat'
@@ -22,12 +24,20 @@ import BasicDialog from '../../components/BasicDialog'
 import ShockInput from '../../components/ShockInput'
 import Pad from '../../components/Pad'
 import ShockButton from '../../components/ShockButton'
+import { Actions } from '../../services/contact-api'
 
 import ChatInvoice from './ChatInvoice'
 import ChatMessage from './ChatMessage'
-import InputToolbar from './InputToolbar'
+import InputToolbar, {
+  ACTION_BTN_SIZE,
+  OVAL_V_PAD,
+  CONTAINER_H_PAD,
+  OVAL_ELEV,
+} from './InputToolbar'
+import ShockDialog from '../../components/ShockDialog'
 
 export const CHAT_ROUTE = 'CHAT_ROUTE'
+const EMPTY_OBJ = {}
 
 /**
  * @param {{ timestamp: number }} a
@@ -55,6 +65,17 @@ const Loading = () => (
     </View>
   </>
 )
+
+/**
+ * @type {React.FC<import('react-native-gifted-chat').LoadEarlierProps>}
+ */
+const LoadingEarlier = ({ isLoadingEarlier }) =>
+  (isLoadingEarlier ? (
+    <View>
+      <Pad amount={24} />
+      <ActivityIndicator color="gray" />
+    </View>
+  ) : null)
 
 const AlwaysNull = () => null
 
@@ -85,6 +106,8 @@ const AlwaysNull = () => null
  *
  * @prop {() => void} onPressSendBTC
  * @prop {string|null} recipientAvatar
+ *
+ * @prop {boolean} didDisconnect
  */
 
 /**
@@ -96,12 +119,16 @@ const AlwaysNull = () => null
  * @prop {string} sendInvoiceMemo
  *
  * @prop {number} inputToolbarHeight
+ *
+ * @prop {'none'|'confirming'|'processing'|'err'} disconnectStatus
+ * @prop {string} disconnectErr Empty string if disconnectStatus !== 'err'
  */
 
+// TODO: Component instead of PureComponent is a temp fix
 /**
- * @augments React.PureComponent<Props, State, never>
+ * @augments React.Component<Props, State, never>
  */
-export default class ChatView extends React.PureComponent {
+export default class ChatView extends React.Component {
   navigationOptions = {
     headerStyle: {
       backgroundColor: CSS.Colors.BLUE_DARK,
@@ -120,6 +147,28 @@ export default class ChatView extends React.PureComponent {
     sendInvoiceMemo: '',
 
     inputToolbarHeight: 40,
+
+    disconnectStatus: 'none',
+    disconnectErr: '',
+  }
+
+  actionSheetStyle = [
+    styles.actionSheet,
+    {
+      bottom: this.state.inputToolbarHeight,
+    },
+  ]
+
+  /**
+   * @param {unknown} _
+   * @param {State} prevState
+   */
+  componentDidUpdate(_, prevState) {
+    if (prevState.inputToolbarHeight !== this.state.inputToolbarHeight) {
+      // @ts-ignore
+      this.actionSheetStyle[1].bottom = this.state.inputToolbarHeight
+      this.forceUpdate()
+    }
   }
 
   /**
@@ -272,19 +321,77 @@ export default class ChatView extends React.PureComponent {
     this.toggleActionSheet()
   }
 
+  toggleDisconnectDialog = () => {
+    this.setState(({ disconnectStatus }) => {
+      const shouldCloseDialog =
+        disconnectStatus === 'confirming' || disconnectStatus === 'err'
+      const shouldOpenDialog = disconnectStatus === 'none'
+
+      if (shouldCloseDialog) {
+        return {
+          disconnectStatus: 'none',
+          disconnectErr: '',
+        }
+      }
+
+      if (shouldOpenDialog) {
+        return {
+          disconnectStatus: 'confirming',
+          disconnectErr: '',
+        }
+      }
+
+      return null
+    })
+  }
+
+  onPressDisconnect = () => {
+    this.toggleActionSheet()
+    this.toggleDisconnectDialog()
+  }
+
+  disconnectChoices = {
+    Confirm: () => {
+      this.setState(
+        {
+          disconnectStatus: 'processing',
+        },
+        async () => {
+          try {
+            await Actions.disconnect(this.props.recipientPublicKey)
+          } catch (e) {
+            this.setState({
+              disconnectStatus: 'err',
+              disconnectErr: e.message || 'Unknown Error',
+            })
+          }
+        },
+      )
+    },
+    'Go Back': this.toggleDisconnectDialog,
+  }
+
+  onPressRemove = () => {
+    Actions.disconnect(this.props.recipientPublicKey)
+      .then(() => {
+        ToastAndroid.show('Removed', 800)
+      })
+      .catch(e => {
+        ToastAndroid.show('Could not remove', 800)
+        console.warn(e.message || 'unknown error')
+      })
+  }
+
   render() {
     const {
       messages,
       ownPublicKey,
       recipientDisplayName,
       recipientPublicKey,
+      didDisconnect,
     } = this.props
 
     const { sendInvoiceAmount, sendInvoiceMemo } = this.state
-
-    if (messages.length === 0) {
-      return <Loading />
-    }
 
     if (ownPublicKey === null) {
       return <Loading />
@@ -306,17 +413,19 @@ export default class ChatView extends React.PureComponent {
 
     const sortedMessages = messages.slice().sort(byTimestampFromOldestToNewest)
 
-    if (sortedMessages.length === 0) {
-      return <Loading />
-    }
-
     const [firstMsg] = sortedMessages
 
     const thereAreMoreMessages =
-      firstMsg.body !== '$$__SHOCKWALLET__INITIAL__MESSAGE'
+      firstMsg.body !== '$$__SHOCKWALLET__INITIAL__MESSAGE' && !didDisconnect
 
     /** @type {GiftedChatMessage[]} */
     const giftedChatMsgs = sortedMessages
+      .filter(m => {
+        if (didDisconnect) {
+          return m.outgoing
+        }
+        return true
+      })
       .filter(msg => msg.body !== '$$__SHOCKWALLET__INITIAL__MESSAGE')
       .sort(byTimestampFromNewestToOldest)
       .map(msg => ({
@@ -341,20 +450,17 @@ export default class ChatView extends React.PureComponent {
           <TouchableWithoutFeedback onPress={this.toggleActionSheet}>
             <View style={CSS.styles.flex}>
               <TouchableWithoutFeedback>
-                <View
-                  style={[
-                    styles.actionSheet,
-                    {
-                      bottom: this.state.inputToolbarHeight,
-                    },
-                  ]}
-                >
+                <View style={this.actionSheetStyle}>
                   <Text style={styles.action} onPress={this.onPressSendBTC}>
                     Send BTC
                   </Text>
                   <Pad amount={10} />
                   <Text style={styles.action} onPress={this.onPressReceive}>
                     Receive
+                  </Text>
+                  <Pad amount={10} />
+                  <Text style={styles.action} onPress={this.onPressDisconnect}>
+                    Disconnect
                   </Text>
                   <Pad amount={10} />
                   <Text style={styles.action} onPress={this.onPressBlock}>
@@ -369,23 +475,43 @@ export default class ChatView extends React.PureComponent {
         <View style={xStyles.container}>
           <GiftedChat
             alignTop
-            isLoadingEarlier={false}
-            loadEarlier={thereAreMoreMessages}
+            isLoadingEarlier={thereAreMoreMessages}
             messages={giftedChatMsgs}
             renderLoading={Loading}
             renderMessage={this.messageRenderer}
             user={ownUser}
             renderInputToolbar={AlwaysNull}
             minInputToolbarHeight={0}
+            // Overrides GiftedChat's grey oval box that contains both a load
+            // earliers text and an activity spinner
+            renderLoadEarlier={LoadingEarlier}
+            loadEarlier
           />
         </View>
 
-        <InputToolbar
-          disableInput={false}
-          onPressActionBtn={this.toggleActionSheet}
-          onSend={this.onSend}
-          onHeight={this.onInputToolbarHeight}
-        />
+        {!didDisconnect && (
+          <InputToolbar
+            disableInput={false}
+            onPressActionBtn={this.toggleActionSheet}
+            onSend={this.onSend}
+            onHeight={this.onInputToolbarHeight}
+          />
+        )}
+
+        {didDisconnect && (
+          <View style={styles.disconnectNotice}>
+            <Text style={CSS.styles.fontMontserrat}>Contact Disconnected</Text>
+
+            <Pad amount={24} />
+
+            <TouchableOpacity
+              style={styles.removeConvBtn}
+              onPress={this.onPressRemove}
+            >
+              <Text style={xStyles.removeConv}>Remove Conversation</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
         <BasicDialog
           title="Create a Lightning Invoice"
@@ -419,6 +545,33 @@ export default class ChatView extends React.PureComponent {
 
           <ShockButton onPress={this.onPressSendInvoice} title="Send" />
         </BasicDialog>
+
+        <ShockDialog
+          choiceToHandler={
+            this.state.disconnectStatus === 'confirming'
+              ? this.disconnectChoices
+              : EMPTY_OBJ
+          }
+          onRequestClose={this.toggleDisconnectDialog}
+          visible={this.state.disconnectStatus !== 'none'}
+          message={(() => {
+            const { disconnectStatus } = this.state
+
+            if (disconnectStatus === 'confirming') {
+              return 'Removing this contact will delete the conversation, are you sure?'
+            }
+
+            if (disconnectStatus === 'err') {
+              return this.state.disconnectErr || ''
+            }
+
+            if (disconnectStatus === 'processing') {
+              return 'Procesing...'
+            }
+
+            return ''
+          })()}
+        />
       </>
     )
   }
@@ -484,8 +637,30 @@ const styles = StyleSheet.create({
     ...invoiceWrapperBase,
     alignItems: 'flex-end',
   },
+
+  disconnectNotice: {
+    position: 'absolute',
+    bottom: 24,
+
+    paddingLeft: CONTAINER_H_PAD,
+    paddingRight: CONTAINER_H_PAD,
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  removeConvBtn: {
+    backgroundColor: CSS.Colors.BACKGROUND_NEAR_WHITE,
+    elevation: OVAL_ELEV,
+    height: OVAL_V_PAD * 2 + ACTION_BTN_SIZE,
+    width: '60%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 30,
+  },
 })
 
 const xStyles = {
   container: [CSS.styles.flex, CSS.styles.backgroundWhite],
+  removeConv: [CSS.styles.fontMontserratBold, CSS.styles.fontSize12],
 }
