@@ -389,6 +389,7 @@ export default class Chat extends React.Component {
 
       StatusBar.setBackgroundColor(Colors.BLUE_MEDIUM_DARK)
       StatusBar.setBarStyle('light-content')
+      StatusBar.setTranslucent(false)
 
       this.updateLastReadMsg()
     })
