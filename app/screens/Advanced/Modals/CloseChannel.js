@@ -1,40 +1,45 @@
 import React from 'react'
-import { View, StyleSheet, Text, ActivityIndicator } from 'react-native'
+import { View, StyleSheet, Text, ActivityIndicator, Switch } from 'react-native'
 import Modal from 'react-native-modalbox'
-import ModalInput from '../../../components/PopupModal/Input'
 import Head from '../../../components/PopupModal/Head'
 import Body from '../../../components/PopupModal/Body'
 import Footer from '../../../components/PopupModal/Footer'
 import { Colors } from '../../../res/css'
 
-const LOADING_BACKDROP = 'rgba(0,0,0,0.25)'
+/**
+ * @typedef {object} Props
+ * @prop {React.RefObject<any>} modalRef
+ * @prop {(key: keyof import("../index").State) => (value: any) => void} onChange
+ * @prop {boolean} forceCloseChannel
+ * @prop {() => void} submit
+ * @prop {boolean} keyboardOpen
+ * @prop {number} keyboardHeight
+ * @prop {boolean} loading
+ * @prop {string} error
+ * @prop {string|undefined} chanId
+ * @prop {number|undefined} localBalance
+ * @prop {number|undefined} remoteBalance
+ */
 
 /**
- * @param {{
- *   modalRef: React.RefObject<any>,
- *   onChange: (key: keyof import("../index").State) => (value: any) => void,
- *   peerURI: string,
- *   host: string,
- *   loading: boolean,
- *   submit: () => void,
- *   keyboardOpen: boolean,
- *   keyboardHeight: number,
- *   error: string,
- *   closeModal: () => void,
- * }} Props
+ * @augments React.Component<Props, {}, never>
  */
-class AddPeerModal extends React.Component {
+class CloseChannelModal extends React.Component {
   render() {
     const {
       modalRef,
       onChange,
-      peerURI,
+      forceCloseChannel,
       submit,
       keyboardHeight = 0,
       keyboardOpen,
       loading,
       error,
+      chanId,
+      remoteBalance,
+      localBalance,
     } = this.props
+
     return (
       <Modal
         position="center"
@@ -58,23 +63,39 @@ class AddPeerModal extends React.Component {
         <Head
           closeModal={modalRef.current ? modalRef.current.close : undefined}
         >
-          <Text style={styles.modalTitle}>Add Peer</Text>
+          {/* <Icon name="ios-link" color="white" size={35} /> */}
+          <Text style={styles.modalTitle}>Close Channel?</Text>
         </Head>
         <Body>
+          {/*<Text style={styles.modalTitle}>Close Channel?</Text>*/}
           {error ? <Text style={styles.modalError}>{error}</Text> : null}
-          <ModalInput
-            placeholder="pubkey@ip:port"
-            value={peerURI}
-            onChange={onChange('peerURI')}
-          />
+          <View style={styles.content}>
+            <Text>Channel ID:</Text>
+            <Text style={styles.bold}>{chanId}</Text>
+          </View>
+          <View style={styles.content}>
+            <Text>Local Balance:</Text>
+            <Text style={styles.bold}>{localBalance}</Text>
+          </View>
+          <View style={styles.content}>
+            <Text>Remote Balance:</Text>
+            <Text style={styles.bold}>{remoteBalance}</Text>
+          </View>
+          <View style={styles.content}>
+            <Text>Force</Text>
+            <Switch
+              value={forceCloseChannel}
+              onValueChange={onChange('forceCloseChannel')}
+            />
+          </View>
         </Body>
-        <Footer value="Add Peer" onPress={submit} />
+        <Footer value="Close Channel" onPress={submit} />
       </Modal>
     )
   }
 }
 
-export default AddPeerModal
+export default CloseChannelModal
 
 const styles = StyleSheet.create({
   modal: {
@@ -82,7 +103,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     elevation: 10,
     zIndex: 100,
-    height: 170,
+    height: 260,
     width: '80%',
     borderRadius: 15,
   },
@@ -90,7 +111,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: '100%',
     height: '100%',
-    backgroundColor: LOADING_BACKDROP,
+    backgroundColor: Colors.LOADING_BACKDROP,
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 1000,
@@ -113,5 +134,15 @@ const styles = StyleSheet.create({
     width: '90%',
     borderRadius: 15,
     fontSize: 11,
+  },
+  content: {
+    width: '80%',
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  bold: {
+    fontWeight: 'bold',
   },
 })
