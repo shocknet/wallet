@@ -11,7 +11,7 @@
     "prettify": "prettier --write \"index.js\" \"app/**/*.{js,ts}\"",
     "format": "yarn prettify",
     "lint": "eslint \"./app/**/*.js\"",
-    "build:debug": "rm -f android/app/src/main/assets/index.android.bundle && cd android && ./gradlew clean && cd .. && react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res && cd android && ./gradlew assembleDebug && cd .. && cp android/app/build/outputs/apk/debug/app-debug.apk APK-DEBUG.apk",
+    "build:debug": "rm -f android/app/src/main/assets/index.android.bundle && cd android && ./gradlew clean && cd .. && react-native bundle --platform android --dev true --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res && cd android && ./gradlew assembleDebug && cd .. && cp android/app/build/outputs/apk/debug/app-debug.apk APK-DEBUG.apk",
     "build:release:delete-old-bundle": "rm -f android/app/src/main/assets/index.android.bundle",
     "build:release:clean": "cd android && ./gradlew clean && cd ..",
     "build:release:bundle": "react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res",
