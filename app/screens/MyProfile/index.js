@@ -154,6 +154,10 @@ export default class MyProfile extends React.PureComponent {
     this.toggleSetupDisplayName()
   }
 
+  genHandAddr = () => {
+    API.Actions.generateNewHandshakeNode()
+  }
+
   copyDataToClipboard = () => {
     const { authData } = this.state
 

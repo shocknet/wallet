@@ -44,12 +44,10 @@ const byTimestampFromOldestToNewest = (a, b) => a.timestamp - b.timestamp
  * @prop {boolean} scanningUserQR
  */
 
-// TODO: Component vs PureComponent
-
 /**
- * @augments React.Component<Props, State>
+ * @augments React.PureComponent<Props, State>
  */
-export default class Chats extends React.Component {
+export default class Chats extends React.PureComponent {
   /**
    * @type {import('react-navigation').NavigationBottomTabScreenOptions}
    */
@@ -117,9 +115,9 @@ export default class Chats extends React.Component {
   }
 
   /**
-   * @param {string} id
+   * @param {string} recipientPublicKey
    */
-  onPressChat = id => {
+  onPressChat = recipientPublicKey => {
     // CAST: If user is pressing on a chat, chats are loaded and not null.
     // TS wants the expression to be casted to `unknown` first. Not possible
     // with jsdoc
@@ -127,7 +125,7 @@ export default class Chats extends React.Component {
 
     // CAST: If user is pressing on a chat, that chat exists
     const chat = /** @type {API.Schema.Chat} */ (chats.find(
-      chat => chat.id === id,
+      chat => chat.recipientPublicKey === recipientPublicKey,
     ))
 
     const sortedMessages = chat.messages
@@ -142,9 +140,9 @@ export default class Chats extends React.Component {
 
     /** @type {ChatParams} */
     const params = {
-      id,
+      recipientPublicKey,
       // performance
-      _title: chat.recipientDisplayName || chat.recipientPublicKey,
+      _title: chat.recipientDisplayName || recipientPublicKey,
     }
 
     this.props.navigation.navigate(CHAT_ROUTE, params)
@@ -184,11 +182,6 @@ export default class Chats extends React.Component {
     this.setState({
       acceptingRequest: null,
     })
-  }
-
-  onPressRejectRequest = () => {
-    API.Actions.generateNewHandshakeNode()
-    this.cancelAcceptingRequest()
   }
 
   ///
@@ -305,8 +298,7 @@ export default class Chats extends React.Component {
         receivedRequests={filteredReceivedRequests}
         onPressRequest={this.onPressReceivedRequest}
         onPressAcceptRequest={this.acceptRequest}
-        onRequestCloseRequestDialog={this.cancelAcceptingRequest}
-        onPressRejectRequest={this.onPressRejectRequest}
+        onPressIgnoreRequest={this.cancelAcceptingRequest}
         onPressAdd={this.toggleAddDialog}
         showingAddDialog={showingAddDialog}
         onRequestCloseAddDialog={this.toggleAddDialog}

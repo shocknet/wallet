@@ -111,8 +111,7 @@
     "valid-typeof": "off",
     "babel/valid-typeof": 1,
     // needed for redux reducers function arguments
-    "default-param-last": "off",
-    "no-warning-comments": "off"
+    "default-param-last": "off"
   },
   "settings": {
     "react": {
