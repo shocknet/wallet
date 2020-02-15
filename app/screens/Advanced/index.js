@@ -65,8 +65,7 @@ export const ADVANCED_SCREEN = 'ADVANCED_SCREEN'
 /**
  * @typedef {object} State
  * @prop {Accordions} accordions
- * @prop {string} peerPublicKey
- * @prop {string} host
+ * @prop {string} peerURI
  * @prop {string} channelPublicKey
  * @prop {string} channelCapacity
  * @prop {string} channelPushAmount
@@ -103,8 +102,7 @@ class AdvancedScreen extends Component {
     keyboardOpen: false,
     modalLoading: false,
     keyboardHeight: 0,
-    peerPublicKey: '',
-    host: '',
+    peerURI: '',
     channelPublicKey: '',
     channelCapacity: '',
     channelPushAmount: '',
@@ -265,7 +263,7 @@ class AdvancedScreen extends Component {
   }
 
   /**
-   * @param {'peerPublicKey'|'host'|'channelPublicKey'|'channelPushAmount'|'channelCapacity'} key
+   * @param {'peerURI'|'channelPublicKey'|'channelPushAmount'|'channelCapacity'} key
    * @param {string} value
    */
   handleInputChange = (key, value) => {
@@ -277,17 +275,17 @@ class AdvancedScreen extends Component {
 
   addPeer = async () => {
     try {
-      const { peerPublicKey, host } = this.state
+      const { peerURI } = this.state
       const { fetchPeers } = this.props
+      const [pubkey, host] = peerURI.split('@')
       this.setState({
         modalLoading: true,
-        peerPublicKey: '',
-        host: '',
+        peerURI: '',
       })
 
       const res = await Http.post(`/api/lnd/connectpeer`, {
         host,
-        pubkey: peerPublicKey,
+        pubkey,
       })
 
       if (res.status !== 200) {
@@ -303,9 +301,8 @@ class AdvancedScreen extends Component {
       console.error(Http.defaults.baseURL, err.response)
     } finally {
       this.setState({
-        host: '',
         modalLoading: false,
-        peerPublicKey: '',
+        peerURI: '',
       })
     }
   }
@@ -444,8 +441,7 @@ class AdvancedScreen extends Component {
   closeAddPeerModal = () => {
     this.addPeerModal.current.close()
     this.setState({
-      peerPublicKey: '',
-      host: '',
+      peerURI: '',
     })
   }
 
@@ -469,10 +465,7 @@ class AdvancedScreen extends Component {
   }
 
   /** @param {string} text */
-  onChangePeerPublicKey = text => this.handleInputChange('peerPublicKey', text)
-
-  /** @param {string} text */
-  onChangeHost = text => this.handleInputChange('host', text)
+  onChangePeerURI = text => this.handleInputChange('peerURI', text)
 
   /** @param {string} text */
   onChangeChannelPublicKey = text => {
@@ -498,9 +491,8 @@ class AdvancedScreen extends Component {
     const { node, wallet, history } = this.props
     const {
       accordions,
-      peerPublicKey,
+      peerURI,
       channelPublicKey,
-      host,
       channelCapacity,
       channelPushAmount,
       keyboardOpen,
@@ -693,8 +685,7 @@ class AdvancedScreen extends Component {
           modalRef={this.addPeerModal}
           onChange={this.onChange}
           loading={modalLoading}
-          peerPublicKey={peerPublicKey}
-          host={host}
+          peerURI={peerURI}
           submit={this.addPeer}
           error={err}
           keyboardOpen={keyboardOpen}

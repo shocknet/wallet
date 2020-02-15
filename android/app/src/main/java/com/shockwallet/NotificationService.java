@@ -147,7 +147,10 @@ public class NotificationService extends Service {
                     if(latestBody.equals("$$__SHOCKWALLET__INITIAL__MESSAGE")){
                         latestBody = "Chat initialized";
                     }
-                    doNotification(latestSender,latestBody,R.drawable.user,latestAvatar);
+                    if(latestBody.startsWith("$$__SHOCKWALLET__INVOICE__")){
+                        latestBody = "Sent and invoice";
+                    }
+                    doNotification(latestSender,latestBody,R.drawable.user);
                 }
             }catch (Exception e){
                 Log.d(TAG,e.toString());
@@ -173,7 +176,7 @@ public class NotificationService extends Service {
         @Override
         public void run() {
             Log.d(TAG,"yeahhhh");
-            Log.d(TAG,"Token from run "+token);
+            //Log.d(TAG,"Token from run "+token);
             try{
                 createDeviceId();
                 rsa = new RSA("shocknet.tag.cc."+deviceId);
@@ -262,7 +265,7 @@ public class NotificationService extends Service {
         if(bundle != null){
             String token = (String) bundle.get("token");
             String ip = (String) bundle.get("ip");
-            Log.d(TAG, "ip: "+ip + " token: "+token);
+            //Log.d(TAG, "ip: "+ip + " token: "+token);
             NotificationService.token = token;
             NotificationService.ip = ip;
         }
@@ -279,8 +282,8 @@ public class NotificationService extends Service {
                 .setSmallIcon(R.drawable.bolt)
                 .setLargeIcon(BitmapFactory.decodeResource(this.getResources(),
                         R.drawable.bolt))
-                .setContentTitle("ShockWallet is listening for updates")
-                .setContentText("Running...")
+                .setContentTitle("Notification service connected.")
+                .setContentText("Listening...")
                 //.setSmallIcon(R.drawable.bolt)
                 .setContentIntent(contentIntent)
                 .setOngoing(true)
@@ -382,7 +385,7 @@ public class NotificationService extends Service {
                 } catch (Exception e) {
                     Log.d(TAG,e.toString());
                 }
-                Log.e(TAG, mMessage);
+                //Log.e(TAG, mMessage);
             }
         });
     }

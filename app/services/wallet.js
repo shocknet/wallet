@@ -747,6 +747,37 @@ export const decodeInvoice = async ({ payReq }) => {
     )
   }
 }
+/**@param {string} uri */
+export const addPeer = async uri => {
+  const isComplete = uri.split('@')
+  console.log(isComplete)
+  const req = {
+    pubkey: isComplete[0],
+    host: isComplete[1],
+  }
+  const { nodeURL, token } = await Cache.getNodeURLTokenPair()
+
+  if (typeof token !== 'string') {
+    throw new TypeError(NO_CACHED_TOKEN)
+  }
+
+  const endpoint = `http://${nodeURL}/api/lnd/connectpeer`
+
+  try {
+    const { data } = await Http.post(endpoint, req, {
+      headers: {
+        Authorization: token,
+      },
+    })
+
+    return data
+  } catch (err) {
+    const { response } = err
+    throw new Error(
+      response.data.errorMessage || response.data.message || 'Unknown error.',
+    )
+  }
+}
 
 /**
  * Partially based on https://api.lightning.community/#peer.
