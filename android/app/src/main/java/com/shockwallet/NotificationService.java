@@ -150,7 +150,7 @@ public class NotificationService extends Service {
                     if(latestBody.startsWith("$$__SHOCKWALLET__INVOICE__")){
                         latestBody = "Sent and invoice";
                     }
-                    doNotification(latestSender,latestBody,R.drawable.user);
+                    doNotification(latestSender,latestBody,R.drawable.user,latestAvatar);
                 }
             }catch (Exception e){
                 Log.d(TAG,e.toString());

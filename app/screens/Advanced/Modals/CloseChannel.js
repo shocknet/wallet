@@ -1,7 +1,6 @@
 import React from 'react'
 import { View, StyleSheet, Text, ActivityIndicator, Switch } from 'react-native'
 import Modal from 'react-native-modalbox'
-import Icon from 'react-native-vector-icons/Ionicons'
 import Head from '../../../components/PopupModal/Head'
 import Body from '../../../components/PopupModal/Body'
 import Footer from '../../../components/PopupModal/Footer'
@@ -20,7 +19,6 @@ import { Colors } from '../../../res/css'
  * @prop {string|undefined} chanId
  * @prop {number|undefined} localBalance
  * @prop {number|undefined} remoteBalance
- * @prop {() => void} closeModal
  */
 
 /**
@@ -37,7 +35,6 @@ class CloseChannelModal extends React.Component {
       keyboardOpen,
       loading,
       error,
-      closeModal,
       chanId,
       remoteBalance,
       localBalance,
@@ -63,19 +60,14 @@ class CloseChannelModal extends React.Component {
             <ActivityIndicator color="white" size="large" />
           </View>
         ) : null}
-        <Head>
-          <View style={styles.close}>
-            <Icon
-              name="md-close"
-              color="white"
-              size={20}
-              onPress={closeModal}
-            />
-          </View>
-          <Icon name="ios-link" color="white" size={35} />
+        <Head
+          closeModal={modalRef.current ? modalRef.current.close : undefined}
+        >
+          {/* <Icon name="ios-link" color="white" size={35} /> */}
+          <Text style={styles.modalTitle}>Close Channel?</Text>
         </Head>
         <Body>
-          <Text style={styles.modalTitle}>Close Channel?</Text>
+          {/*<Text style={styles.modalTitle}>Close Channel?</Text>*/}
           {error ? <Text style={styles.modalError}>{error}</Text> : null}
           <View style={styles.content}>
             <Text>Channel ID:</Text>
@@ -111,10 +103,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     elevation: 10,
     zIndex: 100,
-    height: 300,
+    height: 260,
     width: '80%',
     borderRadius: 15,
-    overflow: 'hidden',
   },
   modalLoading: {
     position: 'absolute',
@@ -130,8 +121,6 @@ const styles = StyleSheet.create({
     color: Colors.TEXT_GRAY,
     textAlign: 'center',
     width: '100%',
-    marginBottom: 15,
-    marginTop: 8,
     fontSize: 16,
   },
   modalError: {
@@ -145,12 +134,6 @@ const styles = StyleSheet.create({
     width: '90%',
     borderRadius: 15,
     fontSize: 11,
-  },
-  close: {
-    width: '80%',
-    display: 'flex',
-    flexDirection: 'row-reverse',
-    alignItems: 'flex-end',
   },
   content: {
     width: '80%',

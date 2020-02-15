@@ -663,7 +663,6 @@ class AdvancedScreen extends Component {
           keyboardOpen={keyboardOpen}
           keyboardHeight={keyboardHeight}
           forceCloseChannel={forceCloseChannel}
-          closeModal={this.closeCloseChannelDialog}
           chanId={willCloseChannelPoint?.chan_id}
           localBalance={willCloseChannelPoint?.local_balance}
           remoteBalance={willCloseChannelPoint?.remote_balance}
