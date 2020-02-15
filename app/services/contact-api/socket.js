@@ -144,13 +144,19 @@ export const encryptSocketInstance = socket => ({
        * @param {any} data
        */
       async data => {
+        console.log('Listening to Event:', eventName)
+
         if (Encryption.isNonEncrypted(eventName)) {
           cb(data)
           return
         }
 
-        console.log('Listening to Event:', eventName)
-        const decryptedData = await decryptSocketData(data)
+        const decryptedData = await decryptSocketData(data).catch(err => {
+          console.warn(
+            `Error decrypting data for event: ${eventName} - msg: ${err.message}`,
+          )
+        })
+
         cb(decryptedData)
       },
     )
