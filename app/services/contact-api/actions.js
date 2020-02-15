@@ -6,9 +6,11 @@ import debounce from 'lodash/debounce'
 import once from 'lodash/once'
 
 import * as Cache from '../../services/cache'
+import { defaultName } from '../utils'
 
 import Action from './action'
 import Event from './event'
+import * as Events from './events'
 import { socket } from './socket'
 
 /**
@@ -37,6 +39,10 @@ export const acceptRequest = requestID => {
     socket.emit(Action.ACCEPT_REQUEST, {
       token,
       requestID,
+    })
+
+    socket.emit(Event.ON_CHATS, {
+      token,
     })
   })
 }
@@ -111,24 +117,64 @@ export const setDisplayName = displayName => {
 
 /**
  * @param {string} recipientPublicKey
+ * @returns {Promise<void>}
  */
-export const sendHandshakeRequest = recipientPublicKey => {
+export const sendHandshakeRequest = async recipientPublicKey => {
   if (!socket.connected) {
     throw new Error('NOT_CONNECTED')
   }
 
-  getToken().then(token => {
-    socket.emit(Action.SEND_HANDSHAKE_REQUEST, {
-      token,
-      recipientPublicKey,
-    })
+  const currSentReqs = Events.getCurrSentReqs()
+  const currChats = Events.getCurrChats()
+  const uuid = Date.now().toString() + Math.random().toString()
 
-    setTimeout(() => {
-      socket.emit(Event.ON_SENT_REQUESTS, {
-        token,
-      })
-    }, 500)
+  if (currChats.find(c => c.recipientPublicKey === recipientPublicKey)) {
+    throw new Error('Handshake already in place')
+  }
+
+  const existingReq = currSentReqs.find(
+    r => r.recipientPublicKey === recipientPublicKey,
+  )
+
+  if (existingReq && !existingReq.recipientChangedRequestAddress) {
+    throw new Error('A request is already in place')
+  }
+
+  Events.setSentReqs([
+    // filter a possible existing req
+    ...currSentReqs.filter(r => r.recipientPublicKey !== recipientPublicKey),
+    {
+      id: uuid,
+      recipientAvatar: existingReq ? existingReq.recipientAvatar : null,
+      recipientChangedRequestAddress: false,
+      recipientDisplayName: existingReq
+        ? existingReq.recipientDisplayName
+        : defaultName(recipientPublicKey),
+      recipientPublicKey,
+      timestamp: Date.now(),
+    },
+  ])
+
+  const token = await getToken()
+
+  socket.emit(Action.SEND_HANDSHAKE_REQUEST, {
+    token,
+    recipientPublicKey,
+    uuid,
   })
+
+  /** @type {import('./socket').Emission} */
+  const res = await new Promise(resolve => {
+    socket.on(Action.SEND_HANDSHAKE_REQUEST, res => {
+      if (res.origBody.uuid === uuid) {
+        resolve(res)
+      }
+    })
+  })
+
+  if (!res.ok) {
+    Events.setSentReqs(Events.getCurrSentReqs().filter(r => r.id !== uuid))
+  }
 }
 
 /**
@@ -285,6 +331,58 @@ export const setBio = async bio => {
   })
 
   if (!res.ok) {
+    throw new Error(res.msg || 'Unknown Error')
+  }
+}
+
+/**
+ * @param {string} pub
+ * @throws {Error}
+ * @returns {Promise<void>}
+ */
+export const disconnect = async pub => {
+  const chatIdx = Events.currentChats.findIndex(
+    c => c.recipientPublicKey === pub,
+  )
+
+  /** @type {import('./schema').Chat[]} */
+  let deletedChat = []
+
+  // it's fine if it doesn't exist in our cache
+  if (chatIdx !== -1) {
+    const currChats = Events.getCurrChats()
+    deletedChat = currChats.splice(chatIdx, 1)
+    Events.setChats(currChats)
+  }
+
+  if (!socket.connected) {
+    throw new Error('NOT_CONNECTED')
+  }
+
+  const token = await getToken()
+  const uuid = Math.random().toString() + Date.now().toString()
+
+  socket.emit(Action.DISCONNECT, {
+    pub,
+    token,
+    uuid,
+  })
+
+  const res = await new Promise(resolve => {
+    socket.on(
+      Action.DISCONNECT,
+      once(res => {
+        if (res.origBody.uuid === uuid) {
+          resolve(res)
+        }
+      }),
+    )
+  })
+
+  if (!res.ok) {
+    if (deletedChat.length) {
+      Events.setChats([...Events.getCurrChats(), deletedChat[0]])
+    }
     throw new Error(res.msg || 'Unknown Error')
   }
 }

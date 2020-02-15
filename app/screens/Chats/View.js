@@ -57,12 +57,7 @@ const NoChatsOrRequests = React.memo(_NoChatsOrRequests)
  * @param {API.Schema.Chat | API.Schema.SimpleReceivedRequest | API.Schema.SimpleSentRequest} item
  * @returns {string}
  */
-const keyExtractor = item => {
-  if (API.Schema.isChat(item)) {
-    return item.recipientPublicKey
-  }
-  return item.id
-}
+const keyExtractor = item => item.id
 
 /**
  * @typedef {object} Props
@@ -73,11 +68,12 @@ const keyExtractor = item => {
  * @prop {API.Schema.SimpleReceivedRequest[]} receivedRequests
  * @prop {API.Schema.SimpleSentRequest[]} sentRequests
  *
- * @prop {(recipientPublicKey: string) => void} onPressChat
+ * @prop {(id: string) => void} onPressChat
  * @prop {(requestID: string) => void} onPressRequest
  *
  * @prop {() => void} onPressAcceptRequest
- * @prop {() => void} onPressIgnoreRequest
+ * @prop {() => void} onPressRejectRequest
+ * @prop {() => void} onRequestCloseRequestDialog
  *
  * @prop {() => void} onPressAdd
  * @prop {boolean} showingAddDialog
@@ -92,9 +88,9 @@ const keyExtractor = item => {
  */
 
 /**
- * @augments React.PureComponent<Props>
+ * @augments React.Component<Props>
  */
-export default class ChatsView extends React.PureComponent {
+export default class ChatsView extends React.Component {
   /**
    * @private
    * @type {Record<string, () => void>}
@@ -103,17 +99,17 @@ export default class ChatsView extends React.PureComponent {
     Accept: () => {
       this.props.onPressAcceptRequest()
     },
-    Ignore: () => {
-      this.props.onPressIgnoreRequest()
+    Reject: () => {
+      this.props.onPressRejectRequest()
     },
   }
 
   /**
    * @private
-   * @param {string} recipientPublicKey
+   * @param {string} id
    */
-  onPressChat = recipientPublicKey => {
-    this.props.onPressChat(recipientPublicKey)
+  onPressChat = id => {
+    this.props.onPressChat(id)
   }
 
   /**
@@ -160,7 +156,7 @@ export default class ChatsView extends React.PureComponent {
       <TouchableOpacity
         // eslint-disable-next-line react/jsx-no-bind
         onPress={() => {
-          this.onPressChat(chat.recipientPublicKey)
+          this.onPressChat(chat.id)
         }}
       >
         <View style={styles.itemContainer}>
@@ -168,9 +164,13 @@ export default class ChatsView extends React.PureComponent {
             <UserDetail
               alternateText={`(${moment(lastMsgTimestamp).fromNow()})`}
               alternateTextBold={unread}
-              id={chat.recipientPublicKey}
+              id={chat.id}
               image={chat.recipientAvatar}
               lowerText={(() => {
+                if (chat.didDisconnect) {
+                  return 'Contact Disconnected'
+                }
+
                 if (lastMsg.body === '$$__SHOCKWALLET__INITIAL__MESSAGE') {
                   return 'Empty conversation'
                 }
@@ -188,6 +188,7 @@ export default class ChatsView extends React.PureComponent {
                   : chat.recipientDisplayName
               }
               nameBold={unread}
+              onPress={this.onPressChat}
             />
           </View>
           <Icon
@@ -399,7 +400,7 @@ export default class ChatsView extends React.PureComponent {
         <ShockDialog
           choiceToHandler={this.choiceToHandler}
           message={ACCEPT_REQUEST_DIALOG_TEXT}
-          onRequestClose={this.props.onPressIgnoreRequest}
+          onRequestClose={this.props.onRequestCloseRequestDialog}
           visible={!!acceptingRequest}
         />
 

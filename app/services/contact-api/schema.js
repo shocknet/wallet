@@ -20,6 +20,8 @@
  * @prop {string} recipientPublicKey A way to uniquely identify each chat.
  * @prop {ChatMessage[]} messages Sorted from most recent to least recent.
  * @prop {string|null} recipientDisplayName
+ * @prop {boolean} didDisconnect True if the recipient performed a disconnect.
+ * @prop {string} id
  */
 
 /**
@@ -59,42 +61,28 @@ export {}
  */
 export const isChatMessage = o => {
   if (typeof o !== 'object') {
-    console.warn(`isChatMessage->typeof o !== 'object'`)
     return false
   }
 
   if (o === null) {
-    console.warn(`isChatMessage->o === null`)
     return false
   }
 
   const obj = /** @type {ChatMessage} */ (o)
 
   if (typeof obj.body !== 'string') {
-    console.warn(
-      `isChatMessage->typeof obj.body !== 'string' : ${typeof obj.body} : o: ${JSON.stringify(
-        obj,
-      )}`,
-    )
     return false
   }
 
   if (typeof obj.id !== 'string') {
-    console.warn(`isChatMessage->typeof obj.id !== 'string' : ${typeof obj.id}`)
     return false
   }
 
   if (typeof obj.outgoing !== 'boolean') {
-    console.warn(
-      `isChatMessage->typeof obj.outgoing !== 'boolean' : ${typeof obj.outgoing}`,
-    )
     return false
   }
 
   if (typeof obj.timestamp !== 'number') {
-    console.warn(
-      `isChatMessage->typeof obj.timestamp !== 'number' : ${typeof obj.timestamp}`,
-    )
     return false
   }
 
@@ -107,38 +95,36 @@ export const isChatMessage = o => {
  */
 export const isChat = o => {
   if (typeof o !== 'object') {
-    console.warn(`isChat->typeof o !== 'object' : ${typeof o}`)
     return false
   }
 
   if (o === null) {
-    console.warn(`isChat->o === null`)
     return false
   }
 
   const obj = /** @type {Chat} */ (o)
 
   if (typeof obj.recipientAvatar !== 'string' && obj.recipientAvatar !== null) {
-    console.warn(
-      `isChat-> typeof obj.recipientAvatar !== 'string' && obj.recipientAvatar !== null : ${typeof obj.recipientAvatar}`,
-    )
     return false
   }
 
   if (!Array.isArray(obj.messages)) {
-    console.warn(`isChat-> !Array.isArray(obj.messages)`)
     return false
   }
 
   if (typeof obj.recipientPublicKey !== 'string') {
-    console.warn(
-      `isChat-> typeof obj.recipientPublicKey !== 'string' : ${typeof obj.recipientPublicKey}`,
-    )
     return false
   }
 
   if (obj.recipientPublicKey.length === 0) {
-    console.warn(`isChat-> obj.recipientPublicKey.length === 0`)
+    return false
+  }
+
+  if (typeof obj.didDisconnect !== 'boolean') {
+    return false
+  }
+
+  if (typeof obj.id !== 'string') {
     return false
   }
 
@@ -176,10 +162,6 @@ export const isSimpleReceivedRequest = o => {
   }
 
   if (typeof obj.requestorPK !== 'string') {
-    return false
-  }
-
-  if (typeof obj.response !== 'string') {
     return false
   }
 
