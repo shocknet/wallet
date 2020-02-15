@@ -26,6 +26,7 @@ import WalletManager, { WALLET_MANAGER } from './WalletManager'
 import ConnectToNode, { CONNECT_TO_NODE } from '../screens/ConnectToNode'
 import SendScreen, { SEND_SCREEN } from '../screens/Send'
 import ReceiveScreen, { RECEIVE_SCREEN } from '../screens/Receive'
+import Debug, { DEBUG } from '../screens/Debug'
 
 export const APP = 'APP'
 export const BOTTOM_NAV = 'BOTTOM_NAV'
@@ -81,38 +82,47 @@ BottomNav.navigationOptions = {
 
 const MAIN_DRAWER = 'MAIN_DRAWER'
 
-const MainDrawer = createDrawerNavigator(
-  {
-    [WALLET_NAV]: {
-      screen: WalletNav,
-      navigationOptions: {
-        title: 'Home',
-      },
-    },
-    [ADVANCED_SCREEN]: {
-      screen: Advanced,
-      navigationOptions: {
-        title: 'Advanced Lightning',
-      },
-    },
-    [SEED_BACKUP]: {
-      screen: SeedBackup,
-      navigationOptions: {
-        title: 'Seed Backup',
-      },
-    },
-    [SEED_BACKUP]: {
-      screen: SeedBackup,
-      navigationOptions: {
-        title: 'Seed Backup',
-      },
+/** @type {import('react-navigation').NavigationRouteConfigMap} */
+const drawerScreens = {
+  [WALLET_NAV]: {
+    screen: WalletNav,
+    navigationOptions: {
+      title: 'Home',
     },
   },
-  {
-    initialRouteName: WALLET_NAV,
-    drawerPosition: 'right',
+  [ADVANCED_SCREEN]: {
+    screen: Advanced,
+    navigationOptions: {
+      title: 'Advanced Lightning',
+    },
   },
-)
+  [SEED_BACKUP]: {
+    screen: SeedBackup,
+    navigationOptions: {
+      title: 'Seed Backup',
+    },
+  },
+  [SEED_BACKUP]: {
+    screen: SeedBackup,
+    navigationOptions: {
+      title: 'Seed Backup',
+    },
+  },
+}
+
+if (__DEV__) {
+  drawerScreens[DEBUG] = {
+    screen: Debug,
+    navigationOptions: {
+      title: 'Debug',
+    },
+  }
+}
+
+const MainDrawer = createDrawerNavigator(drawerScreens, {
+  initialRouteName: WALLET_NAV,
+  drawerPosition: 'right',
+})
 
 MainDrawer.navigationOptions = {
   header: null,
