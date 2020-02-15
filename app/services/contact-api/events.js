@@ -229,7 +229,7 @@ export const getCurrSentReqs = () => currSentReqs
 
 /** @param {Schema.SimpleSentRequest[]} sentReqs */
 export const setSentReqs = sentReqs => {
-  currSentReqs = sentReqs
+  currSentReqs = [...sentReqs]
   sentReqsListeners.forEach(l => l(currSentReqs))
 }
 
