@@ -572,6 +572,10 @@ export const setupEvents = () => {
     })
   })
 
+  Socket.socket.on('IS_GUN_AUTH', res => {
+    console.warn(`res for IS_GUN_AUTH: ${JSON.stringify(res)}`)
+  })
+
   connectionListeners.forEach(l => {
     l(Socket.socket.connected)
   })
