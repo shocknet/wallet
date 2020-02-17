@@ -23,16 +23,60 @@ class Debug extends React.Component {
     rreqs: [],
     pk: '',
     token: '',
+    socketConnected: false,
+    lastPing: Date.now() - 10000,
   }
 
   subs = [() => {}]
 
+  onSocketRes = () => {
+    this.lastPing = Date.now()
+  }
+
   componentDidMount() {
+    Socket.socket.on('IS_GUN_AUTH', this.onSocketRes)
+
     this.subs.push(
       Events.onHandshakeAddr(addr => this.setState({ addr })),
       Events.onChats(chats => this.setState({ chats })),
       Events.onSentRequests(sreqs => this.setState({ sreqs })),
       Events.onReceivedRequests(rreqs => this.setState({ rreqs })),
+      (() => {
+        const intervalID = setInterval(() => {
+          this.setState({
+            socketConnected: Socket.socket.connected,
+          })
+        }, 1000)
+
+        return () => {
+          clearInterval(intervalID)
+        }
+      })(),
+
+      () => {
+        // @ts-ignore
+        Socket.socket.off('IS_GUN_AUTH', this.onSocketRes)
+      },
+
+      (() => {
+        const intervalID = setInterval(() => {
+          Socket.socket.emit('IS_GUN_AUTH', {})
+        }, 3000)
+
+        return () => {
+          clearInterval(intervalID)
+        }
+      })(),
+
+      (() => {
+        const intervalID = setInterval(() => {
+          this.forceUpdate()
+        }, 3000)
+
+        return () => {
+          clearInterval(intervalID)
+        }
+      })(),
     )
 
     Cache.getToken().then(token => {
@@ -70,8 +114,21 @@ class Debug extends React.Component {
   }
 
   render() {
+    const { lastPing } = this.state
+
+    const isBetterConnected = lastPing - Date.now() < 5000
+
     return (
       <View style={[CSS.styles.deadCenter, CSS.styles.flex]}>
+        <Text>A random number:</Text>
+        <Text>{Math.random().toString()}</Text>
+
+        <Text>Current Socket Status:</Text>
+        <Text>{this.state.socketConnected ? 'Connected' : 'Disconnected'}</Text>
+
+        <Text>Better Socket Status:</Text>
+        <Text>{isBetterConnected ? 'Connected' : 'Disconnected'}</Text>
+
         <Text>Current Handshake Address:</Text>
         <Text>{this.state.addr}</Text>
 
@@ -89,6 +146,8 @@ class Debug extends React.Component {
 
         <Text>Token:</Text>
         <Text>{this.state.token}</Text>
+
+        <Button title="Reconnect Socket" onPress={Socket.socket.connect} />
 
         <Button
           title="Copy device id to clipboard"

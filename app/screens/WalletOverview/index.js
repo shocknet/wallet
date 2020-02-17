@@ -1188,7 +1188,7 @@ class WalletOverview extends Component {
           this._handleOpenURL({ url })
         }
       })
-      .catch(err => console.error('An error occurred', err))
+      .catch(err => console.warn('An error occurred', err))
 
     this.startNotificationService()
 
