@@ -481,7 +481,7 @@ export default class ChatView extends React.Component {
             renderMessage={this.messageRenderer}
             user={ownUser}
             renderInputToolbar={AlwaysNull}
-            minInputToolbarHeight={0}
+            minInputToolbarHeight={this.state.inputToolbarHeight + 24}
             // Overrides GiftedChat's grey oval box that contains both a load
             // earliers text and an activity spinner
             renderLoadEarlier={LoadingEarlier}
