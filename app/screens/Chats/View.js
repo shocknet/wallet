@@ -140,7 +140,9 @@ export default class ChatsView extends React.Component {
    */
   chatRenderer = chat => {
     const { readChatIDs } = this.props
-    const lastMsg = chat.messages[chat.messages.length - 1]
+    const lastMsg = chat.messages.slice().sort(byTimestampFromOldestToNewest)[
+      chat.messages.length - 1
+    ]
 
     if (typeof lastMsg === 'undefined') {
       throw new TypeError(
