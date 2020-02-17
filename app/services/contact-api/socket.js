@@ -197,12 +197,10 @@ export const createSocket = async () => {
 
   // @ts-ignore
   const socket = SocketIO(`http://${nodeURL}`, {
-    autoConnect: false,
-    transports: ['websocket'],
+    autoConnect: true,
     query: {
       'x-shockwallet-device-id': store.getState().connection.deviceId,
     },
-    jsonp: false,
   })
   return encryptSocketInstance(socket)
 }
