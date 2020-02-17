@@ -2,7 +2,6 @@
  * @format
  */
 import SocketIO from 'socket.io-client'
-import once from 'lodash/once'
 import isEmpty from 'lodash/isEmpty'
 
 import * as Cache from '../../services/cache'
