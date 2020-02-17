@@ -98,7 +98,7 @@ export const decryptKey = async (encryptedKey, sessionId) => {
     console.log('Decrypted Key:', decryptedKey)
     return decryptedKey
   } catch (err) {
-    console.error(err)
+    console.warn(err)
     throw err
   }
 }

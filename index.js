@@ -185,7 +185,7 @@ Http.interceptors.request.use(async config => {
         console.log('Body:', config.data ? JSON.stringify(config.data) : 'N/A')
       }
     } catch (err) {
-      console.error(err)
+      console.warn(err)
     }
 
     return config
@@ -248,7 +248,7 @@ const decryptResponse = async response => {
 
     return response
   } catch (err) {
-    console.error(err)
+    console.warn(err)
     throw err
   }
 }
@@ -284,7 +284,7 @@ Http.interceptors.response.use(
       }
       return decryptedResponse
     } catch (err) {
-      console.error(err)
+      console.warn(err)
       return decryptedResponse
     }
   },
@@ -327,7 +327,7 @@ Http.interceptors.response.use(
         }
         return Promise.reject({ ...error, response: decryptedResponse })
       } catch (err) {
-        console.error(err)
+        console.warn(err)
         return Promise.reject({ ...error, response: decryptedResponse })
       }
     }

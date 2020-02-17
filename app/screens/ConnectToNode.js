@@ -158,8 +158,6 @@ class ConnectToNode extends React.PureComponent {
               pinging: false,
               wasBadPing: true,
             })
-
-            console.error(err)
           }
         }
       },
