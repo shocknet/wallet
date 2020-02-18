@@ -85,7 +85,6 @@ export default class ShockWallet extends React.Component {
   }
 
   async componentDidMount() {
-    await Cache.clearAllStorage()
     const nodeURL = await Cache.getNodeURL()
     if (nodeURL !== null) {
       Http.defaults.url = `http://${nodeURL}`
