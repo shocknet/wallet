@@ -140,6 +140,17 @@ export const onAvatar = listener => {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/** @type {string|null} */
+let currentAddr = null
+
+export const getHandshakeAddr = () => currentAddr
+
+/** @param {string} addr */
+export const setHandshakeAddress = addr => {
+  currentAddr = addr
+  handshakeAddrListeners.forEach(l => l(currentAddr))
+}
+
 /**
  * @param {HandshakeAddrListener} listener
  */
@@ -150,11 +161,7 @@ export const onHandshakeAddr = listener => {
 
   handshakeAddrListeners.push(listener)
 
-  setImmediate(async () => {
-    Socket.socket.emit(Event.ON_HANDSHAKE_ADDRESS, {
-      token: await getToken(),
-    })
-  })
+  listener(currentAddr)
 
   return () => {
     const idx = handshakeAddrListeners.indexOf(listener)
@@ -509,9 +516,7 @@ export const setupEvents = () => {
 
   Socket.socket.on(Event.ON_HANDSHAKE_ADDRESS, res => {
     if (res.ok) {
-      handshakeAddrListeners.forEach(l => {
-        l(res.msg)
-      })
+      setHandshakeAddress(res.msg)
     }
   })
 
@@ -617,6 +622,10 @@ export const setupEvents = () => {
     })
 
     Socket.socket.emit(Event.ON_DISPLAY_NAME, {
+      token,
+    })
+
+    Socket.socket.emit(Event.ON_HANDSHAKE_ADDRESS, {
       token,
     })
   })
