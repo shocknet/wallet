@@ -91,6 +91,21 @@ export const setAvatar = avatar => {
     throw new Error('NOT_CONNECTED')
   }
 
+  const uuid = Math.random().toString() + Date.now().toString()
+  const oldAvatar = Events.getAvatar()
+  Events.setAvatar(avatar)
+
+  const cb = once(res => {
+    socket.off(Action.SET_AVATAR, cb)
+    if (!res.ok) {
+      if (res.origBody.uuid === uuid) {
+        Events.setAvatar(oldAvatar)
+      }
+    }
+  })
+
+  socket.on(Action.SET_AVATAR, cb)
+
   getToken().then(token => {
     socket.emit(Action.SET_AVATAR, {
       token,
