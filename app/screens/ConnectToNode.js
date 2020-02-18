@@ -126,15 +126,20 @@ class ConnectToNode extends React.PureComponent {
   }
 
   connectURL = async (url = '') => {
+    console.warn('WILL NOT PING')
     const wasGoodPing = await Conn.pingURL(url)
+    console.warn('PING COMPLETED WITH RESULT: ' + wasGoodPing.success)
 
     if (wasGoodPing.success) {
+      console.warn('WRITING NODE URL TO CACHE')
       await Cache.writeNodeURLOrIP(url)
       this.setState({
         nodeURL: url,
       })
+      console.warn('NAVIGATING TO WALLET MANAGER')
       this.props.navigation.navigate(WALLET_MANAGER)
     } else {
+      console.warn('PING FAILED')
       throw new Error('Ping failed')
     }
   }
@@ -152,6 +157,9 @@ class ConnectToNode extends React.PureComponent {
           await this.connectURL(nodeURL)
         } catch (err) {
           try {
+            console.warn(
+              'CONNECTURL FAILED, TRYING ONCE MORE TIME, ERR: ' + err.message,
+            )
             await this.connectURL(externalURL)
           } catch (err) {
             this.setState({

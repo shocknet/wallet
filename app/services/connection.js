@@ -1,43 +1,54 @@
-import Http from 'axios'
 import { DEFAULT_PORT } from './cache'
 
 /**
  * @typedef {object} PingResponse
  * @prop {boolean} success
- * @prop {string} sessionId
  */
 
 /**
  * Checks that a given node ip is up and that it corresponds to a ShockAPI
  * server.
  * @param {string} urlOrIp
+ * @throws {Error}
  * @returns {Promise<PingResponse>}
  */
 export const pingURL = async urlOrIp => {
-  let url = urlOrIp
-  if (url.indexOf(':') === -1) {
-    url += ':' + DEFAULT_PORT
-  }
   try {
+    let url = urlOrIp
+    if (url.indexOf(':') === -1) {
+      url += ':' + DEFAULT_PORT
+    }
     /**
      * @type {ReturnType<typeof fetch>}
      */
-    console.log('URL:', `http://${url}/healthz`)
-    Http.defaults.baseURL = `http://${url}`
-    console.log('Base URL:', Http.defaults.baseURL)
-    const { data: body, headers } = await Http.get(`http://${url}/healthz`)
+    console.warn('WILL PING:' + url)
 
-    console.log('Fetch Body:', body)
+    const res = await fetch(`http://${url}/healthz`)
+
+    const body = await res.json()
+
+    console.warn('Fetch Body:' + JSON.stringify(body))
+
+    if (!res.ok) {
+      throw new Error(body.errorMessage || body.message || `Unknown Err`)
+    }
+
+    if (typeof body !== 'object') {
+      throw new Error(`typeof body !== 'object'`)
+    }
+
+    if (typeof body.APIStatus !== 'object') {
+      throw new Error(`typeof body.APIStatus !== 'object'`)
+    }
+
     return {
-      success: typeof body.APIStatus === 'object',
-      sessionId: headers['x-session-id'],
+      success: true,
     }
   } catch (e) {
     console.warn(`Connection.pingURL: ${e.message}`)
-    if (e.response && e.response.headers) {
-      return { success: false, sessionId: e.response.headers['x-session-id'] }
-    }
 
-    return { success: false, sessionId: '' }
+    return {
+      success: false,
+    }
   }
 }
