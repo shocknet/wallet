@@ -516,6 +516,10 @@ export default class Chat extends React.Component {
    * @returns {void}
    */
   onSend = text => {
+    if (text.trim().length === 0) {
+      return
+    }
+
     this.setState(({ cachedSentMessages }) => ({
       cachedSentMessages: cachedSentMessages.concat({
         body: text,
