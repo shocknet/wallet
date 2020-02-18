@@ -75,7 +75,7 @@ export default class MyProfile extends React.PureComponent {
     displayName: API.Events.getDisplayName(),
     displayNameDialogOpen: false,
     displayNameInput: '',
-    handshakeAddr: null,
+    handshakeAddr: API.Events.getHandshakeAddr(),
     bio: API.Events.currentBio,
   }
 
@@ -117,7 +117,7 @@ export default class MyProfile extends React.PureComponent {
     const authData = await Cache.getStoredAuthData()
 
     if (authData === null) {
-      throw new Error()
+      throw new Error('MyProfile -> Auth data is null')
     }
 
     this.setState({

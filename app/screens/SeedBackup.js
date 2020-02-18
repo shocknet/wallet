@@ -28,8 +28,18 @@ export default class SeedBackup extends React.PureComponent {
   }
 
   componentDidMount() {
-    nodeInfo().then(nodeInfo => this.setState({ nodeInfo }))
-    this.unsub = onSeedBackup(seedBackup => this.setState({ seedBackup }))
+    this.mounted = true
+    nodeInfo().then(nodeInfo => {
+      this.mounted && this.setState({ nodeInfo })
+    })
+    this.unsub = onSeedBackup(
+      seedBackup => this.mounted && this.setState({ seedBackup }),
+    )
+  }
+
+  componentWillUnmount() {
+    this.mounted = false
+    this.unsub && this.unsub()
   }
 
   render() {
