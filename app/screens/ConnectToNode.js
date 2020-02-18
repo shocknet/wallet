@@ -231,7 +231,7 @@ class ConnectToNode extends React.PureComponent {
 
     return (
       <OnboardingScreen loading={checkingCacheForNodeURL || pinging}>
-        <Text style={titleTextStyle}>Welcome</Text>
+        <Text style={titleTextStyle}>{Math.random().toString()}</Text>
 
         <Pad amount={ITEM_SPACING} />
 
