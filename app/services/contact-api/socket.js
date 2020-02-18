@@ -29,6 +29,7 @@ import * as Encryption from '../encryption'
  * @prop {boolean} disconnected
  * @prop {(eventName: string, data: Record<string, any>) => void} emit
  * @prop {(eventName: string, handler: (data: Emission) => void) => void} on
+ * @prop {(eventName: string, handler: (data: Emission) => void) => void} off
  */
 
 /**

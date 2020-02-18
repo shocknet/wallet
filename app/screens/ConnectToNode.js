@@ -126,7 +126,7 @@ class ConnectToNode extends React.PureComponent {
   }
 
   connectURL = async (url = '') => {
-    console.warn('WILL NOT PING')
+    console.warn('WILL NOW PING URL: ' + url)
     const wasGoodPing = await Conn.pingURL(url)
     console.warn('PING COMPLETED WITH RESULT: ' + wasGoodPing.success)
 

@@ -71,8 +71,8 @@ export default class MyProfile extends React.PureComponent {
   /** @type {State} */
   state = {
     authData: null,
-    avatar: null,
-    displayName: null,
+    avatar: API.Events.getAvatar(),
+    displayName: API.Events.getDisplayName(),
     displayNameDialogOpen: false,
     displayNameInput: '',
     handshakeAddr: null,
@@ -143,15 +143,19 @@ export default class MyProfile extends React.PureComponent {
   }
 
   toggleSetupDisplayName = () => {
-    this.setState(({ displayNameDialogOpen }) => ({
+    this.setState(({ displayNameDialogOpen, displayName }) => ({
       displayNameDialogOpen: !displayNameDialogOpen,
-      displayNameInput: '',
+      displayNameInput: displayNameDialogOpen ? '' : displayName || '',
     }))
   }
 
   setDisplayName = () => {
-    API.Actions.setDisplayName(this.state.displayNameInput)
+    const { displayNameInput } = this.state
+    this.setState({
+      displayName: displayNameInput,
+    })
     this.toggleSetupDisplayName()
+    API.Actions.setDisplayName(displayNameInput)
   }
 
   copyDataToClipboard = () => {
@@ -204,8 +208,6 @@ export default class MyProfile extends React.PureComponent {
         if (image.data === null) {
           throw new TypeError('image.data === null')
         }
-
-        this.setState({ avatar: image.data })
 
         API.Actions.setAvatar(image.data)
       })

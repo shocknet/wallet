@@ -81,17 +81,10 @@ export const onConnection = listener => {
 // DATA EVENTS /////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-/** @typedef {(avatar: string|null) => void} AvatarListener */
 /** @typedef {(handshakeAddress: string|null) => void} HandshakeAddrListener */
-/** @typedef {(displayName: string|null) => void} DisplayNameListener */
 /** @typedef {(receivedRequests: Schema.SimpleReceivedRequest[]) => void} ReceivedRequestsListener */
 
 /** @typedef {(users: Schema.User[]) => void} UsersListener  */
-
-/**
- * @type {AvatarListener[]}
- */
-const avatarListeners = []
 
 /**
  * @type {HandshakeAddrListener[]}
@@ -99,41 +92,53 @@ const avatarListeners = []
 const handshakeAddrListeners = []
 
 /**
- * @type {DisplayNameListener[]}
- */
-const displayNameListeners = []
-
-/**
  * @type {UsersListener[]}
  */
 const usersListeners = []
 
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * @typedef {(a: string|null) => void} AvatarListener
+ */
+
+/** @type {Set<AvatarListener>} */
+const avatarListeners = new Set()
+
+/** @type {string|null} */
+let currentAvatar = null
+
+export const getAvatar = () => currentAvatar
+
+/**
+ * @param {string|null} a
+ */
+export const setAvatar = a => {
+  currentAvatar = a || null
+  avatarListeners.forEach(l => {
+    l(currentAvatar)
+  })
+}
+
 /**
  * @param {AvatarListener} listener
+ * @returns {() => void}
  */
 export const onAvatar = listener => {
-  if (avatarListeners.indexOf(listener) > -1) {
+  if (!avatarListeners.add(listener)) {
     throw new Error('tried to subscribe twice')
   }
 
-  avatarListeners.push(listener)
-
-  setImmediate(async () => {
-    Socket.socket.emit(Event.ON_AVATAR, {
-      token: await getToken(),
-    })
-  })
+  listener(currentAvatar)
 
   return () => {
-    const idx = avatarListeners.indexOf(listener)
-
-    if (idx < 0) {
+    if (!avatarListeners.delete(listener)) {
       throw new Error('tried to unsubscribe twice')
     }
-
-    avatarListeners.splice(idx, 1)
   }
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 /**
  * @param {HandshakeAddrListener} listener
@@ -162,32 +167,46 @@ export const onHandshakeAddr = listener => {
   }
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
+/** @typedef {(displayName: string|null) => void} DisplayNameListener */
+
+/**
+ * @type {Set<DisplayNameListener>}
+ */
+const displayNameListeners = new Set()
+
+/** @type {string|null} */
+let currentDisplayName = null
+
+export const getDisplayName = () => currentDisplayName
+
+/** @param {string|null} dn */
+export const setDisplayName = dn => {
+  currentDisplayName = dn || null
+  displayNameListeners.forEach(l => {
+    l(currentDisplayName)
+  })
+}
+
 /**
  * @param {DisplayNameListener} listener
  */
 export const onDisplayName = listener => {
-  if (displayNameListeners.indexOf(listener) > -1) {
+  if (!displayNameListeners.add(listener)) {
     throw new Error('tried to subscribe twice')
   }
 
-  displayNameListeners.push(listener)
-
-  setImmediate(async () => {
-    Socket.socket.emit(Event.ON_DISPLAY_NAME, {
-      token: await getToken(),
-    })
-  })
+  listener(currentDisplayName)
 
   return () => {
-    const idx = displayNameListeners.indexOf(listener)
-
-    if (idx < 0) {
+    if (!displayNameListeners.delete(listener)) {
       throw new Error('tried to unsubscribe twice')
     }
-
-    displayNameListeners.splice(idx, 1)
   }
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 /** @type {Schema.SimpleReceivedRequest[]} */
 let currentReceivedReqs = []
@@ -478,9 +497,7 @@ export const setupEvents = () => {
 
   Socket.socket.on(Event.ON_AVATAR, res => {
     if (res.ok) {
-      avatarListeners.forEach(l => {
-        l(res.msg)
-      })
+      setAvatar(res.msg)
     }
   })
 
@@ -500,9 +517,7 @@ export const setupEvents = () => {
 
   Socket.socket.on(Event.ON_DISPLAY_NAME, res => {
     if (res.ok) {
-      displayNameListeners.forEach(l => {
-        l(res.msg)
-      })
+      setDisplayName(res.msg)
     }
   })
 
@@ -594,6 +609,14 @@ export const setupEvents = () => {
     })
 
     Socket.socket.emit(Event.ON_SENT_REQUESTS, {
+      token,
+    })
+
+    Socket.socket.emit(Event.ON_AVATAR, {
+      token,
+    })
+
+    Socket.socket.emit(Event.ON_DISPLAY_NAME, {
       token,
     })
   })
