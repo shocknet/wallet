@@ -17,7 +17,7 @@ export const DEBUG = 'DEBUG'
 /** @augments React.Component<Props, Record<string, any>> */
 class Debug extends React.Component {
   state = {
-    addr: '',
+    addr: Events.getHandshakeAddr(),
     chats: [],
     sreqs: [],
     rreqs: [],
