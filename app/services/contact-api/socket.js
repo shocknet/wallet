@@ -40,7 +40,7 @@ import * as Encryption from '../encryption'
  * @type {SimpleSocket|null}
  */
 // eslint-disable-next-line init-declarations
-export let socket
+export let socket = null
 
 /**
  * @type {ReduxStore}
