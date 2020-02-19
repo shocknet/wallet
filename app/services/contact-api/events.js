@@ -602,7 +602,7 @@ export const setupEvents = () => {
 
   Cache.getToken().then(token => {
     setInterval(() => {
-      Socket.socket.emit('SET_LAST_SEEN_APP', {
+      Socket.socket.emit(Action.SET_LAST_SEEN_APP, {
         token,
       })
     }, 3000)
