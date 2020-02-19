@@ -227,8 +227,7 @@ export const connect = async () => {
   socket = newSocket
   socket.on('connect_error', e => {
     // @ts-ignore
-    console.warn(e.message)
-    socket.connect()
+    console.warn('connect_error: ' + e.message || e || 'Unknown')
   })
 
   socket.on('connect_error', error => {
