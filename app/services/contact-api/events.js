@@ -476,7 +476,6 @@ export const setupEvents = () => {
     // @ts-ignore
     if (reason === 'io server disconnect') {
       // https://socket.io/docs/client-api/#Event-%E2%80%98disconnect%E2%80%99
-      Socket.socket.connect()
     }
   })
 
