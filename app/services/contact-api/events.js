@@ -601,6 +601,12 @@ export const setupEvents = () => {
   })
 
   Cache.getToken().then(token => {
+    setInterval(() => {
+      Socket.socket.emit(Action.SET_LAST_SEEN_APP, {
+        token,
+      })
+    }, 3000)
+
     Socket.socket.emit(Event.ON_CHATS, {
       token,
     })
