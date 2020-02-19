@@ -37,7 +37,7 @@ import * as Encryption from '../encryption'
  */
 
 /**
- * @type {SimpleSocket}
+ * @type {SimpleSocket|null}
  */
 // eslint-disable-next-line init-declarations
 export let socket
