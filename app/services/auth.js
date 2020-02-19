@@ -1,39 +1,44 @@
 import once from 'lodash/once'
 import Http from 'axios'
+import SocketIO from 'socket.io-client'
 
 import * as Cache from './cache'
 import * as Wallet from './wallet'
-import { Socket } from './contact-api'
 
 // TO DO: Move this constant to common repo
 const IS_GUN_AUTH = 'IS_GUN_AUTH'
 
 /**
+ * @param {string} nodeURL
  * @returns {Promise<boolean>}
  */
-export const isGunAuthed = async () => {
-  const socket = await Socket.createSocket()
-  socket.connect()
-
-  const socketPromise = new Promise(res => {
-    socket.on(
-      IS_GUN_AUTH,
-      once(response => {
-        res(response.msg.isGunAuth)
-      }),
-    )
-    socket.binary(false).emit(IS_GUN_AUTH, {})
+export const isGunAuthed = async nodeURL => {
+  const socket = SocketIO(`http://${nodeURL}`, {
+    autoConnect: false,
+    query: {
+      IS_GUN_AUTH: true,
+    },
   })
-
-  const timeout = new Promise((_, rej) => {
-    setTimeout(() => {
-      rej(new Error('Could not retrieve gun auth status in under 5 seconds'))
-    }, 15000)
-  })
-
   // ideally we would place socket.disconnect() inside a finally clause, but
   // those are bugged as of current react native version
   try {
+    const socketPromise = new Promise(res => {
+      socket.on(
+        IS_GUN_AUTH,
+        once(response => {
+          res(response.msg.isGunAuth)
+        }),
+      )
+      socket.emit(IS_GUN_AUTH, {})
+    })
+
+    const timeout = new Promise((_, rej) => {
+      setTimeout(() => {
+        rej(new Error('Could not retrieve gun auth status in under 15 seconds'))
+      }, 15000)
+    })
+
+    socket.connect()
     const res = await Promise.race([socketPromise, timeout])
     socket.disconnect()
     return res
