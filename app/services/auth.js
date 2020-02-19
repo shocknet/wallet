@@ -15,6 +15,9 @@ const IS_GUN_AUTH = 'IS_GUN_AUTH'
 export const isGunAuthed = async nodeURL => {
   const socket = SocketIO(`http://${nodeURL}`, {
     autoConnect: false,
+    query: {
+      IS_GUN_AUTH: true,
+    },
   })
   // ideally we would place socket.disconnect() inside a finally clause, but
   // those are bugged as of current react native version
