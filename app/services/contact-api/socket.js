@@ -4,7 +4,7 @@
 import SocketIO from 'socket.io-client'
 import isEmpty from 'lodash/isEmpty'
 import once from 'lodash/once'
-
+import debounce from 'lodash/debounce'
 import * as Cache from '../../services/cache'
 
 import * as Events from './events'
@@ -41,7 +41,7 @@ import * as Encryption from '../encryption'
  * @type {SimpleSocket|null}
  */
 // eslint-disable-next-line init-declarations
-export let socket
+export let socket = null
 
 /**
  * @type {ReduxStore}
@@ -221,7 +221,7 @@ export const createSocket = async () => {
 /**
  * @returns {Promise<void>}
  */
-export const connect = async () => {
+export const connect = debounce(async () => {
   if (socket) {
     throw new Error(
       'Tried to connect a new socket without disconnecting the old one first',
@@ -262,6 +262,4 @@ export const connect = async () => {
   })
 
   socket.on('connect', once(Events.setupEvents))
-
-  socket.connect()
-}
+}, 1000)
