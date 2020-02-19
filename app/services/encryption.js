@@ -3,7 +3,12 @@ import { NativeModules } from 'react-native'
 import Crypto from 'react-native-crypto'
 import { RSA, RSAKeychain } from 'react-native-rsa-native'
 const { Aes } = NativeModules
-const nonEncryptedEvents = ['ping', 'disconnect', 'IS_GUN_AUTH']
+const nonEncryptedEvents = [
+  'ping',
+  'disconnect',
+  'IS_GUN_AUTH',
+  'SET_LAST_SEEN_APP',
+]
 
 /**
  * @typedef {object} EncryptResult
