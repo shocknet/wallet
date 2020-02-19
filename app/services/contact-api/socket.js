@@ -258,5 +258,4 @@ export const connect = async () => {
   })
 
   socket.on('connect', Events.setupEvents)
-  socket.connect()
 }
