@@ -199,6 +199,7 @@ export const createSocket = async () => {
   // @ts-ignore
   const socket = SocketIO(`http://${nodeURL}`, {
     autoConnect: true,
+    reconnectionAttempts: Infinity,
     query: {
       'x-shockwallet-device-id': store.getState().connection.deviceId,
     },
