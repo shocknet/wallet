@@ -3,6 +3,7 @@
  */
 import SocketIO from 'socket.io-client'
 import isEmpty from 'lodash/isEmpty'
+import once from 'lodash/once'
 
 import * as Cache from '../../services/cache'
 
@@ -207,6 +208,9 @@ export const createSocket = async () => {
   const socket = SocketIO(`http://${nodeURL}`, {
     autoConnect: true,
     reconnectionAttempts: Infinity,
+    transports: ['polling'],
+    upgrade: false,
+    jsonp: false,
     query: {
       'x-shockwallet-device-id': store.getState().connection.deviceId,
     },
@@ -257,6 +261,7 @@ export const connect = async () => {
     }
   })
 
-  socket.on('connect', Events.setupEvents)
+  socket.on('connect', once(Events.setupEvents))
+
   socket.connect()
 }
