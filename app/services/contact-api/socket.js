@@ -37,7 +37,7 @@ import * as Encryption from '../encryption'
  */
 
 /**
- * @type {SimpleSocket}
+ * @type {SimpleSocket|null}
  */
 // eslint-disable-next-line init-declarations
 export let socket
@@ -131,7 +131,9 @@ export const decryptSocketData = async data => {
  * @param {SocketIOClient.Socket} socket
  */
 export const encryptSocketInstance = socket => ({
-  connect: () => socket.connect(),
+  connect: () => {
+    throw new Error('Do not call socket.connect() yourself')
+  },
   get connected() {
     return socket.connected
   },
@@ -227,34 +229,28 @@ export const connect = async () => {
   socket = newSocket
   socket.on('connect_error', e => {
     // @ts-ignore
-    console.warn(e.message)
-    socket.connect()
+    console.warn('connect_error: ' + e.message || e || 'Unknown')
   })
 
   socket.on('connect_error', error => {
     console.warn(`connect_error: ${error}`)
-    socket.connect()
   })
 
   socket.on('connect_timeout', timeout => {
     console.warn(`connect_timeout: ${timeout}`)
-    socket.connect()
   })
 
   socket.on('error', error => {
     console.warn(`Socket.socket.on:error: ${error}`)
-    socket.connect()
   })
 
   socket.on('reconnect_attempt', attemptNumber => {
     console.warn(`Socket.socket.on:reconnect_attempt: ${attemptNumber}`)
-    socket.connect()
   })
 
   socket.on('disconnect', reason => {
     console.warn(`reason for disconnect: ${reason}`)
 
-    socket.connect()
     // @ts-ignore
     if (reason === 'io server disconnect') {
       // https://Socket.socket.io/docs/client-api/#Event-%E2%80%98disconnect%E2%80%99
@@ -262,6 +258,5 @@ export const connect = async () => {
   })
 
   socket.on('connect', Events.setupEvents)
-
   socket.connect()
 }

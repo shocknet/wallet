@@ -1,7 +1,6 @@
 /**
  * @format
  */
-import once from 'lodash/once'
 import debounce from 'lodash/debounce'
 
 import * as Cache from '../cache'
@@ -43,28 +42,7 @@ export const onConnection = listener => {
 
   connectionListeners.push(listener)
 
-  setImmediate(() => {
-    // check listener is still subbed in case unsub is called before next tick
-    if (!connectionListeners.includes(listener)) {
-      return
-    }
-
-    if (Socket.socket) {
-      if (Socket.socket.connected) {
-        listener(true)
-      } else {
-        // this nicely handles initial connection cases
-        Socket.socket.on(
-          'connect',
-          once(() => {
-            listener(true)
-          }),
-        )
-      }
-    } else {
-      listener(false)
-    }
-  })
+  listener(!!Socket.socket && Socket.socket.connected)
 
   return () => {
     const idx = connectionListeners.indexOf(listener)
@@ -287,6 +265,9 @@ export const onUsers = listener => {
   usersListeners.push(listener)
 
   setImmediate(async () => {
+    if (!Socket.socket || !(Socket.socket && Socket.socket.connected)) {
+      throw new Error('NOT_CONNECTED')
+    }
     Socket.socket.emit(Event.ON_ALL_USERS, {
       token: await getToken(),
     })
@@ -329,6 +310,9 @@ export const onBio = listener => {
 
   setImmediate(async () => {
     notifyBioListeners() // will provide current value to listener
+    if (!Socket.socket || !(Socket.socket && Socket.socket.connected)) {
+      throw new Error('NOT_CONNECTED')
+    }
     Socket.socket.emit(Event.ON_BIO, {
       token: await getToken(),
     })
@@ -479,17 +463,22 @@ export const onSeedBackup = listener => {
 }
 
 export const setupEvents = () => {
-  if (!Socket.socket.connected) {
-    throw new Error('Should call setupEvents() after socket is connected.')
+  const theSocket = Socket.socket
+  if (!theSocket) {
+    console.warn('Called setupEvents() before creating the socket')
+    return
+  }
+  if (!theSocket.connected) {
+    console.warn('Should call setupEvents() after socket is connected.')
   }
 
-  Socket.socket.on('connect', () => {
+  theSocket.on('connect', () => {
     connectionListeners.forEach(l => {
       l(true)
     })
   })
 
-  Socket.socket.on('disconnect', reason => {
+  theSocket.on('disconnect', reason => {
     console.warn('socket disconnected')
     connectionListeners.forEach(l => {
       l(false)
@@ -498,48 +487,47 @@ export const setupEvents = () => {
     // @ts-ignore
     if (reason === 'io server disconnect') {
       // https://socket.io/docs/client-api/#Event-%E2%80%98disconnect%E2%80%99
-      Socket.socket.connect()
     }
   })
 
-  Socket.socket.on(Event.ON_AVATAR, res => {
+  theSocket.on(Event.ON_AVATAR, res => {
     if (res.ok) {
       setAvatar(res.msg)
     }
   })
 
-  Socket.socket.on(Event.ON_CHATS, res => {
+  theSocket.on(Event.ON_CHATS, res => {
     if (res.ok) {
       setChats(res.msg)
     }
   })
 
-  Socket.socket.on(Event.ON_HANDSHAKE_ADDRESS, res => {
+  theSocket.on(Event.ON_HANDSHAKE_ADDRESS, res => {
     if (res.ok) {
       setHandshakeAddress(res.msg)
     }
   })
 
-  Socket.socket.on(Event.ON_DISPLAY_NAME, res => {
+  theSocket.on(Event.ON_DISPLAY_NAME, res => {
     if (res.ok) {
       setDisplayName(res.msg)
     }
   })
 
-  Socket.socket.on(Event.ON_RECEIVED_REQUESTS, res => {
+  theSocket.on(Event.ON_RECEIVED_REQUESTS, res => {
     if (res.ok) {
       currentReceivedReqs = res.msg
       receivedReqsListeners.forEach(l => l(currentReceivedReqs))
     }
   })
 
-  Socket.socket.on(Event.ON_SENT_REQUESTS, res => {
+  theSocket.on(Event.ON_SENT_REQUESTS, res => {
     if (res.ok) {
       setSentReqs(res.msg)
     }
   })
 
-  Socket.socket.on(Event.ON_ALL_USERS, res => {
+  theSocket.on(Event.ON_ALL_USERS, res => {
     if (res.ok) {
       usersListeners.forEach(l => {
         l(res.msg)
@@ -547,14 +535,14 @@ export const setupEvents = () => {
     }
   })
 
-  Socket.socket.on(Event.ON_BIO, res => {
+  theSocket.on(Event.ON_BIO, res => {
     if (res.ok) {
       currentBio = res.msg
       notifyBioListeners()
     }
   })
 
-  Socket.socket.on(Event.ON_SEED_BACKUP, res => {
+  theSocket.on(Event.ON_SEED_BACKUP, res => {
     if (res.ok) {
       currentSeedBackup = res.msg
       notifySeedBackupListeners()
@@ -564,7 +552,7 @@ export const setupEvents = () => {
   // If when receiving a token expired response on response to any data event
   // notify auth listeners that the token expired.
   Object.values(Event).forEach(e => {
-    Socket.socket.on(e, res => {
+    theSocket.on(e, res => {
       console.warn(`res for event: ${e}: ${JSON.stringify(res)}`)
 
       if (
@@ -580,7 +568,7 @@ export const setupEvents = () => {
   // If when receiving a token expired response on response to any action event
   // notify auth listeners that the token expired.
   Object.values(Action).forEach(a => {
-    Socket.socket.on(a, res => {
+    theSocket.on(a, res => {
       console.warn(`res for action: ${a}: ${JSON.stringify(res)}`)
       if (
         res.msg === 'Token expired.' ||
@@ -592,46 +580,46 @@ export const setupEvents = () => {
     })
   })
 
-  Socket.socket.on('IS_GUN_AUTH', res => {
+  theSocket.on('IS_GUN_AUTH', res => {
     console.warn(`res for IS_GUN_AUTH: ${JSON.stringify(res)}`)
   })
 
   connectionListeners.forEach(l => {
-    l(Socket.socket.connected)
+    l(theSocket.connected)
   })
 
   Cache.getToken().then(token => {
     setInterval(() => {
-      Socket.socket.emit(Action.SET_LAST_SEEN_APP, {
+      theSocket.emit(Action.SET_LAST_SEEN_APP, {
         token,
       })
     }, 3000)
 
-    Socket.socket.emit(Event.ON_CHATS, {
+    theSocket.emit(Event.ON_CHATS, {
       token,
     })
 
-    Socket.socket.emit(Event.ON_SEED_BACKUP, {
+    theSocket.emit(Event.ON_SEED_BACKUP, {
       token,
     })
 
-    Socket.socket.emit(Event.ON_RECEIVED_REQUESTS, {
+    theSocket.emit(Event.ON_RECEIVED_REQUESTS, {
       token,
     })
 
-    Socket.socket.emit(Event.ON_SENT_REQUESTS, {
+    theSocket.emit(Event.ON_SENT_REQUESTS, {
       token,
     })
 
-    Socket.socket.emit(Event.ON_AVATAR, {
+    theSocket.emit(Event.ON_AVATAR, {
       token,
     })
 
-    Socket.socket.emit(Event.ON_DISPLAY_NAME, {
+    theSocket.emit(Event.ON_DISPLAY_NAME, {
       token,
     })
 
-    Socket.socket.emit(Event.ON_HANDSHAKE_ADDRESS, {
+    theSocket.emit(Event.ON_HANDSHAKE_ADDRESS, {
       token,
     })
   })

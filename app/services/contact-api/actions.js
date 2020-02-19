@@ -31,11 +31,10 @@ const getToken = async () => {
  * @param {string} requestID
  */
 export const acceptRequest = requestID => {
-  if (!socket.connected) {
-    throw new Error('NOT_CONNECTED')
-  }
-
-  Cache.getToken().then(token => {
+  return Cache.getToken().then(token => {
+    if (!socket || !(socket && socket.connected)) {
+      throw new Error('NOT_CONNECTED')
+    }
     socket.emit(Action.ACCEPT_REQUEST, {
       token,
       requestID,
@@ -47,24 +46,30 @@ export const acceptRequest = requestID => {
   })
 }
 
+/**
+ * @returns {Promise<void>}
+ */
 export const generateNewHandshakeNode = () => {
-  if (!socket.connected) {
-    throw new Error('NOT_CONNECTED')
-  }
+  return getToken().then(token => {
+    if (!socket || !(socket && socket.connected)) {
+      throw new Error('NOT_CONNECTED')
+    }
 
-  getToken().then(token => {
     socket.emit(Action.GENERATE_NEW_HANDSHAKE_NODE, {
       token,
     })
   })
 }
 
+/**
+ * @returns {Promise<void>}
+ */
 export const logout = () => {
-  if (!socket.connected) {
-    throw new Error('NOT_CONNECTED')
-  }
+  return getToken().then(token => {
+    if (!socket || !(socket && socket.connected)) {
+      throw new Error('NOT_CONNECTED')
+    }
 
-  getToken().then(token => {
     socket.emit(Action.LOGOUT, {
       token,
     })
@@ -76,7 +81,7 @@ export const logout = () => {
  * @param {string} pass
  */
 export const register = (alias, pass) => {
-  if (!socket.connected) {
+  if (!socket || !(socket && socket.connected)) {
     throw new Error('NOT_CONNECTED')
   }
 
@@ -87,7 +92,7 @@ export const register = (alias, pass) => {
  * @param {string} avatar
  */
 export const setAvatar = avatar => {
-  if (!socket.connected) {
+  if (!socket || !(socket && socket.connected)) {
     throw new Error('NOT_CONNECTED')
   }
 
@@ -96,6 +101,9 @@ export const setAvatar = avatar => {
   Events.setAvatar(avatar)
 
   const cb = once(res => {
+    if (!socket || !(socket && socket.connected)) {
+      throw new Error('NOT_CONNECTED')
+    }
     socket.off(Action.SET_AVATAR, cb)
     if (!res.ok) {
       if (res.origBody.uuid === uuid) {
@@ -107,6 +115,10 @@ export const setAvatar = avatar => {
   socket.on(Action.SET_AVATAR, cb)
 
   getToken().then(token => {
+    if (!socket || !(socket && socket.connected)) {
+      throw new Error('NOT_CONNECTED')
+    }
+
     socket.emit(Action.SET_AVATAR, {
       token,
       avatar,
@@ -116,13 +128,13 @@ export const setAvatar = avatar => {
 
 /**
  * @param {string} displayName
+ * @returns {Promise<void>}
  */
 export const setDisplayName = displayName => {
-  if (!socket.connected) {
-    throw new Error('NOT_CONNECTED')
-  }
-
-  getToken().then(token => {
+  return getToken().then(token => {
+    if (!socket || !(socket && socket.connected)) {
+      throw new Error('NOT_CONNECTED')
+    }
     socket.emit(Action.SET_DISPLAY_NAME, {
       token,
       displayName,
@@ -135,10 +147,6 @@ export const setDisplayName = displayName => {
  * @returns {Promise<void>}
  */
 export const sendHandshakeRequest = async recipientPublicKey => {
-  if (!socket.connected) {
-    throw new Error('NOT_CONNECTED')
-  }
-
   const currSentReqs = Events.getCurrSentReqs()
   const currChats = Events.getCurrChats()
   const uuid = Date.now().toString() + Math.random().toString()
@@ -172,6 +180,10 @@ export const sendHandshakeRequest = async recipientPublicKey => {
 
   const token = await getToken()
 
+  if (!socket || !(socket && socket.connected)) {
+    throw new Error('NOT_CONNECTED')
+  }
+
   socket.emit(Action.SEND_HANDSHAKE_REQUEST, {
     token,
     recipientPublicKey,
@@ -180,6 +192,9 @@ export const sendHandshakeRequest = async recipientPublicKey => {
 
   /** @type {import('./socket').Emission} */
   const res = await new Promise(resolve => {
+    if (!socket || !(socket && socket.connected)) {
+      throw new Error('NOT_CONNECTED')
+    }
     socket.on(Action.SEND_HANDSHAKE_REQUEST, res => {
       if (res.origBody.uuid === uuid) {
         resolve(res)
@@ -198,13 +213,13 @@ export const sendHandshakeRequest = async recipientPublicKey => {
  * @returns {Promise<void>}
  */
 export const sendMessage = async (recipientPublicKey, body) => {
-  if (!socket.connected) {
-    throw new Error('NOT_CONNECTED')
-  }
-
   const uuid = Math.random().toString() + Date.now().toString()
 
   getToken().then(token => {
+    if (!socket || !(socket && socket.connected)) {
+      throw new Error('NOT_CONNECTED')
+    }
+
     socket.emit(Action.SEND_MESSAGE, {
       token,
       recipientPublicKey,
@@ -214,6 +229,9 @@ export const sendMessage = async (recipientPublicKey, body) => {
   })
 
   const res = await new Promise(resolve => {
+    if (!socket || !(socket && socket.connected)) {
+      throw new Error('NOT_CONNECTED')
+    }
     socket.on(
       Action.SEND_MESSAGE,
       once(res => {
@@ -236,11 +254,10 @@ export const sendMessage = async (recipientPublicKey, body) => {
  * @returns {Promise<void>}
  */
 export const sendReqWithInitialMsg = async (recipientPublicKey, initialMsg) => {
-  if (!socket.connected) {
+  const token = await getToken()
+  if (!socket || !(socket && socket.connected)) {
     throw new Error('NOT_CONNECTED')
   }
-
-  const token = await getToken()
 
   socket.emit(Action.SEND_HANDSHAKE_REQUEST_WITH_INITIAL_MSG, {
     token,
@@ -249,24 +266,26 @@ export const sendReqWithInitialMsg = async (recipientPublicKey, initialMsg) => {
   })
 
   const res = await new Promise(resolve => {
-    socket.on(
-      Action.SEND_HANDSHAKE_REQUEST_WITH_INITIAL_MSG,
-      debounce(
-        once(res => {
-          resolve(res)
-        }),
-        1000,
-      ),
-    )
+    socket &&
+      socket.on(
+        Action.SEND_HANDSHAKE_REQUEST_WITH_INITIAL_MSG,
+        debounce(
+          once(res => {
+            resolve(res)
+          }),
+          1000,
+        ),
+      )
   })
 
   console.warn(`res in sendreqwithinitialmsg: ${JSON.stringify(res)}`)
 
   // issue#31
   setTimeout(() => {
-    socket.emit(Event.ON_SENT_REQUESTS, {
-      token,
-    })
+    socket &&
+      socket.emit(Event.ON_SENT_REQUESTS, {
+        token,
+      })
   }, 500)
 
   if (!res.ok) {
@@ -282,11 +301,10 @@ export const sendReqWithInitialMsg = async (recipientPublicKey, initialMsg) => {
  * @returns {Promise<void>}
  */
 export const sendPayment = async (recipientPub, amount, memo) => {
-  if (!socket.connected) {
+  const token = await getToken()
+  if (!socket || !(socket && socket.connected)) {
     throw new Error('NOT_CONNECTED')
   }
-
-  const token = await getToken()
 
   const uuid = Date.now().toString()
 
@@ -299,14 +317,15 @@ export const sendPayment = async (recipientPub, amount, memo) => {
   })
 
   const res = await new Promise(resolve => {
-    socket.on(
-      Action.SEND_PAYMENT,
-      once(res => {
-        if (res.origBody.uuid === uuid) {
-          resolve(res)
-        }
-      }),
-    )
+    socket &&
+      socket.on(
+        Action.SEND_PAYMENT,
+        once(res => {
+          if (res.origBody.uuid === uuid) {
+            resolve(res)
+          }
+        }),
+      )
   })
 
   console.warn(`res in sendPayment: ${JSON.stringify(res)}`)
@@ -321,11 +340,11 @@ export const sendPayment = async (recipientPub, amount, memo) => {
  * @returns {Promise<void>}
  */
 export const setBio = async bio => {
-  if (!socket.connected) {
+  const token = await getToken()
+  if (!socket || !(socket && socket.connected)) {
     throw new Error('NOT_CONNECTED')
   }
 
-  const token = await getToken()
   const uuid = Date.now().toString()
 
   socket.emit(Action.SET_BIO, {
@@ -335,14 +354,15 @@ export const setBio = async bio => {
   })
 
   const res = await new Promise(resolve => {
-    socket.on(
-      Action.SET_BIO,
-      once(res => {
-        if (res.origBody.uuid === uuid) {
-          resolve(res)
-        }
-      }),
-    )
+    socket &&
+      socket.on(
+        Action.SET_BIO,
+        once(res => {
+          if (res.origBody.uuid === uuid) {
+            resolve(res)
+          }
+        }),
+      )
   })
 
   if (!res.ok) {
@@ -370,12 +390,12 @@ export const disconnect = async pub => {
     Events.setChats(currChats)
   }
 
-  if (!socket.connected) {
-    throw new Error('NOT_CONNECTED')
-  }
-
   const token = await getToken()
   const uuid = Math.random().toString() + Date.now().toString()
+
+  if (!socket || !(socket && socket.connected)) {
+    throw new Error('NOT_CONNECTED')
+  }
 
   socket.emit(Action.DISCONNECT, {
     pub,
@@ -384,6 +404,9 @@ export const disconnect = async pub => {
   })
 
   const res = await new Promise(resolve => {
+    if (!socket || !(socket && socket.connected)) {
+      throw new Error('NOT_CONNECTED')
+    }
     socket.on(
       Action.DISCONNECT,
       once(res => {

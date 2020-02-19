@@ -38,9 +38,16 @@ class Debug extends React.Component {
       })
   }
 
+  setupSub = () => {
+    if (Socket.socket) {
+      Socket.socket.on(SET_LAST_SEEN_APP, this.onSocketRes)
+    }
+  }
+
   componentDidMount() {
     this.mounted = true
-    Socket.socket.on(SET_LAST_SEEN_APP, this.onSocketRes)
+
+    this.setupSub()
 
     this.subs.push(
       Events.onHandshakeAddr(addr => this.setState({ addr })),
@@ -52,7 +59,7 @@ class Debug extends React.Component {
         const intervalID = setInterval(() => {
           this.mounted &&
             this.setState({
-              socketConnected: Socket.socket.connected,
+              socketConnected: Socket.socket && Socket.socket.connected,
             })
         }, 1000)
 
@@ -62,7 +69,7 @@ class Debug extends React.Component {
       })(),
 
       () => {
-        Socket.socket.off(SET_LAST_SEEN_APP, this.onSocketRes)
+        Socket.socket && Socket.socket.off(SET_LAST_SEEN_APP, this.onSocketRes)
       },
     )
 
@@ -98,9 +105,14 @@ class Debug extends React.Component {
   }
 
   sendSentReqsEvent = async () => {
-    Socket.socket.emit('ON_SENT_REQUESTS', {
-      token: await Cache.getToken(),
-    })
+    Socket.socket &&
+      Socket.socket.emit('ON_SENT_REQUESTS', {
+        token: await Cache.getToken(),
+      })
+  }
+
+  connectSocket = () => {
+    Socket.connect().then(this.setupSub)
   }
 
   render() {
@@ -137,7 +149,7 @@ class Debug extends React.Component {
         <Text>Token:</Text>
         <Text>{this.state.token}</Text>
 
-        <Button title="Connect Socket" onPress={Socket.connect} />
+        <Button title="Connect Socket" onPress={this.connectSocket} />
         <Button title="Disconnect Socket" onPress={Socket.disconnect} />
 
         <Button
