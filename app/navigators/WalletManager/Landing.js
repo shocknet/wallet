@@ -52,8 +52,13 @@ export default class CreateWallet extends React.PureComponent {
       const authData = await Cache.getStoredAuthData()
       console.warn('GETTING WALLET STATUS')
       const walletStatus = await Wallet.walletStatus()
+      console.warn('FETCHING NODE URL')
+      const nodeURL = await Cache.getNodeURL()
+      if (nodeURL === null) {
+        throw new Error('NODE URL IS NULL BEFORE IS_GUN_AUTH')
+      }
       console.warn('GETTING IS_GUN_AUTH')
-      const isGunAuth = await Auth.isGunAuthed()
+      const isGunAuth = await Auth.isGunAuthed(nodeURL)
 
       if (walletStatus === 'noncreated') {
         console.warn('WALLET NON CREATED INVALIDATING CACHED AUTH DATA')
