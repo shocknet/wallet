@@ -1,7 +1,6 @@
 /**
  * @format
  */
-import once from 'lodash/once'
 import debounce from 'lodash/debounce'
 
 import * as Cache from '../cache'
@@ -43,28 +42,7 @@ export const onConnection = listener => {
 
   connectionListeners.push(listener)
 
-  setImmediate(() => {
-    // check listener is still subbed in case unsub is called before next tick
-    if (!connectionListeners.includes(listener)) {
-      return
-    }
-
-    if (Socket.socket) {
-      if (Socket.socket.connected) {
-        listener(true)
-      } else {
-        // this nicely handles initial connection cases
-        Socket.socket.on(
-          'connect',
-          once(() => {
-            listener(true)
-          }),
-        )
-      }
-    } else {
-      listener(false)
-    }
-  })
+  listener(!!Socket.socket && Socket.socket.connected)
 
   return () => {
     const idx = connectionListeners.indexOf(listener)
