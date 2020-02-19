@@ -276,7 +276,7 @@ export const sendReqWithInitialMsg = async (recipientPublicKey, initialMsg) => {
 
 /**
  * @param {string} recipientPub
- * @param {number} amount
+ * @param {number|string} amount
  * @param {string} memo
  * @throws {Error} Forwards an error if any from the API.
  * @returns {Promise<void>}

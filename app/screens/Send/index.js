@@ -31,6 +31,7 @@ import BitcoinAccepted from '../../assets/images/bitcoin-accepted.png'
 
 import * as CSS from '../../res/css'
 import * as Wallet from '../../services/wallet'
+import * as API from '../../services/contact-api/index'
 import { selectContact, resetSelectedContact } from '../../actions/ChatActions'
 import {
   resetInvoice,
@@ -114,9 +115,8 @@ class SendScreen extends Component {
     const { paymentRequest } = this.props.invoice
     const { selectedContact } = this.props.chat
     return (
-      (selectedContact &&
-        selectedContact.address &&
-        selectedContact.address.length > 0 &&
+      ((selectedContact?.address?.length > 0 ||
+        selectedContact?.type === 'contact') &&
         parseFloat(amount) > 0) ||
       !!paymentRequest
     )
@@ -157,7 +157,6 @@ class SendScreen extends Component {
     }
   }
 
-  // Reserved
   payLightningInvoice = async () => {
     try {
       const { invoice, navigation } = this.props
@@ -186,6 +185,22 @@ class SendScreen extends Component {
         sending: false,
         error: err,
       })
+    }
+  }
+
+  sendPayment = async () => {
+    try {
+      const { chat } = this.props
+      const { amount, description } = this.state
+      const { selectedContact } = chat
+      await API.Actions.sendPayment(selectedContact.pk, amount, description)
+      return true
+    } catch (err) {
+      this.setState({
+        sending: false,
+        error: err,
+      })
+      return false
     }
   }
 
@@ -218,7 +233,7 @@ class SendScreen extends Component {
         <ContactsSearch
           onChange={this.onChange('contactsSearch')}
           onError={this.onChange('error')}
-          enabledFeatures={['btc', 'invoice']}
+          enabledFeatures={['btc', 'invoice', 'contacts']}
           placeholder="Enter invoice or address..."
           value={contactsSearch}
           style={styles.contactsSearch}
@@ -306,6 +321,19 @@ class SendScreen extends Component {
     }
 
     this.toggleQRScreen()
+  }
+
+  onSwipe = () => {
+    const { invoice, chat } = this.props
+    if (chat.selectedContact?.type === 'contact') {
+      return this.sendPayment()
+    }
+
+    if (invoice.paymentRequest) {
+      return this.payLightningInvoice()
+    }
+
+    return this.sendBTCRequest()
   }
 
   render() {
@@ -478,11 +506,7 @@ class SendScreen extends Component {
                 />
               }
               disabled={!this.isFilled()}
-              onVerified={
-                invoice.paymentRequest
-                  ? this.payLightningInvoice
-                  : this.sendBTCRequest
-              }
+              onVerified={this.onSwipe}
             >
               <Text style={styles.swipeBtnText}>SLIDE TO SEND</Text>
             </SwipeVerify>
