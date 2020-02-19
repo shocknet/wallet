@@ -5,6 +5,8 @@ import { connect } from 'react-redux'
 import * as CSS from '../res/css'
 import * as Cache from '../services/cache'
 import { Actions, Events, Socket } from '../services/contact-api'
+import Action from '../services/contact-api/action'
+const { SET_LAST_SEEN_APP } = Action
 import QR from './WalletOverview/QR'
 
 export const DEBUG = 'DEBUG'
@@ -30,22 +32,28 @@ class Debug extends React.Component {
   subs = [() => {}]
 
   onSocketRes = () => {
-    this.lastPing = Date.now()
+    this.mounted &&
+      this.setState({
+        lastPing: Date.now(),
+      })
   }
 
   componentDidMount() {
-    Socket.socket.on('IS_GUN_AUTH', this.onSocketRes)
+    this.mounted = true
+    Socket.socket.on(SET_LAST_SEEN_APP, this.onSocketRes)
 
     this.subs.push(
       Events.onHandshakeAddr(addr => this.setState({ addr })),
       Events.onChats(chats => this.setState({ chats })),
       Events.onSentRequests(sreqs => this.setState({ sreqs })),
       Events.onReceivedRequests(rreqs => this.setState({ rreqs })),
+
       (() => {
         const intervalID = setInterval(() => {
-          this.setState({
-            socketConnected: Socket.socket.connected,
-          })
+          this.mounted &&
+            this.setState({
+              socketConnected: Socket.socket.connected,
+            })
         }, 1000)
 
         return () => {
@@ -54,39 +62,20 @@ class Debug extends React.Component {
       })(),
 
       () => {
-        // @ts-ignore
-        Socket.socket.off('IS_GUN_AUTH', this.onSocketRes)
+        Socket.socket.off(SET_LAST_SEEN_APP, this.onSocketRes)
       },
-
-      (() => {
-        const intervalID = setInterval(() => {
-          Socket.socket.emit('IS_GUN_AUTH', {})
-        }, 3000)
-
-        return () => {
-          clearInterval(intervalID)
-        }
-      })(),
-
-      (() => {
-        const intervalID = setInterval(() => {
-          this.forceUpdate()
-        }, 3000)
-
-        return () => {
-          clearInterval(intervalID)
-        }
-      })(),
     )
 
     Cache.getToken().then(token => {
-      this.setState({
-        token,
-      })
+      this.mounted &&
+        this.setState({
+          token,
+        })
     })
 
     Cache.getStoredAuthData().then(ad => {
       ad &&
+        this.mounted &&
         this.setState({
           pk: ad.authData.publicKey,
         })
@@ -94,6 +83,7 @@ class Debug extends React.Component {
   }
 
   componentWillUnmount() {
+    this.mounted = false
     this.subs.forEach(s => s())
   }
 
@@ -116,7 +106,7 @@ class Debug extends React.Component {
   render() {
     const { lastPing } = this.state
 
-    const isBetterConnected = lastPing - Date.now() < 5000
+    const isBetterConnected = Date.now() - lastPing < 5000
 
     return (
       <View style={[CSS.styles.deadCenter, CSS.styles.flex]}>
@@ -147,7 +137,8 @@ class Debug extends React.Component {
         <Text>Token:</Text>
         <Text>{this.state.token}</Text>
 
-        <Button title="Reconnect Socket" onPress={Socket.socket.connect} />
+        <Button title="Connect Socket" onPress={Socket.connect} />
+        <Button title="Disconnect Socket" onPress={Socket.disconnect} />
 
         <Button
           title="Copy device id to clipboard"

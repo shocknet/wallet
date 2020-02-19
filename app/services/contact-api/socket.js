@@ -64,6 +64,11 @@ export const disconnect = () => {
     socket.disconnect()
     // @ts-ignore
     socket.off()
+
+    // @ts-ignore
+    socket = null
+  } else {
+    throw new Error('Tried to disconnect the socket without creating one first')
   }
 }
 
@@ -211,7 +216,15 @@ export const createSocket = async () => {
  * @returns {Promise<void>}
  */
 export const connect = async () => {
-  socket = await createSocket()
+  if (socket) {
+    throw new Error(
+      'Tried to connect a new socket without disconnecting the old one first',
+    )
+  }
+  const newSocket = await createSocket()
+  // not a problem unless you call this function too quickly
+  // eslint-disable-next-line require-atomic-updates
+  socket = newSocket
   socket.on('connect_error', e => {
     // @ts-ignore
     console.warn(e.message)
