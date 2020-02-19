@@ -3,6 +3,7 @@
  */
 import SocketIO from 'socket.io-client'
 import isEmpty from 'lodash/isEmpty'
+import debounce from 'lodash/debounce'
 
 import * as Cache from '../../services/cache'
 
@@ -217,7 +218,7 @@ export const createSocket = async () => {
 /**
  * @returns {Promise<void>}
  */
-export const connect = async () => {
+export const connect = debounce(async () => {
   if (socket) {
     throw new Error(
       'Tried to connect a new socket without disconnecting the old one first',
@@ -258,4 +259,4 @@ export const connect = async () => {
   })
 
   socket.on('connect', Events.setupEvents)
-}
+}, 1000)
