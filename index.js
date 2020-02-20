@@ -255,7 +255,9 @@ const decryptResponse = async response => {
 // Logging for HTTP responses
 Http.interceptors.response.use(
   async response => {
-    console.log('Encrypted Response:', response.data)
+    console.warn(
+      'Encrypted Response: ' + JSON.stringify(response && response.data),
+    )
     const decryptedResponse = await decryptResponse(response)
 
     try {
