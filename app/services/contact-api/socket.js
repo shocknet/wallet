@@ -132,17 +132,13 @@ export const decryptSocketData = async data => {
  * @param {SocketIOClient.Socket} socket
  */
 export const encryptSocketInstance = socket => ({
-  connect: () => {
-    throw new Error('Do not call socket.connect() yourself')
-  },
+  connect: () => socket.connect(),
   get connected() {
     return socket.connected
   },
   // @ts-ignore
   off: () => socket.off(),
-  disconnect: () => {
-    throw new Error('Do not call socket.disconnect() yourself')
-  },
+  disconnect: () => socket.disconnect(),
   get disconnected() {
     return socket.disconnected
   },
