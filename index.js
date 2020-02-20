@@ -12,7 +12,6 @@ import Loading from './app/screens/Loading'
 import React from 'react'
 import RNBootSplash from 'react-native-bootsplash'
 
-import { Socket } from './app/services/contact-api'
 import { exchangeKeyPair } from './app/actions/ConnectionActions'
 import * as NavigationService from './app/services/navigation'
 import * as Cache from './app/services/cache'
@@ -292,7 +291,6 @@ Http.interceptors.response.use(
     console.log('Response error!', JSON.stringify(error))
     if (error && error.response) {
       if (error.response.status === 401) {
-        Socket.disconnect()
         await Cache.writeStoredAuthData(null)
       }
 
