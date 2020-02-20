@@ -143,7 +143,9 @@ export const getCachedAlias = () => AsyncStorage.getItem(ALIAS)
 export const writeStoredAuthData = async authData => {
   if (authData === null) {
     Navigation.navigate(AUTH)
-    Socket.disconnect()
+    if (Socket.socket && Socket.socket.connected) {
+      Socket.disconnect()
+    }
     return AsyncStorage.removeItem(STORED_AUTH_DATA)
   }
 

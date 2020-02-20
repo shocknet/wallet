@@ -222,7 +222,8 @@ export const createSocket = async () => {
  */
 export const connect = debounce(async () => {
   if (socket) {
-    throw new Error(
+    disconnect()
+    console.warn(
       'Tried to connect a new socket without disconnecting the old one first',
     )
   }
