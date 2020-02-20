@@ -163,9 +163,7 @@ export const createWallet = async (alias, password) => {
     }
   } catch (err) {
     throw new Error(
-      err.response
-        ? err.response.data.errorMessage || err.response.data.message
-        : 'Unknown error.',
+      err.response ? JSON.stringify(err.response.data) : 'Unknown error.',
     )
   }
 }
