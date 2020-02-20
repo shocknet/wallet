@@ -2,6 +2,7 @@
  * @format
  */
 import debounce from 'lodash/debounce'
+import Http from 'axios'
 
 import * as Cache from '../cache'
 
@@ -10,6 +11,8 @@ import Event from './event'
 import * as Socket from './socket'
 // eslint-disable-next-line no-unused-vars
 import * as Schema from './schema'
+
+const POLL_INTERVAL = 3500
 
 /**
  * @throws {Error} If no data is cached.
@@ -193,13 +196,42 @@ export const onDisplayName = listener => {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/** @type {Set<ReceivedRequestsListener>} */
+const receivedReqsListeners = new Set()
+
 /** @type {Schema.SimpleReceivedRequest[]} */
 let currentReceivedReqs = []
 
 export const currReceivedReqs = () => currentReceivedReqs
 
-/** @type {Set<ReceivedRequestsListener>} */
-const receivedReqsListeners = new Set()
+/** @param {Schema.SimpleReceivedRequest[]} reqs */
+export const setReceivedReqs = reqs => {
+  currentReceivedReqs = reqs
+  receivedReqsListeners.forEach(l => l(currReceivedReqs()))
+}
+
+let receivedReqsSubbed = false
+let lastReceivedReqsUpdate = Date.now() - 1000
+
+const receivedReqsFetcher = () => {
+  const thisUpdate = Date.now()
+  lastReceivedReqsUpdate = thisUpdate
+
+  Http.get(`/api/gun/${Event.ON_RECEIVED_REQUESTS}`).then(res => {
+    if (lastReceivedReqsUpdate !== thisUpdate) {
+      return
+    }
+
+    if (res.status === 200) {
+      console.warn(
+        `Received reqs through poll: ${JSON.stringify(res.data.data)}`,
+      )
+      setReceivedReqs(res.data.data)
+    } else {
+      console.warn(`Error in sent reqs Poll: ${res.data.errorMessage}`)
+    }
+  })
+}
 
 /**
  * @param {ReceivedRequestsListener} listener
@@ -211,6 +243,11 @@ export const onReceivedRequests = listener => {
   }
 
   listener(currentReceivedReqs)
+
+  if (!receivedReqsSubbed) {
+    receivedReqsSubbed = true
+    setInterval(receivedReqsFetcher, POLL_INTERVAL)
+  }
 
   return () => {
     if (!receivedReqsListeners.delete(listener)) {
@@ -237,6 +274,27 @@ export const setSentReqs = sentReqs => {
   sentReqsListeners.forEach(l => l(currSentReqs))
 }
 
+let sentReqsSubbed = false
+let lastSentReqsUpdate = Date.now() - 1000
+
+const sentReqsFetcher = () => {
+  const thisUpdate = Date.now()
+  lastSentReqsUpdate = thisUpdate
+
+  Http.get(`/api/gun/${Event.ON_SENT_REQUESTS}`).then(res => {
+    if (lastSentReqsUpdate !== thisUpdate) {
+      return
+    }
+
+    if (res.status === 200) {
+      console.warn(`Sent reqs through poll: ${JSON.stringify(res.data.data)}`)
+      setSentReqs(res.data.data)
+    } else {
+      console.warn(`Error in sent reqs Poll: ${res.data.errorMessage}`)
+    }
+  })
+}
+
 /**
  * @param {SentRequestsListener} listener
  */
@@ -246,6 +304,11 @@ export const onSentRequests = listener => {
   }
 
   listener(currSentReqs)
+
+  if (!sentReqsSubbed) {
+    sentReqsSubbed = true
+    setInterval(sentReqsFetcher, POLL_INTERVAL)
+  }
 
   return () => {
     if (!sentReqsListeners.delete(listener)) {
@@ -400,12 +463,38 @@ export const setChats = chats => {
   chatsListeners.forEach(l => l(currentChats))
 }
 
+let chatsSubbed = false
+let lastChatUpdate = Date.now() - 1000
+
+const chatsFetcher = () => {
+  const thisUpdate = Date.now()
+  lastChatUpdate = thisUpdate
+
+  Http.get(`/api/gun/${Event.ON_CHATS}`).then(res => {
+    if (lastChatUpdate !== thisUpdate) {
+      return
+    }
+
+    if (res.status === 200) {
+      console.warn(`Chats through poll: ${JSON.stringify(res.data.data)}`)
+      setChats(res.data.data)
+    } else {
+      console.warn(`Error in Chats Poll: ${res.data.errorMessage}`)
+    }
+  })
+}
+
 /**
  * @param {ChatsListener} listener
  */
 export const onChats = listener => {
   if (chatsListeners.indexOf(listener) > -1) {
     throw new Error('tried to subscribe twice')
+  }
+
+  if (!chatsSubbed) {
+    chatsSubbed = true
+    setInterval(chatsFetcher, POLL_INTERVAL)
   }
 
   chatsListeners.push(listener)
@@ -496,12 +585,6 @@ export const setupEvents = () => {
     }
   })
 
-  theSocket.on(Event.ON_CHATS, res => {
-    if (res.ok) {
-      setChats(res.msg)
-    }
-  })
-
   theSocket.on(Event.ON_HANDSHAKE_ADDRESS, res => {
     if (res.ok) {
       setHandshakeAddress(res.msg)
@@ -511,19 +594,6 @@ export const setupEvents = () => {
   theSocket.on(Event.ON_DISPLAY_NAME, res => {
     if (res.ok) {
       setDisplayName(res.msg)
-    }
-  })
-
-  theSocket.on(Event.ON_RECEIVED_REQUESTS, res => {
-    if (res.ok) {
-      currentReceivedReqs = res.msg
-      receivedReqsListeners.forEach(l => l(currentReceivedReqs))
-    }
-  })
-
-  theSocket.on(Event.ON_SENT_REQUESTS, res => {
-    if (res.ok) {
-      setSentReqs(res.msg)
     }
   })
 
