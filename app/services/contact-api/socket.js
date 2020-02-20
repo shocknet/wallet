@@ -140,7 +140,9 @@ export const encryptSocketInstance = socket => ({
   },
   // @ts-ignore
   off: () => socket.off(),
-  disconnect: () => socket.disconnect(),
+  disconnect: () => {
+    throw new Error('Do not call socket.disconnect() yourself')
+  },
   get disconnected() {
     return socket.disconnected
   },
