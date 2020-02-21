@@ -160,6 +160,9 @@ Http.interceptors.request.use(async config => {
         encryptionKey: encryptedKey,
         iv,
       }
+      // @ts-ignore
+      // eslint-disable-next-line require-atomic-updates
+      config.originalData = stringifiedData
     }
 
     // Logging for Network requests
@@ -292,12 +295,49 @@ Http.interceptors.response.use(
   async error => {
     console.log('Response error!', JSON.stringify(error))
     if (error && error.response) {
-      if (error.response.status === 401) {
+      const decryptedResponse = await decryptResponse(error.response)
+
+      if (typeof decryptedResponse.data === 'string') {
+        decryptedResponse.data = JSON.parse(decryptedResponse.data)
+      }
+
+      const { connection } = store.getState()
+      console.log('decryptedResponse:', decryptedResponse)
+
+      const encryptionErrors = ['deviceId']
+
+      if (
+        error.response.status === 401 &&
+        !encryptionErrors.includes(decryptedResponse.data.field)
+      ) {
         await Cache.writeStoredAuthData(null)
       }
 
-      const decryptedResponse = await decryptResponse(error.response)
-      console.log('decryptedResponse:', decryptedResponse)
+      console.log('Decrypted Field:', decryptedResponse.data.field)
+
+      if (encryptionErrors.includes(decryptedResponse.data.field)) {
+        await exchangeKeyPair({
+          deviceId: connection.deviceId,
+          sessionId: decryptedResponse.headers['x-session-id'],
+          cachedSessionId: connection.sessionId,
+          baseURL: decryptedResponse.config.baseURL,
+        })(store.dispatch, store.getState, {})
+        // eslint-disable-next-line require-atomic-updates
+        decryptedResponse.config.headers['x-shockwallet-device-id'] =
+          connection.deviceId
+
+        // @ts-ignore
+        const response = await Http[
+          decryptedResponse.config.method?.toLowerCase() ?? 'get'
+        ](
+          decryptedResponse.config.url,
+          // @ts-ignore
+          JSON.parse(decryptedResponse.config.originalData),
+          decryptedResponse.config.headers,
+        )
+        console.log('Response received!', response)
+        return response
+      }
 
       try {
         if (decryptedResponse) {
