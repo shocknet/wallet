@@ -42,7 +42,6 @@ const showCopiedToClipboardToast = () => {
  * @prop {string|null} displayName
  * @prop {boolean} displayNameDialogOpen
  * @prop {string} displayNameInput
- * @prop {string|null} handshakeAddr
  * @prop {string|null} bio
  */
 
@@ -75,7 +74,7 @@ export default class MyProfile extends React.PureComponent {
     displayName: API.Events.getDisplayName(),
     displayNameDialogOpen: false,
     displayNameInput: '',
-    handshakeAddr: API.Events.getHandshakeAddr(),
+
     bio: API.Events.currentBio,
   }
 
@@ -87,8 +86,6 @@ export default class MyProfile extends React.PureComponent {
   onAvatarUnsub = () => {}
 
   onDisplayNameUnsub = () => {}
-
-  onHandshakeAddressUnsub = () => {}
 
   onBioUnsub = () => {}
 
@@ -104,11 +101,7 @@ export default class MyProfile extends React.PureComponent {
         displayName: dn,
       })
     })
-    this.onHandshakeAddressUnsub = API.Events.onHandshakeAddr(addr => {
-      this.setState({
-        handshakeAddr: addr,
-      })
-    })
+
     this.onAvatarUnsub = API.Events.onAvatar(avatar => {
       this.setState({ avatar })
     })
@@ -128,7 +121,6 @@ export default class MyProfile extends React.PureComponent {
   componentWillUnmount() {
     this.didFocus.remove()
     this.onDisplayNameUnsub()
-    this.onHandshakeAddressUnsub()
     this.onAvatarUnsub()
     this.onBioUnsub()
   }
@@ -236,7 +228,6 @@ export default class MyProfile extends React.PureComponent {
       displayName,
       authData,
       avatar,
-      handshakeAddr,
       displayNameInput,
       displayNameDialogOpen,
       bio,
@@ -287,21 +278,19 @@ export default class MyProfile extends React.PureComponent {
           </View>
 
           <View style={styles.subContainer}>
-            {handshakeAddr !== null && (
-              <React.Fragment>
-                <TouchableOpacity onPress={this.copyDataToClipboard}>
-                  <QR
-                    size={256}
-                    logoToShow="shock"
-                    value={`$$__SHOCKWALLET__USER__${authData.publicKey}`}
-                  />
-                </TouchableOpacity>
-                <Pad amount={10} />
-                <Text style={styles.bodyText}>
-                  Other users can scan this QR to contact you.
-                </Text>
-              </React.Fragment>
-            )}
+            <React.Fragment>
+              <TouchableOpacity onPress={this.copyDataToClipboard}>
+                <QR
+                  size={256}
+                  logoToShow="shock"
+                  value={`$$__SHOCKWALLET__USER__${authData.publicKey}`}
+                />
+              </TouchableOpacity>
+              <Pad amount={10} />
+              <Text style={styles.bodyText}>
+                Other users can scan this QR to contact you.
+              </Text>
+            </React.Fragment>
           </View>
         </View>
 
