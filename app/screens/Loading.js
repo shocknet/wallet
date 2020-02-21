@@ -11,6 +11,7 @@ import {
   ImageBackground,
 } from 'react-native'
 
+import * as RES from '../res'
 import * as CSS from '../res/css'
 
 /**
@@ -25,10 +26,6 @@ const SHOCK_LOGO_STYLE = { width: 100, height: 100 }
 // @ts-ignore
 const shockBG = require('../assets/images/shock-bg.png')
 
-/** @type {number} */
-// @ts-ignore
-const shockLogo = require('../assets/images/shocklogo.png')
-
 /**
  * @type {React.FC}
  */
@@ -40,7 +37,7 @@ const _Loading = () => ((
     style={styles.container}
   >
     <View style={styles.shockWalletLogoContainer}>
-      <Image style={SHOCK_LOGO_STYLE} source={shockLogo} />
+      <Image style={SHOCK_LOGO_STYLE} source={RES.newLogo} />
       <Text style={styles.logoText}>S H O C K W A L L E T</Text>
     </View>
 

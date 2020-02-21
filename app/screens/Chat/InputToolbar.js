@@ -11,7 +11,7 @@ import {
 import { Icon } from 'react-native-elements'
 
 import * as CSS from '../../res/css'
-import { lock } from '../../res'
+import { bLogoSmall } from '../../res'
 
 /**
  * @typedef {object} Props
@@ -75,7 +75,7 @@ export default class InputToolbar extends React.PureComponent {
           <View style={styles.oval}>
             <View style={styles.actionBtnWrapper}>
               <TouchableOpacity onPress={this.props.onPressActionBtn}>
-                <Image source={lock} style={styles.actionBtn} />
+                <Image source={bLogoSmall} style={styles.actionBtn} />
               </TouchableOpacity>
             </View>
 
@@ -114,7 +114,8 @@ export const OVAL_V_PAD = 12
 const OVAL_HORIZONTAL_PADDING = 16
 export const OVAL_ELEV = 5
 
-export const ACTION_BTN_SIZE = 30
+export const ACTION_BTN_WIDTH = 24 * (97 / 128)
+export const ACTION_BTN_HEIGHT = 24
 
 const styles = StyleSheet.create({
   container: {
@@ -147,15 +148,15 @@ const styles = StyleSheet.create({
 
   actionBtnWrapper: {
     backgroundColor: 'white',
-    borderRadius: ACTION_BTN_SIZE / 2,
+    borderRadius: ACTION_BTN_HEIGHT / 2,
     elevation: 4,
+    height: ACTION_BTN_HEIGHT,
+    width: ACTION_BTN_HEIGHT,
   },
 
   actionBtn: {
-    backgroundColor: 'white',
-    borderRadius: ACTION_BTN_SIZE / 2,
-    height: ACTION_BTN_SIZE,
-    width: ACTION_BTN_SIZE,
+    height: ACTION_BTN_HEIGHT,
+    width: ACTION_BTN_WIDTH,
   },
 
   textInput: {

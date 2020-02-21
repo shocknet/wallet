@@ -30,9 +30,6 @@ export const LOGIN = 'LOGIN'
 /** @type {number} */
 // @ts-ignore
 const shockBG = require('../assets/images/shock-bg.png')
-/** @type {number} */
-// @ts-ignore
-const shockLogo = require('../assets/images/shocklogo.png')
 
 /**
  * @typedef {object} Props
