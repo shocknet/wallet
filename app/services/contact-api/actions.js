@@ -280,14 +280,6 @@ export const sendReqWithInitialMsg = async (recipientPublicKey, initialMsg) => {
 
   console.warn(`res in sendreqwithinitialmsg: ${JSON.stringify(res)}`)
 
-  // issue#31
-  setTimeout(() => {
-    socket &&
-      socket.emit(Event.ON_SENT_REQUESTS, {
-        token,
-      })
-  }, 500)
-
   if (!res.ok) {
     throw new Error(res.msg)
   }
