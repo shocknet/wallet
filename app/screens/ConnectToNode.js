@@ -27,10 +27,6 @@ import { exchangeKeyPair } from '../actions/ConnectionActions'
 // @ts-ignore
 const shockBG = require('../assets/images/shock-bg.png')
 
-/** @type {number} */
-// @ts-ignore
-const shockLogo = require('../assets/images/shocklogo.png')
-
 export const CONNECT_TO_NODE = 'CONNECT_TO_NODE'
 
 /**

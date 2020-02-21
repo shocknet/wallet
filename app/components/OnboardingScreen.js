@@ -51,7 +51,7 @@ export default /** @type {React.FC<Props>} */ (React.memo(
 
           <View style={xStyles.logo}>
             <View style={styles.shockLogoContainer}>
-              <Image style={styles.shockLogo} source={RES.shockLogo} />
+              <Image style={styles.shockLogo} source={RES.newLogo} />
             </View>
 
             <Pad amount={12} />

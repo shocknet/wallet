@@ -29,7 +29,7 @@ import { Actions } from '../../services/contact-api'
 import ChatInvoice from './ChatInvoice'
 import ChatMessage from './ChatMessage'
 import InputToolbar, {
-  ACTION_BTN_SIZE,
+  ACTION_BTN_HEIGHT,
   OVAL_V_PAD,
   CONTAINER_H_PAD,
   OVAL_ELEV,
@@ -652,7 +652,7 @@ const styles = StyleSheet.create({
   removeConvBtn: {
     backgroundColor: CSS.Colors.BACKGROUND_NEAR_WHITE,
     elevation: OVAL_ELEV,
-    height: OVAL_V_PAD * 2 + ACTION_BTN_SIZE,
+    height: OVAL_V_PAD * 2 + ACTION_BTN_HEIGHT,
     width: '60%',
     alignItems: 'center',
     justifyContent: 'center',
