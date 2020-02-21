@@ -55,6 +55,8 @@ export const subscribeOnChats = callback => dispatch =>
           {},
         )
 
+        console.log('Subscribed to ON_CHATS!', contacts)
+
         dispatch({
           type: ACTIONS.LOAD_CONTACTS,
           data: contacts,
@@ -71,6 +73,7 @@ export const subscribeOnChats = callback => dispatch =>
 
         resolve(chats)
       } catch (err) {
+        console.error(err)
         reject(err)
       }
     })

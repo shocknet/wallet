@@ -161,7 +161,9 @@ class ContactsSearch extends PureComponent {
   filterContacts = () => {
     const { value, chat } = this.props
     const { contacts } = chat
-    return contacts.filter(contact => contact.displayName.includes(value))
+    return contacts.filter(contact =>
+      contact.displayName.toLowerCase().includes(value.toLowerCase()),
+    )
   }
 
   /**
