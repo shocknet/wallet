@@ -101,6 +101,36 @@ export const setAvatar = a => {
   })
 }
 
+let lastAvatarUpdate = Date.now() - 1000
+
+const avatarFetcher = () => {
+  const thisUpdate = Date.now()
+  lastAvatarUpdate = thisUpdate
+
+  Http.get(`/api/gun/${Event.ON_AVATAR}`)
+    .then(res => {
+      if (lastAvatarUpdate !== thisUpdate) {
+        return
+      }
+
+      console.warn(`avatar res: ${JSON.stringify(res)}`)
+
+      if (res.status === 200) {
+        console.warn(`Avatar through poll: ${JSON.stringify(res.data.data)}`)
+        setAvatar(res.data.data)
+      } else {
+        throw new Error(
+          res.data.errorMessage || res.data.message || JSON.stringify(res.data),
+        )
+      }
+    })
+    .catch(e => {
+      console.warn(`Error in avatar Poll: ${e.message || 'Unknown error'}`)
+    })
+}
+
+let onAvatarSubbed = false
+
 /**
  * @param {AvatarListener} listener
  * @returns {() => void}
@@ -111,6 +141,11 @@ export const onAvatar = listener => {
   }
 
   listener(currentAvatar)
+
+  if (!onAvatarSubbed) {
+    onAvatarSubbed = true
+    setInterval(avatarFetcher, POLL_INTERVAL)
+  }
 
   return () => {
     if (!avatarListeners.delete(listener)) {
@@ -132,6 +167,34 @@ export const setHandshakeAddress = addr => {
   handshakeAddrListeners.forEach(l => l(currentAddr))
 }
 
+let lastAddrUpdate = Date.now() - 1000
+
+const addrFetcher = () => {
+  const thisUpdate = Date.now()
+  lastAddrUpdate = thisUpdate
+
+  Http.get(`/api/gun/${Event.ON_HANDSHAKE_ADDRESS}`)
+    .then(res => {
+      if (lastAddrUpdate !== thisUpdate) {
+        return
+      }
+
+      if (res.status === 200) {
+        console.warn(`HAddr through poll: ${JSON.stringify(res.data.data)}`)
+        setHandshakeAddress(res.data.data)
+      } else {
+        throw new Error(
+          res.data.errorMessage || res.data.message || JSON.stringify(res.data),
+        )
+      }
+    })
+    .catch(e => {
+      console.warn(`Error in H.address Poll:  ${e.message || 'Unknown error'}`)
+    })
+}
+
+let onHandshakeAddrSubbed = false
+
 /**
  * @param {HandshakeAddrListener} listener
  */
@@ -143,6 +206,11 @@ export const onHandshakeAddr = listener => {
   handshakeAddrListeners.push(listener)
 
   listener(currentAddr)
+
+  if (!onHandshakeAddrSubbed) {
+    onHandshakeAddrSubbed = true
+    setInterval(addrFetcher, POLL_INTERVAL)
+  }
 
   return () => {
     const idx = handshakeAddrListeners.indexOf(listener)
@@ -177,6 +245,34 @@ export const setDisplayName = dn => {
   })
 }
 
+let lastDnUpdate = Date.now() - 1000
+
+const dnFetcher = () => {
+  const thisUpdate = Date.now()
+  lastDnUpdate = thisUpdate
+
+  Http.get(`/api/gun/${Event.ON_DISPLAY_NAME}`)
+    .then(res => {
+      if (lastDnUpdate !== thisUpdate) {
+        return
+      }
+
+      if (res.status === 200) {
+        console.warn(`Dn through poll: ${JSON.stringify(res.data.data)}`)
+        setDisplayName(res.data.data)
+      } else {
+        throw new Error(
+          res.data.errorMessage || res.data.message || JSON.stringify(res.data),
+        )
+      }
+    })
+    .catch(e => {
+      console.warn(`Error in dn Poll: ${e.message || 'Unknown error'}`)
+    })
+}
+
+let onDnSubbed = false
+
 /**
  * @param {DisplayNameListener} listener
  */
@@ -186,6 +282,11 @@ export const onDisplayName = listener => {
   }
 
   listener(currentDisplayName)
+
+  if (!onDnSubbed) {
+    onDnSubbed = true
+    setInterval(dnFetcher, POLL_INTERVAL)
+  }
 
   return () => {
     if (!displayNameListeners.delete(listener)) {
@@ -217,20 +318,26 @@ const receivedReqsFetcher = () => {
   const thisUpdate = Date.now()
   lastReceivedReqsUpdate = thisUpdate
 
-  Http.get(`/api/gun/${Event.ON_RECEIVED_REQUESTS}`).then(res => {
-    if (lastReceivedReqsUpdate !== thisUpdate) {
-      return
-    }
+  Http.get(`/api/gun/${Event.ON_RECEIVED_REQUESTS}`)
+    .then(res => {
+      if (lastReceivedReqsUpdate !== thisUpdate) {
+        return
+      }
 
-    if (res.status === 200) {
-      console.warn(
-        `Received reqs through poll: ${JSON.stringify(res.data.data)}`,
-      )
-      setReceivedReqs(res.data.data)
-    } else {
-      console.warn(`Error in sent reqs Poll: ${res.data.errorMessage}`)
-    }
-  })
+      if (res.status === 200) {
+        console.warn(
+          `Received reqs through poll: ${JSON.stringify(res.data.data)}`,
+        )
+        setReceivedReqs(res.data.data)
+      } else {
+        throw new Error(
+          res.data.errorMessage || res.data.message || JSON.stringify(res.data),
+        )
+      }
+    })
+    .catch(e => {
+      console.warn(`Error in sent reqs Poll:  ${e.message || 'Unknown error'}`)
+    })
 }
 
 /**
@@ -281,18 +388,24 @@ const sentReqsFetcher = () => {
   const thisUpdate = Date.now()
   lastSentReqsUpdate = thisUpdate
 
-  Http.get(`/api/gun/${Event.ON_SENT_REQUESTS}`).then(res => {
-    if (lastSentReqsUpdate !== thisUpdate) {
-      return
-    }
+  Http.get(`/api/gun/${Event.ON_SENT_REQUESTS}`)
+    .then(res => {
+      if (lastSentReqsUpdate !== thisUpdate) {
+        return
+      }
 
-    if (res.status === 200) {
-      console.warn(`Sent reqs through poll: ${JSON.stringify(res.data.data)}`)
-      setSentReqs(res.data.data)
-    } else {
-      console.warn(`Error in sent reqs Poll: ${res.data.errorMessage}`)
-    }
-  })
+      if (res.status === 200) {
+        console.warn(`Sent reqs through poll: ${JSON.stringify(res.data.data)}`)
+        setSentReqs(res.data.data)
+      } else {
+        throw new Error(
+          res.data.errorMessage || res.data.message || JSON.stringify(res.data),
+        )
+      }
+    })
+    .catch(e => {
+      console.warn(`Error in sent reqs Poll:  ${e.message || 'Unknown error'}`)
+    })
 }
 
 /**
@@ -470,18 +583,22 @@ const chatsFetcher = () => {
   const thisUpdate = Date.now()
   lastChatUpdate = thisUpdate
 
-  Http.get(`/api/gun/${Event.ON_CHATS}`).then(res => {
-    if (lastChatUpdate !== thisUpdate) {
-      return
-    }
+  Http.get(`/api/gun/${Event.ON_CHATS}`)
+    .then(res => {
+      if (lastChatUpdate !== thisUpdate) {
+        return
+      }
 
-    if (res.status === 200) {
-      console.warn(`Chats through poll: ${JSON.stringify(res.data.data)}`)
-      setChats(res.data.data)
-    } else {
-      console.warn(`Error in Chats Poll: ${res.data.errorMessage}`)
-    }
-  })
+      if (res.status === 200) {
+        console.warn(`Chats through poll: ${JSON.stringify(res.data.data)}`)
+        setChats(res.data.data)
+      } else {
+        throw new Error(res.data.errorMessage)
+      }
+    })
+    .catch(e => {
+      console.warn(`Error in Chats Poll:  ${e.message || 'Unknown error'}`)
+    })
 }
 
 /**
@@ -579,24 +696,6 @@ export const setupEvents = () => {
     }
   })
 
-  theSocket.on(Event.ON_AVATAR, res => {
-    if (res.ok) {
-      setAvatar(res.msg)
-    }
-  })
-
-  theSocket.on(Event.ON_HANDSHAKE_ADDRESS, res => {
-    if (res.ok) {
-      setHandshakeAddress(res.msg)
-    }
-  })
-
-  theSocket.on(Event.ON_DISPLAY_NAME, res => {
-    if (res.ok) {
-      setDisplayName(res.msg)
-    }
-  })
-
   theSocket.on(Event.ON_ALL_USERS, res => {
     if (res.ok) {
       usersListeners.forEach(l => {
@@ -665,31 +764,7 @@ export const setupEvents = () => {
       })
     }, 3000)
 
-    theSocket.emit(Event.ON_CHATS, {
-      token,
-    })
-
     theSocket.emit(Event.ON_SEED_BACKUP, {
-      token,
-    })
-
-    theSocket.emit(Event.ON_RECEIVED_REQUESTS, {
-      token,
-    })
-
-    theSocket.emit(Event.ON_SENT_REQUESTS, {
-      token,
-    })
-
-    theSocket.emit(Event.ON_AVATAR, {
-      token,
-    })
-
-    theSocket.emit(Event.ON_DISPLAY_NAME, {
-      token,
-    })
-
-    theSocket.emit(Event.ON_HANDSHAKE_ADDRESS, {
       token,
     })
   })
