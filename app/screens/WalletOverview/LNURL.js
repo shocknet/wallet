@@ -93,7 +93,10 @@ export default class LNURL extends React.PureComponent {
     }
     try {
       await addPeer(uri)
-
+    } catch (e) {
+      console.log(e)
+    }
+    try {
       console.log('connect')
       //console.log(connect)
       const node = await nodeInfo()

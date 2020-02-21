@@ -755,13 +755,13 @@ export const addPeer = async uri => {
     pubkey: isComplete[0],
     host: isComplete[1],
   }
-  const { nodeURL, token } = await Cache.getNodeURLTokenPair()
+  const { token } = await Cache.getNodeURLTokenPair()
 
   if (typeof token !== 'string') {
     throw new TypeError(NO_CACHED_TOKEN)
   }
 
-  const endpoint = `http://${nodeURL}/api/lnd/connectpeer`
+  const endpoint = `/api/lnd/connectpeer`
 
   try {
     const { data } = await Http.post(endpoint, req, {
