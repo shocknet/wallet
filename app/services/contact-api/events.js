@@ -762,7 +762,7 @@ export const setupEvents = () => {
       theSocket.emit(Action.SET_LAST_SEEN_APP, {
         token,
       })
-    }, 3000)
+    }, 8000)
 
     theSocket.emit(Event.ON_SEED_BACKUP, {
       token,
