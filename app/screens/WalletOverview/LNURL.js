@@ -1,6 +1,6 @@
 import React from 'react'
 import ShockModal from '../../components/ShockModal'
-import { Text, View, Switch, StyleSheet } from 'react-native'
+import { Text, View, Switch, StyleSheet, ToastAndroid } from 'react-native'
 import { nodeInfo, addPeer, addInvoice } from '../../services/wallet'
 import ShockButton from '../../components/ShockButton'
 import ShockInput from '../../components/ShockInput'
@@ -93,7 +93,11 @@ export default class LNURL extends React.PureComponent {
     }
     try {
       await addPeer(uri)
-
+    } catch (e) {
+      console.log(e)
+      ToastAndroid.show(e.toString(), 800)
+    }
+    try {
       console.log('connect')
       //console.log(connect)
       const node = await nodeInfo()
