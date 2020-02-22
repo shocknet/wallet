@@ -134,6 +134,14 @@ export const writeCachedAlias = alias => {
  */
 export const getCachedAlias = () => AsyncStorage.getItem(ALIAS)
 
+/** @type {Set<() => void>} */
+const authListeners = new Set()
+
+/**
+ * @param {() => void} cb
+ */
+export const onAuth = cb => authListeners.add(cb)
+
 /**
  * @param {AuthData|null} authData
  * @throws {Error} If trying to store authdata without a cached node ip being
@@ -146,7 +154,9 @@ export const writeStoredAuthData = async authData => {
     if (Socket.socket && Socket.socket.connected) {
       Socket.disconnect()
     }
-    return AsyncStorage.removeItem(STORED_AUTH_DATA)
+    return AsyncStorage.removeItem(STORED_AUTH_DATA).then(() => {
+      authListeners.forEach(l => l())
+    })
   }
 
   if (typeof authData.alias !== 'string') {
@@ -201,7 +211,9 @@ export const writeStoredAuthData = async authData => {
     writeCachedAlias(authData.alias),
     AsyncStorage.setItem(STORED_AUTH_DATA, JSON.stringify(sad)),
     AsyncStorage.setItem(AUTHENTICATED_NODE, nodeURL),
-  ])
+  ]).then(() => {
+    authListeners.forEach(l => l())
+  })
 }
 
 /**
