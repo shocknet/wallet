@@ -14,6 +14,22 @@ import * as Schema from './schema'
 
 const POLL_INTERVAL = 3500
 
+/** @type {number[]} */
+let pollIntervalIDs = []
+
+const clean = () => {
+  pollIntervalIDs.forEach(id => {
+    clearInterval(id)
+  })
+  pollIntervalIDs = []
+}
+
+/**
+ * We need to sub inside a functoin call because of circular dependency making
+ * Cache.onAuth() undefined.
+ */
+let cleanSubbed = false
+
 /**
  * @throws {Error} If no data is cached.
  * @returns {Promise<string>}
@@ -142,9 +158,20 @@ export const onAvatar = listener => {
 
   listener(currentAvatar)
 
+  if (!cleanSubbed) {
+    cleanSubbed = true
+    Cache.onAuth(() => {
+      Cache.getStoredAuthData().then(authData => {
+        if (authData === null) {
+          clean()
+        }
+      })
+    })
+  }
+
   if (!onAvatarSubbed) {
     onAvatarSubbed = true
-    setInterval(avatarFetcher, POLL_INTERVAL)
+    pollIntervalIDs.push(setInterval(avatarFetcher, POLL_INTERVAL))
   }
 
   return () => {
@@ -209,7 +236,7 @@ export const onHandshakeAddr = listener => {
 
   if (!onHandshakeAddrSubbed) {
     onHandshakeAddrSubbed = true
-    setInterval(addrFetcher, POLL_INTERVAL)
+    pollIntervalIDs.push(setInterval(addrFetcher, POLL_INTERVAL))
   }
 
   return () => {
@@ -285,7 +312,7 @@ export const onDisplayName = listener => {
 
   if (!onDnSubbed) {
     onDnSubbed = true
-    setInterval(dnFetcher, POLL_INTERVAL)
+    pollIntervalIDs.push(setInterval(dnFetcher, POLL_INTERVAL))
   }
 
   return () => {
@@ -353,7 +380,7 @@ export const onReceivedRequests = listener => {
 
   if (!receivedReqsSubbed) {
     receivedReqsSubbed = true
-    setInterval(receivedReqsFetcher, POLL_INTERVAL)
+    pollIntervalIDs.push(setInterval(receivedReqsFetcher, POLL_INTERVAL))
   }
 
   return () => {
@@ -420,7 +447,7 @@ export const onSentRequests = listener => {
 
   if (!sentReqsSubbed) {
     sentReqsSubbed = true
-    setInterval(sentReqsFetcher, POLL_INTERVAL)
+    pollIntervalIDs.push(setInterval(sentReqsFetcher, POLL_INTERVAL))
   }
 
   return () => {
@@ -611,7 +638,7 @@ export const onChats = listener => {
 
   if (!chatsSubbed) {
     chatsSubbed = true
-    setInterval(chatsFetcher, POLL_INTERVAL)
+    pollIntervalIDs.push(setInterval(chatsFetcher, POLL_INTERVAL))
   }
 
   chatsListeners.push(listener)
@@ -758,11 +785,13 @@ export const setupEvents = () => {
   })
 
   Cache.getToken().then(token => {
-    setInterval(() => {
-      theSocket.emit(Action.SET_LAST_SEEN_APP, {
-        token,
-      })
-    }, 8000)
+    pollIntervalIDs.push(
+      setInterval(() => {
+        theSocket.emit(Action.SET_LAST_SEEN_APP, {
+          token,
+        })
+      }, 8000),
+    )
 
     theSocket.emit(Event.ON_SEED_BACKUP, {
       token,
