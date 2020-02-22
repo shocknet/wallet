@@ -115,6 +115,10 @@ class Debug extends React.Component {
     Socket.connect().then(this.setupSub)
   }
 
+  clearAuthData = () => {
+    Cache.writeStoredAuthData(null)
+  }
+
   render() {
     const { lastPing } = this.state
 
@@ -151,6 +155,7 @@ class Debug extends React.Component {
 
         <Button title="Connect Socket" onPress={this.connectSocket} />
         <Button title="Disconnect Socket" onPress={Socket.disconnect} />
+        <Button title="Clear AUTH Data" onPress={this.clearAuthData} />
 
         <Button
           title="Copy device id to clipboard"
