@@ -525,7 +525,7 @@ class AdvancedScreen extends Component {
             resizeMode="cover"
             style={styles.statsHeader}
           >
-            <Nav title="Advanced" style={styles.nav} showAvatar={false} />
+            <Nav title="Advanced" style={styles.nav} />
             <View style={styles.statsContainer}>
               <View style={xStyles.channelBalanceContainer}>
                 <View style={styles.statIcon}>

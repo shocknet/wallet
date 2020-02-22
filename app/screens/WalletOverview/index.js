@@ -142,6 +142,8 @@ import * as Cache from '../../services/cache'
  *
  * @prop {object | null} LNURLdata
  * @prop {boolean} resetLNURL
+ *
+ * @prop {string | null} avatar
  */
 
 const { height } = Dimensions.get('window')
@@ -230,6 +232,8 @@ class WalletOverview extends Component {
     sendingInvoiceToShockUserMsg: '',
     LNURLdata: null,
     resetLNURL: false,
+
+    avatar: ContactAPI.Events.getAvatar(),
   }
 
   closeAllSendDialogs = () => {
@@ -1173,6 +1177,8 @@ class WalletOverview extends Component {
 
   didFocus = { remove() {} }
 
+  subs = [() => {}]
+
   componentDidMount() {
     const { fetchNodeInfo, subscribeOnChats } = this.props
     this.didFocus = this.props.navigation.addListener('didFocus', () => {
@@ -1200,6 +1206,14 @@ class WalletOverview extends Component {
     )
     subscribeOnChats()
     fetchNodeInfo()
+
+    this.subs.push(
+      ContactAPI.Events.onAvatar(avatar => {
+        this.setState({
+          avatar,
+        })
+      }),
+    )
   }
 
   componentWillUnmount() {
@@ -1403,7 +1417,7 @@ class WalletOverview extends Component {
           resizeMode="cover"
           style={styles.overview}
         >
-          <Nav title="Wallet" />
+          <Nav title="Wallet" showAvatar={this.state.avatar} />
           {this.renderBalance()}
         </ImageBackground>
         {nodeInfo && nodeInfo.testnet ? (
