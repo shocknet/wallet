@@ -332,7 +332,7 @@ export const USDExchangeRate = async () => {
  * @returns {Promise<WalletBalanceResponse>}
  */
 export const balance = async () => {
-  const { token } = await Cache.getNodeURLTokenPair()
+  const token = await Cache.getToken()
 
   if (typeof token !== 'string') {
     throw new TypeError(NO_CACHED_TOKEN)
@@ -366,7 +366,7 @@ export const balance = async () => {
  * @returns {Promise<PaginatedTransactionsResponse>}
  */
 export const getTransactions = async request => {
-  const { token } = await Cache.getNodeURLTokenPair()
+  const token = await Cache.getToken()
 
   if (typeof token !== 'string') {
     throw new TypeError(NO_CACHED_TOKEN)
@@ -400,7 +400,7 @@ export const getRegularBitcoinTransactions = getTransactions
  * @returns {Promise<PaginatedListPaymentsResponse>}
  */
 export const listPayments = async request => {
-  const { token } = await Cache.getNodeURLTokenPair()
+  const token = await Cache.getToken()
 
   if (typeof token !== 'string') {
     throw new TypeError(NO_CACHED_TOKEN)
@@ -437,7 +437,7 @@ export const listPayments = async request => {
  * @returns {Promise<PaginatedListInvoicesResponse>}
  */
 export const listInvoices = async request => {
-  const { token } = await Cache.getNodeURLTokenPair()
+  const token = await Cache.getToken()
 
   if (typeof token !== 'string') {
     throw new TypeError(NO_CACHED_TOKEN)
@@ -494,7 +494,7 @@ export const newAddress = async useOlderFormat => {
     type: useOlderFormat ? 1 : 0,
   }
 
-  const { token } = await Cache.getNodeURLTokenPair()
+  const token = await Cache.getToken()
 
   if (typeof token !== 'string') {
     throw new TypeError(NO_CACHED_TOKEN)
@@ -548,7 +548,7 @@ export const newAddress = async useOlderFormat => {
  * @returns {Promise<AddInvoiceResponse>}
  */
 export const addInvoice = async request => {
-  const { token } = await Cache.getNodeURLTokenPair()
+  const token = await Cache.getToken()
 
   if (typeof token !== 'string') {
     throw new TypeError(NO_CACHED_TOKEN)
@@ -592,7 +592,7 @@ export const addInvoice = async request => {
  * @returns {Promise<string>}
  */
 export const sendCoins = async request => {
-  const { token } = await Cache.getNodeURLTokenPair()
+  const token = await Cache.getToken()
   if (typeof token !== 'string') {
     throw new TypeError(NO_CACHED_TOKEN)
   }
@@ -661,7 +661,7 @@ export const sendCoins = async request => {
  * @returns {Promise<SendResponse>}
  */
 export const CAUTION_payInvoice = async ({ amt, payreq }) => {
-  const { token } = await Cache.getNodeURLTokenPair()
+  const token = await Cache.getToken()
 
   if (typeof token !== 'string') {
     throw new TypeError(NO_CACHED_TOKEN)
@@ -720,7 +720,7 @@ export const CAUTION_payInvoice = async ({ amt, payreq }) => {
  * @returns {Promise<DecodeInvoiceResponse>}
  */
 export const decodeInvoice = async ({ payReq }) => {
-  const { token } = await Cache.getNodeURLTokenPair()
+  const token = await Cache.getToken()
 
   if (typeof token !== 'string') {
     throw new TypeError(NO_CACHED_TOKEN)
@@ -755,7 +755,7 @@ export const addPeer = async uri => {
     pubkey: isComplete[0],
     host: isComplete[1],
   }
-  const { token } = await Cache.getNodeURLTokenPair()
+  const token = await Cache.getToken()
 
   if (typeof token !== 'string') {
     throw new TypeError(NO_CACHED_TOKEN)
@@ -792,7 +792,7 @@ export const addPeer = async uri => {
  * @returns {Promise<Peer[]>}
  */
 export const listPeers = async () => {
-  const { token } = await Cache.getNodeURLTokenPair()
+  const token = await Cache.getToken()
 
   if (typeof token !== 'string') {
     throw new TypeError(NO_CACHED_TOKEN)
@@ -835,7 +835,7 @@ export const listPeers = async () => {
  * @returns {Promise<Channel[]>}
  */
 export const listChannels = async () => {
-  const { token } = await Cache.getNodeURLTokenPair()
+  const token = await Cache.getToken()
 
   if (typeof token !== 'string') {
     throw new TypeError(NO_CACHED_TOKEN)
