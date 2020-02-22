@@ -3,6 +3,7 @@ import { View, SafeAreaView, Text, StyleSheet } from 'react-native'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 import { toggleDrawer } from '../services/navigation'
 import { Colors } from '../res/css'
+import ShockAvatar from './ShockAvatar'
 
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}, {}>} Navigation
@@ -13,20 +14,14 @@ import { Colors } from '../res/css'
  * @prop {(string)=} title
  * @prop {(object)=} style
  * @prop {(boolean)=} backButton
- * @prop {(boolean)=} showAvatar
+ * @prop {(string|null)=} showAvatar
  * @prop {(Navigation)=} navigation
  */
 
 /**
- * @argument {Props} props
+ * @type {React.FC<Props>}
  */
-const Nav = ({
-  title = '',
-  style = {},
-  backButton = false,
-  showAvatar = true,
-  navigation,
-}) => {
+const Nav = ({ title, style, backButton, showAvatar, navigation }) => {
   const goBack = () => {
     if (navigation) {
       return navigation.goBack()
@@ -35,7 +30,7 @@ const Nav = ({
     return null
   }
 
-  return (
+  return ((
     <SafeAreaView style={[navStyles.container, style]}>
       {backButton ? (
         <Ionicons
@@ -48,11 +43,10 @@ const Nav = ({
         />
       ) : (
         <View
-          style={[
-            navStyles.avatarContainer,
-            !showAvatar ? navStyles.hidden : null,
-          ]}
-        />
+          style={typeof showAvatar === 'undefined' ? navStyles.hidden : null}
+        >
+          <ShockAvatar height={48} image={showAvatar || null} />
+        </View>
       )}
       <Text style={navStyles.navTitle}>
         {title ? title.toUpperCase() : 'WALLET'}
@@ -69,7 +63,7 @@ const Nav = ({
         <View style={navStyles.balanceComponent} />
       )}
     </SafeAreaView>
-  )
+  ))
 }
 
 const navStyles = StyleSheet.create({
@@ -81,12 +75,6 @@ const navStyles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: Colors.TRANSPARENT,
-  },
-  avatarContainer: {
-    width: 50,
-    height: 50,
-    borderRadius: 100,
-    backgroundColor: Colors.AVATAR_BG,
   },
   navTitle: {
     fontSize: 13,
