@@ -202,6 +202,10 @@ export default class MyProfile extends React.PureComponent {
         }
 
         API.Actions.setAvatar(image.data)
+
+        this.setState({
+          avatar: image.data,
+        })
       })
       .catch(e => {
         console.warn(e.message)
