@@ -204,6 +204,7 @@ export const sendHandshakeRequest = async recipientPublicKey => {
 
   if (!res.ok) {
     Events.setSentReqs(Events.getCurrSentReqs().filter(r => r.id !== uuid))
+    throw new Error(res.msg || 'Unknown Error')
   }
 }
 
