@@ -2,7 +2,7 @@
  * @prettier
  */
 import React from 'react'
-import { Clipboard, StatusBar } from 'react-native'
+import { Clipboard, StatusBar, ToastAndroid } from 'react-native'
 
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation
@@ -212,7 +212,9 @@ export default class Chats extends React.Component {
       return
     }
 
-    API.Actions.sendHandshakeRequest(pk)
+    API.Actions.sendHandshakeRequest(pk).catch(e => {
+      ToastAndroid.show(`PK: ${pk.slice(0, 6)}... ${e.message}`, 1200)
+    })
   }
 
   sendHRToUserFromClipboard = () => {
