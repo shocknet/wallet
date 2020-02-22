@@ -143,8 +143,7 @@ Http.interceptors.request.use(async config => {
       config.headers.common['X-ShockWallet-Device-ID'] = connection.deviceId
     }
 
-    const path =
-      config.url && config.baseURL ? config.url.replace(config.baseURL, '') : ''
+    const path = url.parse(config.url).pathname
 
     if (
       connection.APIPublicKey &&

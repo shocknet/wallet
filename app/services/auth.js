@@ -128,7 +128,7 @@ export const registerExistingWallet = async (alias, password) => {
       token: body.authorization,
     }
   } catch (err) {
-    const body = err.response.data
+    const body = err?.response?.data
     throw new Error(body.errorMessage || body.message || 'Unknown error.')
   }
 }

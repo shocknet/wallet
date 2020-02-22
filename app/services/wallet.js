@@ -898,10 +898,8 @@ export const walletStatus = async () => {
 
     return 'noncreated'
   } catch (err) {
-    const { response } = err
-    throw new Error(
-      response.data.errorMessage || response.data.message || 'Unknown Error',
-    )
+    const data = err?.response?.data
+    throw new Error(data?.errorMessage || data?.message || 'Unknown Error')
   }
 }
 
