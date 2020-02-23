@@ -115,13 +115,14 @@ class SendScreen extends Component {
   }
 
   isFilled = () => {
-    const { amount } = this.state
+    const { amount, sendAll } = this.state
     const { paymentRequest } = this.props.invoice
     const { selectedContact } = this.props.chat
     return (
       ((selectedContact?.address?.length > 0 ||
         selectedContact?.type === 'contact') &&
         parseFloat(amount) > 0) ||
+      (selectedContact?.type === 'btc' && sendAll) ||
       !!paymentRequest
     )
   }
@@ -291,10 +292,16 @@ class SendScreen extends Component {
   }
 
   /**
+   * @param {string} address
+   */
+  sanitizeAddress = address =>
+    address.replace(/(.*):/, '').replace(/\?(.*)/, '')
+
+  /**
    * @param {string} value
    */
   isBTCAddress = value => {
-    const sanitizedAddress = value.replace(/(.*):/, '').replace(/\?(.*)/, '')
+    const sanitizedAddress = this.sanitizeAddress(value)
     const btcTest = /^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$/.test(sanitizedAddress)
     const bech32Test = /^(bc1|[13])[a-zA-HJ-NP-Z0-9]{25,90}$/.test(
       sanitizedAddress,
@@ -327,7 +334,7 @@ class SendScreen extends Component {
         this.onChange('error')(data.error.message)
       }
     } else if (this.isBTCAddress(sanitizedQR)) {
-      selectContact({ address: sanitizedQR, type: 'btc' })
+      selectContact({ address: this.sanitizeAddress(sanitizedQR), type: 'btc' })
     } else {
       this.onChange('error')('Invalid QR Code')
     }

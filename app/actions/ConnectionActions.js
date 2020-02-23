@@ -5,6 +5,9 @@ export const ACTIONS = {
   LOAD_NEW_KEYS: 'encryption/loadKeys',
 }
 
+/** @type {Promise<ExchangedKeyPair>?} */
+let exchangingKeypair = null
+
 /**
  * @typedef {object} DeviceKeyPair
  * @prop {string} publicKey
@@ -120,4 +123,29 @@ export const exchangeKeyPair = ({
     console.warn(err)
     throw err
   }
+}
+
+/**
+ * @param {ExchangeKeyPairParams} keypairDetails
+ * @returns {import('redux-thunk').ThunkAction<Promise<ExchangedKeyPair>, {}, {}, import('redux').AnyAction>}
+ */
+export const throttledExchangeKeyPair = keypairDetails => async (
+  dispatch,
+  getState,
+  extraArgument,
+) => {
+  if (!exchangingKeypair) {
+    exchangingKeypair = exchangeKeyPair(keypairDetails)(
+      dispatch,
+      getState,
+      extraArgument,
+    )
+  }
+
+  const result = await exchangingKeypair
+
+  // eslint-disable-next-line require-atomic-updates
+  exchangingKeypair = null
+
+  return result
 }

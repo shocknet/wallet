@@ -30,7 +30,7 @@ import OnboardingScreen, {
 import OnboardingInput from '../../components/OnboardingInput'
 import OnboardingBtn from '../../components/OnboardingBtn'
 import FlexCenter from '../../components/FlexCenter'
-import { exchangeKeyPair } from '../../actions/ConnectionActions'
+import { throttledExchangeKeyPair } from '../../actions/ConnectionActions'
 
 export const CREATE_WALLET_OR_ALIAS = 'CREATE_WALLET_OR_ALIAS'
 
@@ -382,7 +382,7 @@ class CreateWalletOrAlias extends React.PureComponent {
 const mapStateToProps = ({ connection }) => ({ connection })
 
 const mapDispatchToProps = {
-  exchangeKeyPair,
+  throttledExchangeKeyPair,
 }
 
 export default connect(
