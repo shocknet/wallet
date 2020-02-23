@@ -13,6 +13,7 @@ import {
   ActivityIndicator,
   Image,
   TouchableOpacity,
+  Switch,
 } from 'react-native'
 // @ts-ignore
 import { Dropdown } from 'react-native-material-dropdown'
@@ -72,6 +73,7 @@ export const SEND_SCREEN = 'SEND_SCREEN'
  * @prop {boolean} sending
  * @prop {boolean} paymentSuccessful
  * @prop {boolean} scanningQR
+ * @prop {boolean} sendAll
  * @prop {Error|null} error
  */
 
@@ -87,6 +89,7 @@ class SendScreen extends Component {
     paymentSuccessful: false,
     scanningQR: false,
     sending: false,
+    sendAll: false,
     error: null,
   }
 
@@ -98,8 +101,9 @@ class SendScreen extends Component {
 
   /**
    * @param {keyof State} key
+   * @returns {(value: any) => void}
    */
-  onChange = key => (value = '') => {
+  onChange = key => value => {
     /**
      * @type {Pick<State, keyof State>}
      */
@@ -125,7 +129,7 @@ class SendScreen extends Component {
   sendBTCRequest = async () => {
     try {
       const { selectedContact } = this.props.chat
-      const { amount } = this.state
+      const { amount, sendAll } = this.state
 
       if (!selectedContact.address) {
         return
@@ -138,6 +142,7 @@ class SendScreen extends Component {
       const transactionId = await Wallet.sendCoins({
         addr: selectedContact.address,
         amount: parseInt(amount, 10),
+        send_all: sendAll,
       })
 
       console.log('New Transaction ID:', transactionId)
@@ -288,7 +293,11 @@ class SendScreen extends Component {
   /**
    * @param {string} value
    */
-  isBTCAddress = value => /^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$/.test(value)
+  isBTCAddress = value => {
+    const btcTest = /^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$/.test(value)
+    const bech32Test = /^(bc1|[13])[a-zA-HJ-NP-Z0-9]{25,90}$/.test(value)
+    return btcTest || bech32Test
+  }
 
   /**
    * @param {string} value
@@ -345,8 +354,9 @@ class SendScreen extends Component {
       error,
       paymentSuccessful,
       scanningQR,
+      sendAll,
     } = this.state
-    const { navigation, invoice } = this.props
+    const { navigation, invoice, chat } = this.props
     const { width, height } = Dimensions.get('window')
     const editable =
       !!(
@@ -437,6 +447,15 @@ class SendScreen extends Component {
                   rippleInsets={{ top: 8, bottom: 0, right: 0, left: 0 }}
                 />
               </View>
+              {chat.selectedContact?.type === 'btc' ? (
+                <View style={styles.toggleContainer}>
+                  <Text style={styles.toggleTitle}>Send All</Text>
+                  <Switch
+                    value={sendAll}
+                    onValueChange={this.onChange('sendAll')}
+                  />
+                </View>
+              ) : null}
               <InputGroup
                 label="Description"
                 value={
@@ -634,6 +653,13 @@ const styles = StyleSheet.create({
     backgroundColor: CSS.Colors.BACKGROUND_WHITE,
   },
   amountPicker: { borderRadius: 15 },
+  toggleContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  toggleTitle: {
+    fontFamily: 'Montserrat-700',
+  },
   sendSwipeContainer: {
     width: '100%',
     height: 70,
