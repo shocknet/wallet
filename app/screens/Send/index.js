@@ -142,7 +142,7 @@ class SendScreen extends Component {
 
       const transactionId = await Wallet.sendCoins({
         addr: selectedContact.address,
-        amount: parseInt(amount, 10),
+        amount: sendAll ? parseInt(amount, 10) : undefined,
         send_all: sendAll,
       })
 
@@ -342,17 +342,24 @@ class SendScreen extends Component {
     this.toggleQRScreen()
   }
 
-  onSwipe = () => {
-    const { invoice, chat } = this.props
-    if (chat.selectedContact?.type === 'contact') {
-      return this.sendPayment()
-    }
+  onSwipe = async () => {
+    try {
+      const { invoice, chat } = this.props
+      if (chat.selectedContact?.type === 'contact') {
+        await this.sendPayment()
+        return true
+      }
 
-    if (invoice.paymentRequest) {
-      return this.payLightningInvoice()
-    }
+      if (invoice.paymentRequest) {
+        await this.payLightningInvoice()
+        return true
+      }
 
-    return this.sendBTCRequest()
+      await this.sendBTCRequest()
+      return true
+    } catch (err) {
+      return false
+    }
   }
 
   render() {

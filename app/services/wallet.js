@@ -577,7 +577,7 @@ export const addInvoice = async request => {
  * @typedef {object} PartialSendCoinsRequest
  * @prop {string} addr The address to send coins to.
  * @prop {(boolean)=} send_all Sends your entire balance to the specified address
- * @prop {number} amount The amount in satoshis to send.
+ * @prop {(number)=} amount The amount in satoshis to send.
  */
 
 /**
