@@ -26,6 +26,37 @@ export const ACTIONS = {
  */
 
 /**
+ * @typedef {object} PublicKey
+ * @prop {string | undefined} public
+ */
+
+/**
+ * Generates a keypair
+ * @param {string} tag
+ * @param {number} size
+ * @param {number} retries
+ * @returns {Promise<PublicKey>}
+ */
+const generateKey = async (tag, size = 2048, retries = 0) => {
+  if (retries >= 5) {
+    throw new Error('Unable to generate a key')
+  }
+  const keypairExists = await RSAKeychain.keyExists(tag)
+
+  if (keypairExists) {
+    return { public: await RSAKeychain.getPublicKey(tag) }
+  }
+
+  const keyPair = await RSAKeychain.generateKeys(tag, size)
+
+  if (!keyPair.public) {
+    return generateKey(tag, size, retries + 1)
+  }
+
+  return keyPair
+}
+
+/**
  * Generates and exchanges public keys with the API
  * @param {ExchangeKeyPairParams} deviceInfo
  * @returns {import('redux-thunk').ThunkAction<Promise<ExchangedKeyPair>, {}, {}, import('redux').AnyAction>}
@@ -58,7 +89,7 @@ export const exchangeKeyPair = ({
     }
 
     console.log('Generating new key...')
-    const keyPair = await RSAKeychain.generateKeys(keyTag, 2048)
+    const keyPair = await generateKey(keyTag, 2048)
     console.log('New key generated')
     console.log('New Keypair', {
       publicKey: keyPair.public,

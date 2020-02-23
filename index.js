@@ -11,6 +11,8 @@ import { Provider } from 'react-redux'
 import Loading from './app/screens/Loading'
 import React from 'react'
 import RNBootSplash from 'react-native-bootsplash'
+// @ts-ignore
+import url from 'url'
 
 import { exchangeKeyPair } from './app/actions/ConnectionActions'
 import * as NavigationService from './app/services/navigation'
@@ -141,8 +143,7 @@ Http.interceptors.request.use(async config => {
       config.headers.common['X-ShockWallet-Device-ID'] = connection.deviceId
     }
 
-    const path =
-      config.url && config.baseURL ? config.url.replace(config.baseURL, '') : ''
+    const path = url.parse(config.url).pathname
 
     if (
       connection.APIPublicKey &&
@@ -205,10 +206,7 @@ const decryptResponse = async response => {
   try {
     const decryptionTime = Date.now()
     const { connection } = store.getState()
-    const path =
-      response.config && response.config.url && response.config.baseURL
-        ? response.config.url.replace(response.config.baseURL, '')
-        : ''
+    const path = url.parse(response.config.url).pathname
     console.log('Path:', path)
 
     if (
