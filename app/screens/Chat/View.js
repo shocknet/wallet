@@ -177,7 +177,7 @@ export default class ChatView extends React.Component {
    */
   messageRenderer = ({ currentMessage }) => {
     if (typeof currentMessage === 'undefined') {
-      console.warn("typeof currentMessage === 'undefined'")
+      console.log("typeof currentMessage === 'undefined'")
       return null
     }
 
@@ -378,7 +378,7 @@ export default class ChatView extends React.Component {
       })
       .catch(e => {
         ToastAndroid.show('Could not remove', 800)
-        console.warn(e.message || 'unknown error')
+        console.log(e.message || 'unknown error')
       })
   }
 

@@ -199,7 +199,7 @@ export const newGUNAlias = async (alias, pass) => {
     }
   } catch (err) {
     const body = err.response.data
-    console.warn(`here: ${JSON.stringify(body)}`)
+    console.log(`here: ${JSON.stringify(body)}`)
     throw new Error(body.errorMessage || body.message || 'Unknown error.')
   }
 }

@@ -163,7 +163,7 @@ export const encryptSocketInstance = socket => ({
         }
 
         const decryptedData = await decryptSocketData(data).catch(err => {
-          console.warn(
+          console.log(
             `Error decrypting data for event: ${eventName} - msg: ${err.message}`,
           )
         })
@@ -219,7 +219,7 @@ export const createSocket = async () => {
 export const connect = debounce(async () => {
   if (socket) {
     disconnect()
-    console.warn(
+    console.log(
       'Tried to connect a new socket without disconnecting the old one first',
     )
   }
@@ -229,27 +229,27 @@ export const connect = debounce(async () => {
   socket = newSocket
   socket.on('connect_error', e => {
     // @ts-ignore
-    console.warn('connect_error: ' + e.message || e || 'Unknown')
+    console.log('connect_error: ' + e.message || e || 'Unknown')
   })
 
   socket.on('connect_error', error => {
-    console.warn(`connect_error: ${error}`)
+    console.log(`connect_error: ${error}`)
   })
 
   socket.on('connect_timeout', timeout => {
-    console.warn(`connect_timeout: ${timeout}`)
+    console.log(`connect_timeout: ${timeout}`)
   })
 
   socket.on('error', error => {
-    console.warn(`Socket.socket.on:error: ${error}`)
+    console.log(`Socket.socket.on:error: ${error}`)
   })
 
   socket.on('reconnect_attempt', attemptNumber => {
-    console.warn(`Socket.socket.on:reconnect_attempt: ${attemptNumber}`)
+    console.log(`Socket.socket.on:reconnect_attempt: ${attemptNumber}`)
   })
 
   socket.on('disconnect', reason => {
-    console.warn(`reason for disconnect: ${reason}`)
+    console.log(`reason for disconnect: ${reason}`)
 
     // @ts-ignore
     if (reason === 'io server disconnect') {

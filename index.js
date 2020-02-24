@@ -59,7 +59,7 @@ const nonEncryptedRoutes = [
 //         await Cache.writeStoredAuthData(null)
 //       }
 //     } catch (e) {
-//       console.warn(`Error inside response interceptor: ${e.message}`)
+//       console.log(`Error inside response interceptor: ${e.message}`)
 //     }
 
 //     return Promise.reject(err)
@@ -187,7 +187,7 @@ Http.interceptors.request.use(async config => {
         console.log('Body:', config.data ? JSON.stringify(config.data) : 'N/A')
       }
     } catch (err) {
-      console.warn(err)
+      console.log(err)
     }
 
     return config
@@ -250,7 +250,7 @@ const decryptResponse = async response => {
 
     return response
   } catch (err) {
-    console.warn(err)
+    console.log(err)
     throw err
   }
 }
@@ -288,7 +288,7 @@ Http.interceptors.response.use(
       }
       return decryptedResponse
     } catch (err) {
-      console.warn(err)
+      console.log(err)
       return decryptedResponse
     }
   },
@@ -367,7 +367,7 @@ Http.interceptors.response.use(
         }
         return Promise.reject({ ...error, response: decryptedResponse })
       } catch (err) {
-        console.warn(err)
+        console.log(err)
         return Promise.reject({ ...error, response: decryptedResponse })
       }
     }

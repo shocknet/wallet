@@ -208,7 +208,7 @@ export default class MyProfile extends React.PureComponent {
         })
       })
       .catch(e => {
-        console.warn(e.message)
+        console.log(e.message)
       })
   }
 

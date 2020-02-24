@@ -91,7 +91,7 @@ export default class Chat extends React.Component {
     const title = navigation.getParam('_title')
 
     if (typeof title !== 'string') {
-      console.warn(
+      console.log(
         `Chat-> _title param not an string, instead got: ${typeof title}`,
       )
     }
@@ -144,7 +144,7 @@ export default class Chat extends React.Component {
    * @type {import('./View').Props['onPressSendInvoice']}
    */
   sendInvoice = (amount, memo) => {
-    console.warn(`amount: ${amount} - memo: ${memo}`)
+    console.log(`amount: ${amount} - memo: ${memo}`)
 
     const id = this.props.navigation.getParam('id')
     const theChat = (this.state.chats.find(c => c.id === id))
@@ -167,7 +167,7 @@ export default class Chat extends React.Component {
         )
       })
       .catch(err => {
-        console.warn(err.message)
+        console.log(err.message)
         ToastAndroid.show(`Could not send invoice: ${err.message}`, 1000)
       })
   }
@@ -455,9 +455,7 @@ export default class Chat extends React.Component {
     const theChat = this.state.chats.find(c => c.id === id)
 
     if (!theChat) {
-      console.warn(
-        `<Chat />.index -> getMessages() -> no chat found. id: ${id}`,
-      )
+      console.log(`<Chat />.index -> getMessages() -> no chat found. id: ${id}`)
       return []
     }
 
@@ -471,7 +469,7 @@ export default class Chat extends React.Component {
     const theChat = this.state.chats.find(chat => chat.id === chatId)
 
     if (!theChat) {
-      console.warn(
+      console.log(
         `<Chat />.index -> getRecipientAvatar -> no chat found. chatId: ${chatId}`,
       )
       return null
@@ -486,7 +484,7 @@ export default class Chat extends React.Component {
     const theChat = this.state.chats.find(c => c.id === id)
 
     if (!theChat) {
-      console.warn(
+      console.log(
         `<Chat />.index -> getRecipientDisplayName -> no chat found. id: ${id}`,
       )
       return null
@@ -501,7 +499,7 @@ export default class Chat extends React.Component {
     const theChat = this.state.chats.find(c => c.id === id)
 
     if (!theChat) {
-      console.warn(
+      console.log(
         `<Chat />.index -> getRecipientDisplayName -> no chat found. id: ${id}`,
       )
       return false
@@ -539,7 +537,7 @@ export default class Chat extends React.Component {
     const { recipientPublicKey } = theChat
 
     API.Actions.sendMessage(recipientPublicKey, text).catch(e => {
-      console.warn(`Error sending a message with text: ${text} -> ${e.message}`)
+      console.log(`Error sending a message with text: ${text} -> ${e.message}`)
     })
   }
 
