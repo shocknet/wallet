@@ -14,7 +14,7 @@ import RNBootSplash from 'react-native-bootsplash'
 // @ts-ignore
 import url from 'url'
 
-import { exchangeKeyPair } from './app/actions/ConnectionActions'
+import { throttledExchangeKeyPair } from './app/actions/ConnectionActions'
 import * as NavigationService from './app/services/navigation'
 import * as Cache from './app/services/cache'
 import * as Encryption from './app/services/encryption'
@@ -127,6 +127,7 @@ Http.interceptors.request.use(async config => {
     } catch (err) {
       console.log('Unable to retrieve base URL')
     }
+
     if (!config.headers.Authorization) {
       try {
         const token = await Cache.getToken()
@@ -206,7 +207,7 @@ const decryptResponse = async response => {
   try {
     const decryptionTime = Date.now()
     const { connection } = store.getState()
-    const path = url.parse(response.config.url).pathname
+    const path = url.parse(response?.config.url).pathname
     console.log('Path:', path)
 
     if (
@@ -238,7 +239,7 @@ const decryptResponse = async response => {
       response.headers['x-session-id']
     ) {
       console.log('Exchanging Keys...')
-      await exchangeKeyPair({
+      await throttledExchangeKeyPair({
         deviceId: connection.deviceId,
         sessionId: response.headers['x-session-id'],
         cachedSessionId: connection.sessionId,
@@ -314,7 +315,7 @@ Http.interceptors.response.use(
       console.log('Decrypted Field:', decryptedResponse.data.field)
 
       if (encryptionErrors.includes(decryptedResponse.data.field)) {
-        await exchangeKeyPair({
+        await throttledExchangeKeyPair({
           deviceId: connection.deviceId,
           sessionId: decryptedResponse.headers['x-session-id'],
           cachedSessionId: connection.sessionId,
@@ -324,17 +325,22 @@ Http.interceptors.response.use(
         decryptedResponse.config.headers['x-shockwallet-device-id'] =
           connection.deviceId
 
-        // @ts-ignore
-        const response = await Http[
-          decryptedResponse.config.method?.toLowerCase() ?? 'get'
-        ](
-          decryptedResponse.config.url,
+        if (
           // @ts-ignore
-          JSON.parse(decryptedResponse.config.originalData),
-          decryptedResponse.config.headers,
-        )
-        console.log('Response received!', response)
-        return response
+          decryptedResponse.config.originalData
+        ) {
+          // @ts-ignore
+          const response = await Http[
+            decryptedResponse.config.method?.toLowerCase() ?? 'get'
+          ](
+            decryptedResponse.config.url,
+            // @ts-ignore
+            JSON.parse(decryptedResponse.config.originalData),
+            decryptedResponse.config.headers,
+          )
+          console.log('Response received!', response)
+          return Promise.resolve(response)
+        }
       }
 
       try {

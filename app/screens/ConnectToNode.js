@@ -22,7 +22,7 @@ import OnboardingScreen, {
 } from '../components/OnboardingScreen'
 import OnboardingInput from '../components/OnboardingInput'
 import OnboardingBtn from '../components/OnboardingBtn'
-import { exchangeKeyPair } from '../actions/ConnectionActions'
+import { throttledExchangeKeyPair } from '../actions/ConnectionActions'
 /** @type {number} */
 // @ts-ignore
 const shockBG = require('../assets/images/shock-bg.png')
@@ -285,7 +285,7 @@ class ConnectToNode extends React.PureComponent {
 const mapStateToProps = ({ connection }) => ({ connection })
 
 const mapDispatchToProps = {
-  exchangeKeyPair,
+  throttledExchangeKeyPair,
 }
 
 export default connect(
