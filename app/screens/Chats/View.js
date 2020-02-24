@@ -293,7 +293,7 @@ export default class ChatsView extends React.Component {
       return this.receivedRequestRenderer(item)
     }
 
-    console.warn(`unknown kind of item found: ${JSON.stringify(item)}`)
+    console.log(`unknown kind of item found: ${JSON.stringify(item)}`)
 
     return null
   }

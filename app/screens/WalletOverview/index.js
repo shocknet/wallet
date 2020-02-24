@@ -293,7 +293,7 @@ class WalletOverview extends Component {
   copyOlderFormatBTCAddressToClipboard = () => {
     const { receivingOlderFormatBTCAddress } = this.state
     if (receivingOlderFormatBTCAddress === null) {
-      console.warn('receivingOlderFormatBTCAddress === null')
+      console.log('receivingOlderFormatBTCAddress === null')
       return
     }
 
@@ -358,7 +358,7 @@ class WalletOverview extends Component {
     const { receivingBTCAddress } = this.state
 
     if (receivingBTCAddress === null) {
-      console.warn('receivingOlderFormatBTCAddress === null')
+      console.log('receivingOlderFormatBTCAddress === null')
       return
     }
 
@@ -542,12 +542,12 @@ class WalletOverview extends Component {
     const { invoice, QRShockUserInfo } = this.state
 
     if (QRShockUserInfo === null) {
-      console.warn('QRShockUserInfo === null')
+      console.log('QRShockUserInfo === null')
       return
     }
 
     if (invoice === null) {
-      console.warn('invoice === null')
+      console.log('invoice === null')
       return
     }
 
@@ -907,7 +907,7 @@ class WalletOverview extends Component {
         } = this.state
 
         if (decodedInvoiceRes === null) {
-          console.warn('decodedInvoice === null')
+          console.log('decodedInvoice === null')
           return
         }
 
@@ -1194,7 +1194,7 @@ class WalletOverview extends Component {
           this._handleOpenURL({ url })
         }
       })
-      .catch(err => console.warn('An error occurred', err))
+      .catch(err => console.log('An error occurred', err))
 
     this.startNotificationService()
 
@@ -1683,7 +1683,7 @@ class WalletOverview extends Component {
             }
 
             if (displayingInvoicePaymentResult) {
-              console.warn('invalid state for paying invoice result dialog')
+              console.log('invalid state for paying invoice result dialog')
             }
             return ''
           })()}

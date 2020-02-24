@@ -129,10 +129,10 @@ const avatarFetcher = () => {
         return
       }
 
-      console.warn(`avatar res: ${JSON.stringify(res)}`)
+      console.log(`avatar res: ${JSON.stringify(res)}`)
 
       if (res.status === 200) {
-        console.warn(`Avatar through poll: ${JSON.stringify(res.data.data)}`)
+        console.log(`Avatar through poll: ${JSON.stringify(res.data.data)}`)
         setAvatar(res.data.data)
       } else {
         throw new Error(
@@ -141,7 +141,7 @@ const avatarFetcher = () => {
       }
     })
     .catch(e => {
-      console.warn(`Error in avatar Poll: ${e.message || 'Unknown error'}`)
+      console.log(`Error in avatar Poll: ${e.message || 'Unknown error'}`)
     })
 }
 
@@ -207,7 +207,7 @@ const addrFetcher = () => {
       }
 
       if (res.status === 200) {
-        console.warn(`HAddr through poll: ${JSON.stringify(res.data.data)}`)
+        console.log(`HAddr through poll: ${JSON.stringify(res.data.data)}`)
         setHandshakeAddress(res.data.data)
       } else {
         throw new Error(
@@ -216,7 +216,7 @@ const addrFetcher = () => {
       }
     })
     .catch(e => {
-      console.warn(`Error in H.address Poll:  ${e.message || 'Unknown error'}`)
+      console.log(`Error in H.address Poll:  ${e.message || 'Unknown error'}`)
     })
 }
 
@@ -285,7 +285,7 @@ const dnFetcher = () => {
       }
 
       if (res.status === 200) {
-        console.warn(`Dn through poll: ${JSON.stringify(res.data.data)}`)
+        console.log(`Dn through poll: ${JSON.stringify(res.data.data)}`)
         setDisplayName(res.data.data)
       } else {
         throw new Error(
@@ -294,7 +294,7 @@ const dnFetcher = () => {
       }
     })
     .catch(e => {
-      console.warn(`Error in dn Poll: ${e.message || 'Unknown error'}`)
+      console.log(`Error in dn Poll: ${e.message || 'Unknown error'}`)
     })
 }
 
@@ -352,7 +352,7 @@ const receivedReqsFetcher = () => {
       }
 
       if (res.status === 200) {
-        console.warn(
+        console.log(
           `Received reqs through poll: ${JSON.stringify(res.data.data)}`,
         )
         setReceivedReqs(res.data.data)
@@ -363,7 +363,7 @@ const receivedReqsFetcher = () => {
       }
     })
     .catch(e => {
-      console.warn(`Error in sent reqs Poll:  ${e.message || 'Unknown error'}`)
+      console.log(`Error in sent reqs Poll:  ${e.message || 'Unknown error'}`)
     })
 }
 
@@ -422,7 +422,7 @@ const sentReqsFetcher = () => {
       }
 
       if (res.status === 200) {
-        console.warn(`Sent reqs through poll: ${JSON.stringify(res.data.data)}`)
+        console.log(`Sent reqs through poll: ${JSON.stringify(res.data.data)}`)
         setSentReqs(res.data.data)
       } else {
         throw new Error(
@@ -431,7 +431,7 @@ const sentReqsFetcher = () => {
       }
     })
     .catch(e => {
-      console.warn(`Error in sent reqs Poll:  ${e.message || 'Unknown error'}`)
+      console.log(`Error in sent reqs Poll:  ${e.message || 'Unknown error'}`)
     })
 }
 
@@ -617,14 +617,14 @@ const chatsFetcher = () => {
       }
 
       if (res.status === 200) {
-        console.warn(`Chats through poll: ${JSON.stringify(res.data.data)}`)
+        console.log(`Chats through poll: ${JSON.stringify(res.data.data)}`)
         setChats(res.data.data)
       } else {
         throw new Error(res.data.errorMessage)
       }
     })
     .catch(e => {
-      console.warn(`Error in Chats Poll:  ${e.message || 'Unknown error'}`)
+      console.log(`Error in Chats Poll:  ${e.message || 'Unknown error'}`)
     })
 }
 
@@ -698,11 +698,11 @@ export const onSeedBackup = listener => {
 export const setupEvents = () => {
   const theSocket = Socket.socket
   if (!theSocket) {
-    console.warn('Called setupEvents() before creating the socket')
+    console.log('Called setupEvents() before creating the socket')
     return
   }
   if (!theSocket.connected) {
-    console.warn('Should call setupEvents() after socket is connected.')
+    console.log('Should call setupEvents() after socket is connected.')
   }
 
   theSocket.on('connect', () => {
@@ -712,7 +712,7 @@ export const setupEvents = () => {
   })
 
   theSocket.on('disconnect', reason => {
-    console.warn('socket disconnected')
+    console.log('socket disconnected')
     connectionListeners.forEach(l => {
       l(false)
     })
@@ -749,7 +749,7 @@ export const setupEvents = () => {
   // notify auth listeners that the token expired.
   Object.values(Event).forEach(e => {
     theSocket.on(e, res => {
-      console.warn(`res for event: ${e}: ${JSON.stringify(res)}`)
+      console.log(`res for event: ${e}: ${JSON.stringify(res)}`)
 
       if (
         res.msg === 'Token expired.' ||
@@ -765,7 +765,7 @@ export const setupEvents = () => {
   // notify auth listeners that the token expired.
   Object.values(Action).forEach(a => {
     theSocket.on(a, res => {
-      console.warn(`res for action: ${a}: ${JSON.stringify(res)}`)
+      console.log(`res for action: ${a}: ${JSON.stringify(res)}`)
       if (
         res.msg === 'Token expired.' ||
         res.msg === 'NOT_AUTH' ||
@@ -777,7 +777,7 @@ export const setupEvents = () => {
   })
 
   theSocket.on('IS_GUN_AUTH', res => {
-    console.warn(`res for IS_GUN_AUTH: ${JSON.stringify(res)}`)
+    console.log(`res for IS_GUN_AUTH: ${JSON.stringify(res)}`)
   })
 
   connectionListeners.forEach(l => {

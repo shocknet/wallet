@@ -94,7 +94,7 @@ class ContactsSearch extends PureComponent {
         }
       }
     } catch (err) {
-      console.warn(err)
+      console.log(err)
       if (onError) {
         onError(err)
       }

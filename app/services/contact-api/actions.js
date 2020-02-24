@@ -279,7 +279,7 @@ export const sendReqWithInitialMsg = async (recipientPublicKey, initialMsg) => {
       )
   })
 
-  console.warn(`res in sendreqwithinitialmsg: ${JSON.stringify(res)}`)
+  console.log(`res in sendreqwithinitialmsg: ${JSON.stringify(res)}`)
 
   if (!res.ok) {
     throw new Error(res.msg)
@@ -321,7 +321,7 @@ export const sendPayment = async (recipientPub, amount, memo) => {
       )
   })
 
-  console.warn(`res in sendPayment: ${JSON.stringify(res)}`)
+  console.log(`res in sendPayment: ${JSON.stringify(res)}`)
 
   if (!res.ok) {
     throw new Error(res.msg || 'Unknown Error')

@@ -165,7 +165,7 @@ export default class Chats extends React.Component {
     const { acceptingRequest } = this.state
 
     if (acceptingRequest === null) {
-      console.warn('acceptingRequest === null')
+      console.log('acceptingRequest === null')
       return
     }
 
@@ -208,7 +208,7 @@ export default class Chats extends React.Component {
     const pk = encodedShockUser.slice('$$__SHOCKWALLET__USER__'.length)
 
     if (typeof pk === 'string' && pk.length === 0) {
-      console.warn("typeof pk === 'string' && pk.length === 0")
+      console.log("typeof pk === 'string' && pk.length === 0")
       return
     }
 
@@ -223,7 +223,7 @@ export default class Chats extends React.Component {
     Clipboard.getString()
       .then(this.sendHR)
       .catch(e => {
-        console.warn(
+        console.log(
           `sendHRToUserFromClipboard()->Clipboard.getString() error: ${e.message}`,
         )
       })
@@ -252,7 +252,7 @@ export default class Chats extends React.Component {
 
       this.sendHR(encodedShockUser)
     } catch (err) {
-      console.warn(`<Chats />.index -> onQRRead() -> ${err.message}`)
+      console.log(`<Chats />.index -> onQRRead() -> ${err.message}`)
     }
   }
 

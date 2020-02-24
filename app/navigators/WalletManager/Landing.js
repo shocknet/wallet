@@ -48,35 +48,35 @@ export default class CreateWallet extends React.PureComponent {
 
   setup = async () => {
     try {
-      console.warn('GETTING AUTH DATA')
+      console.log('GETTING AUTH DATA')
       const authData = await Cache.getStoredAuthData()
-      console.warn('GETTING WALLET STATUS')
+      console.log('GETTING WALLET STATUS')
       const walletStatus = await Wallet.walletStatus()
-      console.warn('FETCHING NODE URL')
+      console.log('FETCHING NODE URL')
       const nodeURL = await Cache.getNodeURL()
       if (nodeURL === null) {
         throw new Error('NODE URL IS NULL BEFORE IS_GUN_AUTH')
       }
-      console.warn('GETTING IS_GUN_AUTH')
+      console.log('GETTING IS_GUN_AUTH')
       const isGunAuth = await Auth.isGunAuthed(nodeURL)
 
       if (walletStatus === 'noncreated') {
-        console.warn('WALLET NON CREATED INVALIDATING CACHED AUTH DATA')
+        console.log('WALLET NON CREATED INVALIDATING CACHED AUTH DATA')
         await Cache.writeStoredAuthData(null)
-        console.warn('NAVIGATING TO CREATE WALLET OR ALIAS SCREEN')
+        console.log('NAVIGATING TO CREATE WALLET OR ALIAS SCREEN')
         this.props.navigation.navigate(CREATE_WALLET_OR_ALIAS)
       }
 
       if (walletStatus === 'unlocked') {
         if (authData !== null && isGunAuth) {
-          console.warn(
+          console.log(
             'NOW CONNECTING SOCKET, GUN IS AUTHED AND AUTH DATA IS CACHED',
           )
           await API.Socket.connect()
-          console.warn('NAVIGATING TO APP')
+          console.log('NAVIGATING TO APP')
           this.props.navigation.navigate(APP)
         } else {
-          console.warn(
+          console.log(
             'NO AUTH DATA CACHED OR GUN IS NOT AUTH, NAVIGATING TO LOGIN',
           )
           this.props.navigation.navigate(LOGIN)
@@ -84,21 +84,21 @@ export default class CreateWallet extends React.PureComponent {
       }
 
       if (walletStatus === 'locked') {
-        console.warn('WALLET IS LOCKED')
+        console.log('WALLET IS LOCKED')
         if (authData === null) {
-          console.warn(
+          console.log(
             'WALLET LOCKED AND NO CACHED AUTH, NAVIGATING TO CREATE WALLET OR ALIAS',
           )
           this.props.navigation.navigate(CREATE_WALLET_OR_ALIAS)
         } else {
-          console.warn(
+          console.log(
             'WALLET LOCKED BUT GOT CACHED AUTH DATA, NAVIGATING TO LOGIN',
           )
           this.props.navigation.navigate(LOGIN)
         }
       }
     } catch (e) {
-      console.warn(
+      console.log(
         'ERROR IN Landing.setup: ' +
           e.message +
           ' -- will navigate to CONNECT SCREEN, with error paramater',

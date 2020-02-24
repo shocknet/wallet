@@ -191,7 +191,7 @@ class AdvancedScreen extends Component {
       await Promise.all([fetchHistory(), fetchNodeInfo()])
       return true
     } catch (err) {
-      console.warn(err.response)
+      console.log(err.response)
       throw err
     }
   }
@@ -298,7 +298,7 @@ class AdvancedScreen extends Component {
       this.addPeerModal.current.close()
     } catch (err) {
       this.showErr(err.response.data.errorMessage)
-      console.warn(Http.defaults.baseURL, err.response)
+      console.log(Http.defaults.baseURL, err.response)
     } finally {
       this.setState({
         modalLoading: false,

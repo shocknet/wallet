@@ -21,13 +21,13 @@ export const pingURL = async urlOrIp => {
     /**
      * @type {ReturnType<typeof fetch>}
      */
-    console.warn('WILL PING:' + url)
+    console.log('WILL PING:' + url)
 
     const res = await fetch(`http://${url}/healthz`)
 
     const body = await res.json()
 
-    console.warn('Fetch Body:' + JSON.stringify(body))
+    console.log('Fetch Body:' + JSON.stringify(body))
 
     if (!res.ok) {
       throw new Error(body.errorMessage || body.message || `Unknown Err`)
@@ -45,7 +45,7 @@ export const pingURL = async urlOrIp => {
       success: true,
     }
   } catch (e) {
-    console.warn(`Connection.pingURL: ${e.message}`)
+    console.log(`Connection.pingURL: ${e.message}`)
 
     return {
       success: false,

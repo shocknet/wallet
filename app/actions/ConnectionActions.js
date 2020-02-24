@@ -120,7 +120,7 @@ export const exchangeKeyPair = ({
 
     return data
   } catch (err) {
-    console.warn(err)
+    console.log(err)
     throw err
   }
 }
