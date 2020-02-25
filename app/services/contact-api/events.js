@@ -490,7 +490,7 @@ export const onUsers = listener => {
 /** @typedef {(bio: string|null) => void} BioListener*/
 
 /** @type {string|null} */
-export let currentBio = 'A ShockWallet user'
+export let currentBio = null
 
 /**
  * @type {BioListener[]}
@@ -783,6 +783,9 @@ export const setupEvents = () => {
   connectionListeners.forEach(l => {
     l(theSocket.connected)
   })
+
+  onAvatar(() => {})()
+  onDisplayName(() => {})()
 
   Cache.getToken().then(token => {
     pollIntervalIDs.push(
