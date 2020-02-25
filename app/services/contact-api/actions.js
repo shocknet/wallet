@@ -6,7 +6,6 @@ import debounce from 'lodash/debounce'
 import once from 'lodash/once'
 
 import * as Cache from '../../services/cache'
-import { defaultName } from '../utils'
 
 import Action from './action'
 import Event from './event'
@@ -163,21 +162,6 @@ export const sendHandshakeRequest = async recipientPublicKey => {
     throw new Error('A request is already in place')
   }
 
-  Events.setSentReqs([
-    // filter a possible existing req
-    ...currSentReqs.filter(r => r.recipientPublicKey !== recipientPublicKey),
-    {
-      id: uuid,
-      recipientAvatar: existingReq ? existingReq.recipientAvatar : null,
-      recipientChangedRequestAddress: false,
-      recipientDisplayName: existingReq
-        ? existingReq.recipientDisplayName
-        : defaultName(recipientPublicKey),
-      recipientPublicKey,
-      timestamp: Date.now(),
-    },
-  ])
-
   const token = await getToken()
 
   if (!socket || !(socket && socket.connected)) {
@@ -203,7 +187,6 @@ export const sendHandshakeRequest = async recipientPublicKey => {
   })
 
   if (!res.ok) {
-    Events.setSentReqs(Events.getCurrSentReqs().filter(r => r.id !== uuid))
     throw new Error(res.msg || 'Unknown Error')
   }
 }
