@@ -19,7 +19,6 @@ import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'
 import * as API from '../../services/contact-api'
 import * as CSS from '../../res/css'
 import * as Cache from '../../services/cache'
-import * as Utils from '../../services/utils'
 import ShockAvatar from '../../components/ShockAvatar'
 import QR from '../WalletOverview/QR'
 import Pad from '../../components/Pad'
@@ -255,11 +254,12 @@ export default class MyProfile extends React.PureComponent {
 
             <Pad amount={4} />
 
-            <TouchableOpacity onPress={this.toggleSetupDisplayName}>
+            <TouchableOpacity
+              onPress={this.toggleSetupDisplayName}
+              disabled={displayName === null}
+            >
               <Text style={styles.displayName}>
-                {displayName === null
-                  ? Utils.defaultName(authData.publicKey)
-                  : displayName}
+                {displayName === null ? 'Loading...' : displayName}
               </Text>
             </TouchableOpacity>
 
@@ -277,7 +277,7 @@ export default class MyProfile extends React.PureComponent {
             <Pad amount={8} />
 
             <TouchableOpacity onPress={this.onPressBio}>
-              <Text style={styles.bodyText}>{bio || 'ShockWallet User'}</Text>
+              <Text style={styles.bodyText}>{bio || 'Loading...'}</Text>
             </TouchableOpacity>
           </View>
 
