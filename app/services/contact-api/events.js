@@ -11,8 +11,9 @@ import Event from './event'
 import * as Socket from './socket'
 // eslint-disable-next-line no-unused-vars
 import * as Schema from './schema'
+import { isEqual } from 'lodash'
 
-const POLL_INTERVAL = 3500
+const POLL_INTERVAL = 200
 
 /** @type {number[]} */
 let pollIntervalIDs = []
@@ -143,6 +144,9 @@ const avatarFetcher = () => {
     .catch(e => {
       console.log(`Error in avatar Poll: ${e.message || 'Unknown error'}`)
     })
+    .finally(() => {
+      setTimeout(avatarFetcher, POLL_INTERVAL)
+    })
 }
 
 let onAvatarSubbed = false
@@ -171,7 +175,7 @@ export const onAvatar = listener => {
 
   if (!onAvatarSubbed) {
     onAvatarSubbed = true
-    pollIntervalIDs.push(setInterval(avatarFetcher, POLL_INTERVAL))
+    avatarFetcher()
   }
 
   return () => {
@@ -218,6 +222,9 @@ const addrFetcher = () => {
     .catch(e => {
       console.log(`Error in H.address Poll:  ${e.message || 'Unknown error'}`)
     })
+    .finally(() => {
+      setTimeout(addrFetcher, POLL_INTERVAL)
+    })
 }
 
 let onHandshakeAddrSubbed = false
@@ -236,7 +243,7 @@ export const onHandshakeAddr = listener => {
 
   if (!onHandshakeAddrSubbed) {
     onHandshakeAddrSubbed = true
-    pollIntervalIDs.push(setInterval(addrFetcher, POLL_INTERVAL))
+    addrFetcher()
   }
 
   return () => {
@@ -296,6 +303,9 @@ const dnFetcher = () => {
     .catch(e => {
       console.log(`Error in dn Poll: ${e.message || 'Unknown error'}`)
     })
+    .finally(() => {
+      setTimeout(dnFetcher, POLL_INTERVAL)
+    })
 }
 
 let onDnSubbed = false
@@ -312,7 +322,7 @@ export const onDisplayName = listener => {
 
   if (!onDnSubbed) {
     onDnSubbed = true
-    pollIntervalIDs.push(setInterval(dnFetcher, POLL_INTERVAL))
+    dnFetcher()
   }
 
   return () => {
@@ -365,6 +375,9 @@ const receivedReqsFetcher = () => {
     .catch(e => {
       console.log(`Error in sent reqs Poll:  ${e.message || 'Unknown error'}`)
     })
+    .finally(() => {
+      setTimeout(receivedReqsFetcher, POLL_INTERVAL)
+    })
 }
 
 /**
@@ -380,7 +393,7 @@ export const onReceivedRequests = listener => {
 
   if (!receivedReqsSubbed) {
     receivedReqsSubbed = true
-    pollIntervalIDs.push(setInterval(receivedReqsFetcher, POLL_INTERVAL))
+    receivedReqsFetcher()
   }
 
   return () => {
@@ -433,6 +446,9 @@ const sentReqsFetcher = () => {
     .catch(e => {
       console.log(`Error in sent reqs Poll:  ${e.message || 'Unknown error'}`)
     })
+    .finally(() => {
+      setTimeout(sentReqsFetcher, POLL_INTERVAL)
+    })
 }
 
 /**
@@ -447,7 +463,7 @@ export const onSentRequests = listener => {
 
   if (!sentReqsSubbed) {
     sentReqsSubbed = true
-    pollIntervalIDs.push(setInterval(sentReqsFetcher, POLL_INTERVAL))
+    sentReqsFetcher()
   }
 
   return () => {
@@ -599,6 +615,12 @@ export const getCurrChats = () => currentChats
 
 /** @param {Schema.Chat[]} chats */
 export const setChats = chats => {
+  if (isEqual(currentChats, chats)) {
+    return
+  }
+
+  console.log('Chats updated through poll', chats)
+
   currentChats = chats
   chatsListeners.forEach(l => l(currentChats))
 }
@@ -617,7 +639,6 @@ const chatsFetcher = () => {
       }
 
       if (res.status === 200) {
-        console.log(`Chats through poll: ${JSON.stringify(res.data.data)}`)
         setChats(res.data.data)
       } else {
         throw new Error(res.data.errorMessage)
@@ -625,6 +646,9 @@ const chatsFetcher = () => {
     })
     .catch(e => {
       console.log(`Error in Chats Poll:  ${e.message || 'Unknown error'}`)
+    })
+    .finally(() => {
+      setTimeout(chatsFetcher, POLL_INTERVAL)
     })
 }
 
@@ -638,7 +662,7 @@ export const onChats = listener => {
 
   if (!chatsSubbed) {
     chatsSubbed = true
-    pollIntervalIDs.push(setInterval(chatsFetcher, POLL_INTERVAL))
+    chatsFetcher()
   }
 
   chatsListeners.push(listener)

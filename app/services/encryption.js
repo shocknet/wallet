@@ -56,7 +56,6 @@ export const encryptData = async (data, rsaKey) => {
     generateRandomBytes(32),
     generateRandomBytes(16),
   ])
-  console.log('AES Key:', key, rsaKey)
   const [encryptedData, encryptedKey] = await Promise.all([
     Aes.encrypt(data, key, iv),
     encryptKey(key, rsaKey),
@@ -74,7 +73,6 @@ export const encryptData = async (data, rsaKey) => {
  */
 export const decryptData = async ({ encryptedData, key, iv }) => {
   const decrypted = await Aes.decrypt(encryptedData, key, iv)
-  console.log('Decrypted data:', decrypted)
   return {
     decryptedData: decrypted,
   }
@@ -86,7 +84,6 @@ export const decryptData = async ({ encryptedData, key, iv }) => {
  * @returns {Promise<string>}
  */
 export const encryptKey = async (aesKey, rsaKey) => {
-  console.log('publicKey', rsaKey)
   const encryptedKey = await RSA.encrypt(aesKey, rsaKey)
   return encryptedKey
 }
@@ -99,9 +96,7 @@ export const encryptKey = async (aesKey, rsaKey) => {
 export const decryptKey = async (encryptedKey, sessionId) => {
   try {
     const keyTag = `com.shocknet.APIKey.${sessionId}`
-    console.log('Decrypting Key:', encryptedKey)
     const decryptedKey = await RSAKeychain.decrypt(encryptedKey, keyTag)
-    console.log('Decrypted Key:', decryptedKey)
     return decryptedKey
   } catch (err) {
     console.log(err)

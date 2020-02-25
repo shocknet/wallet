@@ -116,7 +116,6 @@ export default class ShockWallet extends React.Component {
 // Adds an Authorization token to the header before sending any request
 Http.interceptors.request.use(async config => {
   try {
-    console.log('Interceptor running', config.url)
     const { connection } = store.getState()
     try {
       const nodeURL = await Cache.getNodeURL()
@@ -216,19 +215,15 @@ const decryptResponse = async response => {
       response.data.encryptedData &&
       connection.sessionId
     ) {
-      console.log('Decryptable route!')
       const decryptedKey = await Encryption.decryptKey(
         response.data.encryptedKey,
         connection.sessionId,
       )
-      console.log('decryptedKey:', decryptedKey)
       const { decryptedData } = await Encryption.decryptData({
         encryptedData: response.data.encryptedData,
         key: decryptedKey,
         iv: response.data.iv,
       })
-      console.log('API Public Key:', connection.APIPublicKey)
-      console.log('Decrypted data:', decryptedData)
       console.log(`Decrypted data in: ${Date.now() - decryptionTime}ms`)
       return {
         ...response,
@@ -257,9 +252,6 @@ const decryptResponse = async response => {
 // Logging for HTTP responses
 Http.interceptors.response.use(
   async response => {
-    console.log(
-      'Encrypted Response: ' + JSON.stringify(response && response.data),
-    )
     const decryptedResponse = await decryptResponse(response)
 
     try {
@@ -292,7 +284,6 @@ Http.interceptors.response.use(
     }
   },
   async error => {
-    console.log('Response error!', JSON.stringify(error))
     if (error && error.response) {
       const decryptedResponse = await decryptResponse(error.response)
 
@@ -301,7 +292,6 @@ Http.interceptors.response.use(
       }
 
       const { connection } = store.getState()
-      console.log('decryptedResponse:', decryptedResponse)
 
       const encryptionErrors = ['deviceId']
 
@@ -311,8 +301,6 @@ Http.interceptors.response.use(
       ) {
         await Cache.writeStoredAuthData(null)
       }
-
-      console.log('Decrypted Field:', decryptedResponse.data.field)
 
       if (encryptionErrors.includes(decryptedResponse.data.field)) {
         await throttledExchangeKeyPair({
@@ -338,7 +326,6 @@ Http.interceptors.response.use(
             JSON.parse(decryptedResponse.config.originalData),
             decryptedResponse.config.headers,
           )
-          console.log('Response received!', response)
           return Promise.resolve(response)
         }
       }
@@ -348,7 +335,6 @@ Http.interceptors.response.use(
           const method = decryptedResponse.config.method
             ? decryptedResponse.config.method
             : 'GET'
-          console.log('Response:', decryptedResponse)
           if (decryptedResponse.status !== undefined) {
             console.log(
               `<--- ${method.toUpperCase()} ${decryptedResponse.config.url} (${

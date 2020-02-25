@@ -174,6 +174,7 @@ export default class MyProfile extends React.PureComponent {
       includeBase64: true,
       cropperCircleOverlay: true,
       useFrontCamera: true,
+      compressImageQuality: 0.5,
       compressImageMaxWidth: AVATAR_EDGE,
       compressImageMaxHeight: AVATAR_EDGE,
       mediaType: 'photo',
