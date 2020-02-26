@@ -86,7 +86,7 @@ public class NotificationService extends Service {
                 Log.d(TAG,mex);
                 JSONObject res = new JSONObject(mex);
             
-                doNotification("New Transaction",res.getString("msg"),R.drawable.bolt,"");
+                doNotification("New Transaction",res.getString("msg"),R.drawable.icon,"");
             }catch (Exception e){
                 Log.d(TAG,e.toString());
             }
@@ -101,7 +101,7 @@ public class NotificationService extends Service {
                 Log.d(TAG,mex);
                 JSONObject res = new JSONObject(mex);
                 
-                doNotification("New Invoice",res.getString("msg"),R.drawable.bolt,"");
+                doNotification("New Invoice",res.getString("msg"),R.drawable.icon,"");
             }catch (Exception e){
                 Log.d(TAG,e.toString());
             }
@@ -113,7 +113,7 @@ public class NotificationService extends Service {
             
             if(chatInit == false){
                 chatInit = true;
-                //return;
+                return;
             }
             try{
                 String mex = DecryptMessage(args[0].toString());
@@ -208,12 +208,12 @@ public class NotificationService extends Service {
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
         NotificationCompat.Builder notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.bolt)
+                .setSmallIcon(R.drawable.icon)
                 //.setLargeIcon(BitmapFactory.decodeResource(this.getResources(),
                 //        bigIcon))
                 .setContentTitle(title)
                 .setContentText(result)
-                //.setSmallIcon(R.drawable.bolt)
+                //.setSmallIcon(R.drawable.icon)
                 .setContentIntent(contentIntent)
                 .setGroup(GROUP_KEY_NOTIF);
         if(icon64.equals("")){
@@ -279,12 +279,12 @@ public class NotificationService extends Service {
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
         NotificationCompat.Builder notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.bolt)
+                .setSmallIcon(R.drawable.icon)
                 .setLargeIcon(BitmapFactory.decodeResource(this.getResources(),
-                        R.drawable.bolt))
+                        R.drawable.icon))
                 .setContentTitle("Notification service connected.")
                 .setContentText("Listening...")
-                //.setSmallIcon(R.drawable.bolt)
+                //.setSmallIcon(R.drawable.icon)
                 .setContentIntent(contentIntent)
                 .setOngoing(true)
                 .setGroup(GROUP_KEY_NOTIF)
