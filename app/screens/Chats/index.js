@@ -8,6 +8,7 @@ import { Clipboard, StatusBar, ToastAndroid } from 'react-native'
  * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation
  */
 import * as API from '../../services/contact-api'
+import { defaultName } from '../../services/utils'
 import * as Cache from '../../services/cache'
 import * as CSS from '../../res/css'
 import { CHAT_ROUTE } from './../Chat'
@@ -38,7 +39,7 @@ const byTimestampFromOldestToNewest = (a, b) => a.timestamp - b.timestamp
  * @prop {API.Schema.Chat[]} chats
  * @prop {Cache.LastReadMsgs} lastReadMsgs
  * @prop {API.Schema.SimpleReceivedRequest[]} receivedRequests
- * @prop {API.Schema.SimpleSentRequest[]} sentRequests
+ * @prop {(API.Schema.SimpleSentRequest & { state: string|null })[]} sentRequests (If state is sending the request hasn't been acked by API, if it's null it got sent, any other string is an error message)
  * @prop {boolean} showingAddDialog
  *
  * @prop {boolean} scanningUserQR
@@ -65,7 +66,10 @@ export default class Chats extends React.Component {
     chats: API.Events.currentChats,
     lastReadMsgs: {},
     receivedRequests: API.Events.currReceivedReqs(),
-    sentRequests: API.Events.getCurrSentReqs(),
+    sentRequests: API.Events.getCurrSentReqs().map(r => ({
+      ...r,
+      state: null,
+    })),
     showingAddDialog: false,
 
     scanningUserQR: false,
@@ -103,7 +107,7 @@ export default class Chats extends React.Component {
     )
     this.sentReqsUnsubscribe = API.Events.onSentRequests(sentRequests => {
       this.setState({
-        sentRequests,
+        sentRequests: sentRequests.map(r => ({ ...r, state: null })),
       })
     })
   }
@@ -212,9 +216,55 @@ export default class Chats extends React.Component {
       return
     }
 
-    API.Actions.sendHandshakeRequest(pk).catch(e => {
-      ToastAndroid.show(`PK: ${pk.slice(0, 6)}... ${e.message}`, 1200)
+    if (this.state.sentRequests.some(r => r.recipientPublicKey === pk)) {
+      ToastAndroid.show('Already sent request to this user', 800)
+    }
+
+    /** @type {API.Schema.SimpleSentRequest & { state: string|null}} */
+    const fakeReq = {
+      id: Math.random().toString(),
+      recipientAvatar: null,
+      recipientDisplayName: defaultName(pk),
+      recipientPublicKey: pk,
+      recipientChangedRequestAddress: false,
+      timestamp: Date.now(),
+      state: 'sending',
+    }
+
+    this.setState(({ sentRequests }) => ({
+      sentRequests: [...sentRequests, fakeReq],
+    }))
+
+    /**
+     * @param {string} publicKey
+     * @param {string} error
+     * @returns {<T extends {recipientPublicKey: string}>(t: T) => (T & { state: string|null }) }
+     */
+    const placeErrorOnPk = (publicKey, error) => sentRequest => ({
+      ...sentRequest,
+      state: sentRequest.recipientPublicKey === publicKey ? error : null,
     })
+
+    API.Actions.sendHandshakeRequest(pk)
+      .then(() => {
+        this.setState(({ sentRequests }) => ({
+          sentRequests: sentRequests.map(r => {
+            if (r.recipientPublicKey === pk) {
+              return {
+                ...r,
+                state: null,
+              }
+            }
+
+            return r
+          }),
+        }))
+      })
+      .catch(e => {
+        this.setState(({ sentRequests }) => ({
+          sentRequests: sentRequests.map(placeErrorOnPk(pk, e.message)),
+        }))
+      })
   }
 
   sendHRToUserFromClipboard = () => {
