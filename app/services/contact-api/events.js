@@ -4,6 +4,7 @@
 import debounce from 'lodash/debounce'
 import Http from 'axios'
 
+import * as Auth from '../auth'
 import * as Cache from '../cache'
 
 import Action from './action'
@@ -17,12 +18,26 @@ const POLL_INTERVAL = 200
 
 /** @type {number[]} */
 let pollIntervalIDs = []
-
 const clean = () => {
   pollIntervalIDs.forEach(id => {
     clearInterval(id)
   })
   pollIntervalIDs = []
+}
+
+/**
+ * @returns {Promise<boolean>}
+ */
+const isAuth = async () => {
+  const nodeURL = await Cache.getNodeURL()
+  if (!nodeURL) {
+    return false
+  }
+  const theresStoredAuthData = (await Cache.getStoredAuthData()) !== null
+  if (!theresStoredAuthData) {
+    return false
+  }
+  return Auth.isGunAuthed(nodeURL)
 }
 
 /**
@@ -118,20 +133,13 @@ export const setAvatar = a => {
   })
 }
 
-let lastAvatarUpdate = Date.now() - 1000
-
-const avatarFetcher = () => {
-  const thisUpdate = Date.now()
-  lastAvatarUpdate = thisUpdate
+const avatarFetcher = async () => {
+  if (!(await isAuth())) {
+    return
+  }
 
   Http.get(`/api/gun/${Event.ON_AVATAR}`)
     .then(res => {
-      if (lastAvatarUpdate !== thisUpdate) {
-        return
-      }
-
-      console.log(`avatar res: ${JSON.stringify(res)}`)
-
       if (res.status === 200) {
         console.log(`Avatar through poll: ${JSON.stringify(res.data.data)}`)
         setAvatar(res.data.data)
@@ -140,11 +148,11 @@ const avatarFetcher = () => {
           res.data.errorMessage || res.data.message || JSON.stringify(res.data),
         )
       }
+
+      setTimeout(avatarFetcher, POLL_INTERVAL)
     })
     .catch(e => {
       console.log(`Error in avatar Poll: ${e.message || 'Unknown error'}`)
-    })
-    .finally(() => {
       setTimeout(avatarFetcher, POLL_INTERVAL)
     })
 }
@@ -198,18 +206,13 @@ export const setHandshakeAddress = addr => {
   handshakeAddrListeners.forEach(l => l(currentAddr))
 }
 
-let lastAddrUpdate = Date.now() - 1000
-
-const addrFetcher = () => {
-  const thisUpdate = Date.now()
-  lastAddrUpdate = thisUpdate
+const addrFetcher = async () => {
+  if (!(await isAuth())) {
+    return
+  }
 
   Http.get(`/api/gun/${Event.ON_HANDSHAKE_ADDRESS}`)
     .then(res => {
-      if (lastAddrUpdate !== thisUpdate) {
-        return
-      }
-
       if (res.status === 200) {
         console.log(`HAddr through poll: ${JSON.stringify(res.data.data)}`)
         setHandshakeAddress(res.data.data)
@@ -218,11 +221,11 @@ const addrFetcher = () => {
           res.data.errorMessage || res.data.message || JSON.stringify(res.data),
         )
       }
+
+      setTimeout(addrFetcher, POLL_INTERVAL)
     })
     .catch(e => {
       console.log(`Error in H.address Poll:  ${e.message || 'Unknown error'}`)
-    })
-    .finally(() => {
       setTimeout(addrFetcher, POLL_INTERVAL)
     })
 }
@@ -279,18 +282,13 @@ export const setDisplayName = dn => {
   })
 }
 
-let lastDnUpdate = Date.now() - 1000
-
-const dnFetcher = () => {
-  const thisUpdate = Date.now()
-  lastDnUpdate = thisUpdate
+const dnFetcher = async () => {
+  if (!(await isAuth())) {
+    return
+  }
 
   Http.get(`/api/gun/${Event.ON_DISPLAY_NAME}`)
     .then(res => {
-      if (lastDnUpdate !== thisUpdate) {
-        return
-      }
-
       if (res.status === 200) {
         console.log(`Dn through poll: ${JSON.stringify(res.data.data)}`)
         setDisplayName(res.data.data)
@@ -299,11 +297,11 @@ const dnFetcher = () => {
           res.data.errorMessage || res.data.message || JSON.stringify(res.data),
         )
       }
+
+      setTimeout(dnFetcher, POLL_INTERVAL)
     })
     .catch(e => {
       console.log(`Error in dn Poll: ${e.message || 'Unknown error'}`)
-    })
-    .finally(() => {
       setTimeout(dnFetcher, POLL_INTERVAL)
     })
 }
@@ -349,18 +347,14 @@ export const setReceivedReqs = reqs => {
 }
 
 let receivedReqsSubbed = false
-let lastReceivedReqsUpdate = Date.now() - 1000
 
-const receivedReqsFetcher = () => {
-  const thisUpdate = Date.now()
-  lastReceivedReqsUpdate = thisUpdate
+const receivedReqsFetcher = async () => {
+  if (!(await isAuth())) {
+    return
+  }
 
   Http.get(`/api/gun/${Event.ON_RECEIVED_REQUESTS}`)
     .then(res => {
-      if (lastReceivedReqsUpdate !== thisUpdate) {
-        return
-      }
-
       if (res.status === 200) {
         console.log(
           `Received reqs through poll: ${JSON.stringify(res.data.data)}`,
@@ -371,11 +365,11 @@ const receivedReqsFetcher = () => {
           res.data.errorMessage || res.data.message || JSON.stringify(res.data),
         )
       }
+
+      setTimeout(receivedReqsFetcher, POLL_INTERVAL)
     })
     .catch(e => {
       console.log(`Error in sent reqs Poll:  ${e.message || 'Unknown error'}`)
-    })
-    .finally(() => {
       setTimeout(receivedReqsFetcher, POLL_INTERVAL)
     })
 }
@@ -421,19 +415,13 @@ export const setSentReqs = sentReqs => {
   sentReqsListeners.forEach(l => l(currSentReqs))
 }
 
-let sentReqsSubbed = false
-let lastSentReqsUpdate = Date.now() - 1000
-
-const sentReqsFetcher = () => {
-  const thisUpdate = Date.now()
-  lastSentReqsUpdate = thisUpdate
+const sentReqsFetcher = async () => {
+  if (!(await isAuth())) {
+    return
+  }
 
   Http.get(`/api/gun/${Event.ON_SENT_REQUESTS}`)
     .then(res => {
-      if (lastSentReqsUpdate !== thisUpdate) {
-        return
-      }
-
       if (res.status === 200) {
         console.log(`Sent reqs through poll: ${JSON.stringify(res.data.data)}`)
         setSentReqs(res.data.data)
@@ -442,14 +430,16 @@ const sentReqsFetcher = () => {
           res.data.errorMessage || res.data.message || JSON.stringify(res.data),
         )
       }
+
+      setTimeout(sentReqsFetcher, POLL_INTERVAL)
     })
     .catch(e => {
       console.log(`Error in sent reqs Poll:  ${e.message || 'Unknown error'}`)
-    })
-    .finally(() => {
       setTimeout(sentReqsFetcher, POLL_INTERVAL)
     })
 }
+
+let sentReqsSubbed = false
 
 /**
  * @param {SentRequestsListener} listener
@@ -625,32 +615,28 @@ export const setChats = chats => {
   chatsListeners.forEach(l => l(currentChats))
 }
 
-let chatsSubbed = false
-let lastChatUpdate = Date.now() - 1000
-
-const chatsFetcher = () => {
-  const thisUpdate = Date.now()
-  lastChatUpdate = thisUpdate
+const chatsFetcher = async () => {
+  if (!(await isAuth())) {
+    return
+  }
 
   Http.get(`/api/gun/${Event.ON_CHATS}`)
     .then(res => {
-      if (lastChatUpdate !== thisUpdate) {
-        return
-      }
-
       if (res.status === 200) {
         setChats(res.data.data)
       } else {
         throw new Error(res.data.errorMessage)
       }
+
+      setTimeout(chatsFetcher, POLL_INTERVAL)
     })
     .catch(e => {
       console.log(`Error in Chats Poll:  ${e.message || 'Unknown error'}`)
-    })
-    .finally(() => {
       setTimeout(chatsFetcher, POLL_INTERVAL)
     })
 }
+
+let chatsSubbed = false
 
 /**
  * @param {ChatsListener} listener
@@ -810,6 +796,10 @@ export const setupEvents = () => {
 
   onAvatar(() => {})()
   onDisplayName(() => {})()
+  onHandshakeAddr(() => {})()
+  onChats(() => {})()
+  onSentRequests(() => {})()
+  onReceivedRequests(() => {})()
 
   Cache.getToken().then(token => {
     pollIntervalIDs.push(
