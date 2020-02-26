@@ -31,7 +31,7 @@ export default class LNURL extends React.PureComponent {
 
   getInitialLNURLState = () => {
     return {
-      privateChannel: false,
+      privateChannel: true,
       done: null,
       error: null,
       payAmount: 0,
@@ -232,7 +232,7 @@ export default class LNURL extends React.PureComponent {
           {LNURLdata.uri ? LNURLdata.uri : 'ADDRESS NOT FOUND'}
         </Text>
         <View style={styles.switch}>
-          <Text>{privateChannel ? 'Private Channel' : 'Public Channel'}</Text>
+          <Text>Private Channel</Text>
           <Switch value={privateChannel} onValueChange={this.setPrivate} />
         </View>
         <Pad amount={10} />
