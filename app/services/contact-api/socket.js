@@ -88,11 +88,14 @@ export const encryptSocketData = async data => {
   }
 
   if (APIPublicKey && !isEmpty(data)) {
+    console.log('encryptSocketData APIPublicKey:', APIPublicKey, data)
     const stringifiedData = JSON.stringify(data)
     const encryptedData = await Encryption.encryptData(
       stringifiedData,
       APIPublicKey,
     )
+    console.log('Original Data:', data)
+    console.log('Encrypted Data:', encryptedData)
     return encryptedData
   }
 
@@ -105,6 +108,7 @@ export const encryptSocketData = async data => {
 export const decryptSocketData = async data => {
   if (data && data.encryptedKey) {
     const decryptionTime = Date.now()
+    console.log('Decrypting Data...', data)
     const { sessionId } = store.getState().connection
     const decryptedKey = await Encryption.decryptKey(
       data.encryptedKey,
@@ -118,6 +122,8 @@ export const decryptSocketData = async data => {
     console.log(`Decryption took: ${Date.now() - decryptionTime}ms`)
     return JSON.parse(decryptedData)
   }
+
+  console.log('Data is non-encrypted', data)
 
   return data
 }
