@@ -12,11 +12,13 @@ import {
 import moment from 'moment'
 import { Divider, Icon } from 'react-native-elements'
 import Ionicons from 'react-native-vector-icons/Ionicons'
-import QRCodeScanner from '../../components/QRScanner'
+
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation
  */
 
+import ChangingText from '../../components/ChangingText'
+import QRCodeScanner from '../../components/QRScanner'
 import * as API from '../../services/contact-api'
 import UserDetail from '../../components/UserDetail'
 import { Colors, SCREEN_PADDING, styles as Styles } from '../../res/css'
@@ -66,7 +68,7 @@ const keyExtractor = item => item.id
  *
  * @prop {API.Schema.Chat[]} chats
  * @prop {API.Schema.SimpleReceivedRequest[]} receivedRequests
- * @prop {API.Schema.SimpleSentRequest[]} sentRequests
+ * @prop {(API.Schema.SimpleSentRequest & { state: string|null })[]} sentRequests
  *
  * @prop {(id: string) => void} onPressChat
  * @prop {(requestID: string) => void} onPressRequest
@@ -243,6 +245,12 @@ export default class ChatsView extends React.Component {
    * @returns {React.ReactElement<any>}
    */
   sentRequestRenderer = sentRequest => {
+    // @ts-ignore
+    const isSending = sentRequest.state === 'sending'
+    const hasError =
+      // @ts-ignore
+      typeof sentRequest.state === 'string' && sentRequest.state !== 'sending'
+
     return (
       <View style={styles.itemContainer}>
         <View style={styles.userDetailContainer}>
@@ -251,12 +259,25 @@ export default class ChatsView extends React.Component {
             alternateTextBold
             id={sentRequest.id}
             image={sentRequest.recipientAvatar}
-            lowerText={
-              sentRequest.recipientChangedRequestAddress
+            lowerText={(() => {
+              if (isSending) {
+                return (
+                  <ChangingText poll={600} cycle>
+                    {['Sending', 'Sending.', 'Sending..', 'Sending...']}
+                  </ChangingText>
+                )
+              }
+
+              if (hasError) {
+                // @ts-ignore
+                return sentRequest.state
+              }
+
+              return sentRequest.recipientChangedRequestAddress
                 ? 'Request ignored'
                 : 'Pending acceptance'
-            }
-            lowerTextStyle={styles.boldFont}
+            })()}
+            lowerTextStyle={hasError ? styles.redBoldFont : styles.boldFont}
             name={
               sentRequest.recipientDisplayName === null
                 ? sentRequest.recipientPublicKey
@@ -424,6 +445,12 @@ const styles = StyleSheet.create({
   boldFont: {
     // @ts-ignore
     fontWeight: 'bold',
+  },
+
+  redBoldFont: {
+    // @ts-ignore
+    fontWeight: 'bold',
+    color: 'red',
   },
 
   header: {

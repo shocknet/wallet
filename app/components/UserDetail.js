@@ -11,7 +11,7 @@ import { Colors } from '../res/css'
  * @typedef {object} Props
  * @prop {string=} alternateText
  * @prop {boolean=} alternateTextBold
- * @prop {string} lowerText
+ * @prop {React.ReactNode} lowerText
  * @prop {import('react-native').TextInputProps['style']=} lowerTextStyle
  * @prop {string?} image
  * @prop {string} id
@@ -93,10 +93,12 @@ export default class UserDetail extends React.PureComponent {
               </Text>
             </Text>
 
-            {lowerText && (
+            {typeof lowerText === 'string' ? (
               <Text numberOfLines={2} style={lowerTextStyle && lowerTextStyle}>
                 {lowerText}
               </Text>
+            ) : (
+              lowerText
             )}
           </View>
         </View>
