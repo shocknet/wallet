@@ -746,22 +746,6 @@ export const setupEvents = () => {
     }
   })
 
-  // If when receiving a token expired response on response to any data event
-  // notify auth listeners that the token expired.
-  Object.values(Event).forEach(e => {
-    theSocket.on(e, res => {
-      console.log(`res for event: ${e}: ${JSON.stringify(res)}`)
-
-      if (
-        res.msg === 'Token expired.' ||
-        res.msg === 'NOT_AUTH' ||
-        res.msg === 'secret or public key must be provided'
-      ) {
-        Cache.writeStoredAuthData(null)
-      }
-    })
-  })
-
   // If when receiving a token expired response on response to any action event
   // notify auth listeners that the token expired.
   Object.values(Action).forEach(a => {

@@ -166,31 +166,6 @@ Http.interceptors.request.use(async config => {
       config.originalData = stringifiedData
     }
 
-    // Logging for Network requests
-    try {
-      if (config) {
-        const method = config.method ? config.method.toUpperCase() : 'common'
-        console.log('Config:', config)
-        console.log(`---> ${method} ${config.url}`)
-        console.log(
-          'Headers:',
-          config.headers
-            ? JSON.stringify({
-                ...config.headers.common,
-                ...config.headers[method],
-              })
-            : 'N/A',
-        )
-        console.log(
-          'Params:',
-          config.params ? JSON.stringify(config.params) : 'N/A',
-        )
-        console.log('Body:', config.data ? JSON.stringify(config.data) : 'N/A')
-      }
-    } catch (err) {
-      console.log(err)
-    }
-
     return config
   } catch (err) {
     console.log(err && err.response ? err.response : err)
@@ -207,7 +182,6 @@ const decryptResponse = async response => {
     const decryptionTime = Date.now()
     const { connection } = store.getState()
     const path = url.parse(response?.config.url).pathname
-    console.log('Path:', path)
 
     if (
       connection.APIPublicKey &&
