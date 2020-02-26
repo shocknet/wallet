@@ -251,38 +251,7 @@ const decryptResponse = async response => {
 
 // Logging for HTTP responses
 Http.interceptors.response.use(
-  async response => {
-    const decryptedResponse = await decryptResponse(response)
-
-    try {
-      if (decryptedResponse && decryptedResponse.status !== undefined) {
-        const method = decryptedResponse.config.method
-          ? decryptedResponse.config.method
-          : 'common'
-        console.log(
-          `<--- ${method.toUpperCase()} ${decryptedResponse.config.url} (${
-            decryptedResponse.status
-          })`,
-        )
-        console.log(
-          'Response:',
-          decryptedResponse.data
-            ? JSON.stringify(decryptedResponse.data)
-            : null,
-        )
-        console.log(
-          'Server Headers:',
-          decryptedResponse.headers
-            ? JSON.stringify(decryptedResponse.headers)
-            : null,
-        )
-      }
-      return decryptedResponse
-    } catch (err) {
-      console.log(err)
-      return decryptedResponse
-    }
-  },
+  response => decryptResponse(response),
   async error => {
     if (error && error.response) {
       const decryptedResponse = await decryptResponse(error.response)
@@ -330,36 +299,7 @@ Http.interceptors.response.use(
         }
       }
 
-      try {
-        if (decryptedResponse) {
-          const method = decryptedResponse.config.method
-            ? decryptedResponse.config.method
-            : 'GET'
-          if (decryptedResponse.status !== undefined) {
-            console.log(
-              `<--- ${method.toUpperCase()} ${decryptedResponse.config.url} (${
-                decryptedResponse.status
-              })`,
-            )
-            console.log(
-              'Response:',
-              decryptedResponse.data
-                ? JSON.stringify(decryptedResponse.data)
-                : null,
-            )
-            console.log(
-              'Server Headers:',
-              decryptedResponse.headers
-                ? JSON.stringify(decryptedResponse.headers)
-                : null,
-            )
-          }
-        }
-        return Promise.reject({ ...error, response: decryptedResponse })
-      } catch (err) {
-        console.log(err)
-        return Promise.reject({ ...error, response: decryptedResponse })
-      }
+      return Promise.reject({ ...error, response: decryptedResponse })
     }
 
     return Promise.reject(error)

@@ -3,6 +3,7 @@
  */
 import React from 'react'
 import { Clipboard, StatusBar, ToastAndroid } from 'react-native'
+import zipObj from 'lodash/zipObject'
 
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation
@@ -105,9 +106,26 @@ export default class Chats extends React.Component {
         })
       },
     )
-    this.sentReqsUnsubscribe = API.Events.onSentRequests(sentRequests => {
-      this.setState({
-        sentRequests: sentRequests.map(r => ({ ...r, state: null })),
+    this.sentReqsUnsubscribe = API.Events.onSentRequests(newReqs => {
+      this.setState(({ sentRequests: oldReqs }) => {
+        const oldReqsMap = zipObj(
+          oldReqs.map(r => r.recipientPublicKey),
+          oldReqs,
+        )
+        const newReqsTransformed = newReqs.map(r => ({ ...r, state: null }))
+        const newReqsMap = zipObj(
+          newReqsTransformed.map(r => r.recipientPublicKey),
+          newReqsTransformed,
+        )
+
+        const finalMap = {
+          ...oldReqsMap,
+          ...newReqsMap,
+        }
+
+        return {
+          sentRequests: Object.values(finalMap),
+        }
       })
     })
   }
