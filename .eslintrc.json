@@ -112,7 +112,9 @@
     "babel/valid-typeof": 1,
     // needed for redux reducers function arguments
     "default-param-last": "off",
-    "no-warning-comments": "off"
+    "no-warning-comments": "off",
+
+    "react/jsx-props-no-spreading": "off"
   },
   "settings": {
     "react": {
