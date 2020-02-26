@@ -141,7 +141,6 @@ const avatarFetcher = async () => {
   Http.get(`/api/gun/${Event.ON_AVATAR}`)
     .then(res => {
       if (res.status === 200) {
-        console.log(`Avatar through poll: ${JSON.stringify(res.data.data)}`)
         setAvatar(res.data.data)
       } else {
         throw new Error(
@@ -214,7 +213,6 @@ const addrFetcher = async () => {
   Http.get(`/api/gun/${Event.ON_HANDSHAKE_ADDRESS}`)
     .then(res => {
       if (res.status === 200) {
-        console.log(`HAddr through poll: ${JSON.stringify(res.data.data)}`)
         setHandshakeAddress(res.data.data)
       } else {
         throw new Error(
@@ -290,7 +288,6 @@ const dnFetcher = async () => {
   Http.get(`/api/gun/${Event.ON_DISPLAY_NAME}`)
     .then(res => {
       if (res.status === 200) {
-        console.log(`Dn through poll: ${JSON.stringify(res.data.data)}`)
         setDisplayName(res.data.data)
       } else {
         throw new Error(
@@ -356,9 +353,6 @@ const receivedReqsFetcher = async () => {
   Http.get(`/api/gun/${Event.ON_RECEIVED_REQUESTS}`)
     .then(res => {
       if (res.status === 200) {
-        console.log(
-          `Received reqs through poll: ${JSON.stringify(res.data.data)}`,
-        )
         setReceivedReqs(res.data.data)
       } else {
         throw new Error(
@@ -423,7 +417,6 @@ const sentReqsFetcher = async () => {
   Http.get(`/api/gun/${Event.ON_SENT_REQUESTS}`)
     .then(res => {
       if (res.status === 200) {
-        console.log(`Sent reqs through poll: ${JSON.stringify(res.data.data)}`)
         setSentReqs(res.data.data)
       } else {
         throw new Error(
@@ -608,8 +601,6 @@ export const setChats = chats => {
   if (isEqual(currentChats, chats)) {
     return
   }
-
-  console.log('Chats updated through poll', chats)
 
   currentChats = chats
   chatsListeners.forEach(l => l(currentChats))
