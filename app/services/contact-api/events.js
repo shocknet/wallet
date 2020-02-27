@@ -4,7 +4,6 @@
 import debounce from 'lodash/debounce'
 import Http from 'axios'
 
-import * as Auth from '../auth'
 import * as Cache from '../cache'
 
 import Action from './action'
@@ -33,11 +32,8 @@ const isAuth = async () => {
   if (!nodeURL) {
     return false
   }
-  const theresStoredAuthData = (await Cache.getStoredAuthData()) !== null
-  if (!theresStoredAuthData) {
-    return false
-  }
-  return Auth.isGunAuthed(nodeURL)
+  const storedAuthData = await Cache.getStoredAuthData()
+  return storedAuthData !== null
 }
 
 /**
