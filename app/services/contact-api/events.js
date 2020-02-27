@@ -13,7 +13,7 @@ import * as Socket from './socket'
 import * as Schema from './schema'
 import { isEqual } from 'lodash'
 
-const POLL_INTERVAL = 200
+const POLL_INTERVAL = 3500
 
 /** @type {number[]} */
 let pollIntervalIDs = []
