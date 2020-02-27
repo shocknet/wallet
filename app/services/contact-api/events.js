@@ -720,14 +720,6 @@ export const setupEvents = () => {
     }
   })
 
-  theSocket.on(Event.ON_ALL_USERS, res => {
-    if (res.ok) {
-      usersListeners.forEach(l => {
-        l(res.msg)
-      })
-    }
-  })
-
   theSocket.on(Event.ON_BIO, res => {
     if (res.ok) {
       currentBio = res.msg
