@@ -4,7 +4,6 @@
 import debounce from 'lodash/debounce'
 import Http from 'axios'
 
-import * as Auth from '../auth'
 import * as Cache from '../cache'
 
 import Action from './action'
@@ -33,11 +32,8 @@ const isAuth = async () => {
   if (!nodeURL) {
     return false
   }
-  const theresStoredAuthData = (await Cache.getStoredAuthData()) !== null
-  if (!theresStoredAuthData) {
-    return false
-  }
-  return Auth.isGunAuthed(nodeURL)
+  const storedAuthData = await Cache.getStoredAuthData()
+  return storedAuthData !== null
 }
 
 /**
@@ -485,6 +481,7 @@ export const onUsers = listener => {
     usersListeners.splice(idx, 1)
   }
 }
+////////////////////////////////////////////////////////////////////////////////
 
 /** @typedef {(bio: string|null) => void} BioListener*/
 
@@ -500,6 +497,32 @@ const notifyBioListeners = debounce(() => {
   bioListeners.forEach(l => l(currentBio))
 }, 500)
 
+const bioFetcher = async () => {
+  if (!(await isAuth())) {
+    return
+  }
+
+  Http.get(`/api/gun/${Event.ON_BIO}`)
+    .then(res => {
+      if (res.status === 200) {
+        currentBio = res.data.data
+        notifyBioListeners()
+      } else {
+        throw new Error(
+          res.data.errorMessage || res.data.message || JSON.stringify(res.data),
+        )
+      }
+
+      setTimeout(bioFetcher, POLL_INTERVAL)
+    })
+    .catch(e => {
+      console.log(`Error in bio Poll:  ${e.message || 'Unknown error'}`)
+      setTimeout(bioFetcher, POLL_INTERVAL)
+    })
+}
+
+let bioSubbed = false
+
 /**
  * @param {BioListener} listener
  */
@@ -509,16 +532,12 @@ export const onBio = listener => {
   }
 
   bioListeners.push(listener)
+  listener(currentBio)
 
-  setImmediate(async () => {
-    notifyBioListeners() // will provide current value to listener
-    if (!Socket.socket || !(Socket.socket && Socket.socket.connected)) {
-      throw new Error('NOT_CONNECTED')
-    }
-    Socket.socket.emit(Event.ON_BIO, {
-      token: await getToken(),
-    })
-  })
+  if (!bioSubbed) {
+    bioSubbed = true
+    bioFetcher()
+  }
 
   return () => {
     const idx = bioListeners.indexOf(listener)
@@ -530,6 +549,8 @@ export const onBio = listener => {
     bioListeners.splice(idx, 1)
   }
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
 // ACTION EVENTS ///////////////////////////////////////////////////////////////
@@ -724,21 +745,6 @@ export const setupEvents = () => {
     }
   })
 
-  theSocket.on(Event.ON_ALL_USERS, res => {
-    if (res.ok) {
-      usersListeners.forEach(l => {
-        l(res.msg)
-      })
-    }
-  })
-
-  theSocket.on(Event.ON_BIO, res => {
-    if (res.ok) {
-      currentBio = res.msg
-      notifyBioListeners()
-    }
-  })
-
   theSocket.on(Event.ON_SEED_BACKUP, res => {
     if (res.ok) {
       currentSeedBackup = res.msg
@@ -791,6 +797,7 @@ export const setupEvents = () => {
   onChats(() => {})()
   onSentRequests(() => {})()
   onReceivedRequests(() => {})()
+  onBio(() => {})()
 
   Cache.getToken().then(token => {
     pollIntervalIDs.push(
