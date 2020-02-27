@@ -19,9 +19,9 @@ import IGDialogBtn from '../../components/IGDialogBtn'
  */
 
 /**
- * @augments React.PureComponent<Props, State>
+ * @augments React.Component<Props, State>
  */
-export default class SetBioDialog extends React.PureComponent {
+export default class SetBioDialog extends React.Component {
   state = {
     bio: '',
     open: false,

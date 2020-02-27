@@ -31,9 +31,9 @@ const DEFAULT_ICON_COLOR = CSS.Colors.TEXT_WHITE
 const DEFAULT_ICON_STYLE = { marginRight: 8 }
 
 /**
- * @augments React.PureComponent<Props>
+ * @augments React.Component<Props>
  */
-export default class ShockButton extends React.PureComponent {
+export default class ShockButton extends React.Component {
   static defaultProps = {
     title: '',
     color: CSS.Colors.ORANGE,

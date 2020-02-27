@@ -25,9 +25,9 @@ import ShockButton from '../../components/ShockButton'
  */
 
 /**
- * @augments React.PureComponent<Props, State>
+ * @augments React.Component<Props, State>
  */
-export default class PaymentDialog extends React.PureComponent {
+export default class PaymentDialog extends React.Component {
   /** @type {State} */
   state = {
     amount: 0,

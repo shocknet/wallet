@@ -11,9 +11,9 @@ import * as CSS from '../../res/css'
  */
 
 /**
- * @augments React.PureComponent<Props>
+ * @augments React.Component<Props>
  */
-export default class PageBtn extends React.PureComponent {
+export default class PageBtn extends React.Component {
   onPress = () => {
     this.props.onPress(this.props.page)
   }

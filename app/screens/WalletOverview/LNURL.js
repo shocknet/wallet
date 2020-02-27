@@ -16,7 +16,7 @@ import * as CSS from '../../res/css'
  *              maxWithdrawable:number,
  *              shockPubKey:string,
  *          }} LNURLdataType */
-export default class LNURL extends React.PureComponent {
+export default class LNURL extends React.Component {
   /**@param {object} props */
   constructor(props) {
     super(props)

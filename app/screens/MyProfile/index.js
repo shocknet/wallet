@@ -45,9 +45,9 @@ const showCopiedToClipboardToast = () => {
  */
 
 /**
- * @augments React.PureComponent<{ navigation: Navigation }, State, never>
+ * @augments React.Component<{ navigation: Navigation }, State, never>
  */
-export default class MyProfile extends React.PureComponent {
+export default class MyProfile extends React.Component {
   /**
    * @type {import('react-navigation').NavigationBottomTabScreenOptions}
    */

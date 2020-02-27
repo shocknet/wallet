@@ -73,9 +73,9 @@ const keyExtractor = unifiedTransaction => {
 }
 
 /**
- * @augments React.PureComponent<Props, {}, never>
+ * @augments React.Component<Props, {}, never>
  */
-class UnifiedTransactions extends React.PureComponent {
+class UnifiedTransactions extends React.Component {
   /**
    * @type {import('react-native').ListRenderItem<IUnifiedTransaction>}
    */

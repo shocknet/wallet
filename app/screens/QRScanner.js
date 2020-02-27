@@ -21,9 +21,9 @@ import * as CSS from '../res/css'
  */
 
 /**
- * @augments React.PureComponent<Props>
+ * @augments React.Component<Props>
  */
-export default class QRScanner extends React.PureComponent {
+export default class QRScanner extends React.Component {
   static navigationOptions = {
     header: null,
   }

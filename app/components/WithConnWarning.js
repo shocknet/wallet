@@ -20,9 +20,9 @@ import * as ContactAPI from '../services/contact-api'
 export {} // stop JSDoc comments from merging
 
 /**
- * @augments React.PureComponent<Props, State, never>
+ * @augments React.Component<Props, State, never>
  */
-export default class WithConnWarning extends React.PureComponent {
+export default class WithConnWarning extends React.Component {
   /**
    * @type {State}
    */

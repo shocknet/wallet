@@ -52,9 +52,9 @@ export const CREATE_WALLET_OR_ALIAS = 'CREATE_WALLET_OR_ALIAS'
  */
 
 /**
- * @augments React.PureComponent<Props, State>
+ * @augments React.Component<Props, State>
  */
-class CreateWalletOrAlias extends React.PureComponent {
+class CreateWalletOrAlias extends React.Component {
   /**
    * @type {import('react-navigation').NavigationStackScreenOptions}
    */

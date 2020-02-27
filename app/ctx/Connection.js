@@ -13,9 +13,9 @@ ConnectionContext.displayName = 'ConnectionContext'
  */
 
 /**
- * @augments React.PureComponent<{}, State>
+ * @augments React.Component<{}, State>
  */
-export class ConnectionProvider extends React.PureComponent {
+export class ConnectionProvider extends React.Component {
   /** @type {State} */
   state = {
     internet: false,

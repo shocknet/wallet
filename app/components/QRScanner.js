@@ -16,9 +16,9 @@ import { Colors } from '../res/css'
  */
 
 /**
- * @augments React.PureComponent<Props>
+ * @augments React.Component<Props>
  */
-export default class QRScanner extends React.PureComponent {
+export default class QRScanner extends React.Component {
   onBackBtn = () => {
     this.props.onRequestClose()
 

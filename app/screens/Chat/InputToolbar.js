@@ -27,9 +27,9 @@ import { bLogoSmall } from '../../res'
  */
 
 /**
- * @augments React.PureComponent<Props, State>
+ * @augments React.Component<Props, State>
  */
-export default class InputToolbar extends React.PureComponent {
+export default class InputToolbar extends React.Component {
   /** @type {State} */
   state = {
     text: '',

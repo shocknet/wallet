@@ -18,9 +18,9 @@ export const SEED_BACKUP = 'SEED_BACKUP'
  */
 
 /**
- * @augments React.PureComponent<{}, State>
+ * @augments React.Component<{}, State>
  */
-export default class SeedBackup extends React.PureComponent {
+export default class SeedBackup extends React.Component {
   /** @type {State} */
   state = {
     nodeInfo: null,
