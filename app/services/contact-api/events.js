@@ -723,9 +723,6 @@ export const setupEvents = () => {
     console.log('Called setupEvents() before creating the socket')
     return
   }
-  if (!theSocket.connected) {
-    console.log('Should call setupEvents() after socket is connected.')
-  }
 
   theSocket.on('connect', () => {
     connectionListeners.forEach(l => {
