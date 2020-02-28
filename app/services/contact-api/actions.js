@@ -282,9 +282,6 @@ export const sendPayment = async (recipientPub, amount, memo) => {
     throw new Error('NOT_CONNECTED')
   }
 
-  /** @type {ReturnType<typeof setTimeout>} */
-  // eslint-disable-next-line init-declarations
-  let timeoutid
   const uuid = Date.now().toString()
 
   socket.emit(Action.SEND_PAYMENT, {
@@ -294,6 +291,8 @@ export const sendPayment = async (recipientPub, amount, memo) => {
     memo,
     uuid,
   })
+
+  let timeoutid = -1
 
   const res = await Promise.race([
     new Promise(resolve => {
@@ -309,8 +308,12 @@ export const sendPayment = async (recipientPub, amount, memo) => {
         )
     }),
     new Promise((_, rej) => {
-      setTimeout(() => {
-        rej(new Error('Could not reach the other user in less than 30 seconds'))
+      timeoutid = setTimeout(() => {
+        rej(
+          new Error(
+            'Did not receive a response from the node in less than 30 seconds',
+          ),
+        )
       }, 30000)
     }),
   ])
