@@ -282,6 +282,9 @@ export const sendPayment = async (recipientPub, amount, memo) => {
     throw new Error('NOT_CONNECTED')
   }
 
+  /** @type {ReturnType<typeof setTimeout>} */
+  // eslint-disable-next-line init-declarations
+  let timeoutid
   const uuid = Date.now().toString()
 
   socket.emit(Action.SEND_PAYMENT, {
@@ -292,17 +295,25 @@ export const sendPayment = async (recipientPub, amount, memo) => {
     uuid,
   })
 
-  const res = await new Promise(resolve => {
-    socket &&
-      socket.on(
-        Action.SEND_PAYMENT,
-        once(res => {
-          if (res.origBody.uuid === uuid) {
-            resolve(res)
-          }
-        }),
-      )
-  })
+  const res = await Promise.race([
+    new Promise(resolve => {
+      socket &&
+        socket.on(
+          Action.SEND_PAYMENT,
+          once(res => {
+            if (res.origBody.uuid === uuid) {
+              clearTimeout(timeoutid)
+              resolve(res)
+            }
+          }),
+        )
+    }),
+    new Promise((_, rej) => {
+      setTimeout(() => {
+        rej(new Error('Could not reach the other user in less than 30 seconds'))
+      }, 30000)
+    }),
+  ])
 
   console.log(`res in sendPayment: ${JSON.stringify(res)}`)
 
