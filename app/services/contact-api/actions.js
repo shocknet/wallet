@@ -292,17 +292,31 @@ export const sendPayment = async (recipientPub, amount, memo) => {
     uuid,
   })
 
-  const res = await new Promise(resolve => {
-    socket &&
-      socket.on(
-        Action.SEND_PAYMENT,
-        once(res => {
-          if (res.origBody.uuid === uuid) {
-            resolve(res)
-          }
-        }),
-      )
-  })
+  let timeoutid = -1
+
+  const res = await Promise.race([
+    new Promise(resolve => {
+      socket &&
+        socket.on(
+          Action.SEND_PAYMENT,
+          once(res => {
+            if (res.origBody.uuid === uuid) {
+              clearTimeout(timeoutid)
+              resolve(res)
+            }
+          }),
+        )
+    }),
+    new Promise((_, rej) => {
+      timeoutid = setTimeout(() => {
+        rej(
+          new Error(
+            'Did not receive a response from the node in less than 30 seconds',
+          ),
+        )
+      }, 30000)
+    }),
+  ])
 
   console.log(`res in sendPayment: ${JSON.stringify(res)}`)
 
