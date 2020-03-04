@@ -4,6 +4,7 @@
 import React from 'react'
 import { Text, View } from 'react-native'
 import { connect } from 'react-redux'
+import Logger from 'react-native-file-log'
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}, Params>} Navigation
  */
@@ -122,20 +123,20 @@ class ConnectToNode extends React.Component {
   }
 
   connectURL = async (url = '') => {
-    console.log('WILL NOW PING URL: ' + url)
+    Logger.log('WILL NOW PING URL: ' + url)
     const wasGoodPing = await Conn.pingURL(url)
-    console.log('PING COMPLETED WITH RESULT: ' + wasGoodPing.success)
+    Logger.log('PING COMPLETED WITH RESULT: ' + wasGoodPing.success)
 
     if (wasGoodPing.success) {
-      console.log('WRITING NODE URL TO CACHE')
+      Logger.log('WRITING NODE URL TO CACHE')
       await Cache.writeNodeURLOrIP(url)
       this.setState({
         nodeURL: url,
       })
-      console.log('NAVIGATING TO WALLET MANAGER')
+      Logger.log('NAVIGATING TO WALLET MANAGER')
       this.props.navigation.navigate(WALLET_MANAGER)
     } else {
-      console.log('PING FAILED')
+      Logger.log('PING FAILED')
       throw new Error('Ping failed')
     }
   }
@@ -153,7 +154,7 @@ class ConnectToNode extends React.Component {
           await this.connectURL(nodeURL)
         } catch (err) {
           try {
-            console.log(
+            Logger.log(
               'CONNECTURL FAILED, TRYING ONCE MORE TIME, ERR: ' + err.message,
             )
             await this.connectURL(externalURL)

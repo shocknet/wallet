@@ -11,6 +11,7 @@ import {
 } from 'react-native'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 import { connect } from 'react-redux'
+import Logger from 'react-native-file-log'
 import Suggestion from './Suggestion'
 import { selectContact } from '../../actions/ChatActions'
 import { decodePaymentRequest } from '../../actions/InvoiceActions'
@@ -94,7 +95,7 @@ class ContactsSearch extends PureComponent {
         }
       }
     } catch (err) {
-      console.log(err)
+      Logger.log('Decode Invoice Error:', err)
       if (onError) {
         onError(err)
       }

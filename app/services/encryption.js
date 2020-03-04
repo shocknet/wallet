@@ -2,6 +2,7 @@ import { NativeModules } from 'react-native'
 // @ts-ignore
 import Crypto from 'react-native-crypto'
 import { RSA, RSAKeychain } from 'react-native-rsa-native'
+import Logger from 'react-native-file-log'
 const { Aes } = NativeModules
 import Action from './contact-api/action'
 const nonEncryptedEvents = [
@@ -99,7 +100,7 @@ export const decryptKey = async (encryptedKey, sessionId) => {
     const decryptedKey = await RSAKeychain.decrypt(encryptedKey, keyTag)
     return decryptedKey
   } catch (err) {
-    console.log(err)
+    Logger.log('[ENCRYPTION] Could not decrypt key:', err)
     throw err
   }
 }

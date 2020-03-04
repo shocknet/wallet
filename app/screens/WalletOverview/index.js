@@ -18,6 +18,7 @@ import {
 } from 'react-native'
 import EntypoIcons from 'react-native-vector-icons/Entypo'
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'
+import Logger from 'react-native-file-log'
 import { connect } from 'react-redux'
 
 //import { compose } from 'redux'
@@ -1087,7 +1088,7 @@ class WalletOverview extends Component {
         protocol.length !== 2 ||
         (protocol[0] !== 'bitcoin' && protocol[0] !== 'lightning')
       ) {
-        console.log('invalid url: ' + url)
+        Logger.log('invalid url: ' + url)
         return
       }
       const details = protocol[1].split('?amount=')
@@ -1113,7 +1114,7 @@ class WalletOverview extends Component {
 
           const lnurl = String.fromCharCode(...decodedBytes)
           console.log('OMG_MY_LOG')
-          console.log(lnurl)
+          Logger.log(lnurl)
           console.log('OMG_MY_LOG')
 
           try {
@@ -1130,23 +1131,23 @@ class WalletOverview extends Component {
 
             switch (json.tag) {
               case 'channelRequest': {
-                console.log('this url is a channel request')
+                Logger.log('this url is a channel request')
                 break
               }
               case 'withdrawRequest': {
-                console.log('this url is a withdrawal request')
+                Logger.log('this url is a withdrawal request')
                 break
               }
               case 'hostedChannelRequest': {
-                console.log('this url is a hosted channel request')
+                Logger.log('this url is a hosted channel request')
                 break
               }
               case 'login': {
-                console.log('this url is a login ')
+                Logger.log('this url is a login ')
                 break
               }
               case 'payRequest': {
-                console.log('this url is a pay request')
+                Logger.log('this url is a pay request')
                 break
               }
               default: {
@@ -1194,7 +1195,7 @@ class WalletOverview extends Component {
           this._handleOpenURL({ url })
         }
       })
-      .catch(err => console.log('An error occurred', err))
+      .catch(err => Logger.log('An error occurred', err))
 
     this.startNotificationService()
 
@@ -1262,7 +1263,7 @@ class WalletOverview extends Component {
     const authData = await Cache.getStoredAuthData()
     const nodeInfo = await Cache.getNodeURL()
     if (!authData || !nodeInfo) {
-      console.log('error starting service, invalid info')
+      Logger.log('error starting service, invalid info')
     }
     notificationService.startService(
       nodeInfo,
@@ -1683,7 +1684,7 @@ class WalletOverview extends Component {
             }
 
             if (displayingInvoicePaymentResult) {
-              console.log('invalid state for paying invoice result dialog')
+              Logger.log('invalid state for paying invoice result dialog')
             }
             return ''
           })()}

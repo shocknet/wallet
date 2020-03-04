@@ -1,4 +1,5 @@
 import React from 'react'
+import Logger from 'react-native-file-log'
 import ShockModal from '../../components/ShockModal'
 import { Text, View, Switch, StyleSheet, ToastAndroid } from 'react-native'
 import { nodeInfo, addPeer, addInvoice } from '../../services/wallet'
@@ -194,19 +195,19 @@ export default class LNURL extends React.Component {
   handleUrl = LNURLdata => {
     switch (LNURLdata.tag) {
       case 'channelRequest': {
-        console.log('this url is a channel request')
+        Logger.log('this url is a channel request')
         return this.renderChannelRequest(LNURLdata)
       }
       case 'withdrawRequest': {
-        console.log('this url is a withdrawal request')
+        Logger.log('this url is a withdrawal request')
         return this.renderWithdraw(LNURLdata)
       }
       case 'hostedChannelRequest': {
-        console.log('this url is a hosted channel request')
+        Logger.log('this url is a hosted channel request')
         return this.renderHostedChannelRequest()
       }
       case 'login': {
-        console.log('this url is a login ')
+        Logger.log('this url is a login ')
         return this.renderAuth()
       }
       case 'payRequest': {

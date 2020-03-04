@@ -4,6 +4,7 @@
 import SocketIO from 'socket.io-client'
 import isEmpty from 'lodash/isEmpty'
 import debounce from 'lodash/debounce'
+import Logger from 'react-native-file-log'
 
 import * as Cache from '../../services/cache'
 
@@ -108,7 +109,7 @@ export const encryptSocketData = async data => {
 export const decryptSocketData = async data => {
   if (data && data.encryptedKey) {
     const decryptionTime = Date.now()
-    console.log('Decrypting Data...', data)
+    Logger.log('[SOCKET] Decrypting Data...', data)
     const { sessionId } = store.getState().connection
     const decryptedKey = await Encryption.decryptKey(
       data.encryptedKey,
@@ -119,11 +120,11 @@ export const decryptSocketData = async data => {
       key: decryptedKey,
       iv: data.iv,
     })
-    console.log(`Decryption took: ${Date.now() - decryptionTime}ms`)
+    Logger.log(`[SOCKET] Decryption took: ${Date.now() - decryptionTime}ms`)
     return JSON.parse(decryptedData)
   }
 
-  console.log('Data is non-encrypted', data)
+  Logger.log('[SOCKET] Data is non-encrypted', data)
 
   return data
 }

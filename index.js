@@ -2,9 +2,10 @@
  * @format
  */
 
-import { AppRegistry } from 'react-native'
+import { AppRegistry, Platform, PermissionsAndroid } from 'react-native'
 import moment from 'moment'
 import Http from 'axios'
+import Logger from 'react-native-file-log'
 
 import { Provider } from 'react-redux'
 
@@ -23,6 +24,18 @@ import { PersistGate } from 'redux-persist/integration/react'
 
 import { ConnectionProvider } from './app/ctx/Connection'
 import RootStack from './app/navigators/Root'
+
+Logger.setTag('ShockWallet')
+Logger.setFileLogEnabled(true)
+Logger.setConsoleLogEnabled(__DEV__)
+if (Platform.OS === 'android') {
+  PermissionsAndroid.request(
+    PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+  )
+  PermissionsAndroid.request(
+    PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+  )
+}
 
 // https://github.com/moment/moment/issues/2781#issuecomment-160739129
 moment.locale('en', {
@@ -171,8 +184,8 @@ Http.interceptors.request.use(async config => {
       if (config) {
         const method = config.method ? config.method.toUpperCase() : 'common'
         console.log('Config:', config)
-        console.log(`---> ${method} ${config.url}`)
-        console.log(
+        Logger.log(`---> ${method} ${config.url}`)
+        Logger.log(
           'Headers:',
           config.headers
             ? JSON.stringify({
@@ -181,11 +194,11 @@ Http.interceptors.request.use(async config => {
               })
             : 'N/A',
         )
-        console.log(
+        Logger.log(
           'Params:',
           config.params ? JSON.stringify(config.params) : 'N/A',
         )
-        console.log('Body:', config.data ? JSON.stringify(config.data) : 'N/A')
+        Logger.log('Body:', config.data ? JSON.stringify(config.data) : 'N/A')
       }
     } catch (err) {
       console.log(err)
@@ -207,7 +220,7 @@ const decryptResponse = async response => {
     const decryptionTime = Date.now()
     const { connection } = store.getState()
     const path = url.parse(response?.config.url).pathname
-    console.log('Path:', path)
+    Logger.log('Path:', path)
 
     if (
       connection.APIPublicKey &&
@@ -224,7 +237,7 @@ const decryptResponse = async response => {
         key: decryptedKey,
         iv: response.data.iv,
       })
-      console.log(`Decrypted data in: ${Date.now() - decryptionTime}ms`)
+      Logger.log(`[HTTP] Decrypted data in: ${Date.now() - decryptionTime}ms`)
       return {
         ...response,
         data: JSON.parse(decryptedData),
@@ -233,7 +246,7 @@ const decryptResponse = async response => {
       path !== '/api/security/exchangeKeys' &&
       response.headers['x-session-id']
     ) {
-      console.log('Exchanging Keys...')
+      Logger.log('[HTTP] Exchanging Keys...')
       await throttledExchangeKeyPair({
         deviceId: connection.deviceId,
         sessionId: response.headers['x-session-id'],

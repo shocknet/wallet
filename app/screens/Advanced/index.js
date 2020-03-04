@@ -18,6 +18,7 @@ import Feather from 'react-native-vector-icons/Feather'
 import Http from 'axios'
 import Big from 'big.js'
 import { connect } from 'react-redux'
+import Logger from 'react-native-file-log'
 import wavesBG from '../../assets/images/waves-bg.png'
 
 import * as CSS from '../../res/css'
@@ -191,7 +192,7 @@ class AdvancedScreen extends Component {
       await Promise.all([fetchHistory(), fetchNodeInfo()])
       return true
     } catch (err) {
-      console.log(err.response)
+      Logger.log('[ADVANCED] Data fetch error:', err?.response?.data ?? err)
       throw err
     }
   }
@@ -388,7 +389,7 @@ class AdvancedScreen extends Component {
    * @param {string} err
    */
   showErr = err => {
-    console.log('Setting Error message:', err)
+    Logger.log('Setting Error message:', err)
     this.setState({
       err,
     })
