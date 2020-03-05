@@ -7,7 +7,9 @@ import debounce from 'lodash/debounce'
 import Logger from 'react-native-file-log'
 
 import * as Cache from '../../services/cache'
+import { ACTIONS as ConnectionAction } from '../../actions/ConnectionActions'
 
+import Action from './action'
 import * as Events from './events'
 import * as Encryption from '../encryption'
 
@@ -58,20 +60,6 @@ export let store
 export const setStore = initializedStore => {
   store = initializedStore
   return store
-}
-
-export const disconnect = () => {
-  if (socket) {
-    // @ts-ignore
-    socket.disconnect()
-    // @ts-ignore
-    socket.off()
-
-    // @ts-ignore
-    socket = null
-  } else {
-    throw new Error('Tried to disconnect the socket without creating one first')
-  }
 }
 
 /**
@@ -215,6 +203,39 @@ export const createSocket = async () => {
 }
 
 /**
+ * ID for an interval that manually keeps track of the real socket connection
+ * status.
+ */
+let connectionCheckIntervalID = -1
+
+/**
+ * The last timestamp for which the socket received some data.
+ */
+let lastConnCheck = 0
+
+export const disconnect = () => {
+  if (socket) {
+    clearInterval(connectionCheckIntervalID)
+    connectionCheckIntervalID = -1
+
+    // @ts-ignore
+    socket.off()
+
+    store.dispatch({ type: ConnectionAction.SOCKET_DID_DISCONNECT })
+
+    // @ts-ignore
+    socket.disconnect()
+
+    // @ts-ignore
+    socket = null
+  } else {
+    throw new Error(
+      'socket.js -> called disconnect() without calling connect() first',
+    )
+  }
+}
+
+/**
  * @returns {Promise<void>}
  */
 export const connect = debounce(async () => {
@@ -251,12 +272,30 @@ export const connect = debounce(async () => {
 
   socket.on('disconnect', reason => {
     Logger.log(`reason for disconnect: ${reason}`)
-
-    // @ts-ignore
-    if (reason === 'io server disconnect') {
-      // https://Socket.socket.io/docs/client-api/#Event-%E2%80%98disconnect%E2%80%99
-    }
+    store.dispatch({ type: ConnectionAction.SOCKET_DID_DISCONNECT })
   })
 
-  Events.setupEvents()
+  socket.on('connect', () => {
+    store.dispatch({ type: ConnectionAction.SOCKET_DID_CONNECT })
+  })
+
+  store.dispatch({ type: ConnectionAction.SOCKET_DID_CONNECT })
+
+  lastConnCheck = Date.now()
+
+  connectionCheckIntervalID = setInterval(() => {
+    if (Date.now() - lastConnCheck > 10000) {
+      Logger.log(
+        'Socket detected as disconnected, will create a new one and set up events again',
+      )
+      disconnect()
+      connect()
+    }
+  }, 10000)
+
+  socket.on(Action.SET_LAST_SEEN_APP, () => {
+    lastConnCheck = Date.now()
+  })
+
+  Events.setupEvents(socket)
 }, 1000)
