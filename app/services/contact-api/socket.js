@@ -285,7 +285,7 @@ export const connect = debounce(async () => {
 
   connectionCheckIntervalID = setInterval(() => {
     if (Date.now() - lastConnCheck > 10000) {
-      console.log(
+      Logger.log(
         'Socket detected as disconnected, will create a new one and set up events again',
       )
       disconnect()
