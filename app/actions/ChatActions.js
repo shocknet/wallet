@@ -74,7 +74,7 @@ export const subscribeOnChats = callback => dispatch =>
 
         resolve(chats)
       } catch (err) {
-        console.error(err)
+        Logger.log(err)
         reject(err)
       }
     })
