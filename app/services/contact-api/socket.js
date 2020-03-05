@@ -258,5 +258,5 @@ export const connect = debounce(async () => {
     }
   })
 
-  Events.setupEvents()
+  Events.setupEvents(socket)
 }, 1000)

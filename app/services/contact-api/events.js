@@ -725,8 +725,10 @@ export const onSeedBackup = listener => {
   }
 }
 
-export const setupEvents = () => {
-  const theSocket = Socket.socket
+/**
+ * @param {import('./socket').SimpleSocket} theSocket
+ */
+export const setupEvents = theSocket => {
   if (!theSocket) {
     Logger.log('Called setupEvents() before creating the socket')
     return
