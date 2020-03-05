@@ -7,12 +7,11 @@ Requires [Shock API](https://github.com/shocknet/api) backend, and [LND](https:/
 
 ## Features:
 
+- Portable GUN Personas + Encrypted Messaging
 - Provider-less mobile notifications
 - LNURL Pay, Withdraw, Channel
-- GUN Identities
-- Private Encrypted Messaging
+- Seed Caching
 - SendSide Payments
-- Invoice Auto-Responder
 
 
 ## [Download Android APK](https://github.com/shocknet/wallet/releases/download/pre1/APK-RELEASE.apk)
