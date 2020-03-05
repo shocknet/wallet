@@ -9,6 +9,7 @@ import Logger from 'react-native-file-log'
 import * as Cache from '../../services/cache'
 import { ACTIONS as ConnectionAction } from '../../actions/ConnectionActions'
 
+import Action from './action'
 import * as Events from './events'
 import * as Encryption from '../encryption'
 
@@ -201,8 +202,22 @@ export const createSocket = async () => {
   return encryptSocketInstance(socket)
 }
 
+/**
+ * ID for an interval that manually keeps track of the real socket connection
+ * status.
+ */
+let connectionCheckIntervalID = -1
+
+/**
+ * The last timestamp for which the socket received some data.
+ */
+let lastConnCheck = 0
+
 export const disconnect = () => {
   if (socket) {
+    clearInterval(connectionCheckIntervalID)
+    connectionCheckIntervalID = -1
+
     // @ts-ignore
     socket.off()
 
@@ -265,6 +280,22 @@ export const connect = debounce(async () => {
   })
 
   store.dispatch({ type: ConnectionAction.SOCKET_DID_CONNECT })
+
+  lastConnCheck = Date.now()
+
+  connectionCheckIntervalID = setInterval(() => {
+    if (Date.now() - lastConnCheck > 10000) {
+      console.log(
+        'Socket detected as disconnected, will create a new one and set up events again',
+      )
+      disconnect()
+      connect()
+    }
+  }, 10000)
+
+  socket.on(Action.SET_LAST_SEEN_APP, () => {
+    lastConnCheck = Date.now()
+  })
 
   Events.setupEvents(socket)
 }, 1000)
