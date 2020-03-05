@@ -1,4 +1,6 @@
 rootProject.name = 'shockwallet'
+include ':react-native-file-log'
+project(':react-native-file-log').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-file-log/android')
 include ':react-native-vector-icons'
 project(':react-native-vector-icons').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-vector-icons/android')
 include ':react-native-udp'

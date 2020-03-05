@@ -1,4 +1,5 @@
 import { DEFAULT_PORT } from './cache'
+import Logger from 'react-native-file-log'
 
 /**
  * @typedef {object} PingResponse
@@ -21,13 +22,13 @@ export const pingURL = async urlOrIp => {
     /**
      * @type {ReturnType<typeof fetch>}
      */
-    console.log('WILL PING:' + url)
+    Logger.log('WILL PING:' + url)
 
     const res = await fetch(`http://${url}/healthz`)
 
     const body = await res.json()
 
-    console.log('Fetch Body:' + JSON.stringify(body))
+    Logger.log('Fetch Body:' + JSON.stringify(body))
 
     if (!res.ok) {
       throw new Error(body.errorMessage || body.message || `Unknown Err`)
@@ -45,7 +46,7 @@ export const pingURL = async urlOrIp => {
       success: true,
     }
   } catch (e) {
-    console.log(`Connection.pingURL: ${e.message}`)
+    Logger.log(`Connection.pingURL: ${e.message}`)
 
     return {
       success: false,

@@ -1,6 +1,7 @@
 import once from 'lodash/once'
 import Http from 'axios'
 import SocketIO from 'socket.io-client'
+import Logger from 'react-native-file-log'
 
 import * as Cache from './cache'
 import * as Wallet from './wallet'
@@ -121,7 +122,7 @@ export const registerExistingWallet = async (alias, password) => {
       throw new TypeError("typeof body.user.publicKey !== 'string'")
     }
 
-    console.log(body)
+    Logger.log(body)
 
     return {
       publicKey: body.user.publicKey,
@@ -199,7 +200,7 @@ export const newGUNAlias = async (alias, pass) => {
     }
   } catch (err) {
     const body = err.response.data
-    console.log(`here: ${JSON.stringify(body)}`)
+    Logger.log(`here: ${JSON.stringify(body)}`)
     throw new Error(body.errorMessage || body.message || 'Unknown error.')
   }
 }

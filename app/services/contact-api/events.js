@@ -3,6 +3,7 @@
  */
 import debounce from 'lodash/debounce'
 import Http from 'axios'
+import Logger from 'react-native-file-log'
 
 import * as Cache from '../cache'
 
@@ -148,7 +149,7 @@ const avatarFetcher = async () => {
       setTimeout(avatarFetcher, POLL_INTERVAL)
     })
     .catch(e => {
-      console.log(`Error in avatar Poll: ${e.message || 'Unknown error'}`)
+      Logger.log(`Error in avatar Poll: ${e.message || 'Unknown error'}`)
       setTimeout(avatarFetcher, POLL_INTERVAL)
     })
 }
@@ -221,7 +222,7 @@ const addrFetcher = async () => {
       setTimeout(addrFetcher, POLL_INTERVAL)
     })
     .catch(e => {
-      console.log(`Error in H.address Poll:  ${e.message || 'Unknown error'}`)
+      Logger.log(`Error in H.address Poll:  ${e.message || 'Unknown error'}`)
       setTimeout(addrFetcher, POLL_INTERVAL)
     })
 }
@@ -297,7 +298,7 @@ const dnFetcher = async () => {
       setTimeout(dnFetcher, POLL_INTERVAL)
     })
     .catch(e => {
-      console.log(`Error in dn Poll: ${e.message || 'Unknown error'}`)
+      Logger.log(`Error in dn Poll: ${e.message || 'Unknown error'}`)
       setTimeout(dnFetcher, POLL_INTERVAL)
     })
 }
@@ -363,7 +364,7 @@ const receivedReqsFetcher = async () => {
       setTimeout(receivedReqsFetcher, POLL_INTERVAL)
     })
     .catch(e => {
-      console.log(`Error in sent reqs Poll:  ${e.message || 'Unknown error'}`)
+      Logger.log(`Error in sent reqs Poll:  ${e.message || 'Unknown error'}`)
       setTimeout(receivedReqsFetcher, POLL_INTERVAL)
     })
 }
@@ -428,7 +429,7 @@ const sentReqsFetcher = async () => {
       setTimeout(sentReqsFetcher, POLL_INTERVAL)
     })
     .catch(e => {
-      console.log(`Error in sent reqs Poll:  ${e.message || 'Unknown error'}`)
+      Logger.log(`Error in sent reqs Poll:  ${e.message || 'Unknown error'}`)
       setTimeout(sentReqsFetcher, POLL_INTERVAL)
     })
 }
@@ -522,7 +523,7 @@ const bioFetcher = async () => {
       setTimeout(bioFetcher, POLL_INTERVAL)
     })
     .catch(e => {
-      console.log(`Error in bio Poll:  ${e.message || 'Unknown error'}`)
+      Logger.log(`Error in bio Poll:  ${e.message || 'Unknown error'}`)
       setTimeout(bioFetcher, POLL_INTERVAL)
     })
 }
@@ -650,7 +651,7 @@ const chatsFetcher = async () => {
       setTimeout(chatsFetcher, POLL_INTERVAL)
     })
     .catch(e => {
-      console.log(`Error in Chats Poll:  ${e.message || 'Unknown error'}`)
+      Logger.log(`Error in Chats Poll:  ${e.message || 'Unknown error'}`)
       setTimeout(chatsFetcher, POLL_INTERVAL)
     })
 }
@@ -727,7 +728,7 @@ export const onSeedBackup = listener => {
 export const setupEvents = () => {
   const theSocket = Socket.socket
   if (!theSocket) {
-    console.log('Called setupEvents() before creating the socket')
+    Logger.log('Called setupEvents() before creating the socket')
     return
   }
 
@@ -738,7 +739,7 @@ export const setupEvents = () => {
   })
 
   theSocket.on('disconnect', reason => {
-    console.log('socket disconnected')
+    Logger.log('socket disconnected')
     connectionListeners.forEach(l => {
       l(false)
     })
@@ -760,7 +761,7 @@ export const setupEvents = () => {
   // notify auth listeners that the token expired.
   Object.values(Event).forEach(e => {
     theSocket.on(e, res => {
-      console.log(`res for event: ${e}: ${JSON.stringify(res)}`)
+      Logger.log(`res for event: ${e}: ${JSON.stringify(res)}`)
 
       if (
         res.msg === 'Token expired.' ||
@@ -776,7 +777,7 @@ export const setupEvents = () => {
   // notify auth listeners that the token expired.
   Object.values(Action).forEach(a => {
     theSocket.on(a, res => {
-      console.log(`res for action: ${a}: ${JSON.stringify(res)}`)
+      Logger.log(`res for action: ${a}: ${JSON.stringify(res)}`)
       if (
         res.msg === 'Token expired.' ||
         res.msg === 'NOT_AUTH' ||
@@ -788,7 +789,7 @@ export const setupEvents = () => {
   })
 
   theSocket.on('IS_GUN_AUTH', res => {
-    console.log(`res for IS_GUN_AUTH: ${JSON.stringify(res)}`)
+    Logger.log(`res for IS_GUN_AUTH: ${JSON.stringify(res)}`)
   })
 
   connectionListeners.forEach(l => {

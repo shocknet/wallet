@@ -4,6 +4,7 @@
 
 import debounce from 'lodash/debounce'
 import once from 'lodash/once'
+import Logger from 'react-native-file-log'
 
 import * as Cache from '../../services/cache'
 
@@ -262,7 +263,7 @@ export const sendReqWithInitialMsg = async (recipientPublicKey, initialMsg) => {
       )
   })
 
-  console.log(`res in sendreqwithinitialmsg: ${JSON.stringify(res)}`)
+  Logger.log(`res in sendreqwithinitialmsg: ${JSON.stringify(res)}`)
 
   if (!res.ok) {
     throw new Error(res.msg)
@@ -318,7 +319,7 @@ export const sendPayment = async (recipientPub, amount, memo) => {
     }),
   ])
 
-  console.log(`res in sendPayment: ${JSON.stringify(res)}`)
+  Logger.log(`res in sendPayment: ${JSON.stringify(res)}`)
 
   if (!res.ok) {
     throw new Error(res.msg || 'Unknown Error')

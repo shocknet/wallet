@@ -11,6 +11,7 @@ import {
 } from 'react-native'
 import ImagePicker from 'react-native-image-crop-picker'
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'
+import Logger from 'react-native-file-log'
 // import { AirbnbRating } from 'react-native-ratings'
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation
@@ -208,7 +209,7 @@ export default class MyProfile extends React.Component {
         })
       })
       .catch(e => {
-        console.log(e.message)
+        Logger.log(e.message)
       })
   }
 

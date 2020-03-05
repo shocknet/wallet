@@ -4,6 +4,7 @@
 import React from 'react'
 import { ToastAndroid, StyleSheet, StatusBar } from 'react-native'
 import Ion from 'react-native-vector-icons/Ionicons'
+import Logger from 'react-native-file-log'
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}, Params>} Navigation
  */
@@ -91,7 +92,7 @@ export default class Chat extends React.Component {
     const title = navigation.getParam('_title')
 
     if (typeof title !== 'string') {
-      console.log(
+      Logger.log(
         `Chat-> _title param not an string, instead got: ${typeof title}`,
       )
     }
@@ -144,7 +145,7 @@ export default class Chat extends React.Component {
    * @type {import('./View').Props['onPressSendInvoice']}
    */
   sendInvoice = (amount, memo) => {
-    console.log(`amount: ${amount} - memo: ${memo}`)
+    Logger.log(`amount: ${amount} - memo: ${memo}`)
 
     const id = this.props.navigation.getParam('id')
     const theChat = (this.state.chats.find(c => c.id === id))
@@ -167,7 +168,7 @@ export default class Chat extends React.Component {
         )
       })
       .catch(err => {
-        console.log(err.message)
+        Logger.log(err.message)
         ToastAndroid.show(`Could not send invoice: ${err.message}`, 1000)
       })
   }
@@ -455,7 +456,7 @@ export default class Chat extends React.Component {
     const theChat = this.state.chats.find(c => c.id === id)
 
     if (!theChat) {
-      console.log(`<Chat />.index -> getMessages() -> no chat found. id: ${id}`)
+      Logger.log(`<Chat />.index -> getMessages() -> no chat found. id: ${id}`)
       return []
     }
 
@@ -469,7 +470,7 @@ export default class Chat extends React.Component {
     const theChat = this.state.chats.find(chat => chat.id === chatId)
 
     if (!theChat) {
-      console.log(
+      Logger.log(
         `<Chat />.index -> getRecipientAvatar -> no chat found. chatId: ${chatId}`,
       )
       return null
@@ -484,7 +485,7 @@ export default class Chat extends React.Component {
     const theChat = this.state.chats.find(c => c.id === id)
 
     if (!theChat) {
-      console.log(
+      Logger.log(
         `<Chat />.index -> getRecipientDisplayName -> no chat found. id: ${id}`,
       )
       return null
@@ -499,7 +500,7 @@ export default class Chat extends React.Component {
     const theChat = this.state.chats.find(c => c.id === id)
 
     if (!theChat) {
-      console.log(
+      Logger.log(
         `<Chat />.index -> getRecipientDisplayName -> no chat found. id: ${id}`,
       )
       return false
@@ -537,7 +538,7 @@ export default class Chat extends React.Component {
     const { recipientPublicKey } = theChat
 
     API.Actions.sendMessage(recipientPublicKey, text).catch(e => {
-      console.log(`Error sending a message with text: ${text} -> ${e.message}`)
+      Logger.log(`Error sending a message with text: ${text} -> ${e.message}`)
     })
   }
 

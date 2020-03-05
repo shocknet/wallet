@@ -15,6 +15,7 @@ import {
   TouchableOpacity,
   Switch,
 } from 'react-native'
+import Logger from 'react-native-file-log'
 // @ts-ignore
 import { Dropdown } from 'react-native-material-dropdown'
 // @ts-ignore
@@ -146,7 +147,7 @@ class SendScreen extends Component {
         send_all: sendAll,
       })
 
-      console.log('New Transaction ID:', transactionId)
+      Logger.log('New Transaction ID:', transactionId)
 
       this.setState({
         sending: false,
@@ -155,7 +156,7 @@ class SendScreen extends Component {
         this.props.navigation.goBack()
       }
     } catch (e) {
-      console.log(e)
+      Logger.log(e)
       this.setState({
         sending: false,
         error: e.message,
@@ -324,9 +325,9 @@ class SendScreen extends Component {
     this.resetSearchState()
     const { decodePaymentRequest, selectContact } = this.props
     const sanitizedQR = this.sanitizeQR(data)
-    console.log('QR Value:', sanitizedQR)
-    console.log('Lightning Invoice?', this.isLightningInvoice(sanitizedQR))
-    console.log('BTC Address?', this.isBTCAddress(sanitizedQR))
+    Logger.log('QR Value:', sanitizedQR)
+    Logger.log('Lightning Invoice?', this.isLightningInvoice(sanitizedQR))
+    Logger.log('BTC Address?', this.isBTCAddress(sanitizedQR))
     this.onChange('error')('')
     if (this.isLightningInvoice(sanitizedQR)) {
       const data = await decodePaymentRequest(sanitizedQR)

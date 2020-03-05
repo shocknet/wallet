@@ -1,5 +1,6 @@
 import Http from 'axios'
 import { RSAKeychain } from 'react-native-rsa-native'
+import Logger from 'react-native-file-log'
 
 export const ACTIONS = {
   LOAD_NEW_KEYS: 'encryption/loadKeys',
@@ -71,7 +72,7 @@ export const exchangeKeyPair = ({
   baseURL,
 }) => async dispatch => {
   try {
-    console.log({
+    Logger.log({
       deviceId,
       sessionId,
       cachedSessionId,
@@ -79,7 +80,7 @@ export const exchangeKeyPair = ({
     const keyTag = `com.shocknet.APIKey.${sessionId}`
     const oldKeyTag = `com.shocknet.APIKey.${cachedSessionId}`
     const oldKeypair = await RSAKeychain.keyExists(oldKeyTag)
-    console.log('Old Keypair:', oldKeypair)
+    Logger.log('[ENCRYPTION] Old Keypair:', oldKeypair)
 
     if (sessionId === cachedSessionId) {
       return {
@@ -91,10 +92,10 @@ export const exchangeKeyPair = ({
       await RSAKeychain.deletePrivateKey(oldKeyTag)
     }
 
-    console.log('Generating new key...')
+    Logger.log('[ENCRYPTION] Generating new RSA 2048 key...')
     const keyPair = await generateKey(keyTag, 2048)
-    console.log('New key generated')
-    console.log('New Keypair', {
+    Logger.log('[ENCRYPTION] New key generated')
+    Logger.log('[ENCRYPTION] New Keypair', {
       publicKey: keyPair.public,
       deviceId,
     })
@@ -120,7 +121,7 @@ export const exchangeKeyPair = ({
 
     return data
   } catch (err) {
-    console.log(err)
+    Logger.log('[ENCRYPTION] Key Exchange Error:', err)
     throw err
   }
 }

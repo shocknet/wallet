@@ -11,6 +11,7 @@ import {
 } from 'react-native'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 import { connect } from 'react-redux'
+import Logger from 'react-native-file-log'
 import Suggestion from './Suggestion'
 import { selectContact } from '../../actions/ChatActions'
 import { decodePaymentRequest } from '../../actions/InvoiceActions'
@@ -87,14 +88,14 @@ class ContactsSearch extends PureComponent {
     const { decodePaymentRequest, value, onError } = this.props
     try {
       const data = await decodePaymentRequest(value)
-      console.log(data)
+      Logger.log(data)
       if (data && data.type === 'error') {
         if (onError) {
           onError(data.error.message)
         }
       }
     } catch (err) {
-      console.log(err)
+      Logger.log('Decode Invoice Error:', err)
       if (onError) {
         onError(err)
       }
@@ -103,7 +104,7 @@ class ContactsSearch extends PureComponent {
 
   /** @type {import('react-native').ListRenderItem<any>} */
   contactRender = contact => {
-    console.log('Contact:', contact)
+    Logger.log('Contact:', contact)
     if (contact.item.type === 'btc') {
       return ((
         <Suggestion
@@ -171,7 +172,7 @@ class ContactsSearch extends PureComponent {
    */
   getContacts = () => {
     const { value, enabledFeatures = this.defaultFeatures } = this.props
-    console.log('Enabled Features:', enabledFeatures)
+    Logger.log('Enabled Features:', enabledFeatures)
     const filteredContacts = enabledFeatures.includes('contacts')
       ? this.filterContacts()
       : []

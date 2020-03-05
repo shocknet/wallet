@@ -8,6 +8,7 @@ import {
 } from 'react-native'
 import Entypo from 'react-native-vector-icons/Entypo'
 import { connect } from 'react-redux'
+import Logger from 'react-native-file-log'
 
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation
@@ -87,7 +88,7 @@ class CreateWalletOrAlias extends React.Component {
   }
 
   componentDidMount() {
-    console.log('Hello')
+    Logger.log('Hello')
     this.onFocusSub = this.props.navigation.addListener(
       'didFocus',
       this.checkWalletStatus,

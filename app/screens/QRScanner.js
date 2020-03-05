@@ -6,6 +6,7 @@ import { StyleSheet, Text, View, TouchableOpacity } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 import QRCodeScanner from 'react-native-qrcode-scanner'
 import Ionicons from 'react-native-vector-icons/Ionicons'
+import Logger from 'react-native-file-log'
 
 import * as CSS from '../res/css'
 
@@ -33,10 +34,10 @@ export default class QRScanner extends React.Component {
    */
   onQRRead = e => {
     const { type = 'nodeIP', onQRSuccess } = this.props
-    console.log('Scanning...', e)
+    Logger.log('Scanning...', e)
     if (type === 'nodeIP') {
       const parsedData = JSON.parse(e.data)
-      console.log('parsedData', parsedData, e)
+      Logger.log('parsedData', parsedData, e)
       return this.connectNode(parsedData)
     }
 

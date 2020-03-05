@@ -18,6 +18,7 @@ import Feather from 'react-native-vector-icons/Feather'
 import Http from 'axios'
 import Big from 'big.js'
 import { connect } from 'react-redux'
+import Logger from 'react-native-file-log'
 import wavesBG from '../../assets/images/waves-bg.png'
 
 import * as CSS from '../../res/css'
@@ -133,7 +134,7 @@ class AdvancedScreen extends Component {
   componentDidMount() {
     this.fetchData()
     this.keyboardDidShow = Keyboard.addListener('keyboardDidShow', e => {
-      console.log(e.endCoordinates.height)
+      Logger.log(e.endCoordinates.height)
       this.setState({
         keyboardOpen: true,
         keyboardHeight: e.endCoordinates.height,
@@ -191,7 +192,7 @@ class AdvancedScreen extends Component {
       await Promise.all([fetchHistory(), fetchNodeInfo()])
       return true
     } catch (err) {
-      console.log(err.response)
+      Logger.log('[ADVANCED] Data fetch error:', err?.response?.data ?? err)
       throw err
     }
   }
@@ -298,7 +299,7 @@ class AdvancedScreen extends Component {
       this.addPeerModal.current.close()
     } catch (err) {
       this.showErr(err.response.data.errorMessage)
-      console.log(Http.defaults.baseURL, err.response)
+      Logger.log(Http.defaults.baseURL, err.response)
     } finally {
       this.setState({
         modalLoading: false,
@@ -388,7 +389,7 @@ class AdvancedScreen extends Component {
    * @param {string} err
    */
   showErr = err => {
-    console.log('Setting Error message:', err)
+    Logger.log('Setting Error message:', err)
     this.setState({
       err,
     })
@@ -452,7 +453,7 @@ class AdvancedScreen extends Component {
   onPressChannel = channelString => {
     /**@var {Channel} channel*/
     const channel = JSON.parse(channelString)
-    console.log(channel)
+    Logger.log(channel)
     const channelPoint = channel.channel_point
     const [fundingTX, outputIndex] = channelPoint.split(':')
     this.willCloseChannel({
@@ -504,8 +505,8 @@ class AdvancedScreen extends Component {
 
       nodeInfoModal,
     } = this.state
-    //console.log(history.channels)
-    console.log(channelPublicKey)
+    //Logger.log(history.channels)
+    Logger.log(channelPublicKey)
     const { confirmedBalanceUSD, channelBalanceUSD } = this.convertBTCToUSD()
     return (
       <>
@@ -632,7 +633,7 @@ class AdvancedScreen extends Component {
                   name: 'Add Peer',
                   icon: 'link',
                   action: () => {
-                    console.log('addPeerOpen')
+                    Logger.log('addPeerOpen')
                     this.addPeerModal.current.open()
                   },
                 },
