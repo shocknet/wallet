@@ -7,6 +7,7 @@ import debounce from 'lodash/debounce'
 import Logger from 'react-native-file-log'
 
 import * as Cache from '../../services/cache'
+import { ACTIONS as ConnectionAction } from '../../actions/ConnectionActions'
 
 import * as Events from './events'
 import * as Encryption from '../encryption'
@@ -58,20 +59,6 @@ export let store
 export const setStore = initializedStore => {
   store = initializedStore
   return store
-}
-
-export const disconnect = () => {
-  if (socket) {
-    // @ts-ignore
-    socket.disconnect()
-    // @ts-ignore
-    socket.off()
-
-    // @ts-ignore
-    socket = null
-  } else {
-    throw new Error('Tried to disconnect the socket without creating one first')
-  }
 }
 
 /**
@@ -214,6 +201,25 @@ export const createSocket = async () => {
   return encryptSocketInstance(socket)
 }
 
+export const disconnect = () => {
+  if (socket) {
+    // @ts-ignore
+    socket.off()
+
+    store.dispatch({ type: ConnectionAction.SOCKET_DID_DISCONNECT })
+
+    // @ts-ignore
+    socket.disconnect()
+
+    // @ts-ignore
+    socket = null
+  } else {
+    throw new Error(
+      'socket.js -> called disconnect() without calling connect() first',
+    )
+  }
+}
+
 /**
  * @returns {Promise<void>}
  */
@@ -251,12 +257,14 @@ export const connect = debounce(async () => {
 
   socket.on('disconnect', reason => {
     Logger.log(`reason for disconnect: ${reason}`)
-
-    // @ts-ignore
-    if (reason === 'io server disconnect') {
-      // https://Socket.socket.io/docs/client-api/#Event-%E2%80%98disconnect%E2%80%99
-    }
+    store.dispatch({ type: ConnectionAction.SOCKET_DID_DISCONNECT })
   })
+
+  socket.on('connect', () => {
+    store.dispatch({ type: ConnectionAction.SOCKET_DID_CONNECT })
+  })
+
+  store.dispatch({ type: ConnectionAction.SOCKET_DID_CONNECT })
 
   Events.setupEvents(socket)
 }, 1000)
