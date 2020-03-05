@@ -4,6 +4,8 @@ import Logger from 'react-native-file-log'
 
 export const ACTIONS = {
   LOAD_NEW_KEYS: 'encryption/loadKeys',
+  SOCKET_DID_CONNECT: 'socket/socketDidConnect',
+  SOCKET_DID_DISCONNECT: 'socket/socketDidDisconnect',
 }
 
 /** @type {Promise<ExchangedKeyPair>?} */
