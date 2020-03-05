@@ -15,6 +15,7 @@ import { connect } from 'react-redux'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 // @ts-ignore
 import SwipeVerify from 'react-native-swipe-verify'
+import Logger from 'react-native-file-log'
 
 import Suggestion from '../../../components/Search/Suggestion'
 import * as CSS from '../../../res/css'
@@ -109,7 +110,7 @@ class SendStep extends Component {
   renderContactsSearch = () => {
     const { chat } = this.props
     const { contactsSearch } = this.state
-    console.log(chat.selectedContact)
+    Logger.log(chat.selectedContact)
     if (!chat.selectedContact) {
       return (
         <ContactsSearch
@@ -155,7 +156,7 @@ class SendStep extends Component {
 
   render() {
     const { setInvoiceMode, invoice, chat } = this.props
-    console.log(
+    Logger.log(
       chat.selectedContact,
       chat.selectedContact ? chat.selectedContact.type : 'No selectedContact',
       invoice.invoiceMode,

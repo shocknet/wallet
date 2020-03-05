@@ -156,7 +156,7 @@ class SendScreen extends Component {
         this.props.navigation.goBack()
       }
     } catch (e) {
-      console.log(e)
+      Logger.log(e)
       this.setState({
         sending: false,
         error: e.message,

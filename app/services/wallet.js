@@ -1,4 +1,5 @@
 import Http from 'axios'
+import Logger from 'react-native-file-log'
 
 import * as Cache from './cache'
 import * as Utils from './utils'
@@ -751,7 +752,7 @@ export const decodeInvoice = async ({ payReq }) => {
 /**@param {string} uri */
 export const addPeer = async uri => {
   const isComplete = uri.split('@')
-  console.log(isComplete)
+  Logger.log(isComplete)
   const req = {
     pubkey: isComplete[0],
     host: isComplete[1],

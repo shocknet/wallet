@@ -80,7 +80,7 @@ export const disconnect = () => {
 export const encryptSocketData = async data => {
   const { APIPublicKey } = store.getState().connection
 
-  console.log('APIPublicKey', APIPublicKey)
+  Logger.log('APIPublicKey', APIPublicKey)
 
   if (!APIPublicKey && !isEmpty(data)) {
     throw new Error(
@@ -89,14 +89,14 @@ export const encryptSocketData = async data => {
   }
 
   if (APIPublicKey && !isEmpty(data)) {
-    console.log('encryptSocketData APIPublicKey:', APIPublicKey, data)
+    Logger.log('encryptSocketData APIPublicKey:', APIPublicKey, data)
     const stringifiedData = JSON.stringify(data)
     const encryptedData = await Encryption.encryptData(
       stringifiedData,
       APIPublicKey,
     )
-    console.log('Original Data:', data)
-    console.log('Encrypted Data:', encryptedData)
+    Logger.log('Original Data:', data)
+    Logger.log('Encrypted Data:', encryptedData)
     return encryptedData
   }
 
@@ -156,7 +156,7 @@ export const encryptSocketInstance = socket => ({
        * @param {any} data
        */
       async data => {
-        console.log('Listening to Event:', eventName)
+        Logger.log('Listening to Event:', eventName)
 
         if (Encryption.isNonEncrypted(eventName)) {
           cb(data)
@@ -164,7 +164,7 @@ export const encryptSocketInstance = socket => ({
         }
 
         const decryptedData = await decryptSocketData(data).catch(err => {
-          console.log(
+          Logger.log(
             `Error decrypting data for event: ${eventName} - msg: ${err.message}`,
           )
         })
@@ -183,9 +183,9 @@ export const encryptSocketInstance = socket => ({
       return
     }
 
-    console.log('Encrypting socket...', eventName, data)
+    Logger.log('Encrypting socket...', eventName, data)
     const encryptedData = await encryptSocketData(data)
-    console.log('Encrypted Socket Data:', encryptedData)
+    Logger.log('Encrypted Socket Data:', encryptedData)
     socket.emit(eventName, encryptedData)
   },
 })
@@ -201,7 +201,7 @@ export const createSocket = async () => {
     throw new Error('Tried to connect the socket without a cached node url')
   }
 
-  console.log(`http://${nodeURL}`)
+  Logger.log(`http://${nodeURL}`)
 
   // @ts-ignore
   const socket = SocketIO(`http://${nodeURL}`, {
@@ -220,7 +220,7 @@ export const createSocket = async () => {
 export const connect = debounce(async () => {
   if (socket) {
     disconnect()
-    console.log(
+    Logger.log(
       'Tried to connect a new socket without disconnecting the old one first',
     )
   }
@@ -230,27 +230,27 @@ export const connect = debounce(async () => {
   socket = newSocket
   socket.on('connect_error', e => {
     // @ts-ignore
-    console.log('connect_error: ' + e.message || e || 'Unknown')
+    Logger.log('connect_error: ' + e.message || e || 'Unknown')
   })
 
   socket.on('connect_error', error => {
-    console.log(`connect_error: ${error}`)
+    Logger.log(`connect_error: ${error}`)
   })
 
   socket.on('connect_timeout', timeout => {
-    console.log(`connect_timeout: ${timeout}`)
+    Logger.log(`connect_timeout: ${timeout}`)
   })
 
   socket.on('error', error => {
-    console.log(`Socket.socket.on:error: ${error}`)
+    Logger.log(`Socket.socket.on:error: ${error}`)
   })
 
   socket.on('reconnect_attempt', attemptNumber => {
-    console.log(`Socket.socket.on:reconnect_attempt: ${attemptNumber}`)
+    Logger.log(`Socket.socket.on:reconnect_attempt: ${attemptNumber}`)
   })
 
   socket.on('disconnect', reason => {
-    console.log(`reason for disconnect: ${reason}`)
+    Logger.log(`reason for disconnect: ${reason}`)
 
     // @ts-ignore
     if (reason === 'io server disconnect') {

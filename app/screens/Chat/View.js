@@ -14,6 +14,7 @@ import {
 } from 'react-native'
 import { Text } from 'react-native-elements'
 import { GiftedChat } from 'react-native-gifted-chat'
+import Logger from 'react-native-file-log'
 /**
  * @typedef {import('react-native-gifted-chat').IMessage} GiftedChatMessage
  * @typedef {import('react-native-gifted-chat').User} GiftedChatUser
@@ -177,7 +178,7 @@ export default class ChatView extends React.Component {
    */
   messageRenderer = ({ currentMessage }) => {
     if (typeof currentMessage === 'undefined') {
-      console.log("typeof currentMessage === 'undefined'")
+      Logger.log("typeof currentMessage === 'undefined'")
       return null
     }
 
@@ -378,7 +379,7 @@ export default class ChatView extends React.Component {
       })
       .catch(e => {
         ToastAndroid.show('Could not remove', 800)
-        console.log(e.message || 'unknown error')
+        Logger.log(e.message || 'unknown error')
       })
   }
 

@@ -88,7 +88,7 @@ class ContactsSearch extends PureComponent {
     const { decodePaymentRequest, value, onError } = this.props
     try {
       const data = await decodePaymentRequest(value)
-      console.log(data)
+      Logger.log(data)
       if (data && data.type === 'error') {
         if (onError) {
           onError(data.error.message)
@@ -104,7 +104,7 @@ class ContactsSearch extends PureComponent {
 
   /** @type {import('react-native').ListRenderItem<any>} */
   contactRender = contact => {
-    console.log('Contact:', contact)
+    Logger.log('Contact:', contact)
     if (contact.item.type === 'btc') {
       return ((
         <Suggestion
@@ -172,7 +172,7 @@ class ContactsSearch extends PureComponent {
    */
   getContacts = () => {
     const { value, enabledFeatures = this.defaultFeatures } = this.props
-    console.log('Enabled Features:', enabledFeatures)
+    Logger.log('Enabled Features:', enabledFeatures)
     const filteredContacts = enabledFeatures.includes('contacts')
       ? this.filterContacts()
       : []

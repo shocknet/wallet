@@ -74,7 +74,7 @@ const nonEncryptedRoutes = [
 //         await Cache.writeStoredAuthData(null)
 //       }
 //     } catch (e) {
-//       console.log(`Error inside response interceptor: ${e.message}`)
+//       Logger.log(`Error inside response interceptor: ${e.message}`)
 //     }
 
 //     return Promise.reject(err)
@@ -137,7 +137,7 @@ Http.interceptors.request.use(async config => {
         config.baseURL = `http://${nodeURL}`
       }
     } catch (err) {
-      console.log('Unable to retrieve base URL')
+      Logger.log('Unable to retrieve base URL')
     }
 
     if (!config.headers.Authorization) {
@@ -146,11 +146,11 @@ Http.interceptors.request.use(async config => {
         // eslint-disable-next-line require-atomic-updates
         config.headers.common.Authorization = `Bearer ${token}`
       } catch (err) {
-        console.log('Unable to retrieve token')
+        Logger.log('Unable to retrieve token')
       }
     }
 
-    console.log('Device ID:', connection.deviceId)
+    Logger.log('Device ID:', connection.deviceId)
     if (!config.headers['X-ShockWallet-Device-ID'] && connection.deviceId) {
       // eslint-disable-next-line require-atomic-updates
       config.headers.common['X-ShockWallet-Device-ID'] = connection.deviceId
@@ -183,7 +183,7 @@ Http.interceptors.request.use(async config => {
     try {
       if (config) {
         const method = config.method ? config.method.toUpperCase() : 'common'
-        console.log('Config:', config)
+        Logger.log('Config:', config)
         Logger.log(`---> ${method} ${config.url}`)
         Logger.log(
           'Headers:',
@@ -201,12 +201,12 @@ Http.interceptors.request.use(async config => {
         Logger.log('Body:', config.data ? JSON.stringify(config.data) : 'N/A')
       }
     } catch (err) {
-      console.log(err)
+      Logger.log(err)
     }
 
     return config
   } catch (err) {
-    console.log(err && err.response ? err.response : err)
+    Logger.log(err && err.response ? err.response : err)
     return config
   }
 })
@@ -257,7 +257,7 @@ const decryptResponse = async response => {
 
     return response
   } catch (err) {
-    console.log(err)
+    Logger.log(err)
     throw err
   }
 }

@@ -294,7 +294,7 @@ class WalletOverview extends Component {
   copyOlderFormatBTCAddressToClipboard = () => {
     const { receivingOlderFormatBTCAddress } = this.state
     if (receivingOlderFormatBTCAddress === null) {
-      console.log('receivingOlderFormatBTCAddress === null')
+      Logger.log('receivingOlderFormatBTCAddress === null')
       return
     }
 
@@ -359,7 +359,7 @@ class WalletOverview extends Component {
     const { receivingBTCAddress } = this.state
 
     if (receivingBTCAddress === null) {
-      console.log('receivingOlderFormatBTCAddress === null')
+      Logger.log('receivingOlderFormatBTCAddress === null')
       return
     }
 
@@ -543,12 +543,12 @@ class WalletOverview extends Component {
     const { invoice, QRShockUserInfo } = this.state
 
     if (QRShockUserInfo === null) {
-      console.log('QRShockUserInfo === null')
+      Logger.log('QRShockUserInfo === null')
       return
     }
 
     if (invoice === null) {
-      console.log('invoice === null')
+      Logger.log('invoice === null')
       return
     }
 
@@ -908,7 +908,7 @@ class WalletOverview extends Component {
         } = this.state
 
         if (decodedInvoiceRes === null) {
-          console.log('decodedInvoice === null')
+          Logger.log('decodedInvoice === null')
           return
         }
 
@@ -1082,7 +1082,7 @@ class WalletOverview extends Component {
      */
     const middle = async url => {
       //const url = event.url
-      console.log(url)
+      Logger.log(url)
       const protocol = url.split(':')
       if (
         protocol.length !== 2 ||
@@ -1113,9 +1113,7 @@ class WalletOverview extends Component {
           )
 
           const lnurl = String.fromCharCode(...decodedBytes)
-          console.log('OMG_MY_LOG')
           Logger.log(lnurl)
-          console.log('OMG_MY_LOG')
 
           try {
             const res = await fetch(lnurl)
@@ -1124,7 +1122,7 @@ class WalletOverview extends Component {
             const authData = await Cache.getStoredAuthData()
 
             json.shockPubKey = authData?.authData.publicKey
-            //console.log(json)
+            //Logger.log(json)
             this.setState({
               LNURLdata: json,
             })
@@ -1151,11 +1149,11 @@ class WalletOverview extends Component {
                 break
               }
               default: {
-                console.log('unknown tag')
+                Logger.log('unknown tag')
               }
             }
           } catch (e) {
-            console.log(e)
+            Logger.log(e)
           }
         }
       }
@@ -1191,7 +1189,7 @@ class WalletOverview extends Component {
     Linking.getInitialURL()
       .then(url => {
         if (url) {
-          console.log('Initial url is: ' + url)
+          Logger.log('Initial url is: ' + url)
           this._handleOpenURL({ url })
         }
       })
