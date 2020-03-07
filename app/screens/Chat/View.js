@@ -416,8 +416,15 @@ export default class ChatView extends React.Component {
 
     const [firstMsg] = sortedMessages
 
-    const thereAreMoreMessages =
-      firstMsg.body !== '$$__SHOCKWALLET__INITIAL__MESSAGE' && !didDisconnect
+    const thereAreMoreMessages = (() => {
+      if (!firstMsg) {
+        return true
+      }
+
+      return (
+        firstMsg.body !== '$$__SHOCKWALLET__INITIAL__MESSAGE' && !didDisconnect
+      )
+    })()
 
     /** @type {GiftedChatMessage[]} */
     const giftedChatMsgs = sortedMessages
