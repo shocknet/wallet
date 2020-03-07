@@ -11,6 +11,7 @@ import ShockAvatar from '../../components/ShockAvatar'
 import Pad from '../../components/Pad'
 
 const BUBBLE_TRIANGLE_VERTICAL_OFFSET = 6
+const AVATAR_SIZE = 40
 
 /**
  * @typedef {object} Props
@@ -18,6 +19,7 @@ const BUBBLE_TRIANGLE_VERTICAL_OFFSET = 6
  * @prop {string} id
  * @prop {((id: string) => void)=} onPress
  * @prop {boolean=} outgoing
+ * @prop {boolean} shouldRenderAvatar Only applies to incoming messages.
  * @prop {number} timestamp
  * @prop {string|null} avatar
  */
@@ -61,7 +63,11 @@ export default class ChatMessage extends React.Component {
         {!outgoing && (
           <>
             <View style={styles.avatarContainer}>
-              <ShockAvatar height={40} image={this.props.avatar} />
+              {this.props.shouldRenderAvatar ? (
+                <ShockAvatar height={AVATAR_SIZE} image={this.props.avatar} />
+              ) : (
+                <Pad insideRow amount={AVATAR_SIZE} />
+              )}
             </View>
             <Pad insideRow amount={20} />
           </>
