@@ -126,6 +126,11 @@ export default class ShockWallet extends React.Component {
   }
 }
 
+/**
+ * @param {string} path
+ */
+const sanitizePath = path => path.replace(/\//g, '_')
+
 // Adds an Authorization token to the header before sending any request
 Http.interceptors.request.use(async config => {
   try {
@@ -156,7 +161,21 @@ Http.interceptors.request.use(async config => {
       config.headers.common['X-ShockWallet-Device-ID'] = connection.deviceId
     }
 
+    /**
+     * @param {number} status
+     */
+    Http.defaults.validateStatus = status => status < 300 || status === 304
+
     const path = url.parse(config.url).pathname
+    const sanitizedPath = sanitizePath(path)
+
+    Logger.log('Sanitized Path:', sanitizedPath)
+
+    if (cache.has(sanitizedPath)) {
+      const cachedData = cache.get(sanitizedPath)
+      // eslint-disable-next-line require-atomic-updates
+      config.headers.common.ETag = cachedData.hash
+    }
 
     if (
       connection.APIPublicKey &&
@@ -211,6 +230,8 @@ Http.interceptors.request.use(async config => {
   }
 })
 
+const cache = new Map()
+
 /**
  * @param {import('axios').AxiosResponse<any>} response
  * @returns {Promise<import('axios').AxiosResponse<any>>}
@@ -220,7 +241,17 @@ const decryptResponse = async response => {
     const decryptionTime = Date.now()
     const { connection } = store.getState()
     const path = url.parse(response?.config.url).pathname
-    Logger.log('Path:', path)
+    const sanitizedPath = sanitizePath(path)
+    Logger.log('[ENCRYPTION] Decrypting Path:', path, sanitizedPath)
+
+    if (response.status === 304) {
+      Logger.log('Using cached response for: ', path)
+      const cachedData = cache.get(sanitizedPath)
+
+      if (cachedData?.response) {
+        return cachedData.response
+      }
+    }
 
     if (
       connection.APIPublicKey &&
@@ -238,11 +269,18 @@ const decryptResponse = async response => {
         iv: response.data.iv,
       })
       Logger.log(`[HTTP] Decrypted data in: ${Date.now() - decryptionTime}ms`)
-      return {
+      const decryptedResponse = {
         ...response,
         data: JSON.parse(decryptedData),
       }
-    } else if (
+      cache.set(sanitizedPath, {
+        hash: response.data.metadata.hash,
+        response: decryptedResponse,
+      })
+      return decryptedResponse
+    }
+
+    if (
       path !== '/api/security/exchangeKeys' &&
       response.headers['x-session-id']
     ) {
@@ -264,7 +302,38 @@ const decryptResponse = async response => {
 
 // Logging for HTTP responses
 Http.interceptors.response.use(
-  response => decryptResponse(response),
+  async response => {
+    const decryptedResponse = await decryptResponse(response)
+
+    try {
+      if (decryptedResponse && decryptedResponse.status !== undefined) {
+        const method = decryptedResponse.config.method
+          ? decryptedResponse.config.method
+          : 'common'
+        Logger.log(
+          `<--- ${method.toUpperCase()} ${decryptedResponse.config.url} (${
+            decryptedResponse.status
+          })`,
+        )
+        Logger.log(
+          'Server Headers:',
+          decryptedResponse.headers
+            ? JSON.stringify(decryptedResponse.headers)
+            : null,
+        )
+        Logger.log(
+          'Response:',
+          decryptedResponse.data
+            ? JSON.stringify(decryptedResponse.data)
+            : null,
+        )
+      }
+      return decryptedResponse
+    } catch (err) {
+      Logger.log(err)
+      return decryptedResponse
+    }
+  },
   async error => {
     if (error && error.response) {
       const decryptedResponse = await decryptResponse(error.response)
