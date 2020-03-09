@@ -824,6 +824,7 @@ export const listPeers = async () => {
 /**
  * Partially based on https://api.lightning.community/#channel.
  * @typedef {object} Channel
+ * @prop {string} chan_id
  * @prop {boolean} active
  * @prop {string} channel_point
  * @prop {string} ip
@@ -964,5 +965,67 @@ export const nodeInfo = async () => {
       throw new Error(data.errorMessage || data.message || 'Unknown Error')
     }
     throw new Error('Unable to connect to ShockAPI')
+  }
+}
+/**
+ * https://api.lightning.community/#routingpolicy
+ * @typedef {object} RoutingPolicy
+ * @prop {number} time_lock_delta
+ * @prop {number} min_htlc
+ * @prop {number} fee_base_msat
+ * @prop {number} fee_rate_milli_msat
+ * @prop {number} last_update
+ * @prop {max_htlc_msat} fee_rate_milli_msat
+ * @prop {last_update} fee_rate_milli_msat
+ * @prop {boolean} disabled
+ */
+
+/**
+ * https://api.lightning.community/#grpc-response-channeledge
+ * @typedef {object} ChanInfo
+ * @prop {number} channel_id
+ * @prop {number} last_update
+ * @prop {number} capacity
+ * @prop {string} chan_point
+ * @prop {string} node1_pub
+ * @prop {string} node2_pub
+ * @prop {RoutingPolicy} node1_policy
+ * @prop {RoutingPolicy} node2_policy
+ */
+
+/**
+ * @param {string | undefined} chanID
+ * @returns {Promise<ChanInfo>}
+ */
+export const getChaninfo = async chanID => {
+  if (chanID === undefined) {
+    throw new Error('no chan id provied.')
+  }
+  //console.error(chanID)
+  const token = await Cache.getToken()
+
+  if (typeof token !== 'string') {
+    throw new TypeError(NO_CACHED_TOKEN)
+  }
+
+  const endpoint = `/api/lnd/getchaninfo`
+
+  try {
+    const { data } = await Http.post(
+      endpoint,
+      { chan_id: chanID },
+      {
+        headers: {
+          Authorization: token,
+        },
+      },
+    )
+
+    return data
+  } catch (err) {
+    const { response } = err
+    throw new Error(
+      response.data.errorMessage || response.data.message || 'Unknown error.',
+    )
   }
 }
