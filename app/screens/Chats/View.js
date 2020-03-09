@@ -12,6 +12,7 @@ import {
 import moment from 'moment'
 import { Divider, Icon } from 'react-native-elements'
 import Ionicons from 'react-native-vector-icons/Ionicons'
+import Logger from 'react-native-file-log'
 
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation
@@ -314,7 +315,7 @@ export default class ChatsView extends React.Component {
       return this.receivedRequestRenderer(item)
     }
 
-    console.log(`unknown kind of item found: ${JSON.stringify(item)}`)
+    Logger.log(`unknown kind of item found: ${JSON.stringify(item)}`)
 
     return null
   }

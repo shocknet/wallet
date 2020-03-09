@@ -21,7 +21,7 @@
     "prettier/prettier": "error",
     "strict": "off",
     "id-length": "off",
-    "no-console": "off",
+    "no-console": "error",
     "max-statements": "off",
     "global-require": "off",
     "one-var": "off",

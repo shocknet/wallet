@@ -1,4 +1,5 @@
 import * as API from '../services/contact-api'
+import Logger from 'react-native-file-log'
 
 export const ACTIONS = {
   LOAD_CONTACTS: 'contacts/load',
@@ -55,7 +56,7 @@ export const subscribeOnChats = callback => dispatch =>
           {},
         )
 
-        console.log('Subscribed to ON_CHATS!', contacts)
+        Logger.log('Subscribed to ON_CHATS!', contacts)
 
         dispatch({
           type: ACTIONS.LOAD_CONTACTS,
@@ -73,7 +74,7 @@ export const subscribeOnChats = callback => dispatch =>
 
         resolve(chats)
       } catch (err) {
-        console.error(err)
+        Logger.log(err)
         reject(err)
       }
     })
@@ -98,7 +99,7 @@ export const selectContact = contact => dispatch => {
  * @returns {import('redux-thunk').ThunkAction<void, {}, {}, import('redux').AnyAction>}
  */
 export const resetSelectedContact = () => dispatch => {
-  console.log('Resetting selected contact')
+  Logger.log('Resetting selected contact')
   dispatch({
     type: ACTIONS.RESET_SELECTED_CONTACT,
     data: null,

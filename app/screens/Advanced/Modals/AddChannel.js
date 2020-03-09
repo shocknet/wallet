@@ -40,7 +40,6 @@ class AddChannelModal extends React.Component {
       loading,
       error,
     } = this.props
-    console.log(peers)
     /**
      * @var {[{value : string}]} peersData
      */

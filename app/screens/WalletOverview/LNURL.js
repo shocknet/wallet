@@ -1,4 +1,5 @@
 import React from 'react'
+import Logger from 'react-native-file-log'
 import ShockModal from '../../components/ShockModal'
 import { Text, View, Switch, StyleSheet, ToastAndroid } from 'react-native'
 import { nodeInfo, addPeer, addInvoice } from '../../services/wallet'
@@ -94,22 +95,20 @@ export default class LNURL extends React.Component {
     try {
       await addPeer(uri)
     } catch (e) {
-      console.log(e)
+      Logger.log(e)
       ToastAndroid.show(e.toString(), 800)
     }
     try {
-      console.log('connect')
-      //console.log(connect)
       const node = await nodeInfo()
-      //console.log(node)
+      //Logger.log(node)
 
       const nodeId = node.identity_pubkey
       const priv = this.state.privateChannel ? 1 : 0
       const completeUrl = `${callback}?k1=${newK1}&remoteid=${nodeId}&private=${priv}`
-      console.log(completeUrl)
+      Logger.log(completeUrl)
       const res = await fetch(completeUrl)
       const json = await res.json()
-      console.log(json)
+      Logger.log(json)
       if (json.status === 'OK') {
         this.setState({
           done: 'Channel request sent correctly',
@@ -120,7 +119,7 @@ export default class LNURL extends React.Component {
         })
       }
     } catch (e) {
-      console.log(e)
+      Logger.log(e)
       this.setState({
         error: e.toString(),
       })
@@ -132,21 +131,21 @@ export default class LNURL extends React.Component {
       const { callback } = this.props.LNURLdata
       const { payAmount } = this.state
       const completeUrl = `${callback}?amount=${payAmount * 1000}`
-      console.log(completeUrl)
+      Logger.log(completeUrl)
       const res = await fetch(completeUrl)
       const json = await res.json()
-      console.log(json)
+      Logger.log(json)
       if (json.status === 'ERROR') {
         this.setState({
           error: json.reason,
         })
         return
       }
-      console.log(json.pr)
+      Logger.log(json.pr)
       this.props.requestClose()
       this.props.payInvoice({ invoice: json.pr })
     } catch (e) {
-      console.log(e)
+      Logger.log(e)
       this.setState({
         error: e,
       })
@@ -162,10 +161,10 @@ export default class LNURL extends React.Component {
         expiry: 1800,
       })
       const completeUrl = `${callback}?k1=${k1}&pr=${payReq.payment_request}`
-      console.log(completeUrl)
+      Logger.log(completeUrl)
       const res = await fetch(completeUrl)
       const json = await res.json()
-      console.log(json)
+      Logger.log(json)
       if (json.status === 'OK') {
         this.setState({
           done: 'Withdraw request sent correctly',
@@ -194,27 +193,27 @@ export default class LNURL extends React.Component {
   handleUrl = LNURLdata => {
     switch (LNURLdata.tag) {
       case 'channelRequest': {
-        console.log('this url is a channel request')
+        Logger.log('this url is a channel request')
         return this.renderChannelRequest(LNURLdata)
       }
       case 'withdrawRequest': {
-        console.log('this url is a withdrawal request')
+        Logger.log('this url is a withdrawal request')
         return this.renderWithdraw(LNURLdata)
       }
       case 'hostedChannelRequest': {
-        console.log('this url is a hosted channel request')
+        Logger.log('this url is a hosted channel request')
         return this.renderHostedChannelRequest()
       }
       case 'login': {
-        console.log('this url is a login ')
+        Logger.log('this url is a login ')
         return this.renderAuth()
       }
       case 'payRequest': {
-        console.log('this url is a pay request')
+        Logger.log('this url is a pay request')
         return this.renderPay(LNURLdata)
       }
       default: {
-        console.log('unknown tag')
+        Logger.log('unknown tag')
         return this.renderUnknown()
       }
     }
@@ -358,8 +357,8 @@ export default class LNURL extends React.Component {
     if (visible === false) {
       return null
     }
-    console.log('LNURL')
-    console.log(this.props.LNURLdata)
+    Logger.log('LNURL')
+    Logger.log(this.props.LNURLdata)
     const { done, error } = this.state
     return (
       <ShockModal visible={visible} onRequestClose={this.props.requestClose}>

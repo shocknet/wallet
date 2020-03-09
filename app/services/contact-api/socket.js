@@ -4,9 +4,12 @@
 import SocketIO from 'socket.io-client'
 import isEmpty from 'lodash/isEmpty'
 import debounce from 'lodash/debounce'
+import Logger from 'react-native-file-log'
 
 import * as Cache from '../../services/cache'
+import { ACTIONS as ConnectionAction } from '../../actions/ConnectionActions'
 
+import Action from './action'
 import * as Events from './events'
 import * as Encryption from '../encryption'
 
@@ -59,27 +62,13 @@ export const setStore = initializedStore => {
   return store
 }
 
-export const disconnect = () => {
-  if (socket) {
-    // @ts-ignore
-    socket.disconnect()
-    // @ts-ignore
-    socket.off()
-
-    // @ts-ignore
-    socket = null
-  } else {
-    throw new Error('Tried to disconnect the socket without creating one first')
-  }
-}
-
 /**
  * @param {object} data
  */
 export const encryptSocketData = async data => {
   const { APIPublicKey } = store.getState().connection
 
-  console.log('APIPublicKey', APIPublicKey)
+  Logger.log('APIPublicKey', APIPublicKey)
 
   if (!APIPublicKey && !isEmpty(data)) {
     throw new Error(
@@ -88,14 +77,14 @@ export const encryptSocketData = async data => {
   }
 
   if (APIPublicKey && !isEmpty(data)) {
-    console.log('encryptSocketData APIPublicKey:', APIPublicKey, data)
+    Logger.log('encryptSocketData APIPublicKey:', APIPublicKey, data)
     const stringifiedData = JSON.stringify(data)
     const encryptedData = await Encryption.encryptData(
       stringifiedData,
       APIPublicKey,
     )
-    console.log('Original Data:', data)
-    console.log('Encrypted Data:', encryptedData)
+    Logger.log('Original Data:', data)
+    Logger.log('Encrypted Data:', encryptedData)
     return encryptedData
   }
 
@@ -108,7 +97,7 @@ export const encryptSocketData = async data => {
 export const decryptSocketData = async data => {
   if (data && data.encryptedKey) {
     const decryptionTime = Date.now()
-    console.log('Decrypting Data...', data)
+    Logger.log('[SOCKET] Decrypting Data...', data)
     const { sessionId } = store.getState().connection
     const decryptedKey = await Encryption.decryptKey(
       data.encryptedKey,
@@ -119,11 +108,11 @@ export const decryptSocketData = async data => {
       key: decryptedKey,
       iv: data.iv,
     })
-    console.log(`Decryption took: ${Date.now() - decryptionTime}ms`)
+    Logger.log(`[SOCKET] Decryption took: ${Date.now() - decryptionTime}ms`)
     return JSON.parse(decryptedData)
   }
 
-  console.log('Data is non-encrypted', data)
+  Logger.log('[SOCKET] Data is non-encrypted', data)
 
   return data
 }
@@ -155,7 +144,7 @@ export const encryptSocketInstance = socket => ({
        * @param {any} data
        */
       async data => {
-        console.log('Listening to Event:', eventName)
+        Logger.log('Listening to Event:', eventName)
 
         if (Encryption.isNonEncrypted(eventName)) {
           cb(data)
@@ -163,7 +152,7 @@ export const encryptSocketInstance = socket => ({
         }
 
         const decryptedData = await decryptSocketData(data).catch(err => {
-          console.log(
+          Logger.log(
             `Error decrypting data for event: ${eventName} - msg: ${err.message}`,
           )
         })
@@ -182,9 +171,9 @@ export const encryptSocketInstance = socket => ({
       return
     }
 
-    console.log('Encrypting socket...', eventName, data)
+    Logger.log('Encrypting socket...', eventName, data)
     const encryptedData = await encryptSocketData(data)
-    console.log('Encrypted Socket Data:', encryptedData)
+    Logger.log('Encrypted Socket Data:', encryptedData)
     socket.emit(eventName, encryptedData)
   },
 })
@@ -200,7 +189,7 @@ export const createSocket = async () => {
     throw new Error('Tried to connect the socket without a cached node url')
   }
 
-  console.log(`http://${nodeURL}`)
+  Logger.log(`http://${nodeURL}`)
 
   // @ts-ignore
   const socket = SocketIO(`http://${nodeURL}`, {
@@ -214,12 +203,45 @@ export const createSocket = async () => {
 }
 
 /**
+ * ID for an interval that manually keeps track of the real socket connection
+ * status.
+ */
+let connectionCheckIntervalID = -1
+
+/**
+ * The last timestamp for which the socket received some data.
+ */
+let lastConnCheck = 0
+
+export const disconnect = () => {
+  if (socket) {
+    clearInterval(connectionCheckIntervalID)
+    connectionCheckIntervalID = -1
+
+    // @ts-ignore
+    socket.off()
+
+    store.dispatch({ type: ConnectionAction.SOCKET_DID_DISCONNECT })
+
+    // @ts-ignore
+    socket.disconnect()
+
+    // @ts-ignore
+    socket = null
+  } else {
+    throw new Error(
+      'socket.js -> called disconnect() without calling connect() first',
+    )
+  }
+}
+
+/**
  * @returns {Promise<void>}
  */
 export const connect = debounce(async () => {
   if (socket) {
     disconnect()
-    console.log(
+    Logger.log(
       'Tried to connect a new socket without disconnecting the old one first',
     )
   }
@@ -229,33 +251,51 @@ export const connect = debounce(async () => {
   socket = newSocket
   socket.on('connect_error', e => {
     // @ts-ignore
-    console.log('connect_error: ' + e.message || e || 'Unknown')
+    Logger.log('connect_error: ' + e.message || e || 'Unknown')
   })
 
   socket.on('connect_error', error => {
-    console.log(`connect_error: ${error}`)
+    Logger.log(`connect_error: ${error}`)
   })
 
   socket.on('connect_timeout', timeout => {
-    console.log(`connect_timeout: ${timeout}`)
+    Logger.log(`connect_timeout: ${timeout}`)
   })
 
   socket.on('error', error => {
-    console.log(`Socket.socket.on:error: ${error}`)
+    Logger.log(`Socket.socket.on:error: ${error}`)
   })
 
   socket.on('reconnect_attempt', attemptNumber => {
-    console.log(`Socket.socket.on:reconnect_attempt: ${attemptNumber}`)
+    Logger.log(`Socket.socket.on:reconnect_attempt: ${attemptNumber}`)
   })
 
   socket.on('disconnect', reason => {
-    console.log(`reason for disconnect: ${reason}`)
-
-    // @ts-ignore
-    if (reason === 'io server disconnect') {
-      // https://Socket.socket.io/docs/client-api/#Event-%E2%80%98disconnect%E2%80%99
-    }
+    Logger.log(`reason for disconnect: ${reason}`)
+    store.dispatch({ type: ConnectionAction.SOCKET_DID_DISCONNECT })
   })
 
-  Events.setupEvents()
+  socket.on('connect', () => {
+    store.dispatch({ type: ConnectionAction.SOCKET_DID_CONNECT })
+  })
+
+  store.dispatch({ type: ConnectionAction.SOCKET_DID_CONNECT })
+
+  lastConnCheck = Date.now()
+
+  connectionCheckIntervalID = setInterval(() => {
+    if (Date.now() - lastConnCheck > 10000) {
+      Logger.log(
+        'Socket detected as disconnected, will create a new one and set up events again',
+      )
+      disconnect()
+      connect()
+    }
+  }, 10000)
+
+  socket.on(Action.SET_LAST_SEEN_APP, () => {
+    lastConnCheck = Date.now()
+  })
+
+  Events.setupEvents(socket)
 }, 1000)

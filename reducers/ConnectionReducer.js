@@ -8,6 +8,7 @@ import { ACTIONS } from '../app/actions/ConnectionActions'
  * @prop {string?} APIPublicKey
  * @prop {string?} sessionId
  * @prop {string} deviceId
+ * @prop {boolean} socketConnected
  */
 
 // TO DO: typings for data
@@ -23,6 +24,7 @@ const INITIAL_STATE = {
   APIPublicKey: null,
   sessionId: null,
   deviceId: uuid(),
+  socketConnected: false,
 }
 
 /**
@@ -39,6 +41,18 @@ const connection = (state = INITIAL_STATE, action) => {
         devicePublicKey,
         sessionId,
         APIPublicKey,
+      }
+    }
+    case ACTIONS.SOCKET_DID_CONNECT: {
+      return {
+        ...state,
+        socketConnected: true,
+      }
+    }
+    case ACTIONS.SOCKET_DID_DISCONNECT: {
+      return {
+        ...state,
+        socketConnected: false,
       }
     }
     default:

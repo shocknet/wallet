@@ -18,6 +18,7 @@ import {
 } from 'react-native'
 import EntypoIcons from 'react-native-vector-icons/Entypo'
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'
+import Logger from 'react-native-file-log'
 import { connect } from 'react-redux'
 
 //import { compose } from 'redux'
@@ -293,7 +294,7 @@ class WalletOverview extends Component {
   copyOlderFormatBTCAddressToClipboard = () => {
     const { receivingOlderFormatBTCAddress } = this.state
     if (receivingOlderFormatBTCAddress === null) {
-      console.log('receivingOlderFormatBTCAddress === null')
+      Logger.log('receivingOlderFormatBTCAddress === null')
       return
     }
 
@@ -358,7 +359,7 @@ class WalletOverview extends Component {
     const { receivingBTCAddress } = this.state
 
     if (receivingBTCAddress === null) {
-      console.log('receivingOlderFormatBTCAddress === null')
+      Logger.log('receivingOlderFormatBTCAddress === null')
       return
     }
 
@@ -542,12 +543,12 @@ class WalletOverview extends Component {
     const { invoice, QRShockUserInfo } = this.state
 
     if (QRShockUserInfo === null) {
-      console.log('QRShockUserInfo === null')
+      Logger.log('QRShockUserInfo === null')
       return
     }
 
     if (invoice === null) {
-      console.log('invoice === null')
+      Logger.log('invoice === null')
       return
     }
 
@@ -907,7 +908,7 @@ class WalletOverview extends Component {
         } = this.state
 
         if (decodedInvoiceRes === null) {
-          console.log('decodedInvoice === null')
+          Logger.log('decodedInvoice === null')
           return
         }
 
@@ -1081,13 +1082,13 @@ class WalletOverview extends Component {
      */
     const middle = async url => {
       //const url = event.url
-      console.log(url)
+      Logger.log(url)
       const protocol = url.split(':')
       if (
         protocol.length !== 2 ||
         (protocol[0] !== 'bitcoin' && protocol[0] !== 'lightning')
       ) {
-        console.log('invalid url: ' + url)
+        Logger.log('invalid url: ' + url)
         return
       }
       const details = protocol[1].split('?amount=')
@@ -1112,9 +1113,7 @@ class WalletOverview extends Component {
           )
 
           const lnurl = String.fromCharCode(...decodedBytes)
-          console.log('OMG_MY_LOG')
-          console.log(lnurl)
-          console.log('OMG_MY_LOG')
+          Logger.log(lnurl)
 
           try {
             const res = await fetch(lnurl)
@@ -1123,38 +1122,38 @@ class WalletOverview extends Component {
             const authData = await Cache.getStoredAuthData()
 
             json.shockPubKey = authData?.authData.publicKey
-            //console.log(json)
+            //Logger.log(json)
             this.setState({
               LNURLdata: json,
             })
 
             switch (json.tag) {
               case 'channelRequest': {
-                console.log('this url is a channel request')
+                Logger.log('this url is a channel request')
                 break
               }
               case 'withdrawRequest': {
-                console.log('this url is a withdrawal request')
+                Logger.log('this url is a withdrawal request')
                 break
               }
               case 'hostedChannelRequest': {
-                console.log('this url is a hosted channel request')
+                Logger.log('this url is a hosted channel request')
                 break
               }
               case 'login': {
-                console.log('this url is a login ')
+                Logger.log('this url is a login ')
                 break
               }
               case 'payRequest': {
-                console.log('this url is a pay request')
+                Logger.log('this url is a pay request')
                 break
               }
               default: {
-                console.log('unknown tag')
+                Logger.log('unknown tag')
               }
             }
           } catch (e) {
-            console.log(e)
+            Logger.log(e)
           }
         }
       }
@@ -1190,11 +1189,11 @@ class WalletOverview extends Component {
     Linking.getInitialURL()
       .then(url => {
         if (url) {
-          console.log('Initial url is: ' + url)
+          Logger.log('Initial url is: ' + url)
           this._handleOpenURL({ url })
         }
       })
-      .catch(err => console.log('An error occurred', err))
+      .catch(err => Logger.log('An error occurred', err))
 
     this.startNotificationService()
 
@@ -1262,7 +1261,7 @@ class WalletOverview extends Component {
     const authData = await Cache.getStoredAuthData()
     const nodeInfo = await Cache.getNodeURL()
     if (!authData || !nodeInfo) {
-      console.log('error starting service, invalid info')
+      Logger.log('error starting service, invalid info')
     }
     notificationService.startService(
       nodeInfo,
@@ -1683,7 +1682,7 @@ class WalletOverview extends Component {
             }
 
             if (displayingInvoicePaymentResult) {
-              console.log('invalid state for paying invoice result dialog')
+              Logger.log('invalid state for paying invoice result dialog')
             }
             return ''
           })()}
