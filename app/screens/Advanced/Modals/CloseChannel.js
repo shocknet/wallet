@@ -17,8 +17,8 @@ import { Colors } from '../../../res/css'
  * @prop {boolean} loading
  * @prop {string} error
  * @prop {string|undefined} chanId
- * @prop {number|undefined} localBalance
- * @prop {number|undefined} remoteBalance
+ * @prop {string|undefined} localBalance
+ * @prop {string|undefined} remoteBalance
  */
 
 /**
@@ -64,7 +64,7 @@ class CloseChannelModal extends React.Component {
           closeModal={modalRef.current ? modalRef.current.close : undefined}
         >
           {/* <Icon name="ios-link" color="white" size={35} /> */}
-          <Text style={styles.modalTitle}>Close Channel?</Text>
+          <Text style={styles.modalTitle}>Confirm Close Channel</Text>
         </Head>
         <Body>
           {/*<Text style={styles.modalTitle}>Close Channel?</Text>*/}
@@ -89,7 +89,7 @@ class CloseChannelModal extends React.Component {
             />
           </View>
         </Body>
-        <Footer value="Close Channel" onPress={submit} />
+        <Footer value="Confirm" onPress={submit} />
       </Modal>
     )
   }
