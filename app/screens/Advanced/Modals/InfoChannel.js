@@ -1,6 +1,7 @@
 import React from 'react'
 import { View, StyleSheet, Text, ActivityIndicator } from 'react-native'
 import Modal from 'react-native-modalbox'
+import Logger from 'react-native-file-log'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 import Head from '../../../components/PopupModal/Head'
 import Body from '../../../components/PopupModal/Body'
@@ -11,6 +12,7 @@ import { getChaninfo } from '../../../services/wallet'
 /**
  * @typedef {import('../../../services/wallet').Channel} Channel
  * @typedef {import('../../../services/wallet').ChanInfo} ChanInfo
+ * @typedef {import('../../../services/wallet').RoutingPolicy} RoutingPolicy
  */
 /**
  * @typedef {object} Props
@@ -22,21 +24,47 @@ import { getChaninfo } from '../../../services/wallet'
  * @prop {number} keyboardHeight
  * @prop {boolean} loading
  * @prop {string} error
- * @prop {Channel|null} channel
+ * @prop {Channel} channel
  */
 
 /**
  * @typedef {object} State
- * @prop {ChanInfo|null} chanInfo
+ * @prop {ChanInfo} chanInfo
+ * @prop {boolean} chanInfoReady
+ * @prop {RoutingPolicy} myPolicy
+ * @prop {RoutingPolicy} otherPolicy
  */
-
+/**
+ * @type {RoutingPolicy} defaultPolicy
+ */
+const defaultPolicy = {
+  disabled: false,
+  fee_base_msat: 0,
+  fee_rate_milli_msat: 0,
+  last_update: 0,
+  min_htlc: 0,
+  time_lock_delta: 0,
+}
 /**
  * @augments React.Component<Props, State, never>
  */
+
 class InfoChannelModal extends React.Component {
   /** @type {State} */
   state = {
-    chanInfo: null,
+    chanInfoReady: false,
+    chanInfo: {
+      capacity: 0,
+      chan_point: '',
+      channel_id: 0,
+      last_update: 0,
+      node1_policy: defaultPolicy,
+      node1_pub: '',
+      node2_policy: defaultPolicy,
+      node2_pub: '',
+    },
+    myPolicy: defaultPolicy,
+    otherPolicy: defaultPolicy,
   }
 
   /**
@@ -44,13 +72,28 @@ class InfoChannelModal extends React.Component {
    */
   componentDidUpdate(prevProps) {
     if (this.props.channel !== prevProps.channel) {
-      getChaninfo(this.props.channel?.chan_id)
+      const { channel } = this.props
+      getChaninfo(channel.chan_id)
         .then(res => {
-          this.setState({
-            chanInfo: res,
-          })
+          if (channel.remote_pubkey === res.node1_pub) {
+            this.setState({
+              chanInfo: res,
+              chanInfoReady: true,
+              otherPolicy: res.node1_policy,
+              myPolicy: res.node2_policy,
+            })
+          } else {
+            this.setState({
+              chanInfo: res,
+              chanInfoReady: true,
+              myPolicy: res.node1_policy,
+              otherPolicy: res.node2_policy,
+            })
+          }
         })
-        .catch(e => console.error(e))
+        .catch(e => {
+          Logger.log(e)
+        })
     }
   }
 
@@ -65,19 +108,7 @@ class InfoChannelModal extends React.Component {
       error,
       channel,
     } = this.props
-    const { chanInfo } = this.state
-    let myPolicy = null
-    let otherPolicy = null
-
-    if (chanInfo !== null) {
-      if (channel?.remote_pubkey === chanInfo.node1_pub) {
-        otherPolicy = chanInfo?.node1_policy
-        myPolicy = chanInfo?.node2_policy
-      } else {
-        myPolicy = chanInfo?.node1_policy
-        otherPolicy = chanInfo?.node2_policy
-      }
-    }
+    const { chanInfo, chanInfoReady, myPolicy, otherPolicy } = this.state
     return (
       <Modal
         position="center"
@@ -102,38 +133,37 @@ class InfoChannelModal extends React.Component {
           closeModal={modalRef.current ? modalRef.current.close : undefined}
         >
           {/* <Icon name="ios-link" color="white" size={35} /> */}
-          <Text style={styles.modalTitle}>{channel?.chan_id}</Text>
+          <Text style={styles.modalTitle}>{channel.chan_id}</Text>
         </Head>
         <Body>
           {/*<Text style={styles.modalTitle}>Close Channel?</Text>*/}
           {error ? <Text style={styles.modalError}>{error}</Text> : null}
-          {chanInfo && (
+          {chanInfoReady && (
             <>
               <View style={styles.content}>
                 <Text>Capacity:</Text>
-                <Text style={styles.bold}>{chanInfo?.capacity}</Text>
+                <Text style={styles.bold}>{chanInfo.capacity}</Text>
               </View>
               <View style={styles.hr} />
               <Text>My Policy</Text>
               <View style={styles.content}>
                 <Text>Disabled:</Text>
                 <Text style={styles.bold}>
-                  {myPolicy?.disabled ? 'true' : 'false'}
+                  {myPolicy.disabled ? 'true' : 'false'}
                 </Text>
               </View>
               <View style={styles.content}>
                 <Text>Fee base msat:</Text>
-                <Text style={styles.bold}>{myPolicy?.fee_base_msat}</Text>
+                <Text style={styles.bold}>{myPolicy.fee_base_msat}</Text>
               </View>
               <View style={styles.content}>
                 <Text>Fee rate milli mstat:</Text>
-                <Text style={styles.bold}>{myPolicy?.fee_rate_milli_msat}</Text>
+                <Text style={styles.bold}>{myPolicy.fee_rate_milli_msat}</Text>
               </View>
               <View style={styles.content}>
                 <Text>Last update:</Text>
                 <Text style={styles.bold}>
-                  {myPolicy &&
-                    new Date(myPolicy.last_update * 1000).toISOString()}
+                  {new Date(myPolicy.last_update * 1000).toISOString()}
                 </Text>
               </View>
               <View style={styles.hr} />
@@ -141,24 +171,23 @@ class InfoChannelModal extends React.Component {
               <View style={styles.content}>
                 <Text>Disabled:</Text>
                 <Text style={styles.bold}>
-                  {otherPolicy?.disabled ? 'true' : 'false'}
+                  {otherPolicy.disabled ? 'true' : 'false'}
                 </Text>
               </View>
               <View style={styles.content}>
                 <Text>Fee base msat:</Text>
-                <Text style={styles.bold}>{otherPolicy?.fee_base_msat}</Text>
+                <Text style={styles.bold}>{otherPolicy.fee_base_msat}</Text>
               </View>
               <View style={styles.content}>
                 <Text>Fee rate milli mstat:</Text>
                 <Text style={styles.bold}>
-                  {otherPolicy?.fee_rate_milli_msat}
+                  {otherPolicy.fee_rate_milli_msat}
                 </Text>
               </View>
               <View style={styles.content}>
                 <Text>Last update:</Text>
                 <Text style={styles.bold}>
-                  {otherPolicy &&
-                    new Date(otherPolicy.last_update * 1000).toISOString()}
+                  {new Date(otherPolicy.last_update * 1000).toISOString()}
                 </Text>
               </View>
               <View style={styles.hr} />

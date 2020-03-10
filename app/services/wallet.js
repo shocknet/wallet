@@ -976,8 +976,6 @@ export const nodeInfo = async () => {
  * @prop {number} fee_base_msat
  * @prop {number} fee_rate_milli_msat
  * @prop {number} last_update
- * @prop {max_htlc_msat} fee_rate_milli_msat
- * @prop {last_update} fee_rate_milli_msat
  * @prop {boolean} disabled
  */
 
@@ -995,14 +993,10 @@ export const nodeInfo = async () => {
  */
 
 /**
- * @param {string | undefined} chanID
+ * @param {string} chanID
  * @returns {Promise<ChanInfo>}
  */
 export const getChaninfo = async chanID => {
-  if (chanID === undefined) {
-    throw new Error('no chan id provied.')
-  }
-  //console.error(chanID)
   const token = await Cache.getToken()
 
   if (typeof token !== 'string') {
