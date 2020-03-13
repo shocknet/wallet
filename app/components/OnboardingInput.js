@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
 
   textInputFieldContainer: {
     height: 64,
-    // backgroundColor: CSS.Colors.TEXT_WHITE,
+    backgroundColor: CSS.Colors.TEXT_WHITE,
     borderRadius: 100,
     elevation: 3,
     paddingLeft: 25,
