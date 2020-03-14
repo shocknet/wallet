@@ -82,7 +82,7 @@
     "react-native-qrcode-svg": "^5.2.0",
     "react-native-randombytes": "^3.0.0",
     "react-native-ratings": "^6.5.0",
-    "react-native-rsa-native": "https://github.com/Emad-salah/react-native-rsa-native#3b0dc9ee422fba56162f18ac35c6456ef524fc1f",
+    "react-native-rsa-native": "https://github.com/Emad-salah/react-native-rsa-native#31ced0437c9b35c3436c618abe058f095c806172",
     "react-native-sensitive-info": "^5.5.3",
     "react-native-smart-carousel": "^1.1.0",
     "react-native-svg": "^9.11.1",
