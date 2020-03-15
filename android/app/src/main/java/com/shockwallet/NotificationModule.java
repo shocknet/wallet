@@ -44,4 +44,9 @@ public class NotificationModule extends ReactContextBaseJavaModule {
         this.reactContext.stopService(new Intent(this.reactContext, NotificationService.class));
         Log.d(TAG,"stopping service");
     }
+
+    @ReactMethod
+    public void Log(String tag,String body) {
+        Log.d(tag,body);
+    }
 }
