@@ -299,6 +299,11 @@ class CreateWalletOrAlias extends React.Component {
               onSubmitEditing={this.afterAlias}
               placeholder="Alias"
               value={alias}
+              tooltip={
+                walletStatus === 'noncreated'
+                  ? 'This name will appear on your profile'
+                  : 'A new alias using your existing wallet'
+              }
             />
 
             <Pad amount={ITEM_SPACING} />
@@ -316,6 +321,11 @@ class CreateWalletOrAlias extends React.Component {
               secureTextEntry
               textContentType="password"
               value={pass}
+              tooltip={
+                walletStatus === 'noncreated'
+                  ? 'Must be at least 8 characters long'
+                  : "Must be the same password as the existing wallet's password"
+              }
             />
 
             {walletStatus === 'noncreated' && (
