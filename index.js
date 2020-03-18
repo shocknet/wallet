@@ -2,7 +2,13 @@
  * @format
  */
 
-import { AppRegistry, Platform, PermissionsAndroid } from 'react-native'
+import {
+  AppRegistry,
+  Platform,
+  PermissionsAndroid,
+  Linking,
+  ToastAndroid,
+} from 'react-native'
 import moment from 'moment'
 import Http from 'axios'
 import Logger from 'react-native-file-log'
@@ -24,6 +30,10 @@ import { PersistGate } from 'redux-persist/integration/react'
 
 import { ConnectionProvider } from './app/ctx/Connection'
 import RootStack from './app/navigators/Root'
+
+import { WALLET_OVERVIEW } from './app/screens/WalletOverview'
+import * as Wallet from './app/services/wallet'
+import * as Auth from './app/services/auth'
 
 Logger.setTag('ShockWallet')
 Logger.setFileLogEnabled(true)
@@ -98,6 +108,38 @@ export default class ShockWallet extends React.Component {
     ready: false,
   }
 
+  /**
+   * handleUrl is called when a protocol link brings the app back
+   * from background
+   * it is not called when the protocol link opens the app when closed
+   * if the app was put in background before login, the protocol link
+   * will not be processed
+   * @param {{url: string}} e */
+  handleUrl = async e => {
+    try {
+      const authData = await Cache.getStoredAuthData()
+      const walletStatus = await Wallet.walletStatus()
+      const nodeURL = await Cache.getNodeURL()
+      if (nodeURL === null) {
+        throw new Error(
+          'You tried to open a protocol link before authenticating',
+        )
+      }
+      const isGunAuth = await Auth.isGunAuthed(nodeURL)
+
+      if (walletStatus === 'unlocked') {
+        if (authData !== null && isGunAuth) {
+          NavigationService.navigate(WALLET_OVERVIEW, { lnurl: e.url })
+          return
+        }
+      }
+      throw new Error('You tried to open a protocol link before authenticating')
+    } catch (e) {
+      Logger.log(e.message)
+      ToastAndroid.show(e.message, 1500)
+    }
+  }
+
   async componentDidMount() {
     const nodeURL = await Cache.getNodeURL()
     if (nodeURL !== null) {
@@ -107,6 +149,11 @@ export default class ShockWallet extends React.Component {
     this.setState({
       ready: true,
     })
+    Linking.addEventListener('url', this.handleUrl)
+  }
+
+  componentWillUnmount() {
+    Linking.removeEventListener('url', this.handleUrl)
   }
 
   render() {
