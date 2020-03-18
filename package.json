@@ -20,6 +20,7 @@
     "build:release:assemble": "cd android && ./gradlew assembleRelease && cd ..",
     "build:release:post-assemble": "cp android/app/build/outputs/apk/release/app-release.apk APK-RELEASE.apk",
     "build:release": "yarn build:release:delete-old-bundle && yarn build:release:clean && yarn build:release:bundle && yarn build:release:delete-bad-res && yarn build:release:assemble && yarn build:release:post-assemble",
+    "build:release:new": "cd android && ./gradlew clean && ./gradlew assembleRelease && cd ../",
     "build": "yarn run build:debug && yarn build:release"
   },
   "dependencies": {
