@@ -1213,7 +1213,10 @@ class WalletOverview extends Component {
           this._handleOpenURL({ url })
         }
       })
-      .catch(err => Logger.log('An error occurred with protocol links', err))
+      .catch(err => {
+        ToastAndroid.show(`Protocol Link: ${err.message}`, 800)
+        Logger.log('An error occurred with protocol links', err)
+      })
 
     this.startNotificationService()
 

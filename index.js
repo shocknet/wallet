@@ -7,6 +7,7 @@ import {
   Platform,
   PermissionsAndroid,
   Linking,
+  ToastAndroid,
 } from 'react-native'
 import moment from 'moment'
 import Http from 'axios'
@@ -134,7 +135,8 @@ export default class ShockWallet extends React.Component {
       }
       throw new Error('You tried to open a protocol link before authenticating')
     } catch (e) {
-      throw new Error('You tried to open a protocol link before authenticating')
+      Logger.log(e.message)
+      ToastAndroid.show(e.message, 1500)
     }
   }
 
