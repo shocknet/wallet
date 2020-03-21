@@ -136,7 +136,7 @@ const history = (state = INITIAL_STATE, action) => {
           }
 
           if (Wallet.isPayment(unifiedTransaction)) {
-            return unifiedTransaction.status === 'IN_FLIGHT'
+            return unifiedTransaction.status === 'SUCCEEDED' 
           }
 
           if (Wallet.isTransaction(unifiedTransaction)) {
