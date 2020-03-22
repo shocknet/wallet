@@ -13,7 +13,7 @@ import {
   ToastAndroid,
 } from 'react-native'
 import { Text } from 'react-native-elements'
-import { GiftedChat } from 'react-native-gifted-chat'
+import { GiftedChat, utils as GiftedUtils } from 'react-native-gifted-chat'
 import Logger from 'react-native-file-log'
 /**
  * @typedef {import('react-native-gifted-chat').IMessage} GiftedChatMessage
@@ -176,7 +176,7 @@ export default class ChatView extends React.Component {
    * @private
    * @type {import('react-native-gifted-chat').GiftedChatProps['renderMessage']}
    */
-  messageRenderer = ({ currentMessage }) => {
+  messageRenderer = ({ currentMessage, nextMessage }) => {
     if (typeof currentMessage === 'undefined') {
       Logger.log("typeof currentMessage === 'undefined'")
       return null
@@ -228,6 +228,22 @@ export default class ChatView extends React.Component {
       )
     }
 
+    const shouldRenderAvatar = (() => {
+      if (!nextMessage) {
+        return true
+      }
+
+      const isSameUser = GiftedUtils.isSameUser(currentMessage, nextMessage)
+      const isSameDay = GiftedUtils.isSameDay(currentMessage, nextMessage)
+
+      return (
+        // last message in a series of consecutive ones.
+        !isSameUser ||
+        // from the same user and consecutive but on a different day
+        (isSameUser && !isSameDay)
+      )
+    })()
+
     return (
       <View
         style={outgoing ? styles.msgWrapperOutgoing : styles.msgWrapperIncoming}
@@ -238,6 +254,7 @@ export default class ChatView extends React.Component {
           outgoing={outgoing}
           timestamp={timestamp}
           avatar={this.props.recipientAvatar}
+          shouldRenderAvatar={shouldRenderAvatar}
         />
       </View>
     )
@@ -416,8 +433,15 @@ export default class ChatView extends React.Component {
 
     const [firstMsg] = sortedMessages
 
-    const thereAreMoreMessages =
-      firstMsg.body !== '$$__SHOCKWALLET__INITIAL__MESSAGE' && !didDisconnect
+    const thereAreMoreMessages = (() => {
+      if (!firstMsg) {
+        return true
+      }
+
+      return (
+        firstMsg.body !== '$$__SHOCKWALLET__INITIAL__MESSAGE' && !didDisconnect
+      )
+    })()
 
     /** @type {GiftedChatMessage[]} */
     const giftedChatMsgs = sortedMessages

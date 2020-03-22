@@ -32,6 +32,7 @@ import Channel from './Accordion/Channel'
 import Peer from './Accordion/Peer'
 import InfoModal from './InfoModal'
 import AddChannelModal from './Modals/AddChannel'
+import InfoChannelModal from './Modals/InfoChannel'
 // import { Icon } from 'react-native-elements'
 import {
   fetchChannels,
@@ -44,8 +45,11 @@ import {
 import { fetchNodeInfo } from '../../actions/NodeActions'
 import AddPeerModal from './Modals/AddPeer'
 import CloseChannelModal from './Modals/CloseChannel'
+import ShockDialog from '../../components/ShockDialog'
 export const ADVANCED_SCREEN = 'ADVANCED_SCREEN'
-
+/**
+ * @typedef {import('../../services/wallet').Channel} Channel
+ */
 /**
  * @typedef {object} Accordions
  * @prop {boolean} transactions
@@ -55,12 +59,12 @@ export const ADVANCED_SCREEN = 'ADVANCED_SCREEN'
  */
 
 /**
- * @typedef {object} Channel
+ * @typedef {object} ChannelParsed
  * @prop {string} fundingTX
  * @prop {string} outputIndex
  * @prop {string} chan_id
- * @prop {number} local_balance
- * @prop {number} remote_balance
+ * @prop {string} local_balance
+ * @prop {string} remote_balance
  */
 
 /**
@@ -74,10 +78,14 @@ export const ADVANCED_SCREEN = 'ADVANCED_SCREEN'
  * @prop {boolean} modalLoading
  * @prop {boolean} keyboardOpen
  * @prop {number} keyboardHeight
- * @prop {Channel|null} willCloseChannelPoint
+ * @prop {ChannelParsed|null} willCloseChannelPoint
  *
  * @prop {boolean} nodeInfoModal
  * @prop {boolean} forceCloseChannel
+ *
+ * @prop {Channel} channelInfo
+ * @prop {boolean} confirmCloseChannel
+ * @prop {string} confirmCloseChannelText
  */
 
 /**
@@ -112,9 +120,22 @@ class AdvancedScreen extends Component {
 
     nodeInfoModal: false,
     forceCloseChannel: false,
+    channelInfo: {
+      active: false,
+      chan_id: '',
+      channel_point: '',
+      ip: '',
+      local_balance: '',
+      remote_balance: '',
+      remote_pubkey: '',
+    },
+    confirmCloseChannel: false,
+    confirmCloseChannelText: '',
   }
 
   addChannelModal = React.createRef()
+
+  infoChannelModal = React.createRef()
 
   closeChannelModal = React.createRef()
 
@@ -348,12 +369,22 @@ class AdvancedScreen extends Component {
   }
 
   /**
-   * @param {Channel} channel
+   * @param {ChannelParsed} channel
    */
   willCloseChannel = channel => {
     this.closeChannelModal.current.open()
     this.setState({
       willCloseChannelPoint: channel,
+    })
+  }
+
+  confirmCloseChannel = () => {
+    const { forceCloseChannel } = this.state
+    const force = forceCloseChannel ? 'FORCE ' : ''
+    this.setState({
+      confirmCloseChannel: true,
+      confirmCloseChannelText:
+        'This action will ' + force + 'close the channel, Are you sure?',
     })
   }
 
@@ -423,9 +454,8 @@ class AdvancedScreen extends Component {
   }
 
   closeCloseChannelDialog = () => {
-    this.closeChannelModal.current.close()
     this.setState({
-      willCloseChannelPoint: null,
+      confirmCloseChannel: false,
     })
   }
 
@@ -446,23 +476,45 @@ class AdvancedScreen extends Component {
     })
   }
 
+  confirmCloseChoices = {
+    Confirm: this.confirmedCloseChannel,
+    'Go Back': this.closeCloseChannelDialog,
+  }
+
+  onPressCloseChannel = () => {
+    this.infoChannelModal.current.close()
+    const { channelInfo } = this.state
+    Logger.log('close channel')
+    Logger.log(channelInfo)
+    if (channelInfo === null) {
+      return
+    }
+    const channelPoint = channelInfo.channel_point
+    const [fundingTX, outputIndex] = channelPoint.split(':')
+    this.willCloseChannel({
+      fundingTX,
+      outputIndex,
+      chan_id: channelInfo.chan_id,
+      local_balance: channelInfo.local_balance,
+      remote_balance: channelInfo.remote_balance,
+    })
+  }
+
   /**
    * @param {string} channelString
    *
    */
   onPressChannel = channelString => {
-    /**@var {Channel} channel*/
+    /**@type {Channel} channel*/
     const channel = JSON.parse(channelString)
-    Logger.log(channel)
-    const channelPoint = channel.channel_point
-    const [fundingTX, outputIndex] = channelPoint.split(':')
-    this.willCloseChannel({
-      fundingTX,
-      outputIndex,
-      chan_id: channel.chan_id,
-      local_balance: channel.local_balance,
-      remote_balance: channel.remote_balance,
+    this.infoChannelModal.current.open()
+    this.setState({
+      channelInfo: channel,
     })
+  }
+
+  closeInfoChannelModal = () => {
+    this.infoChannelModal.current.close()
   }
 
   /** @param {string} text */
@@ -502,8 +554,11 @@ class AdvancedScreen extends Component {
       err,
       forceCloseChannel,
       willCloseChannelPoint,
+      channelInfo,
 
       nodeInfoModal,
+      confirmCloseChannel,
+      confirmCloseChannelText,
     } = this.state
     //Logger.log(history.channels)
     Logger.log(channelPublicKey)
@@ -659,7 +714,7 @@ class AdvancedScreen extends Component {
           modalRef={this.closeChannelModal}
           onChange={this.onChange}
           loading={modalLoading}
-          submit={this.confirmedCloseChannel}
+          submit={this.confirmCloseChannel}
           error={err}
           keyboardOpen={keyboardOpen}
           keyboardHeight={keyboardHeight}
@@ -667,6 +722,17 @@ class AdvancedScreen extends Component {
           chanId={willCloseChannelPoint?.chan_id}
           localBalance={willCloseChannelPoint?.local_balance}
           remoteBalance={willCloseChannelPoint?.remote_balance}
+        />
+        <InfoChannelModal
+          modalRef={this.infoChannelModal}
+          onChange={this.onChange}
+          loading={modalLoading}
+          closeChannel={this.onPressCloseChannel}
+          submit={this.closeInfoChannelModal}
+          error={err}
+          keyboardOpen={keyboardOpen}
+          keyboardHeight={keyboardHeight}
+          channel={channelInfo}
         />
         <AddChannelModal
           modalRef={this.addChannelModal}
@@ -691,6 +757,12 @@ class AdvancedScreen extends Component {
           keyboardOpen={keyboardOpen}
           keyboardHeight={keyboardHeight}
           closeModal={this.closeAddPeerModal}
+        />
+        <ShockDialog
+          choiceToHandler={this.confirmCloseChoices}
+          onRequestClose={this.closeCloseChannelDialog}
+          visible={confirmCloseChannel}
+          message={confirmCloseChannelText}
         />
       </>
     )
@@ -792,7 +864,7 @@ const xStyles = {
 }
 
 /**
- * @param {import('../../services/wallet').Channel} channel
+ * @param {Channel} channel
  */
 const channelKeyExtractor = channel => JSON.stringify(channel) //channel.channel_point
 

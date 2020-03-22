@@ -65,6 +65,7 @@ import * as Cache from '../../services/cache'
 
 /**
  * @typedef {object} Params
+ * @prop {string=} lnurl On chan+LN+LNURL
  * @prop {string=} rawInvoice
  * @prop {string|null} recipientDisplayName
  * @prop {string|null} recipientAvatar
@@ -1041,7 +1042,14 @@ class WalletOverview extends Component {
 
     const newParams = /** @type {Required<Params>} */ (this.props.navigation
       .state.params)
-
+    //Check if this screen has a pending protocol link
+    //to be processed, This will happen if the app was in background
+    //on the screen WALLET_OVERVIEW
+    if (newParams.lnurl) {
+      const { lnurl } = newParams
+      this._handleOpenURL({ url: lnurl })
+      return
+    }
     this.setState(
       {
         displayingConfirmInvoicePaymentDialog: true,
@@ -1073,6 +1081,8 @@ class WalletOverview extends Component {
   }
 
   /**
+   * _handleUrl is called when a protocol link opens the app when closed
+   * or when the protocol link brings the app back from background
    * @param {{url: string}} event
    */
   _handleOpenURL = event => {
@@ -1185,7 +1195,17 @@ class WalletOverview extends Component {
       StatusBar.setBarStyle('light-content')
       StatusBar.setTranslucent(true)
     })
-    Linking.addEventListener('url', this._handleOpenURL)
+    //Check if this screen has a pending protocol link
+    //to be processed, This will happen if the app was in background
+    //on a screen different from WALLET_OVERVIEW
+    const { params } = this.props.navigation.state
+
+    if (params && params.lnurl) {
+      const { lnurl } = params
+      this._handleOpenURL({ url: lnurl })
+    }
+    //The initial url exists only if the app was closed and
+    //a protocol link caused it to open
     Linking.getInitialURL()
       .then(url => {
         if (url) {
@@ -1193,7 +1213,10 @@ class WalletOverview extends Component {
           this._handleOpenURL({ url })
         }
       })
-      .catch(err => Logger.log('An error occurred', err))
+      .catch(err => {
+        ToastAndroid.show(`Protocol Link: ${err.message}`, 800)
+        Logger.log('An error occurred with protocol links', err)
+      })
 
     this.startNotificationService()
 
@@ -1216,8 +1239,6 @@ class WalletOverview extends Component {
   }
 
   componentWillUnmount() {
-    Linking.removeEventListener('url', this._handleOpenURL)
-
     if (this.balanceIntervalID) {
       clearInterval(this.balanceIntervalID)
     }
