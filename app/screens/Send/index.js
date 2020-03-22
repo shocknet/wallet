@@ -314,7 +314,7 @@ class SendScreen extends Component {
    * @param {string} value
    */
   isLightningInvoice = value =>
-    /^(ln(tb|bc))[0-9][a-z0-9]{180,7089}$/.test(value)
+    /^(ln(tb|bc))[0-9][a-z0-9]{180,7089}$/.test(value.toLowerCase())
 
   /**
    * @param {string} data

@@ -1,72 +1,43 @@
 package com.shockwallet;
 
 import android.app.Application;
-
+import android.content.Context;
+import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
-import com.reactfilelogger.RNReactLoggingPackage;
-import com.oblador.vectoricons.VectorIconsPackage;
-import com.tradle.react.UdpSocketsModule;
-import com.peel.react.TcpSocketsModule;
-import com.bitgo.randombytes.RandomBytesPackage;
-import com.peel.react.rnos.RNOSModule;
-import com.tectiv3.aes.RCTAesPackage;
 import com.RNRSA.RNRSAPackage;
-import com.swmansion.gesturehandler.react.RNGestureHandlerPackage;
-import com.reactnative.ivpusic.imagepicker.PickerPackage;
-import br.com.classapp.RNSensitiveInfo.RNSensitiveInfoPackage;
-import com.reactnativecommunity.netinfo.NetInfoPackage;
-import com.zoontek.rnbootsplash.RNBootSplashPackage;
-import com.reactnativecommunity.asyncstorage.AsyncStoragePackage;
-import com.BV.LinearGradient.LinearGradientPackage;
-import org.reactnative.camera.RNCameraPackage;
-import com.horcrux.svg.SvgPackage;
+
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
-import com.facebook.react.shell.MainReactPackage;
 import com.facebook.soloader.SoLoader;
 import com.shockwallet.NotificationPackage;
-
-import java.util.Arrays;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 public class MainApplication extends Application implements ReactApplication {
 
-  private final ReactNativeHost mReactNativeHost = new ReactNativeHost(this) {
-    @Override
-    public boolean getUseDeveloperSupport() {
-      return BuildConfig.DEBUG;
-    }
+  private final ReactNativeHost mReactNativeHost =
+      new ReactNativeHost(this) {
+        @Override
+        public boolean getUseDeveloperSupport() {
+          return BuildConfig.DEBUG;
+        }
 
-    @Override
-    protected List<ReactPackage> getPackages() {
-      return Arrays.<ReactPackage>asList(
-          new MainReactPackage(),
-            new RNReactLoggingPackage(),
-            new VectorIconsPackage(),
-            new UdpSocketsModule(),
-            new TcpSocketsModule(),
-            new RandomBytesPackage(),
-            new RNOSModule(),
-            new RCTAesPackage(),
-            new RNRSAPackage(),
-            new RNGestureHandlerPackage(),
-            new PickerPackage(),
-            new RNSensitiveInfoPackage(),
-            new NetInfoPackage(),
-            new RNBootSplashPackage(),
-            new LinearGradientPackage(),
-            new AsyncStoragePackage(),
-            new RNCameraPackage(),
-            new SvgPackage(),
-            new NotificationPackage()
-      );
-    }
+        @Override
+        protected List<ReactPackage> getPackages() {
+          @SuppressWarnings("UnnecessaryLocalVariable")
+          List<ReactPackage> packages = new PackageList(this).getPackages();
+          // Packages that cannot be autolinked yet can be added manually here, for example:
+          // packages.add(new MyReactNativePackage());
+          packages.add(new NotificationPackage());
+          packages.add(new RNRSAPackage());
+          return packages;
+        }
 
-    @Override
-    protected String getJSMainModuleName() {
-      return "index";
-    }
-  };
+        @Override
+        protected String getJSMainModuleName() {
+          return "index";
+        }
+      };
 
   @Override
   public ReactNativeHost getReactNativeHost() {
@@ -77,5 +48,31 @@ public class MainApplication extends Application implements ReactApplication {
   public void onCreate() {
     super.onCreate();
     SoLoader.init(this, /* native exopackage */ false);
+    initializeFlipper(this); // Remove this line if you don't want Flipper enabled
+  }
+  /**
+   * Loads Flipper in React Native templates.
+   *
+   * @param context
+   */
+  private static void initializeFlipper(Context context) {
+    if (BuildConfig.DEBUG) {
+      try {
+        /*
+         We use reflection here to pick up the class that initializes Flipper,
+        since Flipper library is not available in release mode
+        */
+        Class<?> aClass = Class.forName("com.facebook.flipper.ReactNativeFlipper");
+        aClass.getMethod("initializeFlipper", Context.class).invoke(null, context);
+      } catch (ClassNotFoundException e) {
+        e.printStackTrace();
+      } catch (NoSuchMethodException e) {
+        e.printStackTrace();
+      } catch (IllegalAccessException e) {
+        e.printStackTrace();
+      } catch (InvocationTargetException e) {
+        e.printStackTrace();
+      }
+    }
   }
 }
