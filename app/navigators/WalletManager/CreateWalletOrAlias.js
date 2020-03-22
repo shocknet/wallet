@@ -285,8 +285,8 @@ class CreateWalletOrAlias extends React.Component {
           <>
             <Text style={titleTextStyle}>
               {walletStatus === 'noncreated'
-                ? 'Create Wallet Profile'
-                : 'New Wallet Alias'}
+                ? 'Create Network Identity'
+                : 'Create Network Identity'}
             </Text>
 
             <Pad amount={ITEM_SPACING} />

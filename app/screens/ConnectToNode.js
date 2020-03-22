@@ -228,7 +228,7 @@ class ConnectToNode extends React.Component {
 
     return (
       <OnboardingScreen loading={checkingCacheForNodeURL || pinging}>
-        <Text style={titleTextStyle}>Welcome</Text>
+        <Text style={titleTextStyle}>Node Address</Text>
 
         <Pad amount={ITEM_SPACING} />
 
@@ -239,7 +239,7 @@ class ConnectToNode extends React.Component {
           keyboardType="numeric"
           onChangeText={this.onChangeNodeURL}
           onPressQRBtn={this.toggleQRScreen}
-          placeholder="Specify Node IP"
+          placeholder="Enter your node IP"
           // placeholderTextColor="grey"
           value={nodeURL}
         />
