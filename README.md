@@ -14,7 +14,7 @@ Requires [Shock API](https://github.com/shocknet/api) backend, and [LND](https:/
 - SendSide Payments
 
 
-## [Download Android APK](https://github.com/shocknet/wallet/releases/download/pre1/APK-RELEASE.apk)
+## [Download Android APK](https://github.com/shocknet/wallet/releases/download/pre2/APK-RELEASE.apk)
 
 _Node installer available at [shocknet/Wizard](https://github.com/shocknet/wizard)_
 
