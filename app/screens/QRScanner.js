@@ -2,7 +2,13 @@
  * @prettier
  */
 import React from 'react'
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native'
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  BackHandler,
+} from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 import QRCodeScanner from 'react-native-qrcode-scanner'
 import Ionicons from 'react-native-vector-icons/Ionicons'
@@ -27,6 +33,20 @@ import * as CSS from '../res/css'
 export default class QRScanner extends React.Component {
   static navigationOptions = {
     header: null,
+  }
+
+  onBackBtn = () => {
+    this.props.toggleQRScreen()
+
+    return true
+  }
+
+  componentDidMount() {
+    BackHandler.addEventListener('hardwareBackPress', this.onBackBtn)
+  }
+
+  componentWillUnmount() {
+    BackHandler.removeEventListener('hardwareBackPress', this.onBackBtn)
   }
 
   /**
