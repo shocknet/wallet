@@ -87,17 +87,19 @@ class ConnectToNode extends React.Component {
 
   componentDidMount() {
     this.checkCacheForNodeURL()
-    this.didFocusSub = this.props.navigation.addListener('didFocus', () => {
-      this.setState(DEFAULT_STATE)
-    })
+    this.didFocusSub = this.props.navigation.addListener(
+      'didFocus',
+      this.checkCacheForNodeURL,
+    )
   }
 
   componentWillUnmount() {
     this.didFocusSub.remove()
   }
 
-  checkCacheForNodeURL = () => {
-    this.setState(DEFAULT_STATE, async () => {
+  checkCacheForNodeURL = async () => {
+    this.setState(DEFAULT_STATE)
+    try {
       const nodeURL = await Cache.getNodeURL()
       const err = this.props.navigation.getParam('err')
 
@@ -109,7 +111,15 @@ class ConnectToNode extends React.Component {
           nodeURL: nodeURL || '',
         })
       }
-    })
+    } catch (err) {
+      this.props.navigation.setParams({
+        err: err.message,
+      })
+    } finally {
+      this.setState({
+        checkingCacheForNodeURL: false,
+      })
+    }
   }
 
   /**
