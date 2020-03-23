@@ -81,19 +81,19 @@ class ConnectToNode extends React.Component {
   /** @type {State} */
   state = DEFAULT_STATE
 
-  willFocusSub = {
+  didFocusSub = {
     remove() {},
   }
 
   componentDidMount() {
     this.checkCacheForNodeURL()
-    this.willFocusSub = this.props.navigation.addListener('didFocus', () => {
+    this.didFocusSub = this.props.navigation.addListener('didFocus', () => {
       this.setState(DEFAULT_STATE)
     })
   }
 
   componentWillUnmount() {
-    this.willFocusSub.remove()
+    this.didFocusSub.remove()
   }
 
   checkCacheForNodeURL = () => {
