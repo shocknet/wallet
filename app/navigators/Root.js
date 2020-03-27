@@ -103,12 +103,6 @@ const drawerScreens = {
       title: 'Seed Backup',
     },
   },
-  [SEED_BACKUP]: {
-    screen: SeedBackup,
-    navigationOptions: {
-      title: 'Seed Backup',
-    },
-  },
   [FEE_SETTINGS]: {
     screen: FeeSettings,
     navigationOptions: {

@@ -2,7 +2,7 @@
  * @format
  */
 
-import { AsyncStorage } from 'react-native'
+import AsyncStorage from '@react-native-community/async-storage'
 import Http from 'axios'
 import fromPairs from 'lodash/fromPairs'
 

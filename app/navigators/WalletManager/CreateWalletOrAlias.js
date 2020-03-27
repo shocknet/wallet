@@ -285,8 +285,8 @@ class CreateWalletOrAlias extends React.Component {
           <>
             <Text style={titleTextStyle}>
               {walletStatus === 'noncreated'
-                ? 'Create Wallet Profile'
-                : 'New Wallet Alias'}
+                ? 'Create Network Identity'
+                : 'Create Network Identity'}
             </Text>
 
             <Pad amount={ITEM_SPACING} />
@@ -301,8 +301,8 @@ class CreateWalletOrAlias extends React.Component {
               value={alias}
               tooltip={
                 walletStatus === 'noncreated'
-                  ? 'This name will appear on your profile'
-                  : 'A new alias using your existing wallet'
+                  ? 'Create a name for your identity keys'
+                  : 'Create a name for your identity keys'
               }
             />
 
@@ -323,8 +323,8 @@ class CreateWalletOrAlias extends React.Component {
               value={pass}
               tooltip={
                 walletStatus === 'noncreated'
-                  ? 'Must be at least 8 characters long'
-                  : "Must be the same password as the existing wallet's password"
+                  ? 'Passwords derive keys and cannot be recovered. Use a password manager.'
+                  : 'Passwords derive keys and cannot be recovered. Use a password manager.'
               }
             />
 
