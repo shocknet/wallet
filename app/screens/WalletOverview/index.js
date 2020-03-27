@@ -87,6 +87,7 @@ import * as Cache from '../../services/cache'
  * @prop {() => Promise<import('../../actions/NodeActions').GetInfo>} fetchNodeInfo
  * @prop {() => Promise<ContactAPI.Schema.Chat[]>} subscribeOnChats
  * @prop {() => Promise<number>} getUSDRate
+ * @prop {{feesLevel:'MIN'|'MID'|'MAX', feesSource:string}} fees
  */
 
 /**
@@ -740,6 +741,7 @@ class WalletOverview extends Component {
         Wallet.sendCoins({
           addr: this.state.sendToBTCAddress,
           amount: this.state.sendToBTCAmount,
+          fees: this.props.fees,
         })
           .then(txid => {
             // Check in case dialog was closed before completing fetch.
@@ -1773,12 +1775,13 @@ class WalletOverview extends Component {
 }
 
 /**
- * @param {{ wallet: any, history: any, node: any }} state
+ * @param {{ wallet: any, history: any, node: any, fees: any }} state
  */
-const mapStateToProps = ({ wallet, history, node }) => ({
+const mapStateToProps = ({ wallet, history, node, fees }) => ({
   wallet,
   history,
   node,
+  fees,
 })
 
 const mapDispatchToProps = {
