@@ -30,7 +30,7 @@ git clone https://github.com/shocknet/wallet
 cd wallet
 yarn install
 react-native run-android //to run in Android Studio emulator
-npm run build:release //to build APK
+yarn build:release //to build APK
 ```
 
 #### iOS:
