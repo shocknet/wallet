@@ -246,7 +246,6 @@ class ConnectToNode extends React.Component {
           autoCapitalize="none"
           autoCorrect={false}
           disable={pinging || wasBadPing || !!err}
-          keyboardType="numeric"
           onChangeText={this.onChangeNodeURL}
           onPressQRBtn={this.toggleQRScreen}
           placeholder="Enter your node IP"
