@@ -2,9 +2,10 @@
  * @prettier
  */
 import React from 'react'
-import { Text, View } from 'react-native'
+import { Text, View, Linking } from 'react-native'
 import { connect } from 'react-redux'
 import Logger from 'react-native-file-log'
+import InAppBrowser from 'react-native-inappbrowser-reborn'
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}, Params>} Navigation
  */
@@ -213,6 +214,23 @@ class ConnectToNode extends React.Component {
     }
   }
 
+  openDocsLink = async () => {
+    const url = 'https://github.com/shocknet/api#readme'
+    try {
+      const available = await InAppBrowser.isAvailable()
+      if (available) {
+        await InAppBrowser.open('https://github.com/shocknet/api#readme', {
+          toolbarColor: CSS.Colors.BACKGROUND_BLUE,
+          secondaryToolbarColor: CSS.Colors.TEXT_ORANGE,
+        })
+      } else {
+        Linking.openURL(url)
+      }
+    } catch (err) {
+      Linking.openURL(url)
+    }
+  }
+
   render() {
     const {
       checkingCacheForNodeURL,
@@ -267,6 +285,10 @@ class ConnectToNode extends React.Component {
             />
 
             <Pad amount={ITEM_SPACING} />
+
+            <Text style={linkTextStyle} onPress={this.openDocsLink}>
+              Don't have a node?
+            </Text>
           </>
         )}
 

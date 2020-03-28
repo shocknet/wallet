@@ -5,6 +5,7 @@ import {
   View,
   ActivityIndicator,
   StatusBar,
+  Alert,
 } from 'react-native'
 import Entypo from 'react-native-vector-icons/Entypo'
 import { connect } from 'react-redux'
@@ -166,7 +167,21 @@ class CreateWalletOrAlias extends React.Component {
    * @returns {void}
    */
   onPressCreateWallet = () => {
-    const { alias, pass } = this.state
+    const { alias, pass, repeatPass } = this.state
+
+    if (pass !== repeatPass) {
+      Alert.alert(
+        'Mismatching passwords',
+        'The Confirm password field must match the Password field.',
+        [
+          {
+            text: 'Dismiss',
+          },
+        ],
+      )
+      return
+    }
+
     this.setState(
       {
         creatingWallet: true,
@@ -348,11 +363,7 @@ class CreateWalletOrAlias extends React.Component {
             <Pad amount={ITEM_SPACING} />
 
             <OnboardingBtn
-              disabled={
-                (pass !== repeatPass && walletStatus === 'noncreated') ||
-                pass.length === 0 ||
-                alias.length === 0
-              }
+              disabled={pass.length === 0 || alias.length === 0}
               onPress={
                 walletStatus === 'noncreated'
                   ? this.onPressCreateWallet
