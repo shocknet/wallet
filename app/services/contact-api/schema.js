@@ -250,7 +250,7 @@ export const isEncodedSpontPayment = s =>
  */
 export const decodeSpontPayment = sp => {
   try {
-    const [preimage, amtStr, memo] = sp
+    const [amtStr, memo, preimage] = sp
       .slice(ENC_SPONT_PAYMENT_PREFIX.length)
       .split('__')
 
