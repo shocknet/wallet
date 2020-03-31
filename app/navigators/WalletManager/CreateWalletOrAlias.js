@@ -5,6 +5,7 @@ import {
   View,
   ActivityIndicator,
   StatusBar,
+  Alert,
 } from 'react-native'
 import Entypo from 'react-native-vector-icons/Entypo'
 import { connect } from 'react-redux'
@@ -166,7 +167,21 @@ class CreateWalletOrAlias extends React.Component {
    * @returns {void}
    */
   onPressCreateWallet = () => {
-    const { alias, pass } = this.state
+    const { alias, pass, repeatPass } = this.state
+
+    if (pass !== repeatPass) {
+      Alert.alert(
+        'Password mismatch',
+        'The two password fields should match.',
+        [
+          {
+            text: 'Close',
+          },
+        ],
+      )
+      return
+    }
+
     this.setState(
       {
         creatingWallet: true,
@@ -301,8 +316,8 @@ class CreateWalletOrAlias extends React.Component {
               value={alias}
               tooltip={
                 walletStatus === 'noncreated'
-                  ? 'Create a name for your identity keys'
-                  : 'Create a name for your identity keys'
+                  ? 'This is a canonical name for your key-pair, and can be seen on the network.'
+                  : 'This is a canonical name for your key-pair, and can be seen on the network.'
               }
             />
 
@@ -323,8 +338,8 @@ class CreateWalletOrAlias extends React.Component {
               value={pass}
               tooltip={
                 walletStatus === 'noncreated'
-                  ? 'Passwords derive keys and cannot be recovered. Use a password manager.'
-                  : 'Passwords derive keys and cannot be recovered. Use a password manager.'
+                  ? 'This password cannot be recovered. Use a password manager.'
+                  : 'This password cannot be recovered. Use a password manager.'
               }
             />
 
@@ -348,11 +363,7 @@ class CreateWalletOrAlias extends React.Component {
             <Pad amount={ITEM_SPACING} />
 
             <OnboardingBtn
-              disabled={
-                (pass !== repeatPass && walletStatus === 'noncreated') ||
-                pass.length === 0 ||
-                alias.length === 0
-              }
+              disabled={pass.length === 0 || alias.length === 0}
               onPress={
                 walletStatus === 'noncreated'
                   ? this.onPressCreateWallet
