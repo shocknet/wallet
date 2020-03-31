@@ -215,11 +215,11 @@ class ConnectToNode extends React.Component {
   }
 
   openDocsLink = async () => {
-    const url = 'https://github.com/shocknet/api#readme'
+    const url = 'https://github.com/shocknet/wizard#readme'
     try {
       const available = await InAppBrowser.isAvailable()
       if (available) {
-        await InAppBrowser.open('https://github.com/shocknet/api#readme', {
+        await InAppBrowser.open('https://github.com/shocknet/wizard#readme', {
           toolbarColor: CSS.Colors.BACKGROUND_BLUE,
           secondaryToolbarColor: CSS.Colors.TEXT_ORANGE,
         })

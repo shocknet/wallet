@@ -171,11 +171,11 @@ class CreateWalletOrAlias extends React.Component {
 
     if (pass !== repeatPass) {
       Alert.alert(
-        'Mismatching passwords',
-        'The Confirm password field must match the Password field.',
+        'Password mismatch',
+        'The two password fields should match.',
         [
           {
-            text: 'Dismiss',
+            text: 'Close',
           },
         ],
       )
@@ -316,8 +316,8 @@ class CreateWalletOrAlias extends React.Component {
               value={alias}
               tooltip={
                 walletStatus === 'noncreated'
-                  ? 'Create a name for your identity keys'
-                  : 'Create a name for your identity keys'
+                  ? 'This is a canonical name for your key-pair, and can be seen on the network.'
+                  : 'This is a canonical name for your key-pair, and can be seen on the network.'
               }
             />
 
@@ -338,8 +338,8 @@ class CreateWalletOrAlias extends React.Component {
               value={pass}
               tooltip={
                 walletStatus === 'noncreated'
-                  ? 'Passwords derive keys and cannot be recovered. Use a password manager.'
-                  : 'Passwords derive keys and cannot be recovered. Use a password manager.'
+                  ? 'This password cannot be recovered. Use a password manager.'
+                  : 'This password cannot be recovered. Use a password manager.'
               }
             />
 
