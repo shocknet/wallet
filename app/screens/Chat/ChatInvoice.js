@@ -47,7 +47,7 @@ import { Colors } from '../../res/css'
 /**
  * @augments React.Component<Props>
  */
-export default class ChatMessage extends React.Component {
+export default class ChatInvoice extends React.Component {
   componentDidMount() {
     /**
      * Force-updates every minute so moment-formatted dates refresh.
