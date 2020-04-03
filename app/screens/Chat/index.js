@@ -14,7 +14,6 @@ import * as Wallet from '../../services/wallet'
 import * as Cache from '../../services/cache'
 import * as CSS from '../../res/css'
 const { Colors } = CSS
-
 import { WALLET_OVERVIEW } from '../WalletOverview'
 /**
  * @typedef {import('../WalletOverview').Params} WalletOverviewParams
@@ -68,6 +67,10 @@ const HeaderLeft = React.memo(({ onPress }) => ((
  */
 
 /**
+ * @typedef {API.Schema.SpontaneousPayment & { err: string|null , timestamp: number }} SpontPaymentInTransit
+ */
+
+/**
  * @typedef {object} State
  * @prop {API.Schema.Chat[]} chats
  * @prop {string|null} ownPublicKey
@@ -76,6 +79,7 @@ const HeaderLeft = React.memo(({ onPress }) => ((
  * @prop {string|null} recipientDisplayName
  * @prop {API.Schema.ChatMessage[]} cachedSentMessages Messages that were *just*
  * sent but might have not appeared on the onChats() event yet.
+ * @prop {Record<string, SpontPaymentInTransit>} spontPaymentsInTransit
  */
 
 // TODO: COMPONENT HERE IS A TEMP FIX
@@ -128,6 +132,7 @@ export default class Chat extends React.Component {
     ownPublicKey: null,
     recipientDisplayName: null,
     cachedSentMessages: [],
+    spontPaymentsInTransit: {},
   }
 
   /** @type {React.RefObject<PaymentDialog>} */
@@ -317,6 +322,39 @@ export default class Chat extends React.Component {
   }
 
   /**
+   * When new messages are received from the node, checks that any of them is an
+   * spontaneous payment and deletes the placeholder inside
+   * spontPaymentsInTransit.
+   */
+  updateSpontPaymentsInTransit = () => {
+    const spontPayments = this.getMessages()
+      .filter(m => API.Schema.isEncodedSpontPayment(m.body))
+      .map(m =>
+        API.Schema.decodeSpontPayment(
+          /** @type {import('../../services/contact-api/schema-types').EncSpontPayment} */ (m.body),
+        ),
+      )
+
+    this.setState(({ spontPaymentsInTransit }) => {
+      const placeholdersToBeDeleted = Object.entries(
+        spontPaymentsInTransit,
+      ).filter(([, placeholder]) =>
+        spontPayments.some(sp => sp.preimage === placeholder.preimage),
+      )
+
+      const newPlaceholders = { ...spontPaymentsInTransit }
+
+      placeholdersToBeDeleted.forEach(([, sp]) => {
+        delete newPlaceholders[sp.preimage]
+      })
+
+      return {
+        spontPaymentsInTransit: newPlaceholders,
+      }
+    })
+  }
+
+  /**
    * @param {never} _
    * @param {State} prevState
    */
@@ -446,6 +484,7 @@ export default class Chat extends React.Component {
         this.decodeIncomingInvoices()
         this.fetchOutgoingInvoicesAndUpdateInfo()
         this.fetchPaymentsAndUpdatePaymentStatus()
+        this.updateSpontPaymentsInTransit()
       },
     )
   }
@@ -573,6 +612,61 @@ export default class Chat extends React.Component {
     this.props.navigation.navigate(WALLET_OVERVIEW, params)
   }
 
+  /**
+   * @param {number} amt
+   * @param {string} memo
+   * @returns {void}
+   */
+  onPressSendPayment = (amt, memo) => {
+    const id = this.props.navigation.getParam('id')
+    const theChat = this.state.chats.find(c => c.id === id)
+
+    if (!theChat) {
+      return
+    }
+
+    const spontPaymentTempID = Math.random().toString()
+
+    this.setState(({ spontPaymentsInTransit }) => ({
+      spontPaymentsInTransit: {
+        ...spontPaymentsInTransit,
+        [spontPaymentTempID]: {
+          amt,
+          memo,
+          preimage: '',
+          timestamp: Date.now(),
+          err: null,
+        },
+      },
+    }))
+
+    API.Actions.sendPayment(theChat.recipientPublicKey, amt, memo)
+      .then(preimage => {
+        this.setState(({ spontPaymentsInTransit }) => ({
+          spontPaymentsInTransit: {
+            ...spontPaymentsInTransit,
+            [spontPaymentTempID]: {
+              ...spontPaymentsInTransit[spontPaymentTempID],
+              preimage,
+            },
+          },
+        }))
+
+        this.updateSpontPaymentsInTransit()
+      })
+      .catch(e => {
+        this.setState(({ spontPaymentsInTransit }) => ({
+          spontPaymentsInTransit: {
+            ...spontPaymentsInTransit,
+            [spontPaymentTempID]: {
+              ...spontPaymentsInTransit[spontPaymentTempID],
+              err: e.message,
+            },
+          },
+        }))
+      })
+  }
+
   render() {
     const {
       ownPublicKey,
@@ -674,6 +768,7 @@ export default class Chat extends React.Component {
         <PaymentDialog
           recipientPublicKey={recipientPublicKey}
           ref={this.payDialog}
+          onPressSend={this.onPressSendPayment}
         />
       </>
     )

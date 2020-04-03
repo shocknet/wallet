@@ -1,10 +1,4 @@
 import React from 'react'
-import { Text, ActivityIndicator } from 'react-native'
-import Entypo from 'react-native-vector-icons/Entypo'
-
-import { Actions } from '../../services/contact-api'
-
-import { Colors } from '../../res/css'
 
 import BasicDialog from '../../components/BasicDialog'
 import ShockInput from '../../components/ShockInput'
@@ -14,14 +8,14 @@ import ShockButton from '../../components/ShockButton'
 /**
  * @typedef {object} Props
  * @prop {string} recipientPublicKey
+ * @prop {(amt: number, memo: string) => void} onPressSend
  */
 
 /**
  * @typedef {object} State
  * @prop {number} amount
  * @prop {string} memo
- * @prop {string} err
- * @prop {'processing'|'result'|'input'|'closed'} state
+ * @prop {'input'|'closed'} state
  */
 
 /**
@@ -32,7 +26,6 @@ export default class PaymentDialog extends React.Component {
   state = {
     amount: 0,
     memo: '',
-    err: '',
     state: 'closed',
   }
 
@@ -48,15 +41,17 @@ export default class PaymentDialog extends React.Component {
     this.setState({
       amount: 0,
       memo: '',
-      err: '',
       state: 'closed',
     })
   }
 
   onRequestClose = () => {
-    if (this.state.state !== 'processing') {
-      this.close()
-    }
+    this.close()
+  }
+
+  onPressSend = () => {
+    this.props.onPressSend(this.state.amount, this.state.memo)
+    this.close()
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -89,33 +84,8 @@ export default class PaymentDialog extends React.Component {
 
   //////////////////////////////////////////////////////////////////////////////
 
-  onPressSend = async () => {
-    this.setState({
-      state: 'processing',
-    })
-
-    try {
-      await Actions.sendPayment(
-        this.props.recipientPublicKey,
-        this.state.amount,
-        this.state.memo,
-      )
-
-      this.setState({
-        state: 'result',
-      })
-    } catch (err) {
-      this.setState({
-        err: err.message,
-        state: 'result',
-      })
-    }
-  }
-
-  //////////////////////////////////////////////////////////////////////////////
-
   render() {
-    const { amount, memo, err, state } = this.state
+    const { amount, memo, state } = this.state
 
     return (
       <BasicDialog
@@ -124,8 +94,6 @@ export default class PaymentDialog extends React.Component {
         visible={state !== 'closed'}
       >
         {(() => {
-          if (err) return <Text>{err}</Text>
-
           switch (state) {
             default:
             case 'closed':
@@ -153,26 +121,11 @@ export default class PaymentDialog extends React.Component {
                   />
                 </>
               )
-
-            case 'processing':
-              return <ActivityIndicator />
-
-            case 'result':
-              return (
-                <Entypo size={22} color={Colors.SUCCESS_GREEN} name="check" />
-              )
           }
         })()}
 
-        {state !== 'processing' && (
-          <>
-            <Pad amount={10} />
-            <ShockButton
-              onPress={state === 'input' ? this.onPressSend : this.close}
-              title={state === 'input' ? 'Send' : 'Ok'}
-            />
-          </>
-        )}
+        <Pad amount={10} />
+        <ShockButton onPress={this.onPressSend} title="Send" />
       </BasicDialog>
     )
   }
