@@ -1,25 +1,20 @@
-// @ts-nocheck
 /**
  * @prettier
  */
 import React from 'react'
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
-import moment from 'moment'
-import { Svg, Polygon } from 'react-native-svg'
 
-import { Colors, WIDTH } from '../../res/css'
-import ShockAvatar from '../../components/ShockAvatar'
-import Pad from '../../components/Pad'
-
-const BUBBLE_TRIANGLE_VERTICAL_OFFSET = 6
-const AVATAR_SIZE = 40
+import TXBase from './TXBase'
 
 /**
  * @typedef {object} Props
  * @prop {number} amt
  * @prop {string} memo
- * @prop {((preimage: string) => void)=} onPress
+ * @prop {(preimage: string) => void} onPress
+ * @prop {boolean} outgoing
  * @prop {string} preimage
+ * @prop {string|null} recipientDisplayName
+ * @prop {'in-flight'|'sent'|'error'} state
+ * @prop {number} timestamp
  */
 
 /**
@@ -45,127 +40,34 @@ export default class SpontPayment extends React.PureComponent {
   }
 
   render() {
-    const { body, outgoing, timestamp } = this.props
-
-    const formattedTime = moment(timestamp).format('hh:mm')
-
-    const SVG_EDGE = 25
-    const UNIT = SVG_EDGE / 5
-    const ZERO = UNIT * 0
-    const THREE = UNIT * 3
-    const FOUR = UNIT * 4
-    const FIVE = UNIT * 5
-
     return (
-      <View style={styles.container}>
-        {!outgoing && (
-          <>
-            <View style={styles.avatarContainer}>
-              {this.props.shouldRenderAvatar ? (
-                <ShockAvatar height={AVATAR_SIZE} image={this.props.avatar} />
-              ) : (
-                <Pad insideRow amount={AVATAR_SIZE} />
-              )}
-            </View>
-            <Pad insideRow amount={20} />
-          </>
-        )}
+      <TXBase
+        amt={this.props.amt}
+        onPressDetails={this.onPress}
+        otherDisplayName={this.props.recipientDisplayName}
+        outgoing={this.props.outgoing}
+        preimage={this.props.preimage}
+        timestamp={this.props.timestamp}
+        type={(() => {
+          const { state } = this.props
 
-        {outgoing && (
-          <>
-            <Text style={styles.timestamp}>{formattedTime}</Text>
-            <Pad insideRow amount={12} />
-          </>
-        )}
+          if (state === 'error') {
+            return 'payment-err'
+          }
 
-        <View>
-          <View style={[styles.bubble, outgoing && styles.bubbleOutgoing]}>
-            <TouchableOpacity onPress={this.onPress}>
-              <Text style={styles.body}>{body}</Text>
-            </TouchableOpacity>
-          </View>
+          if (state === 'in-flight') {
+            return 'payment-sending'
+          }
 
-          <Svg
-            height={SVG_EDGE}
-            width={SVG_EDGE}
-            style={outgoing ? styles.arrowOutgoing : styles.arrow}
-          >
-            <Polygon
-              points={
-                outgoing
-                  ? `${ZERO},${THREE} ${FOUR},${ZERO} ${FIVE},${FIVE}`
-                  : `${ZERO},${FIVE} ${UNIT},${ZERO} ${FIVE},${THREE}`
-              }
-              fill={outgoing ? Colors.ORANGE : Colors.BLUE_MEDIUM_DARK}
-              strokeWidth="0"
-            />
-          </Svg>
-        </View>
+          if (state === 'sent') {
+            return 'payment-sent'
+          }
 
-        {!outgoing && (
-          <>
-            <Pad insideRow amount={12} />
-            <Text style={styles.timestamp}>{formattedTime}</Text>
-          </>
-        )}
-      </View>
+          throw new Error(
+            `Illegal value supplied for state prop in <SpontPayment />`,
+          )
+        })()}
+      />
     )
   }
 }
-
-const BUBBLE_VERTICAL_PADDING = 14
-const BUBBLE_HORIZONTAL_PADDING = 22.5
-
-const styles = StyleSheet.create({
-  container: {
-    alignItems: 'flex-end',
-    flexDirection: 'row',
-    paddingBottom: BUBBLE_TRIANGLE_VERTICAL_OFFSET,
-  },
-
-  avatarContainer: {
-    marginBottom: -BUBBLE_TRIANGLE_VERTICAL_OFFSET,
-  },
-
-  arrow: {
-    position: 'absolute',
-    bottom: -BUBBLE_TRIANGLE_VERTICAL_OFFSET,
-    left: 0,
-  },
-
-  arrowOutgoing: {
-    position: 'absolute',
-    bottom: -BUBBLE_TRIANGLE_VERTICAL_OFFSET,
-    right: 0,
-  },
-
-  bubble: {
-    alignItems: 'flex-start',
-    justifyContent: 'center',
-    maxWidth: WIDTH * 0.55,
-    minWidth: WIDTH * 0.18,
-    paddingTop: BUBBLE_VERTICAL_PADDING,
-    paddingBottom: BUBBLE_VERTICAL_PADDING,
-    paddingLeft: BUBBLE_HORIZONTAL_PADDING,
-    paddingRight: BUBBLE_HORIZONTAL_PADDING,
-    backgroundColor: Colors.BLUE_MEDIUM_DARK,
-    borderRadius: 24,
-  },
-
-  bubbleOutgoing: {
-    backgroundColor: Colors.ORANGE,
-  },
-
-  body: {
-    color: Colors.TEXT_WHITE,
-    fontSize: 10,
-    fontFamily: 'Montserrat-700',
-  },
-
-  timestamp: {
-    alignSelf: 'center',
-    fontSize: 10,
-    fontFamily: 'Montserrat-500',
-    color: '#A59797',
-  },
-})
