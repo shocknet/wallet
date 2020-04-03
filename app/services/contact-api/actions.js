@@ -271,11 +271,12 @@ export const sendReqWithInitialMsg = async (recipientPublicKey, initialMsg) => {
 }
 
 /**
+ * Returns the preimage corresponding to the payment.
  * @param {string} recipientPub
  * @param {number|string} amount
  * @param {string} memo
  * @throws {Error} Forwards an error if any from the API.
- * @returns {Promise<void>}
+ * @returns {Promise<string>} The payment's preimage.
  */
 export const sendPayment = async (recipientPub, amount, memo) => {
   const token = await getToken()
@@ -295,6 +296,9 @@ export const sendPayment = async (recipientPub, amount, memo) => {
 
   let timeoutid = -1
 
+  /**
+   * @type {import('./socket').Emission}
+   */
   const res = await Promise.race([
     new Promise(resolve => {
       socket &&
@@ -324,6 +328,12 @@ export const sendPayment = async (recipientPub, amount, memo) => {
   if (!res.ok) {
     throw new Error(res.msg || 'Unknown Error')
   }
+
+  if (typeof res.msg !== 'string') {
+    throw new Error('Did not get pregimage from node')
+  }
+
+  return res.msg
 }
 
 /**
