@@ -1,6 +1,11 @@
 /**
  * @format
  */
+import Logger from 'react-native-file-log'
+
+const isFinite = require('lodash/isFinite')
+const isNumber = require('lodash/isNumber')
+const isNaN = require('lodash/isNaN')
 
 /**
  * @typedef {object} ChatMessage
@@ -215,4 +220,76 @@ export const isSimpleSentRequest = o => {
   }
 
   return true
+}
+
+/**
+ * @typedef {import('./schema-types').EncSpontPayment} EncSpontPayment
+ */
+
+const ENC_SPONT_PAYMENT_PREFIX = '$$__SHOCKWALLET__SPONT__PAYMENT__'
+
+/**
+ * @param {string} s
+ * @returns {s is EncSpontPayment}
+ */
+export const isEncodedSpontPayment = s =>
+  s.indexOf(ENC_SPONT_PAYMENT_PREFIX) === 0
+
+/**
+ * @typedef {object} SpontaneousPayment
+ * @prop {number} amt
+ * @prop {string} memo
+ * @prop {string} preimage
+ */
+
+/**
+ *
+ * @param {EncSpontPayment} sp
+ * @throws {Error} If decoding fails.
+ * @returns {SpontaneousPayment}
+ */
+export const decodeSpontPayment = sp => {
+  try {
+    const [amtStr, memo, preimage] = sp
+      .slice(ENC_SPONT_PAYMENT_PREFIX.length)
+      .split('__')
+
+    if (typeof preimage !== 'string') {
+      throw new TypeError('Could not parse preimage')
+    }
+
+    if (typeof amtStr !== 'string') {
+      throw new TypeError('Could not parse amt')
+    }
+
+    if (typeof memo !== 'string') {
+      throw new TypeError('Could not parse memo')
+    }
+
+    const amt = Number(amtStr)
+
+    if (!isNumber(amt)) {
+      throw new TypeError(`Could parse amount as a number, not a number?`)
+    }
+
+    if (isNaN(amt)) {
+      throw new TypeError(`Could not parse amount as a number, got NaN.`)
+    }
+
+    if (!isFinite(amt)) {
+      throw new TypeError(
+        `Amount was correctly parsed, but got a non finite number.`,
+      )
+    }
+
+    return {
+      amt,
+      memo,
+      preimage,
+    }
+  } catch (err) {
+    Logger.log(`Encoded spontaneous payment: ${sp}`)
+    Logger.log(err.toString())
+    throw err
+  }
 }

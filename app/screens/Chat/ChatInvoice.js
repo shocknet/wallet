@@ -2,18 +2,8 @@
  * @prettier
  */
 import React from 'react'
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ActivityIndicator,
-} from 'react-native'
-import Entypo from 'react-native-vector-icons/Entypo'
 
-import moment from 'moment'
-
-import { Colors } from '../../res/css'
+import TXBase from './TXBase'
 
 /**
  * @typedef {object} _PaymentStatus
@@ -35,10 +25,10 @@ import { Colors } from '../../res/css'
 /**
  * @typedef {object} Props
  * @prop {number|undefined} amount
- * @prop {string} id
- * @prop {((id: string) => void)} onPressUnpaidIncomingInvoice Only called for
+ * @prop {string} id Preimage
+ * @prop {(id: string) => void} onPressUnpaidIncomingInvoice Only called for
  * unpaid incoming invoices.
- * @prop {boolean=} outgoing
+ * @prop {boolean} outgoing
  * @prop {PaymentStatus|undefined} paymentStatus
  * @prop {string} senderName
  * @prop {number} timestamp
@@ -47,7 +37,7 @@ import { Colors } from '../../res/css'
 /**
  * @augments React.Component<Props>
  */
-export default class ChatMessage extends React.Component {
+export default class ChatInvoice extends React.Component {
   componentDidMount() {
     /**
      * Force-updates every minute so moment-formatted dates refresh.
@@ -63,13 +53,9 @@ export default class ChatMessage extends React.Component {
 
   onPress = () => {
     const { id, onPressUnpaidIncomingInvoice } = this.props
-    const { amount, outgoing, paymentStatus } = this.props
+    const { paymentStatus } = this.props
 
-    if (
-      typeof amount === 'undefined' ||
-      typeof paymentStatus === 'undefined' ||
-      outgoing
-    ) {
+    if (typeof paymentStatus === 'undefined') {
       return
     }
 
@@ -78,135 +64,43 @@ export default class ChatMessage extends React.Component {
     }
   }
 
-  renderPaymentStatus() {
-    const { amount, outgoing, paymentStatus } = this.props
+  /**
+   * @returns {import('./TXBase').Type}
+   */
+  getTXType() {
+    switch (this.props.paymentStatus) {
+      case 'FAILED':
+        return 'invoice-err'
 
-    if (typeof amount === 'undefined' || typeof paymentStatus === 'undefined') {
-      return <ActivityIndicator />
-    }
+      case 'IN_FLIGHT':
+        return 'invoice-settling'
 
-    switch (paymentStatus) {
-      case 'FAILED': {
-        return (
-          <View>
-            <Text style={styles.body}>{amount + ' sats'}</Text>
-            <Text>Payment failed.</Text>
-          </View>
+      case 'PAID':
+        return 'invoice-settled'
+
+      case 'UNKNOWN':
+        return 'invoice-unk'
+
+      case 'UNPAID':
+        return 'invoice'
+      default:
+        throw new TypeError(
+          `Illegal paymentStatus prop passed to <ChatInvoice />, got: ${this.props.paymentStatus}`,
         )
-      }
-
-      case 'IN_FLIGHT': {
-        return (
-          <View>
-            <Text style={styles.body}>{amount + ' sats'}</Text>
-            <Text>Payment being processed</Text>
-          </View>
-        )
-      }
-
-      case 'PAID': {
-        return (
-          <View>
-            <Text style={styles.body}>{amount + ' sats'}</Text>
-            <Entypo name="check" />
-          </View>
-        )
-      }
-
-      case 'UNKNOWN': {
-        return (
-          <View>
-            <Text style={styles.body}>{amount + ' sats'}</Text>
-            <Text>Unknown payment status</Text>
-          </View>
-        )
-      }
-
-      case 'UNPAID': {
-        return (
-          <View>
-            <Text style={styles.body}>{amount + ' sats'}</Text>
-            {!outgoing && <Text>Press here to Pay</Text>}
-          </View>
-        )
-      }
     }
   }
 
   render() {
-    const { outgoing, senderName, timestamp } = this.props
-
     return (
-      <TouchableOpacity onPress={this.onPress}>
-        <View style={outgoing ? styles.container : styles.containerOutgoing}>
-          <Text style={outgoing ? styles.name : styles.nameOutgoing}>
-            {senderName}
-          </Text>
-
-          <Text style={styles.timestamp}>{moment(timestamp).fromNow()}</Text>
-
-          <View style={[styles.row, styles.alignItemsCenter]}>
-            <Entypo color={Colors.BLUE_DARK} name="text-document" size={32} />
-            {this.renderPaymentStatus()}
-          </View>
-        </View>
-      </TouchableOpacity>
+      <TXBase
+        amt={this.props.amount}
+        outgoing={this.props.outgoing}
+        onPressDetails={this.onPress}
+        otherDisplayName={this.props.senderName}
+        preimage={this.props.id}
+        timestamp={this.props.timestamp}
+        type={this.getTXType()}
+      />
     )
   }
 }
-
-const name = {
-  color: Colors.BLUE_DARK,
-  fontSize: 14,
-  fontWeight: 'bold',
-}
-
-const CONTAINER_HORIZONTAL_PADDING = 12
-const CONTAINER_VERTICAL_PADDING = 18
-
-const container = {
-  alignItems: 'flex-start',
-  backgroundColor: Colors.BLUE_LIGHTEST,
-  borderRadius: 10,
-  justifyContent: 'center',
-  margin: 15,
-  paddingBottom: CONTAINER_VERTICAL_PADDING,
-  paddingLeft: CONTAINER_HORIZONTAL_PADDING,
-  paddingRight: CONTAINER_HORIZONTAL_PADDING,
-  paddingTop: CONTAINER_VERTICAL_PADDING,
-}
-
-const styles = StyleSheet.create({
-  alignItemsCenter: {
-    alignItems: 'center',
-  },
-
-  body: {
-    color: Colors.TEXT_STANDARD,
-    fontSize: 15,
-    marginTop: 8,
-  },
-  // @ts-ignore
-  container,
-  // @ts-ignore
-  containerOutgoing: {
-    ...container,
-    backgroundColor: Colors.GRAY_MEDIUM,
-  },
-  // @ts-ignore
-  name,
-  // @ts-ignore
-  nameOutgoing: {
-    ...name,
-    color: Colors.TEXT_STANDARD,
-  },
-
-  row: {
-    flexDirection: 'row',
-  },
-
-  timestamp: {
-    fontSize: 12,
-    color: Colors.TEXT_LIGHT,
-  },
-})

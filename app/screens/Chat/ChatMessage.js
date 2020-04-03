@@ -7,11 +7,11 @@ import moment from 'moment'
 import { Svg, Polygon } from 'react-native-svg'
 
 import { Colors, WIDTH } from '../../res/css'
-import ShockAvatar from '../../components/ShockAvatar'
 import Pad from '../../components/Pad'
 
+import ChatAvatar from './ChatAvatar'
+
 const BUBBLE_TRIANGLE_VERTICAL_OFFSET = 6
-const AVATAR_SIZE = 40
 
 /**
  * @typedef {object} Props
@@ -64,9 +64,9 @@ export default class ChatMessage extends React.Component {
           <>
             <View style={styles.avatarContainer}>
               {this.props.shouldRenderAvatar ? (
-                <ShockAvatar height={AVATAR_SIZE} image={this.props.avatar} />
+                <ChatAvatar avatar={this.props.avatar} />
               ) : (
-                <Pad insideRow amount={AVATAR_SIZE} />
+                <Pad insideRow amount={40} />
               )}
             </View>
             <Pad insideRow amount={20} />

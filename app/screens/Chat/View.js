@@ -11,6 +11,7 @@ import {
   Modal,
   TouchableOpacity,
   ToastAndroid,
+  Clipboard,
 } from 'react-native'
 import { Text } from 'react-native-elements'
 import { GiftedChat, utils as GiftedUtils } from 'react-native-gifted-chat'
@@ -25,17 +26,19 @@ import BasicDialog from '../../components/BasicDialog'
 import ShockInput from '../../components/ShockInput'
 import Pad from '../../components/Pad'
 import ShockButton from '../../components/ShockButton'
-import { Actions } from '../../services/contact-api'
+import { Actions, Schema } from '../../services/contact-api'
+import ShockDialog from '../../components/ShockDialog'
 
+// import ChatAvatar from './ChatAvatar'
 import ChatInvoice from './ChatInvoice'
 import ChatMessage from './ChatMessage'
+import SpontPayment from './SpontPayment'
 import InputToolbar, {
   ACTION_BTN_HEIGHT,
   OVAL_V_PAD,
   CONTAINER_H_PAD,
   OVAL_ELEV,
 } from './InputToolbar'
-import ShockDialog from '../../components/ShockDialog'
 
 export const CHAT_ROUTE = 'CHAT_ROUTE'
 const EMPTY_OBJ = {}
@@ -215,6 +218,7 @@ export default class ChatView extends React.Component {
               : styles.invoiceWrapperIncoming
           }
         >
+          {/* <ChatAvatar avatar={this.props.recipientAvatar} /> */}
           <ChatInvoice
             amount={invoiceToAmount[currentMessage._id]}
             id={/** @type {string} */ (currentMessage._id)}
@@ -243,6 +247,29 @@ export default class ChatView extends React.Component {
         (isSameUser && !isSameDay)
       )
     })()
+
+    const { text } = currentMessage
+
+    if (Schema.isEncodedSpontPayment(text)) {
+      const sp = Schema.decodeSpontPayment(text)
+      return (
+        <View
+          style={outgoing ? styles.TXWrapperOutgoing : styles.TXWrapperIncoming}
+        >
+          {/* <ChatAvatar avatar={this.props.recipientAvatar} /> */}
+          <SpontPayment
+            amt={sp.amt}
+            memo={sp.memo}
+            onPress={this.onPressSpontPayment}
+            outgoing={outgoing}
+            preimage={sp.preimage}
+            recipientDisplayName={this.props.recipientDisplayName}
+            timestamp={timestamp}
+            state="sent"
+          />
+        </View>
+      )
+    }
 
     return (
       <View
@@ -398,6 +425,14 @@ export default class ChatView extends React.Component {
         ToastAndroid.show('Could not remove', 800)
         Logger.log(e.message || 'unknown error')
       })
+  }
+
+  /**
+   * @param {string} preimage
+   */
+  onPressSpontPayment = preimage => {
+    Clipboard.setString(preimage)
+    ToastAndroid.show('Copied payment preimage to clipboard', 800)
   }
 
   render() {
@@ -604,6 +639,11 @@ export default class ChatView extends React.Component {
 
 const MSG_V_MARGIN = 20
 
+const invoiceWrapperBase = {
+  paddingTop: 42,
+  paddingBottom: 42,
+}
+
 const msgWrapperBase = {
   paddingLeft: 18,
   paddingRight: 18,
@@ -611,9 +651,12 @@ const msgWrapperBase = {
   marginBottom: MSG_V_MARGIN,
 }
 
-const invoiceWrapperBase = {
-  paddingTop: 42,
-  paddingBottom: 42,
+const TXWrapperBase = {
+  // TODO: Why isn't WIDTH * 0.65& working here? 65% will  break when padding is
+  // attached to the messages container.
+  // width: '65%',
+  // flexDirection: /** @type {'row'} */ ('row'),
+  // alignItems: /** @type {'flex-end'} */ ('flex-end'),
 }
 
 const styles = StyleSheet.create({
@@ -682,6 +725,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 30,
+  },
+
+  TXWrapperIncoming: {
+    ...TXWrapperBase,
+    alignSelf: 'flex-start',
+    marginLeft: 58,
+  },
+
+  TXWrapperOutgoing: {
+    ...TXWrapperBase,
+    alignSelf: 'flex-end',
+    marginRight: 18,
   },
 })
 
