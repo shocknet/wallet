@@ -730,6 +730,22 @@ export const decodeInvoice = async ({ payReq }) => {
 
   const endpoint = `/api/lnd/decodePayReq`
 
+  if (typeof payReq !== 'string') {
+    throw new TypeError(
+      `decodeInvoice() -> payReq is not an string, instead got: ${JSON.stringify(
+        payReq,
+      )}`,
+    )
+  }
+
+  if (payReq.length < 10) {
+    throw new TypeError(
+      `decodeInvoice() -> payReq is an string but doesn't look like an invoice, got: ${JSON.stringify(
+        payReq,
+      )}`,
+    )
+  }
+
   try {
     const { data } = await Http.post(
       endpoint,
@@ -740,6 +756,14 @@ export const decodeInvoice = async ({ payReq }) => {
         },
       },
     )
+
+    if (typeof data.decodedRequest !== 'object') {
+      const msg = `data.decodedRequest is not an object, data: ${JSON.stringify(
+        data,
+      )}`
+      Logger.log(msg)
+      throw new Error(msg)
+    }
 
     return data
   } catch (err) {
