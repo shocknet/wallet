@@ -699,11 +699,13 @@ const styles = StyleSheet.create({
   invoiceWrapperIncoming: {
     ...invoiceWrapperBase,
     alignItems: 'flex-start',
+    paddingLeft: 18,
   },
 
   invoiceWrapperOutgoing: {
     ...invoiceWrapperBase,
     alignItems: 'flex-end',
+    paddingRight: 18,
   },
 
   disconnectNotice: {
