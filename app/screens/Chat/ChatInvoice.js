@@ -82,6 +82,7 @@ export default class ChatInvoice extends React.Component {
         return 'invoice-unk'
 
       case 'UNPAID':
+      case undefined:
         return 'invoice'
       default:
         throw new TypeError(
