@@ -197,25 +197,30 @@ export default class Chat extends React.Component {
     notDecoded.forEach(rawInvoice => {
       Wallet.decodeInvoice({
         payReq: rawInvoice,
-      }).then(res => {
-        const decodedInvoice = res.decodedRequest
-
-        if (!this.mounted) {
-          return
-        }
-
-        this.setState(({ rawInvoiceToDecodedInvoice }) => ({
-          rawInvoiceToDecodedInvoice: {
-            ...rawInvoiceToDecodedInvoice,
-            [rawInvoice]: {
-              amount: Number(decodedInvoice.num_satoshis),
-              expiryDate:
-                Number(decodedInvoice.timestamp) +
-                Number(decodedInvoice.expiry) * 1000,
-            },
-          },
-        }))
       })
+        .then(res => {
+          const decodedInvoice = res.decodedRequest
+
+          if (!this.mounted) {
+            return
+          }
+
+          this.setState(({ rawInvoiceToDecodedInvoice }) => ({
+            rawInvoiceToDecodedInvoice: {
+              ...rawInvoiceToDecodedInvoice,
+              [rawInvoice]: {
+                amount: Number(decodedInvoice.num_satoshis),
+                expiryDate:
+                  Number(decodedInvoice.timestamp) +
+                  Number(decodedInvoice.expiry) * 1000,
+              },
+            },
+          }))
+        })
+        .catch(err => {
+          ToastAndroid.show(err.message, 800)
+          Logger.log(err.message)
+        })
     })
   }
 
