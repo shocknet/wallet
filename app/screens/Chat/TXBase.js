@@ -51,7 +51,14 @@ export default class TXBase extends React.PureComponent {
   }
 
   render() {
-    const { amt, outgoing, preimage, timestamp, type } = this.props
+    const {
+      amt,
+      otherDisplayName,
+      outgoing,
+      preimage,
+      timestamp,
+      type,
+    } = this.props
 
     const indicator = (() => {
       if (type === 'invoice') {
@@ -113,6 +120,22 @@ export default class TXBase extends React.PureComponent {
       throw new TypeError('Invalid type prop passed in to <TXBase />')
     })()
 
+    const otherName = (() => {
+      if (typeof otherDisplayName !== 'string') {
+        return 'They'
+      }
+
+      if (otherDisplayName.length === 0) {
+        return 'They'
+      }
+
+      if (otherDisplayName.length > 20) {
+        return 'They'
+      }
+
+      return otherDisplayName
+    })()
+
     return (
       <TouchableWithoutFeedback onPress={this.props.onPress}>
         <View style={styles.container}>
@@ -121,7 +144,7 @@ export default class TXBase extends React.PureComponent {
 
             <Text style={xStyles.sheetText}>
               <Text style={CSS.styles.fontMontserratBold}>
-                {outgoing ? 'You' : this.props.otherDisplayName || 'They'}
+                {outgoing ? 'You' : otherName}
               </Text>
 
               <Text>
