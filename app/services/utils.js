@@ -73,5 +73,5 @@ export const isValidURL = url => {
     return isValidIP(ip)
   }
 
-  return isValidIP(ip) && port.length === 4
+  return isValidIP(ip) && port.length <= 5
 }
