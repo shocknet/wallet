@@ -649,7 +649,24 @@ export default class Chat extends React.Component {
     } = this.state
     const recipientDisplayName = this.getRecipientDisplayName()
 
-    const messages = this.getMessages()
+    const messages = [
+      ...this.getMessages(),
+      ...Object.entries(this.state.spontPaymentsInTransit).map(([spid, sp]) => {
+        /** @type {API.Schema.ChatMessage} */
+        const placeholderMessage = {
+          body: API.Schema.encodeSpontaneousPayment(
+            sp.amt,
+            sp.memo,
+            sp.preimage,
+          ),
+          id: spid,
+          outgoing: true,
+          timestamp: sp.timestamp,
+        }
+
+        return placeholderMessage
+      }),
+    ]
 
     const theChat = this.getChat()
 
