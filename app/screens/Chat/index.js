@@ -76,7 +76,6 @@ const HeaderLeft = React.memo(({ onPress }) => ((
  * @prop {string|null} ownPublicKey
  * @prop {Partial<Record<string, PaymentStatus>>} rawInvoiceToPaymentStatus
  * @prop {Partial<Record<string, DecodedInvoice>>} rawInvoiceToDecodedInvoice
- * @prop {string|null} recipientDisplayName
  * @prop {API.Schema.ChatMessage[]} cachedSentMessages Messages that were *just*
  * sent but might have not appeared on the onChats() event yet.
  * @prop {Record<string, SpontPaymentInTransit>} spontPaymentsInTransit
@@ -130,7 +129,6 @@ export default class Chat extends React.Component {
     rawInvoiceToDecodedInvoice: {},
     rawInvoiceToPaymentStatus: {},
     ownPublicKey: null,
-    recipientDisplayName: null,
     cachedSentMessages: [],
     spontPaymentsInTransit: {},
   }
@@ -152,8 +150,7 @@ export default class Chat extends React.Component {
   sendInvoice = (amount, memo) => {
     Logger.log(`amount: ${amount} - memo: ${memo}`)
 
-    const id = this.props.navigation.getParam('id')
-    const theChat = (this.state.chats.find(c => c.id === id))
+    const theChat = this.getChat()
 
     if (!theChat) {
       return
@@ -365,48 +362,28 @@ export default class Chat extends React.Component {
    */
   componentDidUpdate(_, prevState) {
     const { navigation } = this.props
-    const { recipientDisplayName } = this.state
-    const id = this.props.navigation.getParam('id')
-    const theChat = this.state.chats.find(c => c.id === id)
+    const recipientDisplayName = this.getRecipientDisplayName()
+    const theChat = this.getChat()
 
     if (!theChat) {
       return
     }
 
-    const { recipientPublicKey: recipientPK } = theChat
-
     const oldTitle = navigation.getParam('_title')
-    if (typeof oldTitle === 'undefined') {
+    if (oldTitle !== recipientDisplayName && !!recipientDisplayName) {
       navigation.setParams({
-        _title: recipientPK,
+        _title: recipientDisplayName,
       })
     }
 
     if (prevState.chats !== this.state.chats) {
       this.decodeIncomingInvoices()
     }
-
-    if (oldTitle === recipientPK && recipientDisplayName) {
-      navigation.setParams({
-        _title: recipientDisplayName,
-      })
-    }
-
-    if (
-      oldTitle !== recipientPK &&
-      oldTitle !== recipientDisplayName &&
-      !!recipientDisplayName
-    ) {
-      navigation.setParams({
-        _title: recipientDisplayName,
-      })
-    }
   }
 
   updateLastReadMsg() {
     const messages = this.getMessages()
-    const id = this.props.navigation.getParam('id')
-    const theChat = this.state.chats.find(c => c.id === id)
+    const theChat = this.getChat()
 
     if (!theChat) {
       return
@@ -473,7 +450,7 @@ export default class Chat extends React.Component {
    */
   onChats = chats => {
     const id = this.props.navigation.getParam('id')
-    const matchingChat = this.state.chats.find(c => c.id === id)
+    const matchingChat = chats.find(c => c.id === id)
 
     if (!matchingChat) {
       this.props.navigation.goBack()
@@ -494,13 +471,24 @@ export default class Chat extends React.Component {
     )
   }
 
-  /** @returns {API.Schema.ChatMessage[]} */
-  getMessages = () => {
+  /** @returns {API.Schema.Chat|null} */
+  getChat() {
     const id = this.props.navigation.getParam('id')
     const theChat = this.state.chats.find(c => c.id === id)
 
     if (!theChat) {
-      Logger.log(`<Chat />.index -> getMessages() -> no chat found. id: ${id}`)
+      Logger.log(`<Chat />.index -> getChat() -> no chat found. id: ${id}`)
+      return null
+    }
+
+    return theChat
+  }
+
+  /** @returns {API.Schema.ChatMessage[]} */
+  getMessages() {
+    const theChat = this.getChat()
+
+    if (!theChat) {
       return []
     }
 
@@ -509,14 +497,9 @@ export default class Chat extends React.Component {
 
   /** @returns {string|null} */
   getRecipientAvatar() {
-    const chatId = this.props.navigation.getParam('id')
-
-    const theChat = this.state.chats.find(chat => chat.id === chatId)
+    const theChat = this.getChat()
 
     if (!theChat) {
-      Logger.log(
-        `<Chat />.index -> getRecipientAvatar -> no chat found. chatId: ${chatId}`,
-      )
       return null
     }
 
@@ -525,13 +508,9 @@ export default class Chat extends React.Component {
 
   /** @returns {string|null} */
   getRecipientDisplayName() {
-    const id = this.props.navigation.getParam('id')
-    const theChat = this.state.chats.find(c => c.id === id)
+    const theChat = this.getChat()
 
     if (!theChat) {
-      Logger.log(
-        `<Chat />.index -> getRecipientDisplayName -> no chat found. id: ${id}`,
-      )
       return null
     }
 
@@ -540,17 +519,9 @@ export default class Chat extends React.Component {
 
   /** @returns {boolean} */
   getDidDisconnect = () => {
-    const id = this.props.navigation.getParam('id')
-    const theChat = this.state.chats.find(c => c.id === id)
+    const theChat = this.getChat()
 
-    if (!theChat) {
-      Logger.log(
-        `<Chat />.index -> getRecipientDisplayName -> no chat found. id: ${id}`,
-      )
-      return false
-    }
-
-    return theChat.didDisconnect
+    return !!theChat && theChat.didDisconnect
   }
 
   /**
@@ -572,8 +543,7 @@ export default class Chat extends React.Component {
       }),
     }))
 
-    const id = this.props.navigation.getParam('id')
-    const theChat = this.state.chats.find(c => c.id === id)
+    const theChat = this.getChat()
 
     if (!theChat) {
       return
@@ -591,18 +561,15 @@ export default class Chat extends React.Component {
    * @param {string} msgID
    */
   onPressUnpaidIncomingInvoice = msgID => {
-    const msg = /** @type {API.Schema.ChatMessage} */ (this.getMessages().find(
-      m => m.id === msgID,
-    ))
+    const theChat = this.getChat()
 
-    const rawInvoice = msg.body.slice('$$__SHOCKWALLET__INVOICE__'.length)
+    const msg = this.getMessages().find(m => m.id === msgID)
 
-    const id = this.props.navigation.getParam('id')
-    const theChat = this.state.chats.find(c => c.id === id)
-
-    if (!theChat) {
+    if (!API.Schema.isChatMessage(msg) || !theChat) {
       return
     }
+
+    const rawInvoice = msg.body.slice('$$__SHOCKWALLET__INVOICE__'.length)
 
     const { recipientPublicKey } = theChat
 
@@ -610,7 +577,7 @@ export default class Chat extends React.Component {
     const params = {
       rawInvoice,
       recipientAvatar: null,
-      recipientDisplayName: this.state.recipientDisplayName,
+      recipientDisplayName: this.getRecipientDisplayName(),
       recipientPublicKey,
     }
 
@@ -623,8 +590,7 @@ export default class Chat extends React.Component {
    * @returns {void}
    */
   onPressSendPayment = (amt, memo) => {
-    const id = this.props.navigation.getParam('id')
-    const theChat = this.state.chats.find(c => c.id === id)
+    const theChat = this.getChat()
 
     if (!theChat) {
       return
@@ -675,15 +641,14 @@ export default class Chat extends React.Component {
   render() {
     const {
       ownPublicKey,
-      recipientDisplayName,
       rawInvoiceToDecodedInvoice,
       rawInvoiceToPaymentStatus,
     } = this.state
+    const recipientDisplayName = this.getRecipientDisplayName()
 
     const messages = this.getMessages()
 
-    const id = this.props.navigation.getParam('id')
-    const theChat = this.state.chats.find(c => c.id === id)
+    const theChat = this.getChat()
 
     if (!theChat) {
       return null
