@@ -618,6 +618,9 @@ export default class Chat extends React.Component {
             ...spontPaymentsInTransit,
             [spontPaymentTempID]: {
               ...spontPaymentsInTransit[spontPaymentTempID],
+              // give this in-transit spontaneous payment the newly generated
+              // preimage so this.updateSpontPaymentsInTransit() can delete the
+              // placeholder.
               preimage,
             },
           },
