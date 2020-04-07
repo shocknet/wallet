@@ -453,6 +453,8 @@ export default class ChatView extends React.Component {
     /** @type {GiftedChatUser} */
     const ownUser = {
       _id: ownPublicKey,
+      // user.name is not used for outgoing messages.
+      name: ownPublicKey,
     }
 
     /** @type {GiftedChatUser} */
