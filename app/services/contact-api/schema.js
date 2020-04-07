@@ -293,3 +293,31 @@ export const decodeSpontPayment = sp => {
     throw err
   }
 }
+
+/**
+ * @param {number} amt
+ * @param {string} memo
+ * @param {string} preimage
+ * @returns {EncSpontPayment}
+ */
+export const encodeSpontaneousPayment = (amt, memo, preimage) => {
+  if (amt <= 0) {
+    throw new RangeError('Amt must be greater than zero')
+  }
+
+  if (memo.length < 1) {
+    throw new TypeError('Memo must be populated')
+  }
+
+  if (preimage.length < 1) {
+    throw new TypeError('preimage must be populated')
+  }
+
+  const enc = `${ENC_SPONT_PAYMENT_PREFIX}__${amt}__${memo}__${preimage}`
+
+  if (isEncodedSpontPayment(enc)) {
+    return enc
+  }
+
+  throw new Error('isEncodedSpontPayment(enc) false')
+}
