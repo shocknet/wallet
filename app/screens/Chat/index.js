@@ -23,6 +23,7 @@ import ChatView from './View'
 import PaymentDialog from './PaymentDialog'
 /**
  * @typedef {import('./View').PaymentStatus} PaymentStatus
+ * @typedef {import('./View').SpontPaymentInTransit} SpontPaymentInTransit
  */
 
 export const CHAT_ROUTE = 'CHAT_ROUTE'
@@ -64,10 +65,6 @@ const HeaderLeft = React.memo(({ onPress }) => ((
  * @typedef {object} DecodedInvoice
  * @prop {number} amount
  * @prop {number} expiryDate UNIX time.
- */
-
-/**
- * @typedef {API.Schema.SpontaneousPayment & { err: string|null , timestamp: number }} SpontPaymentInTransit
  */
 
 /**
@@ -649,24 +646,7 @@ export default class Chat extends React.Component {
     } = this.state
     const recipientDisplayName = this.getRecipientDisplayName()
 
-    const messages = [
-      ...this.getMessages(),
-      ...Object.entries(this.state.spontPaymentsInTransit).map(([spid, sp]) => {
-        /** @type {API.Schema.ChatMessage} */
-        const placeholderMessage = {
-          body: API.Schema.encodeSpontaneousPayment(
-            sp.amt,
-            sp.memo,
-            sp.preimage,
-          ),
-          id: spid,
-          outgoing: true,
-          timestamp: sp.timestamp,
-        }
-
-        return placeholderMessage
-      }),
-    ]
+    const messages = this.getMessages()
 
     const theChat = this.getChat()
 
@@ -753,6 +733,7 @@ export default class Chat extends React.Component {
           onPressSendBTC={this.openSendPaymentDialog}
           recipientAvatar={this.getRecipientAvatar()}
           didDisconnect={this.getDidDisconnect()}
+          spontPaymentsInTransit={this.state.spontPaymentsInTransit}
         />
 
         <PaymentDialog
