@@ -96,6 +96,7 @@ export default class ChatInvoice extends React.Component {
       <TXBase
         amt={this.props.amount}
         outgoing={this.props.outgoing}
+        onPress={this.onPress}
         onPressDetails={this.onPress}
         otherDisplayName={this.props.senderName}
         preimage={this.props.id}
