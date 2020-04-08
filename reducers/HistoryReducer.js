@@ -1,3 +1,4 @@
+import reverse from 'lodash/reverse'
 import { ACTIONS } from '../app/actions/HistoryActions'
 import * as Wallet from '../app/services/wallet'
 
@@ -156,7 +157,7 @@ const history = (state = INITIAL_STATE, action) => {
          */
         unifiedTransaction => {
           if (Wallet.isInvoice(unifiedTransaction)) {
-            return unifiedTransaction.settled
+            return !unifiedTransaction.settled
           }
 
           if (Wallet.isPayment(unifiedTransaction)) {
@@ -213,6 +214,12 @@ const history = (state = INITIAL_STATE, action) => {
         },
       )
 
+      console.log('UNIFYING TRANSACTIONS!')
+      console.log(sortedTransactions)
+      console.log('Payments:', state.recentPayments)
+      console.log('Transactions:', state.recentTransactions)
+      console.log('Invoices:', state.recentInvoices)
+
       return {
         ...state,
         unifiedTransactions: sortedTransactions,
@@ -224,6 +231,14 @@ const history = (state = INITIAL_STATE, action) => {
       return {
         ...state,
         recentTransactions: [data, ...state.recentTransactions],
+      }
+    }
+    case ACTIONS.LOAD_RECENT_INVOICES: {
+      const { data } = action
+
+      return {
+        ...state,
+        recentInvoices: reverse(data),
       }
     }
     default:
