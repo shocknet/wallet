@@ -19,6 +19,7 @@ import {
 import EntypoIcons from 'react-native-vector-icons/Entypo'
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'
 import Logger from 'react-native-file-log'
+import SocketManager from '../../services/socket'
 import { connect } from 'react-redux'
 
 //import { compose } from 'redux'
@@ -46,7 +47,13 @@ import * as Wallet from '../../services/wallet'
 
 import { getUSDRate, getWalletBalance } from '../../actions/WalletActions'
 import { fetchNodeInfo } from '../../actions/NodeActions'
-import { fetchRecentTransactions } from '../../actions/HistoryActions'
+import {
+  fetchRecentTransactions,
+  fetchRecentPayments,
+  fetchRecentInvoices,
+  loadNewInvoice,
+  loadNewTransaction,
+} from '../../actions/HistoryActions'
 import { subscribeOnChats } from '../../actions/ChatActions'
 
 import { CHATS_ROUTE } from '../../screens/Chats'
@@ -80,13 +87,17 @@ import * as Cache from '../../services/cache'
  * @typedef {object} Props
  * @prop {Navigation} navigation
  * @prop {{ USDRate: number, totalBalance: string|null }} wallet
- * @prop {{ recentTransactions: (Wallet.Invoice|Wallet.Payment|Wallet.Transaction)[] }} history
+ * @prop {{ unifiedTransactions: (Wallet.Invoice|Wallet.Payment|Wallet.Transaction)[] }} history
  * @prop {{ nodeInfo: import('../../actions/NodeActions').GetInfo }} node
  * @prop {() => Promise<void>} fetchRecentTransactions
+ * @prop {() => Promise<void>} fetchRecentPayments
+ * @prop {() => Promise<void>} fetchRecentInvoices
  * @prop {() => Promise<import('../../actions/WalletActions').WalletBalance>} getWalletBalance
  * @prop {() => Promise<import('../../actions/NodeActions').GetInfo>} fetchNodeInfo
  * @prop {() => Promise<ContactAPI.Schema.Chat[]>} subscribeOnChats
  * @prop {() => Promise<number>} getUSDRate
+ * @prop {(invoice: Wallet.Invoice) => void} loadNewInvoice
+ * @prop {(transaction: Wallet.Transaction) => void} loadNewTransaction
  */
 
 /**
@@ -1027,9 +1038,6 @@ class WalletOverview extends Component {
   /** @type {null|ReturnType<typeof setInterval>} */
   exchangeRateIntervalID = null
 
-  /** @type {null|ReturnType<typeof setInterval>} */
-  recentTransactionsIntervalID = null
-
   /**
    * @param {Props} prevProps
    */
@@ -1188,8 +1196,19 @@ class WalletOverview extends Component {
 
   subs = [() => {}]
 
-  componentDidMount() {
-    const { fetchNodeInfo, subscribeOnChats } = this.props
+  componentDidMount = async () => {
+    const {
+      fetchNodeInfo,
+      subscribeOnChats,
+      getWalletBalance,
+      getUSDRate,
+      fetchRecentTransactions,
+      fetchRecentPayments,
+      fetchRecentInvoices,
+      loadNewInvoice,
+      loadNewTransaction,
+    } = this.props
+
     this.didFocus = this.props.navigation.addListener('didFocus', () => {
       StatusBar.setBackgroundColor(CSS.Colors.TRANSPARENT)
       StatusBar.setBarStyle('light-content')
@@ -1220,14 +1239,19 @@ class WalletOverview extends Component {
 
     this.startNotificationService()
 
-    this.balanceIntervalID = setInterval(this.fetchBalance, 4000)
-    this.exchangeRateIntervalID = setInterval(this.fetchExchangeRate, 4000)
-    this.recentTransactionsIntervalID = setInterval(
-      this.fetchRecentTransactions,
-      4000,
-    )
+    if (!SocketManager.socket?.connected) {
+      await SocketManager.connectSocket()
+    }
+
+    this.balanceIntervalID = setInterval(getWalletBalance, 4000)
+    this.exchangeRateIntervalID = setInterval(getUSDRate, 4000)
+    this.recentPaymentsIntervalID = setInterval(fetchRecentPayments, 4000)
     subscribeOnChats()
-    fetchNodeInfo()
+    await Promise.all([
+      fetchRecentInvoices(),
+      fetchRecentTransactions(),
+      fetchNodeInfo(),
+    ])
 
     this.subs.push(
       ContactAPI.Events.onAvatar(avatar => {
@@ -1235,6 +1259,28 @@ class WalletOverview extends Component {
           avatar,
         })
       }),
+    )
+
+    SocketManager.socket.on(
+      'invoice:new',
+      /**
+       * @param {Wallet.Invoice} data
+       */
+      data => {
+        Logger.log('[SOCKET] New Invoice!', data)
+        loadNewInvoice(data)
+      },
+    )
+
+    SocketManager.socket.on(
+      'transaction:new',
+      /**
+       * @param {Wallet.Transaction} data
+       */
+      data => {
+        Logger.log('[SOCKET] New Transaction!', data)
+        loadNewTransaction(data)
+      },
     )
   }
 
@@ -1246,22 +1292,6 @@ class WalletOverview extends Component {
     if (this.exchangeRateIntervalID) {
       clearInterval(this.exchangeRateIntervalID)
     }
-
-    if (this.recentTransactionsIntervalID) {
-      clearInterval(this.recentTransactionsIntervalID)
-    }
-  }
-
-  fetchRecentTransactions = () => {
-    this.props.fetchRecentTransactions()
-  }
-
-  fetchBalance = () => {
-    this.props.getWalletBalance()
-  }
-
-  fetchExchangeRate = () => {
-    this.props.getUSDRate()
   }
 
   onPressRequest = () => {
@@ -1389,7 +1419,7 @@ class WalletOverview extends Component {
 
     const { nodeInfo } = this.props.node
 
-    const { recentTransactions } = this.props.history
+    const { unifiedTransactions } = this.props.history
 
     if (scanningBTCAddressQR) {
       return (
@@ -1465,7 +1495,7 @@ class WalletOverview extends Component {
           </TouchableHighlight>
         </View>
         <View style={styles.trxContainer}>
-          <UnifiedTrx unifiedTrx={recentTransactions} />
+          <UnifiedTrx unifiedTrx={unifiedTransactions} />
         </View>
 
         <ShockDialog
@@ -1786,7 +1816,11 @@ const mapDispatchToProps = {
   getWalletBalance,
   fetchRecentTransactions,
   fetchNodeInfo,
+  fetchRecentInvoices,
+  fetchRecentPayments,
   subscribeOnChats,
+  loadNewInvoice,
+  loadNewTransaction,
 }
 
 export default connect(
