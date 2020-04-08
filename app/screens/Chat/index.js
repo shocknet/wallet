@@ -563,6 +563,9 @@ export default class Chat extends React.Component {
     const msg = this.getMessages().find(m => m.id === msgID)
 
     if (!API.Schema.isChatMessage(msg) || !theChat) {
+      Logger.log(
+        `<Chat /> -> onPressUnpaidIncomingInvoice() -> !API.Schema.isChatMessage(msg) || !theChat (aborting)`,
+      )
       return
     }
 
