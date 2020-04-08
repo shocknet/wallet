@@ -157,7 +157,7 @@ const history = (state = INITIAL_STATE, action) => {
          */
         unifiedTransaction => {
           if (Wallet.isInvoice(unifiedTransaction)) {
-            return !unifiedTransaction.settled
+            return unifiedTransaction.settled
           }
 
           if (Wallet.isPayment(unifiedTransaction)) {
@@ -213,12 +213,6 @@ const history = (state = INITIAL_STATE, action) => {
           return _b - _a
         },
       )
-
-      console.log('UNIFYING TRANSACTIONS!')
-      console.log(sortedTransactions)
-      console.log('Payments:', state.recentPayments)
-      console.log('Transactions:', state.recentTransactions)
-      console.log('Invoices:', state.recentInvoices)
 
       return {
         ...state,
