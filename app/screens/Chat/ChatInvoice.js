@@ -2,6 +2,7 @@
  * @prettier
  */
 import React from 'react'
+import Logger from 'react-native-file-log'
 
 import TXBase from './TXBase'
 
@@ -56,11 +57,18 @@ export default class ChatInvoice extends React.Component {
     const { paymentStatus } = this.props
 
     if (typeof paymentStatus === 'undefined') {
+      Logger.log(
+        `<ChatInvoice /> -> onPress() -> paymentStatus prop is undefined`,
+      )
       return
     }
 
     if (paymentStatus === 'UNPAID') {
       onPressUnpaidIncomingInvoice(id)
+    } else {
+      Logger.log(
+        `<ChatInvoice /> -> onPress() -> paymentStatus prop is 'UNPAID', skipping onPress call`,
+      )
     }
   }
 
@@ -96,6 +104,7 @@ export default class ChatInvoice extends React.Component {
       <TXBase
         amt={this.props.amount}
         outgoing={this.props.outgoing}
+        onPress={this.onPress}
         onPressDetails={this.onPress}
         otherDisplayName={this.props.senderName}
         preimage={this.props.id}

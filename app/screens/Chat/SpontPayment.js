@@ -9,7 +9,9 @@ import TXBase from './TXBase'
  * @typedef {object} Props
  * @prop {number} amt
  * @prop {string} memo
- * @prop {(preimage: string) => void} onPress
+ * @prop {string} id Can be the preimage for existing spontaneous payments, or
+ * the temp id for in-transit spontaneous payments.
+ * @prop {(id: string) => void} onPress
  * @prop {boolean} outgoing
  * @prop {string} preimage
  * @prop {string|null} recipientDisplayName
@@ -35,8 +37,8 @@ export default class SpontPayment extends React.PureComponent {
   }
 
   onPress = () => {
-    const { onPress, preimage } = this.props
-    onPress && onPress(preimage)
+    const { onPress, id } = this.props
+    onPress && onPress(id)
   }
 
   render() {

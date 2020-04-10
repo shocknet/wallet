@@ -199,13 +199,15 @@ export default class TXBase extends React.PureComponent {
                 <Text style={xStyles.amt}>{`${amt.toString()} Sats`}</Text>
               )}
 
-              <Text
-                ellipsizeMode="tail"
-                numberOfLines={2}
-                style={xStyles.preimage}
-              >
-                {preimage}
-              </Text>
+              {type !== 'invoice-settling' && type !== 'payment-sending' && (
+                <Text
+                  ellipsizeMode="tail"
+                  numberOfLines={2}
+                  style={xStyles.preimage}
+                >
+                  {preimage}
+                </Text>
+              )}
             </View>
 
             <Text

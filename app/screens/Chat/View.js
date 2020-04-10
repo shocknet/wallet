@@ -40,8 +40,14 @@ import InputToolbar, {
   OVAL_ELEV,
 } from './InputToolbar'
 
+/**
+ * @typedef {Schema.SpontaneousPayment & { err: string|null , timestamp: number }} SpontPaymentInTransit
+ * @typedef {{ amt: number, err: string|null , memo: string, timestamp: number }} InvoiceInTransit
+ */
+
 export const CHAT_ROUTE = 'CHAT_ROUTE'
 const EMPTY_OBJ = {}
+const INVOICE_IN_TRANSIT_PREFIX = '$$__INVOICE__IN__TRANSIT'
 
 /**
  * @param {{ timestamp: number }} a
@@ -112,6 +118,10 @@ const AlwaysNull = () => null
  * @prop {string|null} recipientAvatar
  *
  * @prop {boolean} didDisconnect
+ *
+ * @prop {Record<string, SpontPaymentInTransit>} spontPaymentsInTransit
+ *
+ * @prop {Record<string, InvoiceInTransit|null>} invoicesInTransit
  */
 
 /**
@@ -208,6 +218,28 @@ export default class ChatView extends React.Component {
 
     const isInvoice =
       currentMessage.text.indexOf('$$__SHOCKWALLET__INVOICE__') === 0
+    const isInvoiceInTransit =
+      currentMessage.text.indexOf(INVOICE_IN_TRANSIT_PREFIX) === 0
+
+    if (isInvoiceInTransit) {
+      const [amt] = currentMessage.text
+        .slice((INVOICE_IN_TRANSIT_PREFIX + '__').length)
+        .split('__')
+
+      return (
+        <View style={styles.invoiceWrapperOutgoing}>
+          <ChatInvoice
+            amount={Number(amt)}
+            id={/** @type {string} */ (currentMessage._id)}
+            onPressUnpaidIncomingInvoice={onPressUnpaidIncomingInvoice}
+            outgoing
+            paymentStatus="IN_FLIGHT"
+            senderName={senderName}
+            timestamp={timestamp}
+          />
+        </View>
+      )
+    }
 
     if (isInvoice) {
       return (
@@ -252,6 +284,7 @@ export default class ChatView extends React.Component {
 
     if (Schema.isEncodedSpontPayment(text)) {
       const sp = Schema.decodeSpontPayment(text)
+      const spInTransit = this.props.spontPaymentsInTransit[currentMessage._id]
       return (
         <View
           style={outgoing ? styles.TXWrapperOutgoing : styles.TXWrapperIncoming}
@@ -260,12 +293,31 @@ export default class ChatView extends React.Component {
           <SpontPayment
             amt={sp.amt}
             memo={sp.memo}
+            id={
+              spInTransit
+                ? /** @type {string} */ (currentMessage._id)
+                : sp.preimage
+            }
             onPress={this.onPressSpontPayment}
             outgoing={outgoing}
             preimage={sp.preimage}
             recipientDisplayName={this.props.recipientDisplayName}
             timestamp={timestamp}
-            state="sent"
+            state={(() => {
+              const spInTransit = this.props.spontPaymentsInTransit[
+                currentMessage._id
+              ]
+
+              if (!spInTransit) {
+                return 'sent'
+              }
+
+              if (spInTransit.err) {
+                return 'error'
+              }
+
+              return 'in-flight'
+            })()}
           />
         </View>
       )
@@ -428,10 +480,15 @@ export default class ChatView extends React.Component {
   }
 
   /**
-   * @param {string} preimage
+   * @param {string} id
+   * @returns {void}
    */
-  onPressSpontPayment = preimage => {
-    Clipboard.setString(preimage)
+  onPressSpontPayment = id => {
+    const spInTransit = this.props.spontPaymentsInTransit[id]
+    if (spInTransit && spInTransit.err) {
+      return ToastAndroid.show(spInTransit.err, 800)
+    }
+    Clipboard.setString(id)
     ToastAndroid.show('Copied payment preimage to clipboard', 800)
   }
 
@@ -453,6 +510,8 @@ export default class ChatView extends React.Component {
     /** @type {GiftedChatUser} */
     const ownUser = {
       _id: ownPublicKey,
+      // user.name is not used for outgoing messages.
+      name: ownPublicKey,
     }
 
     /** @type {GiftedChatUser} */
@@ -464,7 +523,44 @@ export default class ChatView extends React.Component {
           : recipientPublicKey,
     }
 
-    const sortedMessages = messages.slice().sort(byTimestampFromOldestToNewest)
+    const sortedMessages = [
+      ...messages,
+      ...Object.entries(this.props.spontPaymentsInTransit).map(([spid, sp]) => {
+        /** @type {Schema.ChatMessage} */
+        const placeholderMessage = {
+          body: Schema.encodeSpontaneousPayment(
+            sp.amt,
+            sp.memo || 'No memo',
+            sp.preimage || '.',
+          ),
+          id: spid,
+          outgoing: true,
+          timestamp: sp.timestamp,
+        }
+
+        return placeholderMessage
+      }),
+      ...Object.entries(this.props.invoicesInTransit)
+        .filter(([_, inv]) => inv !== null)
+        .map(([invID, inv]) => {
+          if (inv === null) {
+            Logger.log('Unreachable code detected')
+            throw new Error()
+          }
+
+          /** @type {Schema.ChatMessage} */
+          const placeholderMessage = {
+            body: `${INVOICE_IN_TRANSIT_PREFIX}__${inv.amt}__${inv.memo}`,
+            id: invID,
+            outgoing: true,
+            timestamp: inv.timestamp,
+          }
+
+          return placeholderMessage
+        }),
+    ]
+      .slice()
+      .sort(byTimestampFromOldestToNewest)
 
     const [firstMsg] = sortedMessages
 

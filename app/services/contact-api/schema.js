@@ -226,7 +226,7 @@ export const isSimpleSentRequest = o => {
  * @typedef {import('./schema-types').EncSpontPayment} EncSpontPayment
  */
 
-const ENC_SPONT_PAYMENT_PREFIX = '$$__SHOCKWALLET__SPONT__PAYMENT__'
+const ENC_SPONT_PAYMENT_PREFIX = '$$__SHOCKWALLET__SPONT__PAYMENT'
 
 /**
  * @param {string} s
@@ -251,7 +251,7 @@ export const isEncodedSpontPayment = s =>
 export const decodeSpontPayment = sp => {
   try {
     const [amtStr, memo, preimage] = sp
-      .slice(ENC_SPONT_PAYMENT_PREFIX.length)
+      .slice((ENC_SPONT_PAYMENT_PREFIX + '__').length)
       .split('__')
 
     if (typeof preimage !== 'string') {
@@ -292,4 +292,44 @@ export const decodeSpontPayment = sp => {
     Logger.log(err.toString())
     throw err
   }
+}
+
+/**
+ * @param {number} amt
+ * @param {string} memo
+ * @param {string} preimage
+ * @returns {EncSpontPayment}
+ */
+export const encodeSpontaneousPayment = (amt, memo, preimage) => {
+  if (typeof amt !== 'number') {
+    throw new TypeError('amt must be a number')
+  }
+
+  if (typeof memo !== 'string') {
+    throw new TypeError('memo must be an string')
+  }
+
+  if (typeof preimage !== 'string') {
+    throw new TypeError('preimage must be an string')
+  }
+
+  if (amt <= 0) {
+    throw new RangeError('Amt must be greater than zero')
+  }
+
+  if (memo.length < 1) {
+    throw new TypeError('Memo must be populated')
+  }
+
+  if (preimage.length < 1) {
+    throw new TypeError('preimage must be populated')
+  }
+
+  const enc = `${ENC_SPONT_PAYMENT_PREFIX}__${amt}__${memo}__${preimage}`
+
+  if (isEncodedSpontPayment(enc)) {
+    return enc
+  }
+
+  throw new Error('isEncodedSpontPayment(enc) false')
 }
