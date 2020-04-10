@@ -193,9 +193,10 @@ export const sendHandshakeRequest = async recipientPublicKey => {
 }
 
 /**
+ * Returns the message id.
  * @param {string} recipientPublicKey
  * @param {string} body
- * @returns {Promise<void>}
+ * @returns {Promise<string>} The message id.
  */
 export const sendMessage = async (recipientPublicKey, body) => {
   const uuid = Math.random().toString() + Date.now().toString()
@@ -230,6 +231,8 @@ export const sendMessage = async (recipientPublicKey, body) => {
   if (!res.ok) {
     throw new Error(res.msg || 'Unknown Error')
   }
+
+  return res.msg
 }
 
 /**
