@@ -42,10 +42,12 @@ import InputToolbar, {
 
 /**
  * @typedef {Schema.SpontaneousPayment & { err: string|null , timestamp: number }} SpontPaymentInTransit
+ * @typedef {{ amt: number, err: string|null , memo: string, timestamp: number }} InvoiceInTransit
  */
 
 export const CHAT_ROUTE = 'CHAT_ROUTE'
 const EMPTY_OBJ = {}
+const INVOICE_IN_TRANSIT_PREFIX = '$$__INVOICE__IN__TRANSIT'
 
 /**
  * @param {{ timestamp: number }} a
@@ -118,6 +120,8 @@ const AlwaysNull = () => null
  * @prop {boolean} didDisconnect
  *
  * @prop {Record<string, SpontPaymentInTransit>} spontPaymentsInTransit
+ *
+ * @prop {Record<string, InvoiceInTransit|null>} invoicesInTransit
  */
 
 /**
@@ -214,6 +218,28 @@ export default class ChatView extends React.Component {
 
     const isInvoice =
       currentMessage.text.indexOf('$$__SHOCKWALLET__INVOICE__') === 0
+    const isInvoiceInTransit =
+      currentMessage.text.indexOf(INVOICE_IN_TRANSIT_PREFIX) === 0
+
+    if (isInvoiceInTransit) {
+      const [amt] = currentMessage.text
+        .slice((INVOICE_IN_TRANSIT_PREFIX + '__').length)
+        .split('__')
+
+      return (
+        <View style={styles.invoiceWrapperOutgoing}>
+          <ChatInvoice
+            amount={Number(amt)}
+            id={/** @type {string} */ (currentMessage._id)}
+            onPressUnpaidIncomingInvoice={onPressUnpaidIncomingInvoice}
+            outgoing
+            paymentStatus="IN_FLIGHT"
+            senderName={senderName}
+            timestamp={timestamp}
+          />
+        </View>
+      )
+    }
 
     if (isInvoice) {
       return (
@@ -514,8 +540,25 @@ export default class ChatView extends React.Component {
 
         return placeholderMessage
       }),
-    ]
+      ...Object.entries(this.props.invoicesInTransit)
+        .filter(([_, inv]) => inv !== null)
+        .map(([invID, inv]) => {
+          if (inv === null) {
+            Logger.log('Unreachable code detected')
+            throw new Error()
+          }
 
+          /** @type {Schema.ChatMessage} */
+          const placeholderMessage = {
+            body: `${INVOICE_IN_TRANSIT_PREFIX}__${inv.amt}__${inv.memo}`,
+            id: invID,
+            outgoing: true,
+            timestamp: inv.timestamp,
+          }
+
+          return placeholderMessage
+        }),
+    ]
       .slice()
       .sort(byTimestampFromOldestToNewest)
 

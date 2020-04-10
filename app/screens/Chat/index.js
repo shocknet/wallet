@@ -24,6 +24,7 @@ import PaymentDialog from './PaymentDialog'
 /**
  * @typedef {import('./View').PaymentStatus} PaymentStatus
  * @typedef {import('./View').SpontPaymentInTransit} SpontPaymentInTransit
+ * @typedef {import('./View').InvoiceInTransit & { msgID: string|null }} InvoiceInTransit
  */
 
 export const CHAT_ROUTE = 'CHAT_ROUTE'
@@ -76,6 +77,7 @@ const HeaderLeft = React.memo(({ onPress }) => ((
  * @prop {API.Schema.ChatMessage[]} cachedSentMessages Messages that were *just*
  * sent but might have not appeared on the onChats() event yet.
  * @prop {Record<string, SpontPaymentInTransit>} spontPaymentsInTransit
+ * @prop {Record<string, InvoiceInTransit|null>} invoicesInTransit
  */
 
 // TODO: COMPONENT HERE IS A TEMP FIX
@@ -128,6 +130,7 @@ export default class Chat extends React.Component {
     ownPublicKey: null,
     cachedSentMessages: [],
     spontPaymentsInTransit: {},
+    invoicesInTransit: {},
   }
 
   /** @type {React.RefObject<PaymentDialog>} */
@@ -155,21 +158,108 @@ export default class Chat extends React.Component {
 
     const { recipientPublicKey } = theChat
 
+    const newID = Date.now().toString() + Math.random().toString()
+
+    this.setState(({ invoicesInTransit }) => ({
+      invoicesInTransit: {
+        ...invoicesInTransit,
+        [newID]: {
+          amt: amount,
+          err: null,
+          memo,
+          timestamp: Date.now(),
+          msgID: null,
+        },
+      },
+    }))
+
+    // This could be done in the future and avoid most of the invoice transit
+    // logic.
+    // this.onSend(`$$__SHOCKWALLET__INVOICE__....`)
+
     Wallet.addInvoice({
       expiry: 1800,
       memo,
       value: amount,
     })
-      .then(res => {
+      .then(res =>
         API.Actions.sendMessage(
           recipientPublicKey,
           '$$__SHOCKWALLET__INVOICE__' + res.payment_request,
-        )
+        ),
+      )
+      .then(msgID => {
+        this.setState(({ invoicesInTransit }) => {
+          const existingInvoiceInTransit = invoicesInTransit[newID]
+
+          if (existingInvoiceInTransit === null) {
+            return null
+          }
+
+          return {
+            invoicesInTransit: {
+              ...invoicesInTransit,
+              [newID]: {
+                ...existingInvoiceInTransit,
+                msgID,
+              },
+            },
+          }
+        }, this.updateInvoicesInTransit)
       })
       .catch(err => {
         Logger.log(err.message)
         ToastAndroid.show(`Could not send invoice: ${err.message}`, 1000)
+        this.setState(({ invoicesInTransit }) => {
+          const existingInvoiceInTransit = invoicesInTransit[newID]
+
+          if (existingInvoiceInTransit === null) {
+            return null
+          }
+
+          return {
+            invoicesInTransit: {
+              ...invoicesInTransit,
+              [newID]: {
+                ...existingInvoiceInTransit,
+                err: err.message,
+              },
+            },
+          }
+        })
       })
+  }
+
+  /**
+   * After an invoice is successfully sent, delete the local in memory
+   * representation of it.
+   */
+  updateInvoicesInTransit() {
+    this.setState(({ invoicesInTransit, chats }) => {
+      const theChat = chats.find(
+        c => c.id === this.props.navigation.getParam('id'),
+      )
+
+      if (!theChat) {
+        return null
+      }
+
+      const msgs = theChat.messages
+
+      const placeholdersToBeDeleted = Object.entries(invoicesInTransit)
+        .filter(([_, inv]) => inv && msgs.some(m => m.id === inv.msgID))
+        .map(([id]) => id)
+
+      const newPlaceholders = { ...invoicesInTransit }
+
+      placeholdersToBeDeleted.forEach(id => {
+        delete newPlaceholders[id]
+      })
+
+      return {
+        invoicesInTransit: newPlaceholders,
+      }
+    })
   }
 
   openSendPaymentDialog = () => {
@@ -416,9 +506,12 @@ export default class Chat extends React.Component {
     })
     this.chatsUnsub = API.Events.onChats(this.onChats)
 
+    this.updateLastReadMsg()
     this.decodeIncomingInvoices()
     this.fetchOutgoingInvoicesAndUpdateInfo()
     this.fetchPaymentsAndUpdatePaymentStatus()
+    this.updateSpontPaymentsInTransit()
+    this.updateInvoicesInTransit()
 
     const sad = await Cache.getStoredAuthData()
 
@@ -464,6 +557,7 @@ export default class Chat extends React.Component {
         this.fetchOutgoingInvoicesAndUpdateInfo()
         this.fetchPaymentsAndUpdatePaymentStatus()
         this.updateSpontPaymentsInTransit()
+        this.updateInvoicesInTransit()
       },
     )
   }
@@ -737,6 +831,7 @@ export default class Chat extends React.Component {
           recipientAvatar={this.getRecipientAvatar()}
           didDisconnect={this.getDidDisconnect()}
           spontPaymentsInTransit={this.state.spontPaymentsInTransit}
+          invoicesInTransit={this.state.invoicesInTransit}
         />
 
         <PaymentDialog
