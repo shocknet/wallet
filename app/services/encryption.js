@@ -100,7 +100,13 @@ export const decryptKey = async (encryptedKey, sessionId) => {
     const decryptedKey = await RSAKeychain.decrypt(encryptedKey, keyTag)
     return decryptedKey
   } catch (err) {
-    Logger.log('[ENCRYPTION] Could not decrypt key:', err, encryptedKey)
+    Logger.log(
+      '[ENCRYPTION] Could not decrypt key:',
+      err,
+      encryptedKey,
+      'Session ID:',
+      sessionId,
+    )
     throw err
   }
 }

@@ -385,7 +385,6 @@ Http.interceptors.response.use(
       }
 
       const { connection } = store.getState()
-
       const encryptionErrors = ['deviceId']
 
       if (

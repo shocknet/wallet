@@ -14,6 +14,7 @@ const storage = createSensitiveStorage({
 
 const config = {
   key: 'root',
+  blacklist: ['connection'],
   storage,
 }
 
