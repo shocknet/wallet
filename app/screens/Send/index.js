@@ -63,6 +63,7 @@ export const SEND_SCREEN = 'SEND_SCREEN'
  * @prop {() => void} resetSelectedContact
  * @prop {() => void} resetInvoice
  * @prop {(invoice: string) => Promise<DecodeResponse>} decodePaymentRequest
+ * @prop {import('../../../reducers/FeesReducer').State} fees
  */
 
 /**
@@ -145,6 +146,7 @@ class SendScreen extends Component {
         addr: selectedContact.address,
         amount: sendAll ? parseInt(amount, 10) : undefined,
         send_all: sendAll,
+        fees: this.props.fees,
       })
 
       Logger.log('New Transaction ID:', transactionId)
@@ -554,8 +556,12 @@ class SendScreen extends Component {
   }
 }
 
-/** @param {{ invoice: import('../../../reducers/InvoiceReducer').State, chat: import('../../../reducers/ChatReducer').State }} state */
-const mapStateToProps = ({ chat, invoice }) => ({ chat, invoice })
+/** @param {{
+ * invoice: import('../../../reducers/InvoiceReducer').State,
+ * chat: import('../../../reducers/ChatReducer').State,
+ * fees: import('../../../reducers/FeesReducer').State,
+ * }} state */
+const mapStateToProps = ({ chat, invoice, fees }) => ({ chat, invoice, fees })
 
 const mapDispatchToProps = {
   selectContact,
