@@ -111,6 +111,7 @@ const AlwaysNull = () => null
  * @prop {string|null} ownPublicKey
  * @prop {string|null} recipientDisplayName
  * @prop {string} recipientPublicKey
+ * @prop {number|null} lastSeenApp
  *
  * @prop {(amount: number, memo: string) => void} onPressSendInvoice
  *
@@ -334,6 +335,7 @@ export default class ChatView extends React.Component {
           timestamp={timestamp}
           avatar={this.props.recipientAvatar}
           shouldRenderAvatar={shouldRenderAvatar}
+          lastSeenApp={this.props.lastSeenApp}
         />
       </View>
     )

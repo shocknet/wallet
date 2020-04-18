@@ -6,6 +6,7 @@ import Http from 'axios'
 import Logger from 'react-native-file-log'
 
 import * as Cache from '../cache'
+import { SET_LAST_SEEN_APP_INTERVAL } from '../../services/utils'
 
 import Action from './action'
 import Event from './event'
@@ -764,7 +765,6 @@ export const setupEvents = theSocket => {
   Object.values(Event).forEach(e => {
     theSocket.on(e, res => {
       Logger.log(`res for event: ${e}: ${JSON.stringify(res)}`)
-
       if (
         res.msg === 'Token expired.' ||
         res.msg === 'NOT_AUTH' ||
@@ -812,7 +812,7 @@ export const setupEvents = theSocket => {
         theSocket.emit(Action.SET_LAST_SEEN_APP, {
           token,
         })
-      }, 8000),
+      }, SET_LAST_SEEN_APP_INTERVAL),
     )
 
     theSocket.emit(Event.ON_SEED_BACKUP, {

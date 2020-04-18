@@ -832,6 +832,7 @@ export default class Chat extends React.Component {
           didDisconnect={this.getDidDisconnect()}
           spontPaymentsInTransit={this.state.spontPaymentsInTransit}
           invoicesInTransit={this.state.invoicesInTransit}
+          lastSeenApp={theChat.lastSeenApp || null}
         />
 
         <PaymentDialog
