@@ -1,4 +1,5 @@
 import * as Wallet from '../services/wallet'
+import Logger from 'react-native-file-log'
 
 export const ACTIONS = {
   LOAD_CHANNELS: 'channels/load',
@@ -155,35 +156,39 @@ export const fetchHistory = () => dispatch =>
  * @returns {import('redux-thunk').ThunkAction<Promise<void>, {}, {}, import('redux').AnyAction>}
  */
 export const fetchRecentTransactions = () => async dispatch => {
-  const [invoiceResponse, payments] = await Promise.all([
-    Wallet.listInvoices({
-      itemsPerPage: 100,
-      page: 1,
-    }),
-    Wallet.listPayments({
-      include_incomplete: false,
-      itemsPerPage: 100,
-      page: 1,
-      paginate: true,
-    }),
-  ])
+  try {
+    const [invoiceResponse, payments] = await Promise.all([
+      Wallet.listInvoices({
+        itemsPerPage: 100,
+        page: 1,
+      }),
+      Wallet.listPayments({
+        include_incomplete: false,
+        itemsPerPage: 100,
+        page: 1,
+        paginate: true,
+      }),
+    ])
 
-  const decodedRequests = await Promise.all(
-    payments.content.map(payment =>
-      Wallet.decodeInvoice({ payReq: payment.payment_request }),
-    ),
-  )
+    const decodedRequests = await Promise.all(
+      payments.content.map(payment =>
+        Wallet.decodeInvoice({ payReq: payment.payment_request }),
+      ),
+    )
 
-  const recentTransactions = [
-    ...invoiceResponse.content,
-    ...payments.content.map((payment, key) => ({
-      ...payment,
-      decodedPayment: decodedRequests[key],
-    })),
-  ]
+    const recentTransactions = [
+      ...invoiceResponse.content,
+      ...payments.content.map((payment, key) => ({
+        ...payment,
+        decodedPayment: decodedRequests[key],
+      })),
+    ]
 
-  dispatch({
-    type: ACTIONS.LOAD_RECENT_TRANSACTIONS,
-    data: recentTransactions,
-  })
+    dispatch({
+      type: ACTIONS.LOAD_RECENT_TRANSACTIONS,
+      data: recentTransactions,
+    })
+  } catch (e) {
+    Logger.log(`error Inside fetchTransactions() -> ${e.message}`)
+  }
 }
