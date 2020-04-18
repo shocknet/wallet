@@ -84,10 +84,10 @@ class ContactsSearch extends PureComponent {
     return index.toString()
   }
 
-  decodeInvoice = async () => {
+  decodeInvoice = () => {
     const { decodePaymentRequest, value, onError } = this.props
     try {
-      const data = await decodePaymentRequest(value)
+      const data = decodePaymentRequest(value)
       Logger.log(data)
       if (data && data.type === 'error') {
         if (onError) {
