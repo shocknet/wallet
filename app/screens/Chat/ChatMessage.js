@@ -22,6 +22,7 @@ const BUBBLE_TRIANGLE_VERTICAL_OFFSET = 6
  * @prop {boolean} shouldRenderAvatar Only applies to incoming messages.
  * @prop {number} timestamp
  * @prop {string|null} avatar
+ * @prop {number|null} lastSeenApp
  */
 
 /**
@@ -64,7 +65,10 @@ export default class ChatMessage extends React.Component {
           <>
             <View style={styles.avatarContainer}>
               {this.props.shouldRenderAvatar ? (
-                <ChatAvatar avatar={this.props.avatar} />
+                <ChatAvatar
+                  avatar={this.props.avatar}
+                  lastSeenApp={this.props.lastSeenApp}
+                />
               ) : (
                 <Pad insideRow amount={40} />
               )}

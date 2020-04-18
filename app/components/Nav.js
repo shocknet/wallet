@@ -45,7 +45,11 @@ const Nav = ({ title, style, backButton, showAvatar, navigation }) => {
         <View
           style={typeof showAvatar === 'undefined' ? navStyles.hidden : null}
         >
-          <ShockAvatar height={48} image={showAvatar || null} />
+          <ShockAvatar
+            height={48}
+            image={showAvatar || null}
+            lastSeenApp={null}
+          />
         </View>
       )}
       <Text style={navStyles.navTitle}>

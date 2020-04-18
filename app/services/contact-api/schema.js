@@ -27,6 +27,7 @@ const isNaN = require('lodash/isNaN')
  * @prop {string|null} recipientDisplayName
  * @prop {boolean} didDisconnect True if the recipient performed a disconnect.
  * @prop {string} id
+ * @prop {number|null|undefined} lastSeenApp
  */
 
 /**

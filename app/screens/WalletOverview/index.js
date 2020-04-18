@@ -994,6 +994,7 @@ class WalletOverview extends Component {
               }
               id={payShockInvoiceUserData.pk}
               lowerText="ShockWallet user"
+              lastSeenApp={0}
             />
 
             <Pad amount={10} />

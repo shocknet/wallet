@@ -75,3 +75,12 @@ export const isValidURL = url => {
 
   return isValidIP(ip) && port.length <= 5
 }
+
+export const SET_LAST_SEEN_APP_INTERVAL = 15000
+
+/**
+ * @param {number} lastSeen
+ * @returns {boolean}
+ */
+export const isOnline = lastSeen =>
+  Date.now() - lastSeen < SET_LAST_SEEN_APP_INTERVAL * 2
