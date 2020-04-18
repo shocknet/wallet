@@ -119,6 +119,7 @@ export const styles = StyleSheet.create({
   textWhite: { color: Colors.TEXT_WHITE },
   width0: { width: '0%' },
   width100: { width: '100%' },
+  empty: {},
 })
 
 export const SCREEN_PADDING = 30
