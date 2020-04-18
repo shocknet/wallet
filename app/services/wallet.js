@@ -784,6 +784,10 @@ export const decodeInvoice = async ({ payReq }) => {
       },
     )
 
+    if (data.errorMessage) {
+      throw new Error(data.errorMessage)
+    }
+
     if (typeof data.decodedRequest !== 'object') {
       const msg = `data.decodedRequest is not an object, data: ${JSON.stringify(
         data,
@@ -796,7 +800,11 @@ export const decodeInvoice = async ({ payReq }) => {
   } catch (err) {
     const { response } = err
     throw new Error(
-      response.data.errorMessage || response.data.message || 'Unknown error.',
+      (response &&
+        response.data &&
+        (response.data.errorMessage || response.data.message)) ||
+        err.message ||
+        'Unknown error.',
     )
   }
 }
