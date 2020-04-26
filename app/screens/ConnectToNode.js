@@ -82,11 +82,14 @@ class ConnectToNode extends React.Component {
   /** @type {State} */
   state = DEFAULT_STATE
 
+  mounted = false
+
   didFocusSub = {
     remove() {},
   }
 
   componentDidMount() {
+    this.mounted = true
     this.checkCacheForNodeURL()
     this.didFocusSub = this.props.navigation.addListener(
       'didFocus',
@@ -95,6 +98,7 @@ class ConnectToNode extends React.Component {
   }
 
   componentWillUnmount() {
+    this.mounted = true
     this.didFocusSub.remove()
   }
 
@@ -141,9 +145,10 @@ class ConnectToNode extends React.Component {
     if (wasGoodPing.success) {
       Logger.log('WRITING NODE URL TO CACHE')
       await Cache.writeNodeURLOrIP(url)
-      this.setState({
-        nodeURL: url,
-      })
+      this.mounted &&
+        this.setState({
+          nodeURL: url,
+        })
       Logger.log('NAVIGATING TO WALLET MANAGER')
       this.props.navigation.navigate(WALLET_MANAGER)
     } else {
@@ -156,37 +161,40 @@ class ConnectToNode extends React.Component {
   onPressConnect = () => {
     const { nodeURL, externalURL } = this.state
 
-    this.setState(
-      {
-        pinging: true,
-      },
-      async () => {
-        try {
-          await this.connectURL(nodeURL)
-        } catch (err) {
+    this.mounted &&
+      this.setState(
+        {
+          pinging: true,
+        },
+        async () => {
           try {
-            Logger.log(
-              'CONNECTURL FAILED, TRYING ONCE MORE TIME, ERR: ' + err.message,
-            )
-            await this.connectURL(externalURL)
+            await this.connectURL(nodeURL)
           } catch (err) {
-            this.setState({
-              pinging: false,
-              wasBadPing: true,
-            })
+            try {
+              Logger.log(
+                'CONNECTURL FAILED, TRYING ONCE MORE TIME, ERR: ' + err.message,
+              )
+              await this.connectURL(externalURL)
+            } catch (err) {
+              this.mounted &&
+                this.setState({
+                  pinging: false,
+                  wasBadPing: true,
+                })
+            }
           }
-        }
-      },
-    )
+        },
+      )
   }
 
   onPressTryAgain = () => {
     this.props.navigation.setParams({
       err: null,
     })
-    this.setState({
-      wasBadPing: false,
-    })
+    this.mounted &&
+      this.setState({
+        wasBadPing: false,
+      })
   }
 
   toggleQRScreen = () => {
