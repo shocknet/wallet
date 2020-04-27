@@ -34,12 +34,19 @@ export const ACTIONS = {
  */
 
 /**
+ * @typedef {object} ReceivedChatsAction
+ * @prop {'chats/receivedChats'} type
+ * @prop {{ chats: API.Schema.Chat[] }} data
+ */
+
+/**
  * Fetches the Node's info
  * @param {((chats: API.Schema.Chat[]) => void)=} callback
  * @returns {import('redux-thunk').ThunkAction<Promise<API.Schema.Chat[]>, {}, {}, import('redux').AnyAction>}
  */
 export const subscribeOnChats = callback => dispatch =>
   new Promise((resolve, reject) => {
+    // TODO: Move to saga
     API.Events.onChats(chats => {
       try {
         const contacts = chats.map(chat => ({
@@ -67,6 +74,16 @@ export const subscribeOnChats = callback => dispatch =>
           type: ACTIONS.LOAD_MESSAGES,
           data: messages,
         })
+
+        /** @type {ReceivedChatsAction} */
+        const receivedChatsAction = {
+          type: 'chats/receivedChats',
+          data: {
+            chats,
+          },
+        }
+
+        dispatch(receivedChatsAction)
 
         if (callback) {
           callback(chats)
