@@ -38,8 +38,19 @@ const showCopiedToClipboardToast = () => {
  * @augments React.Component<Props>
  */
 class User extends React.Component {
+  /**
+   * @type {import('react-navigation').NavigationScreenOptions}
+   */
   static navigationOptions = {
     header: undefined,
+    headerStyle: {
+      elevation: 0,
+      shadowOpacity: 0,
+      shadowOffset: {
+        height: 0,
+        width: 0,
+      },
+    },
   }
 
   /** @type {number|null} */
