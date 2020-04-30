@@ -28,6 +28,9 @@ import ConnectToNode, { CONNECT_TO_NODE } from '../screens/ConnectToNode'
 import SendScreen, { SEND_SCREEN } from '../screens/Send'
 import ReceiveScreen, { RECEIVE_SCREEN } from '../screens/Receive'
 import Debug, { DEBUG } from '../screens/Debug'
+import UserScreen from '../screens/User'
+
+import * as Routes from '../routes'
 
 export const APP = 'APP'
 export const BOTTOM_NAV = 'BOTTOM_NAV'
@@ -68,6 +71,7 @@ const WalletNav = createStackNavigator(
     [BOTTOM_NAV]: BottomNav,
     [SEND_SCREEN]: SendScreen,
     [RECEIVE_SCREEN]: ReceiveScreen,
+    [Routes.USER]: UserScreen,
   },
   {
     initialRouteName: BOTTOM_NAV,
