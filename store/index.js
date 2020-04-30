@@ -16,6 +16,7 @@ const config = {
   storage,
 }
 
+// @ts-ignore TODO
 const persistedReducers = persistCombineReducers(config, reducers)
 
 export default () => {
@@ -25,3 +26,8 @@ export default () => {
 
   return { persistor, store }
 }
+
+/**
+ * @typedef {object} State
+ * @prop {ReturnType<typeof reducers.users>} users
+ */

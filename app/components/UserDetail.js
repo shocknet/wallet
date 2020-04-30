@@ -3,10 +3,10 @@
  */
 import React from 'react'
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
-import { Avatar } from 'react-native-elements'
 
 import * as CSS from '../res/css'
-import { isOnline, SET_LAST_SEEN_APP_INTERVAL } from '../services/utils'
+
+import { ConnectedShockAvatar } from './ShockAvatar'
 
 /**
  * @typedef {object} Props
@@ -14,17 +14,14 @@ import { isOnline, SET_LAST_SEEN_APP_INTERVAL } from '../services/utils'
  * @prop {boolean=} alternateTextBold
  * @prop {React.ReactNode} lowerText
  * @prop {import('react-native').TextInputProps['style']=} lowerTextStyle
- * @prop {string?} image
  * @prop {string} id
  * @prop {string} name
  * @prop {boolean=} nameBold
  * @prop {((id: string) => void)=} onPress
  * @prop {string=} title
  * @prop {number|null} lastSeenApp
+ * @prop {string} publicKey
  **/
-
-const DEFAULT_USER_IMAGE =
-  'iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAQAAAAAYLlVAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAAmJLR0QAAKqNIzIAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAAHdElNRQfjBxkUMxbYpdxEAAAC5UlEQVRo3s2ZW0gUURiAv90ldc1LappZ6S5UEpRFD0IRmUgRIRUU+tC7D2UUvUaP0XtBUFnQ5a2HboQFUWBPUhJdRDAjgyLdIm9lmO2eHkqx2Zmd/8yeY/3nbebs+b7zz5yZf86GCBL17KSelVRQBIyTYIBuOnkaaDTN2MsLlEd7zm678DyuecJn2mVybeEj3PXFKxS3CdsROCHCKxTHbeBr+C4WmGS5dFh5strJE/eNcsh8Bt6K569QvDaNX6WFVyjisoGll6BBW3mbWYHVAXJmVCCmLSD8hVRAvKxmY4VZgQJtgYVmBfSf71GzAjnaAkJlqcC4tsCoWYFP2gIJswLC4fSVpQI92gKGy7ON2u+COrMCYT5r4YeluZVeghQXtYQ7SJnNACxjSjz/HwEe3YI4JxY4awMPRQyK8IMU2hGAJqZ98dM02sID7PdR+MkBm3iAFr564ifYZxsPEOOBK75LWoZlHyGaucXknA+Rm+wiFGyo4LGAWiqBj/QzPT8zj7CeNio9zy+ljToi5sE57OAUj5hAoXjvsdCa+PDnVnzISbYHqKJcIkQjVxlPu+E6aaVitlcFrdxP6zPKFRqyusjs4VnGVT9EL70MZezTQ3MweBk3tGsAr3adUl18nH5jeIWijxod/CL6jOIVilcUywUuGccrFOel+A2krAik3OpEt5LsWHZLxzNCHHU76Iw8EtYKignKmfLLwFZ79QyFbHEeShfYbA0PsMlfYI1VgXX+AjGrAtX/WiBt48a5CqJ8s7QIf0eS6N/FizMD5VbxEJnzEncVyLeKh7TNq3Dm0xbCMcX5z8D/LiD/T8CSgJFKNmM4CE6BpHUBn52TXB5bKUZmWpd/jgu4Yw1/jyJJkiIcYcw4fIzDOh9tVZxx+R4KDj9Nlf7tUkg7T0hmhU7SzcHsaqzFtNLBG230ABdoocxvePm7r5i11FJNnCWUUkIJYXLJByaZIsUIXxhhiEHe0c9L6Qb/Lzm7beRqeYV3AAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE5LTA3LTI1VDE4OjUxOjIyKzAyOjAwFmPwLQAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxOS0wNy0yNVQxODo1MToyMiswMjowMGc+SJEAAAAZdEVYdFNvZnR3YXJlAHd3dy5pbmtzY2FwZS5vcmeb7jwaAAAAAElFTkSuQmCC'
 
 /**
  * @augments React.Component<Props>
@@ -39,33 +36,6 @@ export default class UserDetail extends React.Component {
   /** @type {number|null} */
   intervalID = 0
 
-  componentDidMount() {
-    this.intervalID = setInterval(() => {
-      this.forceUpdate()
-    }, SET_LAST_SEEN_APP_INTERVAL)
-  }
-
-  /** @param {Props} prevProps */
-  componentDidUpdate(prevProps) {
-    const { image } = this.props
-
-    if (image !== prevProps.image) {
-      this.avatarSrc = {
-        uri:
-          image === null
-            ? 'data:image/png;base64,' + DEFAULT_USER_IMAGE
-            : 'data:image/png;base64,' + image,
-      }
-    }
-  }
-
-  componentWillUnmount() {
-    if (this.intervalID !== null) {
-      clearInterval(this.intervalID)
-      this.intervalID = null
-    }
-  }
-
   render() {
     const {
       alternateText,
@@ -75,30 +45,15 @@ export default class UserDetail extends React.Component {
       lowerTextStyle,
       name,
       title,
-      image,
     } = this.props
-
-    const avatarSrc = {
-      uri:
-        image === null
-          ? 'data:image/jpeg;base64,' + DEFAULT_USER_IMAGE
-          : 'data:image/jpeg;base64,' + image,
-    }
 
     return (
       <TouchableOpacity onPress={this.onPress}>
         <View style={styles.container}>
           <View style={xStyles.avatarSubContainer}>
-            <Avatar
-              rounded
-              medium
-              source={avatarSrc}
-              // @ts-ignore
-              avatarStyle={
-                isOnline(this.props.lastSeenApp || 0)
-                  ? styles.avatar
-                  : CSS.styles.empty
-              }
+            <ConnectedShockAvatar
+              height={50}
+              publicKey={this.props.publicKey}
             />
           </View>
 
@@ -158,11 +113,6 @@ const styles = StyleSheet.create({
   alternateTextBold: {
     ...alternateTextStyle,
     fontWeight: 'bold',
-  },
-
-  avatar: {
-    borderColor: CSS.Colors.SUCCESS_GREEN,
-    borderWidth: 2,
   },
 
   avatarContainer: {

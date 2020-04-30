@@ -1,8 +1,9 @@
 import * as API from '../services/contact-api'
 
 export const ACTIONS = {
-  LOAD_RECEIVED_REQUESTS: 'requests/received',
-  LOAD_SENT_REQUESTS: 'requests/sent',
+  LOAD_RECEIVED_REQUESTS:
+    /** @type {'requests/received'} */ ('requests/received'),
+  LOAD_SENT_REQUESTS: /** @type {'requests/sent'} */ ('requests/sent'),
   RESET_REQUESTS: 'requests/reset',
 }
 
@@ -27,12 +28,25 @@ export const ACTIONS = {
  */
 
 /**
+ * @typedef {object} ReceivedRequestsAction
+ * @prop {typeof ACTIONS.LOAD_RECEIVED_REQUESTS} type
+ * @prop {ReceivedRequest[]} data
+ */
+
+/**
+ * @typedef {object} SentRequestsAction
+ * @prop {typeof ACTIONS.LOAD_SENT_REQUESTS} type
+ * @prop {SentRequest[]} data
+ */
+
+/**
  * Subscribes to received requests event listener
  * @param {((chats: ReceivedRequest[]) => void)=} callback
  * @returns {import('redux-thunk').ThunkAction<Promise<ReceivedRequest[]>, {}, {}, import('redux').AnyAction>}
  */
 export const subscribeReceivedRequests = callback => dispatch =>
   new Promise((resolve, reject) => {
+    // TODO: Move to saga
     API.Events.onReceivedRequests(requests => {
       try {
         const received = requests.map(chat => ({
@@ -44,10 +58,13 @@ export const subscribeReceivedRequests = callback => dispatch =>
           timestamp: chat.timestamp,
         }))
 
-        dispatch({
+        /** @type {ReceivedRequestsAction} */
+        const receivedRequestsAction = {
           type: ACTIONS.LOAD_RECEIVED_REQUESTS,
           data: received,
-        })
+        }
+
+        dispatch(receivedRequestsAction)
 
         if (callback) {
           callback(received)
@@ -78,10 +95,13 @@ export const subscribeSentRequests = callback => dispatch =>
           timestamp: chat.timestamp,
         }))
 
-        dispatch({
+        /** @type {SentRequestsAction} */
+        const sentRequestsAction = {
           type: ACTIONS.LOAD_SENT_REQUESTS,
           data: sent,
-        })
+        }
+
+        dispatch(sentRequestsAction)
 
         if (callback) {
           callback(sent)

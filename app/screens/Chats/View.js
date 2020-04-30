@@ -170,7 +170,6 @@ export default class ChatsView extends React.Component {
               alternateText={`(${moment(lastMsgTimestamp).fromNow()})`}
               alternateTextBold={unread}
               id={chat.id}
-              image={chat.recipientAvatar}
               lowerText={(() => {
                 if (chat.didDisconnect) {
                   return 'Contact Disconnected'
@@ -195,6 +194,7 @@ export default class ChatsView extends React.Component {
               nameBold={unread}
               onPress={this.onPressChat}
               lastSeenApp={chat.lastSeenApp || 0}
+              publicKey={chat.recipientPublicKey}
             />
           </View>
           <Icon
@@ -220,7 +220,6 @@ export default class ChatsView extends React.Component {
             alternateText={`(${moment(receivedRequest.timestamp).fromNow()})`}
             alternateTextBold
             id={receivedRequest.id}
-            image={receivedRequest.requestorAvatar}
             lowerText="Wants to contact you"
             lowerTextStyle={styles.boldFont}
             name={
@@ -231,6 +230,7 @@ export default class ChatsView extends React.Component {
             nameBold
             onPress={this.onPressRequest}
             lastSeenApp={0}
+            publicKey={receivedRequest.requestorPK}
           />
         </View>
         <Icon
@@ -261,7 +261,6 @@ export default class ChatsView extends React.Component {
             alternateText={`(${moment(sentRequest.timestamp).fromNow()})`}
             alternateTextBold
             id={sentRequest.id}
-            image={sentRequest.recipientAvatar}
             lowerText={(() => {
               if (isSending) {
                 return (
@@ -288,6 +287,7 @@ export default class ChatsView extends React.Component {
             }
             nameBold
             lastSeenApp={0}
+            publicKey={sentRequest.recipientPublicKey}
           />
         </View>
         <Icon

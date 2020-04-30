@@ -987,7 +987,6 @@ class WalletOverview extends Component {
         {payShockInvoiceUserData && (
           <React.Fragment>
             <UserDetail
-              image={payShockInvoiceUserData.avatar}
               name={
                 payShockInvoiceUserData.displayName ||
                 payShockInvoiceUserData.pk
@@ -995,6 +994,7 @@ class WalletOverview extends Component {
               id={payShockInvoiceUserData.pk}
               lowerText="ShockWallet user"
               lastSeenApp={0}
+              publicKey={payShockInvoiceUserData.pk}
             />
 
             <Pad amount={10} />
