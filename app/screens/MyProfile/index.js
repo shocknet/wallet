@@ -251,6 +251,7 @@ export default class MyProfile extends React.Component {
                 height={100}
                 image={avatar}
                 onPress={this.onPressAvatar}
+                lastSeenApp={Date.now()}
               />
             </TouchableOpacity>
 

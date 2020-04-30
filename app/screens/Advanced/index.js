@@ -336,7 +336,7 @@ class AdvancedScreen extends Component {
         channelCapacity,
         channelPushAmount,
       } = this.state
-      const { fetchChannels } = this.props
+      const { fetchChannels, fees } = this.props
 
       this.setState({
         modalLoading: true,
@@ -344,11 +344,32 @@ class AdvancedScreen extends Component {
         channelCapacity: '',
         channelPushAmount: '',
       })
+      const feesReq = await fetch(fees.feesSource)
+      const feesData = await feesReq.json()
+      let satXbyte = 0
+      switch (fees.feesLevel) {
+        case 'MIN': {
+          satXbyte = feesData.fastestFee
+          break
+        }
+        case 'MID': {
+          satXbyte = feesData.halfHourFee
+          break
+        }
+        case 'MAX': {
+          satXbyte = feesData.hourFee
+          break
+        }
+        default: {
+          throw new Error('Unset sat_per_byte')
+        }
+      }
 
       await Http.post(`/api/lnd/openchannel`, {
         pubkey: channelPublicKey,
         channelCapacity,
         channelPushAmount,
+        satPerByte: satXbyte,
       })
 
       ToastAndroid.show('Added successfully', 800)
@@ -390,17 +411,38 @@ class AdvancedScreen extends Component {
 
   confirmedCloseChannel = async () => {
     const { willCloseChannelPoint, forceCloseChannel } = this.state
-    const { fetchChannels } = this.props
+    const { fetchChannels, fees } = this.props
     this.setState({
       willCloseChannelPoint: null,
     })
 
     if (willCloseChannelPoint) {
       try {
+        const feesReq = await fetch(fees.feesSource)
+        const feesData = await feesReq.json()
+        let satXbyte = 0
+        switch (fees.feesLevel) {
+          case 'MIN': {
+            satXbyte = feesData.fastestFee
+            break
+          }
+          case 'MID': {
+            satXbyte = feesData.halfHourFee
+            break
+          }
+          case 'MAX': {
+            satXbyte = feesData.hourFee
+            break
+          }
+          default: {
+            throw new Error('Unset sat_per_byte')
+          }
+        }
         const res = await Http.post(`/api/lnd/closechannel`, {
           channelPoint: willCloseChannelPoint.fundingTX,
           outputIndex: willCloseChannelPoint.outputIndex,
           force: forceCloseChannel,
+          satPerByte: satXbyte,
         })
 
         if (res.status !== 200) {
@@ -772,10 +814,11 @@ class AdvancedScreen extends Component {
 /**
  * @param {typeof import('../../../reducers/index').default} state
  */
-const mapStateToProps = ({ history, node, wallet }) => ({
+const mapStateToProps = ({ history, node, wallet, fees }) => ({
   history,
   node,
   wallet,
+  fees,
 })
 
 const mapDispatchToProps = {

@@ -5,7 +5,8 @@ import React from 'react'
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
 import { Avatar } from 'react-native-elements'
 
-import { Colors } from '../res/css'
+import * as CSS from '../res/css'
+import { isOnline, SET_LAST_SEEN_APP_INTERVAL } from '../services/utils'
 
 /**
  * @typedef {object} Props
@@ -19,7 +20,8 @@ import { Colors } from '../res/css'
  * @prop {boolean=} nameBold
  * @prop {((id: string) => void)=} onPress
  * @prop {string=} title
- */
+ * @prop {number|null} lastSeenApp
+ **/
 
 const DEFAULT_USER_IMAGE =
   'iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAQAAAAAYLlVAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAAmJLR0QAAKqNIzIAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAAHdElNRQfjBxkUMxbYpdxEAAAC5UlEQVRo3s2ZW0gUURiAv90ldc1LappZ6S5UEpRFD0IRmUgRIRUU+tC7D2UUvUaP0XtBUFnQ5a2HboQFUWBPUhJdRDAjgyLdIm9lmO2eHkqx2Zmd/8yeY/3nbebs+b7zz5yZf86GCBL17KSelVRQBIyTYIBuOnkaaDTN2MsLlEd7zm678DyuecJn2mVybeEj3PXFKxS3CdsROCHCKxTHbeBr+C4WmGS5dFh5strJE/eNcsh8Bt6K569QvDaNX6WFVyjisoGll6BBW3mbWYHVAXJmVCCmLSD8hVRAvKxmY4VZgQJtgYVmBfSf71GzAjnaAkJlqcC4tsCoWYFP2gIJswLC4fSVpQI92gKGy7ON2u+COrMCYT5r4YeluZVeghQXtYQ7SJnNACxjSjz/HwEe3YI4JxY4awMPRQyK8IMU2hGAJqZ98dM02sID7PdR+MkBm3iAFr564ifYZxsPEOOBK75LWoZlHyGaucXknA+Rm+wiFGyo4LGAWiqBj/QzPT8zj7CeNio9zy+ljToi5sE57OAUj5hAoXjvsdCa+PDnVnzISbYHqKJcIkQjVxlPu+E6aaVitlcFrdxP6zPKFRqyusjs4VnGVT9EL70MZezTQ3MweBk3tGsAr3adUl18nH5jeIWijxod/CL6jOIVilcUywUuGccrFOel+A2krAik3OpEt5LsWHZLxzNCHHU76Iw8EtYKignKmfLLwFZ79QyFbHEeShfYbA0PsMlfYI1VgXX+AjGrAtX/WiBt48a5CqJ8s7QIf0eS6N/FizMD5VbxEJnzEncVyLeKh7TNq3Dm0xbCMcX5z8D/LiD/T8CSgJFKNmM4CE6BpHUBn52TXB5bKUZmWpd/jgu4Yw1/jyJJkiIcYcw4fIzDOh9tVZxx+R4KDj9Nlf7tUkg7T0hmhU7SzcHsaqzFtNLBG230ABdoocxvePm7r5i11FJNnCWUUkIJYXLJByaZIsUIXxhhiEHe0c9L6Qb/Lzm7beRqeYV3AAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE5LTA3LTI1VDE4OjUxOjIyKzAyOjAwFmPwLQAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxOS0wNy0yNVQxODo1MToyMiswMjowMGc+SJEAAAAZdEVYdFNvZnR3YXJlAHd3dy5pbmtzY2FwZS5vcmeb7jwaAAAAAElFTkSuQmCC'
@@ -34,6 +36,15 @@ export default class UserDetail extends React.Component {
     onPress && onPress(id)
   }
 
+  /** @type {number|null} */
+  intervalID = 0
+
+  componentDidMount() {
+    this.intervalID = setInterval(() => {
+      this.forceUpdate()
+    }, SET_LAST_SEEN_APP_INTERVAL)
+  }
+
   /** @param {Props} prevProps */
   componentDidUpdate(prevProps) {
     const { image } = this.props
@@ -45,6 +56,13 @@ export default class UserDetail extends React.Component {
             ? 'data:image/png;base64,' + DEFAULT_USER_IMAGE
             : 'data:image/png;base64,' + image,
       }
+    }
+  }
+
+  componentWillUnmount() {
+    if (this.intervalID !== null) {
+      clearInterval(this.intervalID)
+      this.intervalID = null
     }
   }
 
@@ -71,7 +89,17 @@ export default class UserDetail extends React.Component {
       <TouchableOpacity onPress={this.onPress}>
         <View style={styles.container}>
           <View style={xStyles.avatarSubContainer}>
-            <Avatar rounded medium source={avatarSrc} />
+            <Avatar
+              rounded
+              medium
+              source={avatarSrc}
+              // @ts-ignore
+              avatarStyle={
+                isOnline(this.props.lastSeenApp || 0)
+                  ? styles.avatar
+                  : CSS.styles.empty
+              }
+            />
           </View>
 
           <View style={xStyles.nameContainer}>
@@ -108,7 +136,7 @@ export default class UserDetail extends React.Component {
 }
 
 const nameTextStyle = {
-  color: Colors.TEXT_STANDARD,
+  color: CSS.Colors.TEXT_STANDARD,
   fontSize: 16,
 }
 
@@ -117,7 +145,7 @@ const nameTextStyle = {
  */
 const alternateTextStyle = {
   // @ts-ignore TODO
-  color: Colors.TEXT_LIGHT,
+  color: CSS.Colors.TEXT_LIGHT,
   fontSize: 14,
   fontWeight: '200',
 }
@@ -130,6 +158,11 @@ const styles = StyleSheet.create({
   alternateTextBold: {
     ...alternateTextStyle,
     fontWeight: 'bold',
+  },
+
+  avatar: {
+    borderColor: CSS.Colors.SUCCESS_GREEN,
+    borderWidth: 2,
   },
 
   avatarContainer: {
@@ -147,7 +180,7 @@ const styles = StyleSheet.create({
 
   nameBold: {
     ...nameTextStyle,
-    color: Colors.TEXT_STANDARD,
+    color: CSS.Colors.TEXT_STANDARD,
     fontWeight: 'bold',
   },
 
@@ -163,7 +196,7 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    color: Colors.TEXT_LIGHT,
+    color: CSS.Colors.TEXT_LIGHT,
     fontWeight: '500',
   },
 })

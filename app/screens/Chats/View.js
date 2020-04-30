@@ -194,6 +194,7 @@ export default class ChatsView extends React.Component {
               }
               nameBold={unread}
               onPress={this.onPressChat}
+              lastSeenApp={chat.lastSeenApp || 0}
             />
           </View>
           <Icon
@@ -229,6 +230,7 @@ export default class ChatsView extends React.Component {
             }
             nameBold
             onPress={this.onPressRequest}
+            lastSeenApp={0}
           />
         </View>
         <Icon
@@ -285,6 +287,7 @@ export default class ChatsView extends React.Component {
                 : sentRequest.recipientDisplayName
             }
             nameBold
+            lastSeenApp={0}
           />
         </View>
         <Icon

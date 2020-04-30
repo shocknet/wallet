@@ -11,6 +11,7 @@ import {
   Modal,
   TouchableOpacity,
   ToastAndroid,
+  Clipboard,
 } from 'react-native'
 import { Text } from 'react-native-elements'
 import { GiftedChat, utils as GiftedUtils } from 'react-native-gifted-chat'
@@ -25,20 +26,28 @@ import BasicDialog from '../../components/BasicDialog'
 import ShockInput from '../../components/ShockInput'
 import Pad from '../../components/Pad'
 import ShockButton from '../../components/ShockButton'
-import { Actions } from '../../services/contact-api'
+import { Actions, Schema } from '../../services/contact-api'
+import ShockDialog from '../../components/ShockDialog'
 
+// import ChatAvatar from './ChatAvatar'
 import ChatInvoice from './ChatInvoice'
 import ChatMessage from './ChatMessage'
+import SpontPayment from './SpontPayment'
 import InputToolbar, {
   ACTION_BTN_HEIGHT,
   OVAL_V_PAD,
   CONTAINER_H_PAD,
   OVAL_ELEV,
 } from './InputToolbar'
-import ShockDialog from '../../components/ShockDialog'
+
+/**
+ * @typedef {Schema.SpontaneousPayment & { err: string|null , timestamp: number }} SpontPaymentInTransit
+ * @typedef {{ amt: number, err: string|null , memo: string, timestamp: number }} InvoiceInTransit
+ */
 
 export const CHAT_ROUTE = 'CHAT_ROUTE'
 const EMPTY_OBJ = {}
+const INVOICE_IN_TRANSIT_PREFIX = '$$__INVOICE__IN__TRANSIT'
 
 /**
  * @param {{ timestamp: number }} a
@@ -102,6 +111,7 @@ const AlwaysNull = () => null
  * @prop {string|null} ownPublicKey
  * @prop {string|null} recipientDisplayName
  * @prop {string} recipientPublicKey
+ * @prop {number|null} lastSeenApp
  *
  * @prop {(amount: number, memo: string) => void} onPressSendInvoice
  *
@@ -109,6 +119,10 @@ const AlwaysNull = () => null
  * @prop {string|null} recipientAvatar
  *
  * @prop {boolean} didDisconnect
+ *
+ * @prop {Record<string, SpontPaymentInTransit>} spontPaymentsInTransit
+ *
+ * @prop {Record<string, InvoiceInTransit|null>} invoicesInTransit
  */
 
 /**
@@ -205,6 +219,28 @@ export default class ChatView extends React.Component {
 
     const isInvoice =
       currentMessage.text.indexOf('$$__SHOCKWALLET__INVOICE__') === 0
+    const isInvoiceInTransit =
+      currentMessage.text.indexOf(INVOICE_IN_TRANSIT_PREFIX) === 0
+
+    if (isInvoiceInTransit) {
+      const [amt] = currentMessage.text
+        .slice((INVOICE_IN_TRANSIT_PREFIX + '__').length)
+        .split('__')
+
+      return (
+        <View style={styles.invoiceWrapperOutgoing}>
+          <ChatInvoice
+            amount={Number(amt)}
+            id={/** @type {string} */ (currentMessage._id)}
+            onPressUnpaidIncomingInvoice={onPressUnpaidIncomingInvoice}
+            outgoing
+            paymentStatus="IN_FLIGHT"
+            senderName={senderName}
+            timestamp={timestamp}
+          />
+        </View>
+      )
+    }
 
     if (isInvoice) {
       return (
@@ -215,6 +251,7 @@ export default class ChatView extends React.Component {
               : styles.invoiceWrapperIncoming
           }
         >
+          {/* <ChatAvatar avatar={this.props.recipientAvatar} /> */}
           <ChatInvoice
             amount={invoiceToAmount[currentMessage._id]}
             id={/** @type {string} */ (currentMessage._id)}
@@ -244,6 +281,49 @@ export default class ChatView extends React.Component {
       )
     })()
 
+    const { text } = currentMessage
+
+    if (Schema.isEncodedSpontPayment(text)) {
+      const sp = Schema.decodeSpontPayment(text)
+      const spInTransit = this.props.spontPaymentsInTransit[currentMessage._id]
+      return (
+        <View
+          style={outgoing ? styles.TXWrapperOutgoing : styles.TXWrapperIncoming}
+        >
+          {/* <ChatAvatar avatar={this.props.recipientAvatar} /> */}
+          <SpontPayment
+            amt={sp.amt}
+            memo={sp.memo}
+            id={
+              spInTransit
+                ? /** @type {string} */ (currentMessage._id)
+                : sp.preimage
+            }
+            onPress={this.onPressSpontPayment}
+            outgoing={outgoing}
+            preimage={sp.preimage}
+            recipientDisplayName={this.props.recipientDisplayName}
+            timestamp={timestamp}
+            state={(() => {
+              const spInTransit = this.props.spontPaymentsInTransit[
+                currentMessage._id
+              ]
+
+              if (!spInTransit) {
+                return 'sent'
+              }
+
+              if (spInTransit.err) {
+                return 'error'
+              }
+
+              return 'in-flight'
+            })()}
+          />
+        </View>
+      )
+    }
+
     return (
       <View
         style={outgoing ? styles.msgWrapperOutgoing : styles.msgWrapperIncoming}
@@ -255,6 +335,7 @@ export default class ChatView extends React.Component {
           timestamp={timestamp}
           avatar={this.props.recipientAvatar}
           shouldRenderAvatar={shouldRenderAvatar}
+          lastSeenApp={this.props.lastSeenApp}
         />
       </View>
     )
@@ -400,6 +481,19 @@ export default class ChatView extends React.Component {
       })
   }
 
+  /**
+   * @param {string} id
+   * @returns {void}
+   */
+  onPressSpontPayment = id => {
+    const spInTransit = this.props.spontPaymentsInTransit[id]
+    if (spInTransit && spInTransit.err) {
+      return ToastAndroid.show(spInTransit.err, 800)
+    }
+    Clipboard.setString(id)
+    ToastAndroid.show('Copied payment preimage to clipboard', 800)
+  }
+
   render() {
     const {
       messages,
@@ -418,6 +512,8 @@ export default class ChatView extends React.Component {
     /** @type {GiftedChatUser} */
     const ownUser = {
       _id: ownPublicKey,
+      // user.name is not used for outgoing messages.
+      name: ownPublicKey,
     }
 
     /** @type {GiftedChatUser} */
@@ -429,7 +525,44 @@ export default class ChatView extends React.Component {
           : recipientPublicKey,
     }
 
-    const sortedMessages = messages.slice().sort(byTimestampFromOldestToNewest)
+    const sortedMessages = [
+      ...messages,
+      ...Object.entries(this.props.spontPaymentsInTransit).map(([spid, sp]) => {
+        /** @type {Schema.ChatMessage} */
+        const placeholderMessage = {
+          body: Schema.encodeSpontaneousPayment(
+            sp.amt,
+            sp.memo || 'No memo',
+            sp.preimage || '.',
+          ),
+          id: spid,
+          outgoing: true,
+          timestamp: sp.timestamp,
+        }
+
+        return placeholderMessage
+      }),
+      ...Object.entries(this.props.invoicesInTransit)
+        .filter(([_, inv]) => inv !== null)
+        .map(([invID, inv]) => {
+          if (inv === null) {
+            Logger.log('Unreachable code detected')
+            throw new Error()
+          }
+
+          /** @type {Schema.ChatMessage} */
+          const placeholderMessage = {
+            body: `${INVOICE_IN_TRANSIT_PREFIX}__${inv.amt}__${inv.memo}`,
+            id: invID,
+            outgoing: true,
+            timestamp: inv.timestamp,
+          }
+
+          return placeholderMessage
+        }),
+    ]
+      .slice()
+      .sort(byTimestampFromOldestToNewest)
 
     const [firstMsg] = sortedMessages
 
@@ -604,6 +737,11 @@ export default class ChatView extends React.Component {
 
 const MSG_V_MARGIN = 20
 
+const invoiceWrapperBase = {
+  paddingTop: 42,
+  paddingBottom: 42,
+}
+
 const msgWrapperBase = {
   paddingLeft: 18,
   paddingRight: 18,
@@ -611,9 +749,12 @@ const msgWrapperBase = {
   marginBottom: MSG_V_MARGIN,
 }
 
-const invoiceWrapperBase = {
-  paddingTop: 42,
-  paddingBottom: 42,
+const TXWrapperBase = {
+  // TODO: Why isn't WIDTH * 0.65& working here? 65% will  break when padding is
+  // attached to the messages container.
+  // width: '65%',
+  // flexDirection: /** @type {'row'} */ ('row'),
+  // alignItems: /** @type {'flex-end'} */ ('flex-end'),
 }
 
 const styles = StyleSheet.create({
@@ -656,11 +797,13 @@ const styles = StyleSheet.create({
   invoiceWrapperIncoming: {
     ...invoiceWrapperBase,
     alignItems: 'flex-start',
+    paddingLeft: 18,
   },
 
   invoiceWrapperOutgoing: {
     ...invoiceWrapperBase,
     alignItems: 'flex-end',
+    paddingRight: 18,
   },
 
   disconnectNotice: {
@@ -682,6 +825,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 30,
+  },
+
+  TXWrapperIncoming: {
+    ...TXWrapperBase,
+    alignSelf: 'flex-start',
+    marginLeft: 58,
+  },
+
+  TXWrapperOutgoing: {
+    ...TXWrapperBase,
+    alignSelf: 'flex-end',
+    marginRight: 18,
   },
 })
 

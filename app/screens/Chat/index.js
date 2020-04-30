@@ -14,7 +14,6 @@ import * as Wallet from '../../services/wallet'
 import * as Cache from '../../services/cache'
 import * as CSS from '../../res/css'
 const { Colors } = CSS
-
 import { WALLET_OVERVIEW } from '../WalletOverview'
 /**
  * @typedef {import('../WalletOverview').Params} WalletOverviewParams
@@ -24,6 +23,8 @@ import ChatView from './View'
 import PaymentDialog from './PaymentDialog'
 /**
  * @typedef {import('./View').PaymentStatus} PaymentStatus
+ * @typedef {import('./View').SpontPaymentInTransit} SpontPaymentInTransit
+ * @typedef {import('./View').InvoiceInTransit & { msgID: string|null }} InvoiceInTransit
  */
 
 export const CHAT_ROUTE = 'CHAT_ROUTE'
@@ -73,9 +74,10 @@ const HeaderLeft = React.memo(({ onPress }) => ((
  * @prop {string|null} ownPublicKey
  * @prop {Partial<Record<string, PaymentStatus>>} rawInvoiceToPaymentStatus
  * @prop {Partial<Record<string, DecodedInvoice>>} rawInvoiceToDecodedInvoice
- * @prop {string|null} recipientDisplayName
  * @prop {API.Schema.ChatMessage[]} cachedSentMessages Messages that were *just*
  * sent but might have not appeared on the onChats() event yet.
+ * @prop {Record<string, SpontPaymentInTransit>} spontPaymentsInTransit
+ * @prop {Record<string, InvoiceInTransit|null>} invoicesInTransit
  */
 
 // TODO: COMPONENT HERE IS A TEMP FIX
@@ -126,8 +128,9 @@ export default class Chat extends React.Component {
     rawInvoiceToDecodedInvoice: {},
     rawInvoiceToPaymentStatus: {},
     ownPublicKey: null,
-    recipientDisplayName: null,
     cachedSentMessages: [],
+    spontPaymentsInTransit: {},
+    invoicesInTransit: {},
   }
 
   /** @type {React.RefObject<PaymentDialog>} */
@@ -147,8 +150,7 @@ export default class Chat extends React.Component {
   sendInvoice = (amount, memo) => {
     Logger.log(`amount: ${amount} - memo: ${memo}`)
 
-    const id = this.props.navigation.getParam('id')
-    const theChat = (this.state.chats.find(c => c.id === id))
+    const theChat = this.getChat()
 
     if (!theChat) {
       return
@@ -156,21 +158,108 @@ export default class Chat extends React.Component {
 
     const { recipientPublicKey } = theChat
 
+    const newID = Date.now().toString() + Math.random().toString()
+
+    this.setState(({ invoicesInTransit }) => ({
+      invoicesInTransit: {
+        ...invoicesInTransit,
+        [newID]: {
+          amt: amount,
+          err: null,
+          memo,
+          timestamp: Date.now(),
+          msgID: null,
+        },
+      },
+    }))
+
+    // This could be done in the future and avoid most of the invoice transit
+    // logic.
+    // this.onSend(`$$__SHOCKWALLET__INVOICE__....`)
+
     Wallet.addInvoice({
       expiry: 1800,
       memo,
       value: amount,
     })
-      .then(res => {
+      .then(res =>
         API.Actions.sendMessage(
           recipientPublicKey,
           '$$__SHOCKWALLET__INVOICE__' + res.payment_request,
-        )
+        ),
+      )
+      .then(msgID => {
+        this.setState(({ invoicesInTransit }) => {
+          const existingInvoiceInTransit = invoicesInTransit[newID]
+
+          if (existingInvoiceInTransit === null) {
+            return null
+          }
+
+          return {
+            invoicesInTransit: {
+              ...invoicesInTransit,
+              [newID]: {
+                ...existingInvoiceInTransit,
+                msgID,
+              },
+            },
+          }
+        }, this.updateInvoicesInTransit)
       })
       .catch(err => {
         Logger.log(err.message)
         ToastAndroid.show(`Could not send invoice: ${err.message}`, 1000)
+        this.setState(({ invoicesInTransit }) => {
+          const existingInvoiceInTransit = invoicesInTransit[newID]
+
+          if (existingInvoiceInTransit === null) {
+            return null
+          }
+
+          return {
+            invoicesInTransit: {
+              ...invoicesInTransit,
+              [newID]: {
+                ...existingInvoiceInTransit,
+                err: err.message,
+              },
+            },
+          }
+        })
       })
+  }
+
+  /**
+   * After an invoice is successfully sent, delete the local in memory
+   * representation of it.
+   */
+  updateInvoicesInTransit() {
+    this.setState(({ invoicesInTransit, chats }) => {
+      const theChat = chats.find(
+        c => c.id === this.props.navigation.getParam('id'),
+      )
+
+      if (!theChat) {
+        return null
+      }
+
+      const msgs = theChat.messages
+
+      const placeholdersToBeDeleted = Object.entries(invoicesInTransit)
+        .filter(([_, inv]) => inv && msgs.some(m => m.id === inv.msgID))
+        .map(([id]) => id)
+
+      const newPlaceholders = { ...invoicesInTransit }
+
+      placeholdersToBeDeleted.forEach(id => {
+        delete newPlaceholders[id]
+      })
+
+      return {
+        invoicesInTransit: newPlaceholders,
+      }
+    })
   }
 
   openSendPaymentDialog = () => {
@@ -192,25 +281,30 @@ export default class Chat extends React.Component {
     notDecoded.forEach(rawInvoice => {
       Wallet.decodeInvoice({
         payReq: rawInvoice,
-      }).then(res => {
-        const decodedInvoice = res.decodedRequest
-
-        if (!this.mounted) {
-          return
-        }
-
-        this.setState(({ rawInvoiceToDecodedInvoice }) => ({
-          rawInvoiceToDecodedInvoice: {
-            ...rawInvoiceToDecodedInvoice,
-            [rawInvoice]: {
-              amount: Number(decodedInvoice.num_satoshis),
-              expiryDate:
-                Number(decodedInvoice.timestamp) +
-                Number(decodedInvoice.expiry) * 1000,
-            },
-          },
-        }))
       })
+        .then(res => {
+          const decodedInvoice = res.decodedRequest
+
+          if (!this.mounted) {
+            return
+          }
+
+          this.setState(({ rawInvoiceToDecodedInvoice }) => ({
+            rawInvoiceToDecodedInvoice: {
+              ...rawInvoiceToDecodedInvoice,
+              [rawInvoice]: {
+                amount: Number(decodedInvoice.num_satoshis),
+                expiryDate:
+                  Number(decodedInvoice.timestamp) +
+                  Number(decodedInvoice.expiry) * 1000,
+              },
+            },
+          }))
+        })
+        .catch(err => {
+          ToastAndroid.show(err.message, 800)
+          Logger.log(err.message)
+        })
     })
   }
 
@@ -317,53 +411,66 @@ export default class Chat extends React.Component {
   }
 
   /**
+   * When new messages are received from the node, checks that any of them is an
+   * spontaneous payment and deletes the placeholder inside
+   * spontPaymentsInTransit.
+   */
+  updateSpontPaymentsInTransit = () => {
+    const spontPayments = this.getMessages()
+      .filter(m => API.Schema.isEncodedSpontPayment(m.body))
+      .map(m =>
+        API.Schema.decodeSpontPayment(
+          /** @type {import('../../services/contact-api/schema-types').EncSpontPayment} */ (m.body),
+        ),
+      )
+
+    this.setState(({ spontPaymentsInTransit }) => {
+      const placeholdersToBeDeleted = Object.entries(
+        spontPaymentsInTransit,
+      ).filter(([, placeholder]) =>
+        spontPayments.some(sp => sp.preimage === placeholder.preimage),
+      )
+
+      const newPlaceholders = { ...spontPaymentsInTransit }
+
+      placeholdersToBeDeleted.forEach(([, sp]) => {
+        delete newPlaceholders[sp.preimage]
+      })
+
+      return {
+        spontPaymentsInTransit: newPlaceholders,
+      }
+    })
+  }
+
+  /**
    * @param {never} _
    * @param {State} prevState
    */
   componentDidUpdate(_, prevState) {
     const { navigation } = this.props
-    const { recipientDisplayName } = this.state
-    const id = this.props.navigation.getParam('id')
-    const theChat = this.state.chats.find(c => c.id === id)
+    const recipientDisplayName = this.getRecipientDisplayName()
+    const theChat = this.getChat()
 
     if (!theChat) {
       return
     }
 
-    const { recipientPublicKey: recipientPK } = theChat
-
     const oldTitle = navigation.getParam('_title')
-    if (typeof oldTitle === 'undefined') {
+    if (oldTitle !== recipientDisplayName && !!recipientDisplayName) {
       navigation.setParams({
-        _title: recipientPK,
+        _title: recipientDisplayName,
       })
     }
 
     if (prevState.chats !== this.state.chats) {
       this.decodeIncomingInvoices()
     }
-
-    if (oldTitle === recipientPK && recipientDisplayName) {
-      navigation.setParams({
-        _title: recipientDisplayName,
-      })
-    }
-
-    if (
-      oldTitle !== recipientPK &&
-      oldTitle !== recipientDisplayName &&
-      !!recipientDisplayName
-    ) {
-      navigation.setParams({
-        _title: recipientDisplayName,
-      })
-    }
   }
 
   updateLastReadMsg() {
     const messages = this.getMessages()
-    const id = this.props.navigation.getParam('id')
-    const theChat = this.state.chats.find(c => c.id === id)
+    const theChat = this.getChat()
 
     if (!theChat) {
       return
@@ -399,9 +506,12 @@ export default class Chat extends React.Component {
     })
     this.chatsUnsub = API.Events.onChats(this.onChats)
 
+    this.updateLastReadMsg()
     this.decodeIncomingInvoices()
     this.fetchOutgoingInvoicesAndUpdateInfo()
     this.fetchPaymentsAndUpdatePaymentStatus()
+    this.updateSpontPaymentsInTransit()
+    this.updateInvoicesInTransit()
 
     const sad = await Cache.getStoredAuthData()
 
@@ -430,7 +540,7 @@ export default class Chat extends React.Component {
    */
   onChats = chats => {
     const id = this.props.navigation.getParam('id')
-    const matchingChat = this.state.chats.find(c => c.id === id)
+    const matchingChat = chats.find(c => c.id === id)
 
     if (!matchingChat) {
       this.props.navigation.goBack()
@@ -446,17 +556,30 @@ export default class Chat extends React.Component {
         this.decodeIncomingInvoices()
         this.fetchOutgoingInvoicesAndUpdateInfo()
         this.fetchPaymentsAndUpdatePaymentStatus()
+        this.updateSpontPaymentsInTransit()
+        this.updateInvoicesInTransit()
       },
     )
   }
 
-  /** @returns {API.Schema.ChatMessage[]} */
-  getMessages = () => {
+  /** @returns {API.Schema.Chat|null} */
+  getChat() {
     const id = this.props.navigation.getParam('id')
     const theChat = this.state.chats.find(c => c.id === id)
 
     if (!theChat) {
-      Logger.log(`<Chat />.index -> getMessages() -> no chat found. id: ${id}`)
+      Logger.log(`<Chat />.index -> getChat() -> no chat found. id: ${id}`)
+      return null
+    }
+
+    return theChat
+  }
+
+  /** @returns {API.Schema.ChatMessage[]} */
+  getMessages() {
+    const theChat = this.getChat()
+
+    if (!theChat) {
       return []
     }
 
@@ -465,14 +588,9 @@ export default class Chat extends React.Component {
 
   /** @returns {string|null} */
   getRecipientAvatar() {
-    const chatId = this.props.navigation.getParam('id')
-
-    const theChat = this.state.chats.find(chat => chat.id === chatId)
+    const theChat = this.getChat()
 
     if (!theChat) {
-      Logger.log(
-        `<Chat />.index -> getRecipientAvatar -> no chat found. chatId: ${chatId}`,
-      )
       return null
     }
 
@@ -481,13 +599,9 @@ export default class Chat extends React.Component {
 
   /** @returns {string|null} */
   getRecipientDisplayName() {
-    const id = this.props.navigation.getParam('id')
-    const theChat = this.state.chats.find(c => c.id === id)
+    const theChat = this.getChat()
 
     if (!theChat) {
-      Logger.log(
-        `<Chat />.index -> getRecipientDisplayName -> no chat found. id: ${id}`,
-      )
       return null
     }
 
@@ -496,17 +610,9 @@ export default class Chat extends React.Component {
 
   /** @returns {boolean} */
   getDidDisconnect = () => {
-    const id = this.props.navigation.getParam('id')
-    const theChat = this.state.chats.find(c => c.id === id)
+    const theChat = this.getChat()
 
-    if (!theChat) {
-      Logger.log(
-        `<Chat />.index -> getRecipientDisplayName -> no chat found. id: ${id}`,
-      )
-      return false
-    }
-
-    return theChat.didDisconnect
+    return !!theChat && theChat.didDisconnect
   }
 
   /**
@@ -528,8 +634,7 @@ export default class Chat extends React.Component {
       }),
     }))
 
-    const id = this.props.navigation.getParam('id')
-    const theChat = this.state.chats.find(c => c.id === id)
+    const theChat = this.getChat()
 
     if (!theChat) {
       return
@@ -547,18 +652,18 @@ export default class Chat extends React.Component {
    * @param {string} msgID
    */
   onPressUnpaidIncomingInvoice = msgID => {
-    const msg = /** @type {API.Schema.ChatMessage} */ (this.getMessages().find(
-      m => m.id === msgID,
-    ))
+    const theChat = this.getChat()
 
-    const rawInvoice = msg.body.slice('$$__SHOCKWALLET__INVOICE__'.length)
+    const msg = this.getMessages().find(m => m.id === msgID)
 
-    const id = this.props.navigation.getParam('id')
-    const theChat = this.state.chats.find(c => c.id === id)
-
-    if (!theChat) {
+    if (!API.Schema.isChatMessage(msg) || !theChat) {
+      Logger.log(
+        `<Chat /> -> onPressUnpaidIncomingInvoice() -> !API.Schema.isChatMessage(msg) || !theChat (aborting)`,
+      )
       return
     }
+
+    const rawInvoice = msg.body.slice('$$__SHOCKWALLET__INVOICE__'.length)
 
     const { recipientPublicKey } = theChat
 
@@ -566,25 +671,81 @@ export default class Chat extends React.Component {
     const params = {
       rawInvoice,
       recipientAvatar: null,
-      recipientDisplayName: this.state.recipientDisplayName,
+      recipientDisplayName: this.getRecipientDisplayName(),
       recipientPublicKey,
     }
 
     this.props.navigation.navigate(WALLET_OVERVIEW, params)
   }
 
+  /**
+   * @param {number} amt
+   * @param {string} memo
+   * @returns {void}
+   */
+  onPressSendPayment = (amt, memo) => {
+    const theChat = this.getChat()
+
+    if (!theChat) {
+      return
+    }
+
+    const spontPaymentTempID = Math.random().toString()
+
+    this.setState(({ spontPaymentsInTransit }) => ({
+      spontPaymentsInTransit: {
+        ...spontPaymentsInTransit,
+        [spontPaymentTempID]: {
+          amt,
+          memo,
+          preimage: '',
+          timestamp: Date.now(),
+          err: null,
+        },
+      },
+    }))
+
+    API.Actions.sendPayment(theChat.recipientPublicKey, amt, memo)
+      .then(preimage => {
+        this.setState(({ spontPaymentsInTransit }) => ({
+          spontPaymentsInTransit: {
+            ...spontPaymentsInTransit,
+            [spontPaymentTempID]: {
+              ...spontPaymentsInTransit[spontPaymentTempID],
+              // give this in-transit spontaneous payment the newly generated
+              // preimage so this.updateSpontPaymentsInTransit() can delete the
+              // placeholder.
+              preimage,
+            },
+          },
+        }))
+
+        this.updateSpontPaymentsInTransit()
+      })
+      .catch(e => {
+        this.setState(({ spontPaymentsInTransit }) => ({
+          spontPaymentsInTransit: {
+            ...spontPaymentsInTransit,
+            [spontPaymentTempID]: {
+              ...spontPaymentsInTransit[spontPaymentTempID],
+              err: e.message,
+            },
+          },
+        }))
+      })
+  }
+
   render() {
     const {
       ownPublicKey,
-      recipientDisplayName,
       rawInvoiceToDecodedInvoice,
       rawInvoiceToPaymentStatus,
     } = this.state
+    const recipientDisplayName = this.getRecipientDisplayName()
 
     const messages = this.getMessages()
 
-    const id = this.props.navigation.getParam('id')
-    const theChat = this.state.chats.find(c => c.id === id)
+    const theChat = this.getChat()
 
     if (!theChat) {
       return null
@@ -669,11 +830,15 @@ export default class Chat extends React.Component {
           onPressSendBTC={this.openSendPaymentDialog}
           recipientAvatar={this.getRecipientAvatar()}
           didDisconnect={this.getDidDisconnect()}
+          spontPaymentsInTransit={this.state.spontPaymentsInTransit}
+          invoicesInTransit={this.state.invoicesInTransit}
+          lastSeenApp={theChat.lastSeenApp || null}
         />
 
         <PaymentDialog
           recipientPublicKey={recipientPublicKey}
           ref={this.payDialog}
+          onPressSend={this.onPressSendPayment}
         />
       </>
     )

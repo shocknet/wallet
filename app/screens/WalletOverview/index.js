@@ -98,6 +98,7 @@ import * as Cache from '../../services/cache'
  * @prop {() => Promise<number>} getUSDRate
  * @prop {(invoice: Wallet.Invoice) => void} loadNewInvoice
  * @prop {(transaction: Wallet.Transaction) => void} loadNewTransaction
+ * @prop {{feesLevel:'MIN'|'MID'|'MAX', feesSource:string}} fees
  */
 
 /**
@@ -751,6 +752,7 @@ class WalletOverview extends Component {
         Wallet.sendCoins({
           addr: this.state.sendToBTCAddress,
           amount: this.state.sendToBTCAmount,
+          fees: this.props.fees,
         })
           .then(txid => {
             // Check in case dialog was closed before completing fetch.
@@ -1003,6 +1005,7 @@ class WalletOverview extends Component {
               }
               id={payShockInvoiceUserData.pk}
               lowerText="ShockWallet user"
+              lastSeenApp={0}
             />
 
             <Pad amount={10} />
@@ -1803,12 +1806,13 @@ class WalletOverview extends Component {
 }
 
 /**
- * @param {{ wallet: any, history: any, node: any }} state
+ * @param {{ wallet: any, history: any, node: any, fees: any }} state
  */
-const mapStateToProps = ({ wallet, history, node }) => ({
+const mapStateToProps = ({ wallet, history, node, fees }) => ({
   wallet,
   history,
   node,
+  fees,
 })
 
 const mapDispatchToProps = {

@@ -16,6 +16,7 @@ import Chats, { CHATS_ROUTE } from '../screens/Chats'
 import Advanced, { ADVANCED_SCREEN } from '../screens/Advanced'
 import WalletOverview, { WALLET_OVERVIEW } from '../screens/WalletOverview'
 import SeedBackup, { SEED_BACKUP } from '../screens/SeedBackup'
+import FeeSettings, { FEE_SETTINGS } from '../screens/FeeSettings'
 
 import Login, { LOGIN } from '../screens/Login'
 
@@ -100,6 +101,12 @@ const drawerScreens = {
     screen: SeedBackup,
     navigationOptions: {
       title: 'Seed Backup',
+    },
+  },
+  [FEE_SETTINGS]: {
+    screen: FeeSettings,
+    navigationOptions: {
+      title: 'Fee Settings',
     },
   },
 }

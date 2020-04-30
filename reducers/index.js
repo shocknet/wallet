@@ -5,6 +5,7 @@ import NodeReducer from './NodeReducer'
 import ChatReducer from './ChatReducer'
 import InvoiceReducer from './InvoiceReducer'
 import ConnectionReducer from './ConnectionReducer'
+import FeesReducer from './FeesReducer'
 
 const rootReducer = {
   auth: AuthReducer,
@@ -14,6 +15,7 @@ const rootReducer = {
   chat: ChatReducer,
   connection: ConnectionReducer,
   invoice: InvoiceReducer,
+  fees: FeesReducer,
 }
 
 export default rootReducer

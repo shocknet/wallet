@@ -577,6 +577,7 @@ export const addInvoice = async request => {
  * https://api.lightning.community/#grpc-request-sendcoinsrequest
  * @typedef {object} PartialSendCoinsRequest
  * @prop {string} addr The address to send coins to.
+ * @prop {{feesLevel:'MIN'|'MID'|'MAX', feesSource:string}} fees the fee
  * @prop {(boolean)=} send_all Sends your entire balance to the specified address
  * @prop {(number)=} amount The amount in satoshis to send.
  */
@@ -589,11 +590,11 @@ export const addInvoice = async request => {
 
 /**
  * Resolves to the ID of the newly-created transaction.
- * @param {PartialSendCoinsRequest} request
+ * @param {PartialSendCoinsRequest} params
  * @throws {Error}
  * @returns {Promise<string>}
  */
-export const sendCoins = async request => {
+export const sendCoins = async params => {
   const token = await Cache.getToken()
   if (typeof token !== 'string') {
     throw new TypeError(NO_CACHED_TOKEN)
@@ -602,6 +603,32 @@ export const sendCoins = async request => {
   const endpoint = `/api/lnd/sendcoins`
 
   try {
+    const feesReq = await fetch(params.fees.feesSource)
+    const feesData = await feesReq.json()
+    let satXbyte = 0
+    switch (params.fees.feesLevel) {
+      case 'MAX': {
+        satXbyte = feesData.fastestFee + 1
+        break
+      }
+      case 'MID': {
+        satXbyte = feesData.halfHourFee
+        break
+      }
+      case 'MIN': {
+        satXbyte = feesData.hourFee
+        break
+      }
+      default: {
+        throw new Error('Unset sat_per_byte')
+      }
+    }
+    const request = {
+      addr: params.addr,
+      amount: params.amount,
+      send_all: params.send_all,
+      satPerByte: satXbyte,
+    }
     const { data } = await Http.post(endpoint, request, {
       headers: {
         Authorization: token,
@@ -730,6 +757,22 @@ export const decodeInvoice = async ({ payReq }) => {
 
   const endpoint = `/api/lnd/decodePayReq`
 
+  if (typeof payReq !== 'string') {
+    throw new TypeError(
+      `decodeInvoice() -> payReq is not an string, instead got: ${JSON.stringify(
+        payReq,
+      )}`,
+    )
+  }
+
+  if (payReq.length < 10) {
+    throw new TypeError(
+      `decodeInvoice() -> payReq is an string but doesn't look like an invoice, got: ${JSON.stringify(
+        payReq,
+      )}`,
+    )
+  }
+
   try {
     const { data } = await Http.post(
       endpoint,
@@ -741,11 +784,27 @@ export const decodeInvoice = async ({ payReq }) => {
       },
     )
 
+    if (data.errorMessage) {
+      throw new Error(data.errorMessage)
+    }
+
+    if (typeof data.decodedRequest !== 'object') {
+      const msg = `data.decodedRequest is not an object, data: ${JSON.stringify(
+        data,
+      )}`
+      Logger.log(msg)
+      throw new Error(msg)
+    }
+
     return data
   } catch (err) {
     const { response } = err
     throw new Error(
-      response.data.errorMessage || response.data.message || 'Unknown error.',
+      (response &&
+        response.data &&
+        (response.data.errorMessage || response.data.message)) ||
+        err.message ||
+        'Unknown error.',
     )
   }
 }
