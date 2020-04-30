@@ -987,7 +987,6 @@ class WalletOverview extends Component {
         {payShockInvoiceUserData && (
           <React.Fragment>
             <UserDetail
-              image={payShockInvoiceUserData.avatar}
               name={
                 payShockInvoiceUserData.displayName ||
                 payShockInvoiceUserData.pk

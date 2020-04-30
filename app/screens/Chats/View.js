@@ -170,7 +170,6 @@ export default class ChatsView extends React.Component {
               alternateText={`(${moment(lastMsgTimestamp).fromNow()})`}
               alternateTextBold={unread}
               id={chat.id}
-              image={chat.recipientAvatar}
               lowerText={(() => {
                 if (chat.didDisconnect) {
                   return 'Contact Disconnected'
@@ -221,7 +220,6 @@ export default class ChatsView extends React.Component {
             alternateText={`(${moment(receivedRequest.timestamp).fromNow()})`}
             alternateTextBold
             id={receivedRequest.id}
-            image={receivedRequest.requestorAvatar}
             lowerText="Wants to contact you"
             lowerTextStyle={styles.boldFont}
             name={
@@ -263,7 +261,6 @@ export default class ChatsView extends React.Component {
             alternateText={`(${moment(sentRequest.timestamp).fromNow()})`}
             alternateTextBold
             id={sentRequest.id}
-            image={sentRequest.recipientAvatar}
             lowerText={(() => {
               if (isSending) {
                 return (
