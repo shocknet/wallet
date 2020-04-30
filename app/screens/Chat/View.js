@@ -336,6 +336,7 @@ export default class ChatView extends React.Component {
           avatar={this.props.recipientAvatar}
           shouldRenderAvatar={shouldRenderAvatar}
           lastSeenApp={this.props.lastSeenApp}
+          publicKey={this.props.recipientPublicKey}
         />
       </View>
     )

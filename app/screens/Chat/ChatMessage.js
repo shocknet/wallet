@@ -23,6 +23,7 @@ const BUBBLE_TRIANGLE_VERTICAL_OFFSET = 6
  * @prop {number} timestamp
  * @prop {string|null} avatar
  * @prop {number|null} lastSeenApp
+ * @prop {string} publicKey
  */
 
 /**
@@ -65,10 +66,7 @@ export default class ChatMessage extends React.Component {
           <>
             <View style={styles.avatarContainer}>
               {this.props.shouldRenderAvatar ? (
-                <ChatAvatar
-                  avatar={this.props.avatar}
-                  lastSeenApp={this.props.lastSeenApp}
-                />
+                <ChatAvatar publicKey={this.props.publicKey} />
               ) : (
                 <Pad insideRow amount={40} />
               )}
