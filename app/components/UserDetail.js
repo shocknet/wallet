@@ -8,6 +8,8 @@ import { Avatar } from 'react-native-elements'
 import * as CSS from '../res/css'
 import { isOnline, SET_LAST_SEEN_APP_INTERVAL } from '../services/utils'
 
+import { ConnectedShockAvatar } from './ShockAvatar'
+
 /**
  * @typedef {object} Props
  * @prop {string=} alternateText
@@ -21,6 +23,7 @@ import { isOnline, SET_LAST_SEEN_APP_INTERVAL } from '../services/utils'
  * @prop {((id: string) => void)=} onPress
  * @prop {string=} title
  * @prop {number|null} lastSeenApp
+ * @prop {string} publicKey
  **/
 
 const DEFAULT_USER_IMAGE =
@@ -89,9 +92,13 @@ export default class UserDetail extends React.Component {
       <TouchableOpacity onPress={this.onPress}>
         <View style={styles.container}>
           <View style={xStyles.avatarSubContainer}>
+            <ConnectedShockAvatar
+              height={50}
+              publicKey={this.props.publicKey}
+            />
             <Avatar
               rounded
-              medium
+              height={50}
               source={avatarSrc}
               // @ts-ignore
               avatarStyle={

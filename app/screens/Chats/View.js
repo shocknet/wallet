@@ -195,6 +195,7 @@ export default class ChatsView extends React.Component {
               nameBold={unread}
               onPress={this.onPressChat}
               lastSeenApp={chat.lastSeenApp || 0}
+              publicKey={chat.recipientPublicKey}
             />
           </View>
           <Icon
@@ -231,6 +232,7 @@ export default class ChatsView extends React.Component {
             nameBold
             onPress={this.onPressRequest}
             lastSeenApp={0}
+            publicKey={receivedRequest.requestorPK}
           />
         </View>
         <Icon
@@ -288,6 +290,7 @@ export default class ChatsView extends React.Component {
             }
             nameBold
             lastSeenApp={0}
+            publicKey={sentRequest.recipientPublicKey}
           />
         </View>
         <Icon
