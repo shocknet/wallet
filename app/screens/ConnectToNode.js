@@ -227,7 +227,7 @@ class ConnectToNode extends React.Component {
     try {
       const available = await InAppBrowser.isAvailable()
       if (available) {
-        await InAppBrowser.open('https://github.com/shocknet/wizard#readme', {
+        await InAppBrowser.open(url, {
           toolbarColor: CSS.Colors.BACKGROUND_BLUE,
           secondaryToolbarColor: CSS.Colors.TEXT_ORANGE,
         })

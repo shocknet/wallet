@@ -287,7 +287,7 @@ const decryptResponse = async response => {
       const cachedData = cache.get(path)
 
       if (cachedData?.response) {
-        return cachedData.response
+        return { ...cachedData.response, status: 304 }
       }
     }
 
@@ -344,7 +344,11 @@ Http.interceptors.response.use(
     const decryptedResponse = await decryptResponse(response)
 
     try {
-      if (decryptedResponse && decryptedResponse.status !== undefined) {
+      if (
+        decryptedResponse &&
+        decryptedResponse.status !== undefined &&
+        decryptedResponse.status !== 304
+      ) {
         const method = decryptedResponse.config.method
           ? decryptedResponse.config.method
           : 'common'
@@ -381,7 +385,6 @@ Http.interceptors.response.use(
       }
 
       const { connection } = store.getState()
-
       const encryptionErrors = ['deviceId']
 
       if (

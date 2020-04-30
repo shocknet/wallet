@@ -84,12 +84,6 @@ export const exchangeKeyPair = ({
     const oldKeypair = await RSAKeychain.keyExists(oldKeyTag)
     Logger.log('[ENCRYPTION] Old Keypair:', oldKeypair)
 
-    if (sessionId === cachedSessionId) {
-      return {
-        success: true,
-      }
-    }
-
     if (oldKeypair) {
       await RSAKeychain.deletePrivateKey(oldKeyTag)
     }

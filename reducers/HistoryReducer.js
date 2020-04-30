@@ -1,3 +1,4 @@
+import reverse from 'lodash/reverse'
 import { ACTIONS } from '../app/actions/HistoryActions'
 import * as Wallet from '../app/services/wallet'
 
@@ -12,7 +13,10 @@ import * as Wallet from '../app/services/wallet'
  * @prop {Wallet.Peer[]} peers
  * @prop {object} transactions
  * @prop {object} payments
- * @prop {UnifiedTransaction[]|null} recentTransactions
+ * @prop {Wallet.Transaction[]} recentTransactions
+ * @prop {Wallet.Payment[]} recentPayments
+ * @prop {Wallet.Invoice[]} recentInvoices
+ * @prop {UnifiedTransaction[]} unifiedTransactions
  */
 // TO DO: typings for data
 /**
@@ -43,7 +47,10 @@ const INITIAL_STATE = {
     totalPages: 0,
     totalItems: 0,
   },
-  recentTransactions: null,
+  recentTransactions: [],
+  recentPayments: [],
+  recentInvoices: [],
+  unifiedTransactions: [],
 }
 /**
  * @param {State} state
@@ -126,7 +133,25 @@ const history = (state = INITIAL_STATE, action) => {
        */
       const { data } = action
 
-      const filteredTransactions = data.filter(
+      return {
+        ...state,
+        recentTransactions: data.content,
+      }
+    }
+    case ACTIONS.LOAD_NEW_RECENT_INVOICE: {
+      const { data } = action
+
+      return {
+        ...state,
+        recentInvoices: [data, ...state.recentInvoices],
+      }
+    }
+    case ACTIONS.UNIFY_TRANSACTIONS: {
+      const filteredTransactions = [
+        ...state.recentTransactions,
+        ...state.recentPayments,
+        ...state.recentInvoices,
+      ].filter(
         /**
          * @param {Wallet.Invoice | Wallet.Payment | Wallet.Transaction} unifiedTransaction
          */
@@ -136,7 +161,7 @@ const history = (state = INITIAL_STATE, action) => {
           }
 
           if (Wallet.isPayment(unifiedTransaction)) {
-            return unifiedTransaction.status === 'SUCCEEDED' 
+            return unifiedTransaction.status === 'SUCCEEDED'
           }
 
           if (Wallet.isTransaction(unifiedTransaction)) {
@@ -191,7 +216,23 @@ const history = (state = INITIAL_STATE, action) => {
 
       return {
         ...state,
-        recentTransactions: sortedTransactions,
+        unifiedTransactions: sortedTransactions,
+      }
+    }
+    case ACTIONS.LOAD_NEW_RECENT_TRANSACTION: {
+      const { data } = action
+
+      return {
+        ...state,
+        recentTransactions: [data, ...state.recentTransactions],
+      }
+    }
+    case ACTIONS.LOAD_RECENT_INVOICES: {
+      const { data } = action
+
+      return {
+        ...state,
+        recentInvoices: reverse(data),
       }
     }
     default:
