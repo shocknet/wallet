@@ -87,7 +87,7 @@ class User extends React.Component {
   }
 
   render() {
-    const { displayName, lastSeenApp, bio, publicKey } = this.getUser()
+    const { displayName, lastSeenApp, publicKey } = this.getUser()
 
     return (
       <View style={styles.container}>
@@ -102,9 +102,9 @@ class User extends React.Component {
             {displayName === null ? 'Loading...' : displayName}
           </Text>
 
-          <Pad amount={8} />
+          {/* <Pad amount={8} /> */}
 
-          <Text style={styles.bodyText}>{bio || 'Loading...'}</Text>
+          {/* <Text style={styles.bodyText}>{bio || 'Loading...'}</Text> */}
 
           <Text>
             {lastSeenApp === 0
@@ -146,14 +146,14 @@ const ConnectedUserScreen = connect(mapStateToProps)(User)
 export default ConnectedUserScreen
 
 const styles = StyleSheet.create({
-  bodyText: {
-    color: CSS.Colors.TEXT_GRAY_LIGHT,
-    fontFamily: 'Montserrat-400',
-    fontSize: 12,
-    marginLeft: 90,
-    marginRight: 90,
-    textAlign: 'center',
-  },
+  // bodyText: {
+  //   color: CSS.Colors.TEXT_GRAY_LIGHT,
+  //   fontFamily: 'Montserrat-400',
+  //   fontSize: 12,
+  //   marginLeft: 90,
+  //   marginRight: 90,
+  //   textAlign: 'center',
+  // },
 
   displayName: {
     color: CSS.Colors.TEXT_GRAY,
