@@ -337,7 +337,10 @@ class AdvancedScreen extends Component {
         channelPushAmount,
       } = this.state
       const { fetchChannels, fees } = this.props
-
+      //@ts-ignore
+      if (isNaN(channelCapacity)) {
+        return
+      }
       this.setState({
         modalLoading: true,
         channelPublicKey: '',

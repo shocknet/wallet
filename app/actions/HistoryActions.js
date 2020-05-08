@@ -1,5 +1,4 @@
 import * as Wallet from '../services/wallet'
-import Logger from 'react-native-file-log'
 
 export const ACTIONS = {
   LOAD_CHANNELS: 'channels/load',
