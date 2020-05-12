@@ -235,6 +235,7 @@ class ConnectToNode extends React.Component {
         Linking.openURL(url)
       }
     } catch (err) {
+      Logger.log(JSON.stringify(err))
       Linking.openURL(url)
     }
   }

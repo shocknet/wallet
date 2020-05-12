@@ -72,7 +72,7 @@ export default class QRScanner extends React.Component {
     try {
       onQRSuccess(connection)
     } catch (err) {
-      onQRSuccess(connection)
+      Logger.log(`QRScanner.prototype.connectNode() -> ${err.message}`)
     }
   }
 
