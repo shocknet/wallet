@@ -361,6 +361,7 @@ class SendScreen extends Component {
       await this.sendBTCRequest()
       return true
     } catch (err) {
+      Logger.log(`SendScreen.prototype.onSwipe() -> ${err.message}`)
       return false
     }
   }

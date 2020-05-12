@@ -184,7 +184,8 @@ Http.interceptors.request.use(async config => {
         config.baseURL = `http://${nodeURL}`
       }
     } catch (err) {
-      Logger.log('Unable to retrieve base URL')
+      Logger.log(`Unable to retrieve base URL: ${err.message}`)
+      Logger.log(JSON.stringify(err))
     }
 
     if (!config.headers.Authorization) {
@@ -193,7 +194,8 @@ Http.interceptors.request.use(async config => {
         // eslint-disable-next-line require-atomic-updates
         config.headers.common.Authorization = `Bearer ${token}`
       } catch (err) {
-        Logger.log('Unable to retrieve token')
+        Logger.log(`Unable to retrieve token: ${err.message}`)
+        Logger.log(JSON.stringify(err))
       }
     }
 
