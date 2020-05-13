@@ -173,6 +173,8 @@ export default class ShockWallet extends React.Component {
   }
 }
 
+const cache = new Map()
+
 // Adds an Authorization token to the header before sending any request
 Http.interceptors.request.use(async config => {
   try {
@@ -215,7 +217,7 @@ Http.interceptors.request.use(async config => {
     if (cache.has(path)) {
       const cachedData = cache.get(path)
       // eslint-disable-next-line require-atomic-updates
-      config.headers.common.ETag = cachedData.hash
+      config.headers.common['shock-cache-hash'] = cachedData.hash
     }
 
     if (
@@ -271,8 +273,6 @@ Http.interceptors.request.use(async config => {
   }
 })
 
-const cache = new Map()
-
 /**
  * @param {import('axios').AxiosResponse<any>} response
  * @returns {Promise<import('axios').AxiosResponse<any>>}
@@ -284,14 +284,14 @@ const decryptResponse = async response => {
     const path = url.parse(response?.config.url).pathname
     Logger.log('[ENCRYPTION] Decrypting Path:', path)
 
-    if (response.status === 304) {
-      Logger.log('Using cached response for: ', path)
-      const cachedData = cache.get(path)
+    // if (response.status === 304) {
+    //   Logger.log('Using cached response for: ', path)
+    //   const cachedData = cache.get(path)
 
-      if (cachedData?.response) {
-        return { ...cachedData.response, status: 304 }
-      }
-    }
+    //   if (cachedData?.response) {
+    //     return { ...cachedData.response, status: 304 }
+    //   }
+    // }
 
     if (
       connection.APIPublicKey &&
@@ -324,13 +324,20 @@ const decryptResponse = async response => {
       path !== '/api/security/exchangeKeys' &&
       response.headers['x-session-id']
     ) {
-      Logger.log('[HTTP] Exchanging Keys...')
+      Logger.log(
+        '[HTTP] Exchanging Keys...',
+        !!connection.APIPublicKey,
+        !!response.data.encryptedData,
+        !!connection.sessionId,
+      )
+      cache.clear()
       await throttledExchangeKeyPair({
         deviceId: connection.deviceId,
         sessionId: response.headers['x-session-id'],
         cachedSessionId: connection.sessionId,
         baseURL: response.config.baseURL,
       })(store.dispatch, store.getState, {})
+      cache.clear()
     }
 
     return response
@@ -397,12 +404,14 @@ Http.interceptors.response.use(
       }
 
       if (encryptionErrors.includes(decryptedResponse.data.field)) {
+        cache.clear()
         await throttledExchangeKeyPair({
           deviceId: connection.deviceId,
           sessionId: decryptedResponse.headers['x-session-id'],
           cachedSessionId: connection.sessionId,
           baseURL: decryptedResponse.config.baseURL,
         })(store.dispatch, store.getState, {})
+        cache.clear()
         // eslint-disable-next-line require-atomic-updates
         decryptedResponse.config.headers['x-shockwallet-device-id'] =
           connection.deviceId
