@@ -16,7 +16,7 @@ import ShockInput from '../components/ShockInput'
 // @ts-ignore
 const shockBG = require('../assets/images/shock-bg.png')
 
-export const FEE_SETTINGS = 'FEE_SETTINGS'
+export const WALLET_SETTINGS = 'WALLET_SETTINGS'
 
 /**
  * @typedef {object} Fees
@@ -54,7 +54,7 @@ export const FEE_SETTINGS = 'FEE_SETTINGS'
 /**
  * @augments React.Component<Props, State, never>
  */
-class FeeSettings extends React.Component {
+class WalletSettings extends React.Component {
   /**
    * @type {import('react-navigation').NavigationScreenOptions}
    */
@@ -164,7 +164,7 @@ class FeeSettings extends React.Component {
     }
     return (
       <View style={styles.flexCenter}>
-        <Text style={styles.bigBold}>Fee Settings</Text>
+        <Text style={styles.bigBold}>Wallet Settings</Text>
         {/*<ShockButton 
                 color={
                     fees.feesLevel=== 'MAX' ?  CSS.Colors.BLUE_DARK: undefined
@@ -237,7 +237,7 @@ const mapDispatchToProps = {
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(FeeSettings)
+)(WalletSettings)
 
 const styles = StyleSheet.create({
   bigBold: {

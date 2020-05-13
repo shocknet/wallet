@@ -7069,9 +7069,9 @@ react-native-ratings@^6.5.0:
     lodash "^4.17.4"
     prop-types "^15.5.10"
 
-"react-native-rsa-native@https://github.com/Emad-salah/react-native-rsa-native#31ced0437c9b35c3436c618abe058f095c806172":
+"react-native-rsa-native@https://github.com/Emad-salah/react-native-rsa-native#ebdc4cf17253b267541eb41f0e2f5d7a03e8690d":
   version "1.1.4"
-  resolved "https://github.com/Emad-salah/react-native-rsa-native#31ced0437c9b35c3436c618abe058f095c806172"
+  resolved "https://github.com/Emad-salah/react-native-rsa-native#ebdc4cf17253b267541eb41f0e2f5d7a03e8690d"
 
 react-native-safe-area-view@0.11.0:
   version "0.11.0"
