@@ -240,7 +240,7 @@ import * as Utils from './utils'
 /**
  * @typedef {object} Chain
  * @prop {string[]} chan_points	Is the set of all channels that are included in this multi-channel backup.
- * @prop {bytes} multi_chan_backup	A single encrypted blob containing all the static channel backups of the channel listed above. This can be stored as a single file or blob, and safely be replaced with any prior/future versions. When using REST, this field must be encoded as base64.
+ * @prop {Bytes} multi_chan_backup	A single encrypted blob containing all the static channel backups of the channel listed above. This can be stored as a single file or blob, and safely be replaced with any prior/future versions. When using REST, this field must be encoded as base64.
  */
 
 /**
@@ -261,7 +261,7 @@ import * as Utils from './utils'
  * @prop {boolean} testnet	Whether the current node is connected to testnet. This field is deprecated and the network field should be used instead
  * @prop {Chain[]} chains Chain	A list of active chains the node is connected to
  * @prop {string[]} uris string	The URIs of the current node.
- * @prop {array} features FeaturesEntry	Features that our node has advertised in our init message, node announcements and invoices.
+ * @prop {unknown[]} features Entry	Features that our node has advertised in our init message, node announcements and invoices.
  */
 
 /**
@@ -679,9 +679,9 @@ export const sendCoins = async params => {
  * https://api.lightning.community/#grpc-request-sendrequest
  * @typedef {object} SendResponse
  * @prop {string} payment_error
- * @prop {bytes} payment_preimage
+ * @prop {Bytes} payment_preimage
  * @prop {Route} payment_route
- * @prop {bytes} payment_hash
+ * @prop {Bytes} payment_hash
  */
 
 /**

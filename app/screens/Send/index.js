@@ -121,6 +121,7 @@ class SendScreen extends Component {
     const { paymentRequest } = this.props.invoice
     const { selectedContact } = this.props.chat
     return (
+      // @ts-ignore
       ((selectedContact?.address?.length > 0 ||
         selectedContact?.type === 'contact') &&
         parseFloat(amount) > 0) ||
@@ -134,6 +135,7 @@ class SendScreen extends Component {
       const { selectedContact } = this.props.chat
       const { amount, sendAll } = this.state
 
+      // @ts-ignore
       if (!selectedContact.address) {
         return
       }
@@ -142,7 +144,9 @@ class SendScreen extends Component {
         sending: true,
       })
 
+      // @ts-ignore
       const transactionId = await Wallet.sendCoins({
+        // @ts-ignore
         addr: selectedContact.address,
         amount: sendAll ? parseInt(amount, 10) : undefined,
         send_all: sendAll,
@@ -202,6 +206,7 @@ class SendScreen extends Component {
       const { chat } = this.props
       const { amount, description } = this.state
       const { selectedContact } = chat
+      // @ts-ignore
       await API.Actions.sendPayment(selectedContact.pk, amount, description)
       return true
     } catch (err) {
@@ -253,6 +258,7 @@ class SendScreen extends Component {
     if (chat.selectedContact.type === 'btc') {
       return (
         <Suggestion
+          // @ts-ignore
           name={chat.selectedContact.address}
           onPress={this.resetSearchState}
           type="btc"
@@ -263,7 +269,9 @@ class SendScreen extends Component {
 
     return (
       <Suggestion
+        // @ts-ignore
         name={chat.selectedContact.displayName}
+        // @ts-ignore
         avatar={chat.selectedContact.avatar}
         onPress={this.resetSearchState}
         style={styles.suggestion}

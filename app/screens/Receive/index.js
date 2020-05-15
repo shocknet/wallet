@@ -1,6 +1,4 @@
-/**
- * @format
- */
+// @ts-nocheck
 import React, { Component } from 'react'
 import {
   // Clipboard,
@@ -60,12 +58,14 @@ class ReceiveScreen extends Component {
    */
   componentDidUpdate(prevProps) {
     const { isFocused, invoice, resetInvoice } = this.props
+    // @ts-ignore
     if (prevProps.isFocused !== isFocused && invoice.paymentRequest) {
       resetInvoice()
     }
   }
 
   isFilled = () => {
+    // @ts-ignore
     const { amount } = this.props.invoice
     if (!amount.trim()) {
       return false
@@ -183,6 +183,7 @@ const mapDispatchToProps = {
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
+  // @ts-ignore
 )(withNavigationFocus(ReceiveScreen))
 
 const styles = StyleSheet.create({

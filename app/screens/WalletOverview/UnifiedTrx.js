@@ -126,6 +126,7 @@ const mapStateToProps = ({ wallet }) => ({
   wallet,
 })
 
+// @ts-ignore TODO TODO
 export default connect(mapStateToProps)(UnifiedTransactions)
 
 const styles = StyleSheet.create({
