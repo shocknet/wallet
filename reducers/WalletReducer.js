@@ -1,16 +1,19 @@
+// @ts-nocheck
 import { ACTIONS } from '../app/actions/WalletActions'
 import Big from 'big.js'
 /**
  * @typedef {object} State
- * @param {string} channelBalance
- * @param {string} confirmedBalance
- * @param {string|null} USDRate
+ * @prop {string} channelBalance
+ * @prop {string} confirmedBalance
+ * @prop {string|null} USDRate
+ * @prop {string} totalBalance
+ * @prop {string} pendingChannelBalance
  */
 
 /**
  * @typedef {object} Action
- * @param {string} type
- * @param {State} data
+ * @prop {string} type
+ * @prop {State} data
  */
 
 /** @type {State} */

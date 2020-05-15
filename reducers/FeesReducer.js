@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ACTIONS } from '../app/actions/FeesActions'
 /**
  * @typedef {import('../app/actions/FeesActions').feeLevel} feeLevel
@@ -17,35 +18,34 @@ import { ACTIONS } from '../app/actions/FeesActions'
 
 /** @type {State} */
 const INITIAL_STATE = {
-  feesLevel:'MID',
-  feesSource:'https://mempool.space/api/v1/fees/recommended'
-
+  feesLevel: 'MID',
+  feesSource: 'https://mempool.space/api/v1/fees/recommended',
 }
 /**
  * @param {State} state
  * @param {Action} action
  * @returns {State}
  */
-const fees = (state = INITIAL_STATE,action) => {
-  if(!action.data){
+const fees = (state = INITIAL_STATE, action) => {
+  if (!action.data) {
     return state
   }
   switch (action.type) {
-    case ACTIONS.UPDATE_SELECTED_FEE:{
-      const {data} = action
-      if(data !== 'MIN' && data !== 'MID' && data !== 'MAX'){
+    case ACTIONS.UPDATE_SELECTED_FEE: {
+      const { data } = action
+      if (data !== 'MIN' && data !== 'MID' && data !== 'MAX') {
         return state
       }
       return {
         ...state,
-        feesLevel:data
+        feesLevel: data,
       }
     }
-    case ACTIONS.UPDATE_FEES_SOURCE:{
-      const {data} = action
+    case ACTIONS.UPDATE_FEES_SOURCE: {
+      const { data } = action
       return {
         ...state,
-        feesSource:data
+        feesSource: data,
       }
     }
     default: {

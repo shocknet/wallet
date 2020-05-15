@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ACTIONS } from '../app/actions/ChatActions'
 
 /**

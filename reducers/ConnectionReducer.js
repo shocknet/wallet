@@ -1,4 +1,4 @@
-// @ts-ignore
+// @ts-nocheck
 import uuid from 'uuid/v4'
 import { ACTIONS } from '../app/actions/ConnectionActions'
 
@@ -15,7 +15,7 @@ import { ACTIONS } from '../app/actions/ConnectionActions'
 /**
  * @typedef {object} Action
  * @prop {string} type
- * @prop {(object|any[])=} data
+ * @prop {any} data TODO
  */
 
 /** @type {State} */
@@ -35,6 +35,9 @@ const INITIAL_STATE = {
 const connection = (state = INITIAL_STATE, action) => {
   switch (action.type) {
     case ACTIONS.LOAD_NEW_KEYS: {
+      if (!action.data) {
+        return state
+      }
       const { devicePublicKey, APIPublicKey, sessionId } = action.data
       return {
         ...state,
