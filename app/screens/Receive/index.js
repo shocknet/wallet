@@ -33,13 +33,13 @@ export const RECEIVE_SCREEN = 'RECEIVE_SCREEN'
  */
 
 /**
- * @typedef {ConnectedRedux & object} Props
+ * @typedef {object} Props
  * @prop {(Navigation)=} navigation
  * @prop {boolean} isFocused
  */
 
 /**
- * @augments React.Component<Props, {}, never>
+ * @augments React.Component<Props & ConnectedRedux, {}, never>
  */
 class ReceiveScreen extends Component {
   state = {
