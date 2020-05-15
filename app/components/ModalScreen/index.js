@@ -66,7 +66,7 @@ export default class ModalScreen extends React.Component {
 
             {showSkipBtn && (
               <Text onPress={this.onPressSkip} style={xStyles.skip}>
-                Skip >
+                {'Skip >'}
               </Text>
             )}
 
