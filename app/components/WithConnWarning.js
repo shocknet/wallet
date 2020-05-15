@@ -33,8 +33,12 @@ export default class WithConnWarning extends React.Component {
    */
   connUnsub = () => {}
 
-  componentDidMount = () => {
+  componentDidMount() {
     this.connUnsub = ContactAPI.Events.onConnection(this.onConn)
+  }
+
+  componentWillUnmount() {
+    this.connUnsub()
   }
 
   /**
