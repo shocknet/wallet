@@ -3,14 +3,9 @@ import { NativeModules } from 'react-native'
 import Crypto from 'react-native-crypto'
 import { RSA, RSAKeychain } from 'react-native-rsa-native'
 import Logger from 'react-native-file-log'
+import { Constants } from 'shock-common'
+
 const { Aes } = NativeModules
-import Action from './contact-api/action'
-const nonEncryptedEvents = [
-  'ping',
-  'disconnect',
-  'IS_GUN_AUTH',
-  Action.SET_LAST_SEEN_APP,
-]
 
 /**
  * @typedef {object} EncryptResult
@@ -116,4 +111,4 @@ export const decryptKey = async (encryptedKey, sessionId) => {
  * @returns {boolean}
  */
 export const isNonEncrypted = eventName =>
-  nonEncryptedEvents.includes(eventName)
+  Constants.Encryption.nonEncryptedEvents.includes(eventName)

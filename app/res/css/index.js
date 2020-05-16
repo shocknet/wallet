@@ -5,68 +5,9 @@ export const WIDTH = Dimensions.get('window').width
 // let's use a percentage instead
 export const BOTTOM_BAR_HEIGHT = Math.round(HEIGHT * 0.085)
 
-/**
- * @prettier
- */
-export const Colors = {
-  BACKDROP: 'rgba(0, 0, 0, 0.4)',
-  /**
-   * Blue when used as a background.
-   */
-  BACKGROUND_BLUE: '#4285B9',
-  /**
-   * Black when used as a background.
-   */
-  BACKGROUND_BLACK: '#000000',
-  /**
-   * White when used as a background.
-   */
-  BACKGROUND_WHITE: '#FFFFFF',
-  BACKGROUND_WHITE_TRANSPARENT95: 'rgba(255,255,255,0.95)',
-  BACKGROUND_LIGHTEST_WHITE: '#F2F2F2',
-  BACKGROUND_NEAR_WHITE: '#EFEFEF',
-  BACKGROUND_RED: '#E14F51',
-  BORDER_WHITE: '#FFFFFF',
-  BORDER_NEAR_WHITE: '#DDD',
-  BORDER_GRAY: '#E0D3D3',
-  FUN_BLUE: '#294f93',
-  AVATAR_BG: '#b87763',
-  BLUE_MEDIUM_DARK: '#294F93',
-  BLUE_DARK: '#2E4674',
-  BLUE_LIGHTEST: '#F4F6FA',
-  BLUE_LIGHT: '#267ADB',
-  BLUE_GRAY: '#50668F',
-  GRAY_MEDIUM_LIGHT: '#BCBCBC',
-  GRAY_DARK: '#4E4E4E',
-  GRAY_DARKER: '#D0C1C1',
-  GRAY_MEDIUM: '#F5F5F5',
-  GRAY_D9: '#D9D9D9',
-  GRAY_LIGHT: '#CDCDCD',
-  GRAY_LIGHTEST: '#F1F1F1',
-  GRAY: '#707070',
-  ORANGE: '#F5A623',
-  TEAL: '#4285B9',
-  BUTTON_BLUE: '#4285B9',
-  TEXT_LIGHTEST: '#979797',
-  TEXT_LIGHT: '#787878',
-  TEXT_STANDARD: '#404040',
-  TEXT_WHITE: '#FFFFFF',
-  TEXT_ORANGE: '#F5A92B',
-  TEXT_GRAY: '#7B7B7B',
-  TEXT_GRAY_LIGHT: '#9A9696',
-  TEXT_GRAY_LIGHTER: '#9B9999',
-  TEXT_GRAY_LIGHTEST: '#B6B4B4',
-  TEXT_DARK_WHITE: '#b1b0b0',
-  ICON_GREEN: '#19ce5b',
-  ICON_RED: '#eb595e',
-  SUCCESS_GREEN: '#39B54A',
-  FAILURE_RED: '#C1272D',
-  CAUTION_YELLOW: '#EFC238',
-  TRANSPARENT: 'transparent',
-  TRANSPARENT_INPUT: 'rgba(0,0,0,0.05)',
-  LOADING_BACKDROP: 'rgba(0,0,0,0.25)',
-  GOLD: '#f2a900',
-}
+import * as Common from 'shock-common'
+
+export const { Color: Colors } = Common.Constants
 
 export const styles = StyleSheet.create({
   absolutelyCentered: {

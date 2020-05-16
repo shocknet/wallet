@@ -5,13 +5,15 @@
 import debounce from 'lodash/debounce'
 import once from 'lodash/once'
 import Logger from 'react-native-file-log'
+import { Constants, Schema } from 'shock-common'
 
 import * as Cache from '../../services/cache'
 
-import Action from './action'
-import Event from './event'
 import * as Events from './events'
 import { socket } from './socket'
+
+const { Action } = Constants
+const { Event } = Constants
 
 /**
  * @throws {Error} If no data is cached.
@@ -59,33 +61,6 @@ export const generateNewHandshakeNode = () => {
       token,
     })
   })
-}
-
-/**
- * @returns {Promise<void>}
- */
-export const logout = () => {
-  return getToken().then(token => {
-    if (!socket || !(socket && socket.connected)) {
-      throw new Error('NOT_CONNECTED')
-    }
-
-    socket.emit(Action.LOGOUT, {
-      token,
-    })
-  })
-}
-
-/**
- * @param {string} alias
- * @param {string} pass
- */
-export const register = (alias, pass) => {
-  if (!socket || !(socket && socket.connected)) {
-    throw new Error('NOT_CONNECTED')
-  }
-
-  socket.emit(Action.REGISTER, { alias, pass })
 }
 
 /**
@@ -384,7 +359,7 @@ export const disconnect = async pub => {
     c => c.recipientPublicKey === pub,
   )
 
-  /** @type {import('./schema').Chat[]} */
+  /** @type {Schema.Chat[]} */
   let deletedChat = []
 
   // it's fine if it doesn't exist in our cache
