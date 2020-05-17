@@ -5,6 +5,7 @@ import React from 'react'
 import { Clipboard, StatusBar, ToastAndroid } from 'react-native'
 import zipObj from 'lodash/zipObject'
 import Logger from 'react-native-file-log'
+import { Schema } from 'shock-common'
 
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation
@@ -38,10 +39,10 @@ const byTimestampFromOldestToNewest = (a, b) => a.timestamp - b.timestamp
 /**
  * @typedef {object} State
  * @prop {string|null} acceptingRequest
- * @prop {API.Schema.Chat[]} chats
+ * @prop {Schema.Chat[]} chats
  * @prop {Cache.LastReadMsgs} lastReadMsgs
- * @prop {API.Schema.SimpleReceivedRequest[]} receivedRequests
- * @prop {(API.Schema.SimpleSentRequest & { state: string|null })[]} sentRequests (If state is sending the request hasn't been acked by API, if it's null it got sent, any other string is an error message)
+ * @prop {Schema.SimpleReceivedRequest[]} receivedRequests
+ * @prop {(Schema.SimpleSentRequest & { state: string|null })[]} sentRequests (If state is sending the request hasn't been acked by API, if it's null it got sent, any other string is an error message)
  * @prop {boolean} showingAddDialog
  *
  * @prop {boolean} scanningUserQR
@@ -149,9 +150,7 @@ export default class Chats extends React.Component {
     const { chats } = this.state
 
     // CAST: If user is pressing on a chat, that chat exists
-    const chat = /** @type {API.Schema.Chat} */ (chats.find(
-      chat => chat.id === id,
-    ))
+    const chat = /** @type {Schema.Chat} */ (chats.find(chat => chat.id === id))
 
     const sortedMessages = chat.messages
       .slice()
@@ -239,7 +238,7 @@ export default class Chats extends React.Component {
       ToastAndroid.show('Already sent request to this user', 800)
     }
 
-    /** @type {API.Schema.SimpleSentRequest & { state: string|null}} */
+    /** @type {Schema.SimpleSentRequest & { state: string|null}} */
     const fakeReq = {
       id: Math.random().toString(),
       recipientAvatar: null,

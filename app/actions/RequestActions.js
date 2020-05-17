@@ -54,6 +54,7 @@ export const subscribeReceivedRequests = callback => dispatch =>
           pk: chat.requestorPK,
           avatar: chat.requestorAvatar,
           displayName: chat.requestorDisplayName,
+          // @ts-ignore TODO
           response: chat.response,
           timestamp: chat.timestamp,
         }))

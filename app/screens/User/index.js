@@ -9,6 +9,7 @@ import {
 } from 'react-native'
 import moment from 'moment'
 import { connect } from 'react-redux'
+import { Schema } from 'shock-common'
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}, Routes.UserParams>} Navigation
  */
@@ -21,7 +22,7 @@ import Pad from '../../components/Pad'
 import * as Reducers from '../../../reducers'
 import * as Routes from '../../routes'
 /**
- * @typedef {import('../../schema').User} UserType
+ * @typedef {Schema.User} UserType
  */
 
 /**

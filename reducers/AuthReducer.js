@@ -1,12 +1,13 @@
+// @ts-nocheck
 /**
  * @typedef {object} State
- * @param {string} host
+ * @prop {string} host
  */
 
 /**
  * @typedef {object} Action
- * @param {string} type
- * @param {State} data
+ * @prop {string} type
+ * @prop {State} data
  */
 
 /** @type {State} */

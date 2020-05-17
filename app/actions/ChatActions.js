@@ -1,5 +1,7 @@
-import * as API from '../services/contact-api'
+import * as Common from 'shock-common'
 import Logger from 'react-native-file-log'
+
+import * as API from '../services/contact-api'
 
 export const ACTIONS = {
   LOAD_CONTACTS: 'contacts/load',
@@ -36,13 +38,13 @@ export const ACTIONS = {
 /**
  * @typedef {object} ReceivedChatsAction
  * @prop {'chats/receivedChats'} type
- * @prop {{ chats: API.Schema.Chat[] }} data
+ * @prop {{ chats: Common.Schema.Chat[] }} data
  */
 
 /**
  * Fetches the Node's info
- * @param {((chats: API.Schema.Chat[]) => void)=} callback
- * @returns {import('redux-thunk').ThunkAction<Promise<API.Schema.Chat[]>, {}, {}, import('redux').AnyAction>}
+ * @param {((chats: Common.Schema.Chat[]) => void)=} callback
+ * @returns {import('redux-thunk').ThunkAction<Promise<Common.Schema.Chat[]>, {}, {}, import('redux').AnyAction>}
  */
 export const subscribeOnChats = callback => dispatch =>
   new Promise((resolve, reject) => {

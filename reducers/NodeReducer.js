@@ -1,9 +1,10 @@
+// @ts-nocheck
 import { ACTIONS } from '../app/actions/NodeActions'
 
 /**
  * @typedef {object} State
- * @prop {object} nodeInfo
- * @prop {object} nodeHealth
+ * @prop {any} nodeInfo
+ * @prop {any} nodeHealth
  * @prop {'online'|'offline'} connectionStatus
  */
 
@@ -11,7 +12,7 @@ import { ACTIONS } from '../app/actions/NodeActions'
 /**
  * @typedef {object} Action
  * @prop {string} type
- * @prop {(object|any[])=} data
+ * @prop {any} data
  */
 
 /** @type {State} */

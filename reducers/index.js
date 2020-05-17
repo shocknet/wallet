@@ -1,3 +1,4 @@
+// @ts-nocheck
 import AuthReducer from './AuthReducer'
 import HistoryReducer from './HistoryReducer'
 import WalletReducer from './WalletReducer'

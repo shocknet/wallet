@@ -1,3 +1,4 @@
+// @ts-nocheck
 import reverse from 'lodash/reverse'
 import { ACTIONS } from '../app/actions/HistoryActions'
 import * as Wallet from '../app/services/wallet'
@@ -22,7 +23,7 @@ import * as Wallet from '../app/services/wallet'
 /**
  * @typedef {object} Action
  * @prop {string} type
- * @prop {(object|any[]|number)=} data
+ * @prop {({}|any[]|number)=} data
  */
 
 /** @type {State} */
@@ -63,6 +64,7 @@ const history = (state = INITIAL_STATE, action) => {
       const { data } = action
       return {
         ...state,
+
         channels: data,
       }
     }
@@ -70,6 +72,7 @@ const history = (state = INITIAL_STATE, action) => {
       const { data } = action
       return {
         ...state,
+        // @ts-ignore TODO
         invoices: data,
       }
     }
@@ -79,6 +82,7 @@ const history = (state = INITIAL_STATE, action) => {
       return {
         ...state,
         invoices: {
+          // @ts-ignore TODO
           ...data,
           content: [...invoices.content, ...data.content],
         },
@@ -88,6 +92,7 @@ const history = (state = INITIAL_STATE, action) => {
       const { data } = action
       return {
         ...state,
+        // @ts-ignore TODO
         peers: data,
       }
     }
@@ -95,6 +100,7 @@ const history = (state = INITIAL_STATE, action) => {
       const { data } = action
       return {
         ...state,
+        // @ts-ignore TODO
         payments: data,
       }
     }
@@ -104,6 +110,7 @@ const history = (state = INITIAL_STATE, action) => {
       return {
         ...state,
         payments: {
+          // @ts-ignore TODO
           ...data,
           content: [...payments.content, ...data.content],
         },
@@ -113,6 +120,7 @@ const history = (state = INITIAL_STATE, action) => {
       const { data } = action
       return {
         ...state,
+        // @ts-ignore TODO
         transactions: data,
       }
     }
@@ -122,6 +130,7 @@ const history = (state = INITIAL_STATE, action) => {
       return {
         ...state,
         transactions: {
+          // @ts-ignore TODO
           ...data,
           content: [...transactions.content, ...data.content],
         },
@@ -135,6 +144,7 @@ const history = (state = INITIAL_STATE, action) => {
 
       return {
         ...state,
+        // @ts-ignore TODO
         recentTransactions: data.content,
       }
     }
@@ -143,6 +153,7 @@ const history = (state = INITIAL_STATE, action) => {
 
       return {
         ...state,
+        // @ts-ignore TODO
         recentInvoices: [data, ...state.recentInvoices],
       }
     }
@@ -224,6 +235,7 @@ const history = (state = INITIAL_STATE, action) => {
 
       return {
         ...state,
+        // @ts-ignore TODO
         recentTransactions: [data, ...state.recentTransactions],
       }
     }
@@ -232,6 +244,7 @@ const history = (state = INITIAL_STATE, action) => {
 
       return {
         ...state,
+        // @ts-ignore TODO
         recentInvoices: reverse(data),
       }
     }

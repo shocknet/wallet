@@ -21,6 +21,7 @@ import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'
 import Logger from 'react-native-file-log'
 import SocketManager from '../../services/socket'
 import { connect } from 'react-redux'
+import { Schema } from 'shock-common'
 
 //import { compose } from 'redux'
 import * as Navigation from '../../services/navigation'
@@ -96,7 +97,7 @@ import ShockWebView from '../../components/ShockWebView'
  * @prop {() => Promise<void>} fetchRecentInvoices
  * @prop {() => Promise<import('../../actions/WalletActions').WalletBalance>} getWalletBalance
  * @prop {() => Promise<import('../../actions/NodeActions').GetInfo>} fetchNodeInfo
- * @prop {() => Promise<ContactAPI.Schema.Chat[]>} subscribeOnChats
+ * @prop {() => Promise<Schema.Chat[]>} subscribeOnChats
  * @prop {() => Promise<number>} getUSDRate
  * @prop {(invoice: Wallet.Invoice) => void} loadNewInvoice
  * @prop {(transaction: Wallet.Transaction) => void} loadNewTransaction

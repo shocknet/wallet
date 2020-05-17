@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ACTIONS } from '../app/actions/InvoiceActions'
 
 /**
@@ -38,22 +39,34 @@ const invoice = (state = INITIAL_STATE, action) => {
   switch (action.type) {
     case ACTIONS.SET_AMOUNT: {
       const { data } = action
+      if (!data) {
+        return state
+      }
       return {
         ...state,
+        // @ts-ignore TODO
         amount: data,
       }
     }
     case ACTIONS.SET_DESCRIPTION: {
       const { data } = action
+      if (!data) {
+        return state
+      }
       return {
         ...state,
+        // @ts-ignore TODO
         description: data,
       }
     }
     case ACTIONS.SET_INVOICE_MODE: {
       const { data } = action
+      if (!data) {
+        return state
+      }
       return {
         ...state,
+        // @ts-ignore TODO
         invoiceMode: data,
       }
     }
@@ -61,6 +74,7 @@ const invoice = (state = INITIAL_STATE, action) => {
       const { data } = action
       return {
         ...state,
+        // @ts-ignore TODO
         recipientAddress: data,
       }
     }
@@ -68,6 +82,7 @@ const invoice = (state = INITIAL_STATE, action) => {
       const { data } = action
       return {
         ...state,
+        // @ts-ignore TODO
         unitSelected: data,
       }
     }
@@ -75,6 +90,7 @@ const invoice = (state = INITIAL_STATE, action) => {
       const { data } = action
       return {
         ...state,
+        // @ts-ignore TODO
         paymentRequest: data,
       }
     }
@@ -82,6 +98,7 @@ const invoice = (state = INITIAL_STATE, action) => {
       const { data } = action
       return {
         ...state,
+        // @ts-ignore TODO
         btcAddress: data,
       }
     }
@@ -89,9 +106,13 @@ const invoice = (state = INITIAL_STATE, action) => {
       const { data } = action
       return {
         ...state,
+        // @ts-ignore TODO
         amount: data.num_satoshis,
+        // @ts-ignore TODO
         recipientAddress: data.destination,
+        // @ts-ignore TODO
         paymentRequest: data.payment_request,
+        // @ts-ignore TODO
         description: data.description,
       }
     }

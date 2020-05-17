@@ -1,13 +1,15 @@
 import React from 'react'
 import { Clipboard, View, Button, Text, ToastAndroid } from 'react-native'
 import { connect } from 'react-redux'
+import { Constants } from 'shock-common'
 
 import * as CSS from '../res/css'
 import * as Cache from '../services/cache'
 import { Actions, Events, Socket } from '../services/contact-api'
-import Action from '../services/contact-api/action'
-const { SET_LAST_SEEN_APP } = Action
 import QR from './WalletOverview/QR'
+
+const { Action } = Constants
+const { SET_LAST_SEEN_APP } = Action
 
 export const DEBUG = 'DEBUG'
 

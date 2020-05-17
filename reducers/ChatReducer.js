@@ -1,16 +1,17 @@
+// @ts-nocheck
 import { ACTIONS } from '../app/actions/ChatActions'
 
 /**
  * @typedef {object} State
- * @param {import('../app/actions/ChatActions').Contact[]} contacts
- * @param {object} messages
- * @param {import('../app/actions/ChatActions').SelectedContact} selectedContact
+ * @prop {import('../app/actions/ChatActions').Contact[]} contacts
+ * @prop {object} messages
+ * @prop {import('../app/actions/ChatActions').SelectedContact|null} selectedContact
  */
 
 /**
  * @typedef {object} Action
- * @param {string} type
- * @param {State} data
+ * @prop {string} type
+ * @prop {State} data
  */
 
 /** @type {State} */

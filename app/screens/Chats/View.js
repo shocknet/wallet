@@ -13,6 +13,7 @@ import moment from 'moment'
 import { Divider, Icon } from 'react-native-elements'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 import Logger from 'react-native-file-log'
+import { Schema } from 'shock-common'
 
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation
@@ -20,7 +21,6 @@ import Logger from 'react-native-file-log'
 
 import ChangingText from '../../components/ChangingText'
 import QRCodeScanner from '../../components/QRScanner'
-import * as API from '../../services/contact-api'
 import UserDetail from '../../components/UserDetail'
 import { Colors, SCREEN_PADDING, styles as Styles } from '../../res/css'
 import ShockDialog from '../../components/ShockDialog'
@@ -57,7 +57,7 @@ const _NoChatsOrRequests = () => ((
 const NoChatsOrRequests = React.memo(_NoChatsOrRequests)
 
 /**
- * @param {API.Schema.Chat | API.Schema.SimpleReceivedRequest | API.Schema.SimpleSentRequest} item
+ * @param {Schema.Chat | Schema.SimpleReceivedRequest | Schema.SimpleSentRequest} item
  * @returns {string}
  */
 const keyExtractor = item => item.id
@@ -67,9 +67,9 @@ const keyExtractor = item => item.id
  * @prop {boolean} acceptingRequest True if in the process of accepting a
  * request (a dialog will pop up).
  *
- * @prop {API.Schema.Chat[]} chats
- * @prop {API.Schema.SimpleReceivedRequest[]} receivedRequests
- * @prop {(API.Schema.SimpleSentRequest & { state: string|null })[]} sentRequests
+ * @prop {Schema.Chat[]} chats
+ * @prop {Schema.SimpleReceivedRequest[]} receivedRequests
+ * @prop {(Schema.SimpleSentRequest & { state: string|null })[]} sentRequests
  *
  * @prop {(id: string) => void} onPressChat
  * @prop {(requestID: string) => void} onPressRequest
@@ -138,7 +138,7 @@ export default class ChatsView extends React.Component {
   ////////////////////////////////////////////////////////////////////////////////
 
   /**
-   * @param {API.Schema.Chat} chat
+   * @param {Schema.Chat} chat
    * @returns {React.ReactElement<any> | null}
    */
   chatRenderer = chat => {
@@ -209,7 +209,7 @@ export default class ChatsView extends React.Component {
   }
 
   /**
-   * @param {API.Schema.SimpleReceivedRequest} receivedRequest
+   * @param {Schema.SimpleReceivedRequest} receivedRequest
    * @returns {React.ReactElement<any>}
    */
   receivedRequestRenderer = receivedRequest => {
@@ -244,7 +244,7 @@ export default class ChatsView extends React.Component {
   }
 
   /**
-   * @param {API.Schema.SimpleSentRequest} sentRequest
+   * @param {Schema.SimpleSentRequest} sentRequest
    * @returns {React.ReactElement<any>}
    */
   sentRequestRenderer = sentRequest => {
@@ -302,19 +302,19 @@ export default class ChatsView extends React.Component {
 
   /**
    * @private
-   * @param {{ item: API.Schema.Chat|API.Schema.SimpleReceivedRequest|API.Schema.SimpleSentRequest }} args
+   * @param {{ item: Schema.Chat|Schema.SimpleReceivedRequest|Schema.SimpleSentRequest }} args
    * @returns {React.ReactElement<any> | null}
    */
   itemRenderer = ({ item }) => {
-    if (API.Schema.isChat(item)) {
+    if (Schema.isChat(item)) {
       return this.chatRenderer(item)
     }
 
-    if (API.Schema.isSimpleSentRequest(item)) {
+    if (Schema.isSimpleSentRequest(item)) {
       return this.sentRequestRenderer(item)
     }
 
-    if (API.Schema.isSimpleReceivedRequest(item)) {
+    if (Schema.isSimpleReceivedRequest(item)) {
       return this.receivedRequestRenderer(item)
     }
 
@@ -373,7 +373,7 @@ export default class ChatsView extends React.Component {
       /** @type {number} */
       let bt = 0
 
-      if (API.Schema.isChat(a)) {
+      if (Schema.isChat(a)) {
         const sortedMessages = a.messages
           .slice()
           .sort(byTimestampFromOldestToNewest)
@@ -391,7 +391,7 @@ export default class ChatsView extends React.Component {
         at = a.timestamp
       }
 
-      if (API.Schema.isChat(b)) {
+      if (Schema.isChat(b)) {
         const sortedMessages = b.messages
           .slice()
           .sort(byTimestampFromOldestToNewest)

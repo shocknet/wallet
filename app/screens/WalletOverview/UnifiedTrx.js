@@ -43,11 +43,12 @@ const Empty = () => ((
 ))
 
 /**
- * @typedef {ConnectedRedux & object} Props
+ * @typedef {object} Props
  * @prop {((payReqOrPaymentHashOrTxHash: string) => void)=} onPressItem
  * (Optional)
  * @prop {IUnifiedTransaction[]|null} unifiedTrx Null when loading. When loading
  * a loading indicator will be shown.
+ * @prop {{ USDRate: number }} wallet
  */
 
 /**
@@ -126,6 +127,7 @@ const mapStateToProps = ({ wallet }) => ({
   wallet,
 })
 
+// @ts-ignore TODO TODO
 export default connect(mapStateToProps)(UnifiedTransactions)
 
 const styles = StyleSheet.create({

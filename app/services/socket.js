@@ -10,7 +10,7 @@ import * as Encryption from './encryption'
  */
 
 class Socket {
-  /** @type {object} */
+  /** @type {any} */
   socketInstance = null
 
   /** @type {ReduxStore?} */
@@ -124,12 +124,12 @@ class Socket {
   }
 
   /**
-   * @param {object} data
+   * @param {any} data
    */
   decryptSocketData = async data => {
     if (data && data.encryptedKey && this.store) {
       const decryptionTime = Date.now()
-      Logger.log('[LND SOCKET] Decrypting Data...', data)
+      Logger.log('[LND SOCKET] Decrypting Daobjectta...', data)
       const { sessionId } = this.store.getState().connection
       const decryptedKey = await Encryption.decryptKey(
         data.encryptedKey,

@@ -80,13 +80,15 @@ export const exchangeKeyPair = ({
       cachedSessionId,
     })
     const keyTag = `com.shocknet.APIKey.${sessionId}`
-    const oldKeyTag = `com.shocknet.APIKey.${cachedSessionId}`
-    const oldKeypair = await RSAKeychain.keyExists(oldKeyTag)
-    Logger.log('[ENCRYPTION] Old Keypair:', oldKeypair)
+    const oldKeyTag = cachedSessionId
+      ? `com.shocknet.APIKey.${cachedSessionId}`
+      : null
+    Logger.log('Key Tag:', keyTag)
+    Logger.log('Old Key Tag:', oldKeyTag)
 
-    if (oldKeypair) {
-      await RSAKeychain.deletePrivateKey(oldKeyTag)
-    }
+    // if (oldKeypair && oldKeyTag) {
+    //   await RSAKeychain.deletePrivateKey(oldKeyTag)
+    // }
 
     Logger.log('[ENCRYPTION] Generating new RSA 2048 key...')
     const keyPair = await generateKey(keyTag, 2048)
@@ -131,18 +133,23 @@ export const throttledExchangeKeyPair = keypairDetails => async (
   getState,
   extraArgument,
 ) => {
-  if (!exchangingKeypair) {
-    exchangingKeypair = exchangeKeyPair(keypairDetails)(
-      dispatch,
-      getState,
-      extraArgument,
-    )
+  try {
+    if (!exchangingKeypair) {
+      exchangingKeypair = exchangeKeyPair(keypairDetails)(
+        dispatch,
+        getState,
+        extraArgument,
+      )
+    }
+
+    const result = await exchangingKeypair
+
+    // eslint-disable-next-line require-atomic-updates
+    exchangingKeypair = null
+
+    return result
+  } catch (err) {
+    exchangingKeypair = null
+    throw err
   }
-
-  const result = await exchangingKeypair
-
-  // eslint-disable-next-line require-atomic-updates
-  exchangingKeypair = null
-
-  return result
 }
