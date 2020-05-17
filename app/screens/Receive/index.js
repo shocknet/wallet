@@ -1,6 +1,4 @@
-/**
- * @format
- */
+// @ts-nocheck
 import React, { Component } from 'react'
 import {
   // Clipboard,
@@ -35,13 +33,13 @@ export const RECEIVE_SCREEN = 'RECEIVE_SCREEN'
  */
 
 /**
- * @typedef {ConnectedRedux & object} Props
+ * @typedef {object} Props
  * @prop {(Navigation)=} navigation
  * @prop {boolean} isFocused
  */
 
 /**
- * @augments React.Component<Props, {}, never>
+ * @augments React.Component<Props & ConnectedRedux, {}, never>
  */
 class ReceiveScreen extends Component {
   state = {
@@ -60,12 +58,14 @@ class ReceiveScreen extends Component {
    */
   componentDidUpdate(prevProps) {
     const { isFocused, invoice, resetInvoice } = this.props
+    // @ts-ignore
     if (prevProps.isFocused !== isFocused && invoice.paymentRequest) {
       resetInvoice()
     }
   }
 
   isFilled = () => {
+    // @ts-ignore
     const { amount } = this.props.invoice
     if (!amount.trim()) {
       return false
@@ -183,6 +183,7 @@ const mapDispatchToProps = {
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
+  // @ts-ignore
 )(withNavigationFocus(ReceiveScreen))
 
 const styles = StyleSheet.create({

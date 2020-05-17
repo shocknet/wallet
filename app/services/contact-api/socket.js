@@ -5,13 +5,15 @@ import SocketIO from 'socket.io-client'
 import isEmpty from 'lodash/isEmpty'
 import debounce from 'lodash/debounce'
 import Logger from 'react-native-file-log'
+import { Constants } from 'shock-common'
 
 import * as Cache from '../../services/cache'
 import { ACTIONS as ConnectionAction } from '../../actions/ConnectionActions'
 
-import Action from './action'
 import * as Events from './events'
 import * as Encryption from '../encryption'
+
+const { Action } = Constants
 
 // TO DO: move to common repo
 /**
@@ -92,7 +94,7 @@ export const encryptSocketData = async data => {
 }
 
 /**
- * @param {object} data
+ * @param {any} data
  */
 export const decryptSocketData = async data => {
   if (data && data.encryptedKey) {

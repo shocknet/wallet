@@ -5,6 +5,7 @@ import React from 'react'
 import { ToastAndroid, StyleSheet, StatusBar } from 'react-native'
 import Ion from 'react-native-vector-icons/Ionicons'
 import Logger from 'react-native-file-log'
+import { Schema } from 'shock-common'
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}, Params>} Navigation
  */
@@ -70,11 +71,11 @@ const HeaderLeft = React.memo(({ onPress }) => ((
 
 /**
  * @typedef {object} State
- * @prop {API.Schema.Chat[]} chats
+ * @prop {Schema.Chat[]} chats
  * @prop {string|null} ownPublicKey
  * @prop {Partial<Record<string, PaymentStatus>>} rawInvoiceToPaymentStatus
  * @prop {Partial<Record<string, DecodedInvoice>>} rawInvoiceToDecodedInvoice
- * @prop {API.Schema.ChatMessage[]} cachedSentMessages Messages that were *just*
+ * @prop {Schema.ChatMessage[]} cachedSentMessages Messages that were *just*
  * sent but might have not appeared on the onChats() event yet.
  * @prop {Record<string, SpontPaymentInTransit>} spontPaymentsInTransit
  * @prop {Record<string, InvoiceInTransit|null>} invoicesInTransit
@@ -417,10 +418,10 @@ export default class Chat extends React.Component {
    */
   updateSpontPaymentsInTransit = () => {
     const spontPayments = this.getMessages()
-      .filter(m => API.Schema.isEncodedSpontPayment(m.body))
+      .filter(m => Schema.isEncodedSpontPayment(m.body))
       .map(m =>
-        API.Schema.decodeSpontPayment(
-          /** @type {import('../../services/contact-api/schema-types').EncSpontPayment} */ (m.body),
+        Schema.decodeSpontPayment(
+          /** @type {Schema.EncSpontPayment} */ (m.body),
         ),
       )
 
@@ -535,7 +536,7 @@ export default class Chat extends React.Component {
 
   /**
    * @private
-   * @param {API.Schema.Chat[]} chats
+   * @param {Schema.Chat[]} chats
    * @returns {void}
    */
   onChats = chats => {
@@ -562,7 +563,7 @@ export default class Chat extends React.Component {
     )
   }
 
-  /** @returns {API.Schema.Chat|null} */
+  /** @returns {Schema.Chat|null} */
   getChat() {
     const id = this.props.navigation.getParam('id')
     const theChat = this.state.chats.find(c => c.id === id)
@@ -575,7 +576,7 @@ export default class Chat extends React.Component {
     return theChat
   }
 
-  /** @returns {API.Schema.ChatMessage[]} */
+  /** @returns {Schema.ChatMessage[]} */
   getMessages() {
     const theChat = this.getChat()
 
@@ -656,7 +657,7 @@ export default class Chat extends React.Component {
 
     const msg = this.getMessages().find(m => m.id === msgID)
 
-    if (!API.Schema.isChatMessage(msg) || !theChat) {
+    if (!Schema.isChatMessage(msg) || !theChat) {
       Logger.log(
         `<Chat /> -> onPressUnpaidIncomingInvoice() -> !API.Schema.isChatMessage(msg) || !theChat (aborting)`,
       )

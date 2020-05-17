@@ -1,6 +1,4 @@
-/**
- * @prettier
- */
+// @ts-nocheck
 import React from 'react'
 import { Text, View, StyleSheet } from 'react-native'
 import { connect } from 'react-redux'

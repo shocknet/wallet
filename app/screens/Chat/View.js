@@ -16,6 +16,7 @@ import {
 import { Text } from 'react-native-elements'
 import { GiftedChat, utils as GiftedUtils } from 'react-native-gifted-chat'
 import Logger from 'react-native-file-log'
+import { Schema } from 'shock-common'
 /**
  * @typedef {import('react-native-gifted-chat').IMessage} GiftedChatMessage
  * @typedef {import('react-native-gifted-chat').User} GiftedChatUser
@@ -26,7 +27,7 @@ import BasicDialog from '../../components/BasicDialog'
 import ShockInput from '../../components/ShockInput'
 import Pad from '../../components/Pad'
 import ShockButton from '../../components/ShockButton'
-import { Actions, Schema } from '../../services/contact-api'
+import { Actions } from '../../services/contact-api'
 import ShockDialog from '../../components/ShockDialog'
 
 // import ChatAvatar from './ChatAvatar'
@@ -105,7 +106,7 @@ const AlwaysNull = () => null
  * Used for displaying payment status on invoices. If undefined for a given
  * invoice, an spinner  will be shown for that given invoice as a placeholder.
  * Please refer to _PaymentStatus to see what each one represents.
- * @prop {import('../../services/contact-api').Schema.ChatMessage[]} messages
+ * @prop {Schema.ChatMessage[]} messages
  * @prop {(msgID: string) => void} onPressUnpaidIncomingInvoice
  * @prop {(text: string) => void} onSendMessage
  * @prop {string|null} ownPublicKey

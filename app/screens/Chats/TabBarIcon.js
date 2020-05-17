@@ -1,6 +1,8 @@
 import React from 'react'
 import { View, StyleSheet } from 'react-native'
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'
+import { Schema } from 'shock-common'
+
 import * as API from '../../services/contact-api'
 import * as Cache from '../../services/cache'
 import * as CSS from '../../res/css'
@@ -12,7 +14,7 @@ import * as CSS from '../../res/css'
 
 /**
  * @typedef {object} State
- * @prop {API.Schema.Chat[]} chats
+ * @prop {Schema.Chat[]} chats
  * @prop {Cache.LastReadMsgs} lastReads
  */
 

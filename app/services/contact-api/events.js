@@ -4,16 +4,17 @@
 import debounce from 'lodash/debounce'
 import Http from 'axios'
 import Logger from 'react-native-file-log'
+import { isEqual } from 'lodash'
+import { Constants, Schema } from 'shock-common'
 
 import * as Cache from '../cache'
 import { SET_LAST_SEEN_APP_INTERVAL } from '../../services/utils'
 
-import Action from './action'
-import Event from './event'
 import * as Socket from './socket'
 // eslint-disable-next-line no-unused-vars
-import * as Schema from './schema'
-import { isEqual } from 'lodash'
+
+const { Action } = Constants
+const { Event } = Constants
 
 const POLL_INTERVAL = 3500
 
@@ -43,20 +44,6 @@ const isAuth = async () => {
  * Cache.onAuth() undefined.
  */
 let cleanSubbed = false
-
-/**
- * @throws {Error} If no data is cached.
- * @returns {Promise<string>}
- */
-const getToken = async () => {
-  const authData = await Cache.getStoredAuthData()
-
-  if (authData === null) {
-    throw new Error('Subscribed to event without having auth data cached.')
-  }
-
-  return authData.authData.token
-}
 
 /** @typedef {(connected: boolean) => void} ConnectionListener  */
 
@@ -95,17 +82,10 @@ export const onConnection = listener => {
 /** @typedef {(handshakeAddress: string|null) => void} HandshakeAddrListener */
 /** @typedef {(receivedRequests: Schema.SimpleReceivedRequest[]) => void} ReceivedRequestsListener */
 
-/** @typedef {(users: Schema.User[]) => void} UsersListener  */
-
 /**
  * @type {HandshakeAddrListener[]}
  */
 const handshakeAddrListeners = []
-
-/**
- * @type {UsersListener[]}
- */
-const usersListeners = []
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -459,35 +439,6 @@ export const onSentRequests = listener => {
   }
 }
 
-/**
- * @param {UsersListener} listener
- */
-export const onUsers = listener => {
-  if (usersListeners.indexOf(listener) > -1) {
-    throw new Error('tried to subscribe twice')
-  }
-
-  usersListeners.push(listener)
-
-  setImmediate(async () => {
-    if (!Socket.socket || !(Socket.socket && Socket.socket.connected)) {
-      throw new Error('NOT_CONNECTED')
-    }
-    Socket.socket.emit(Event.ON_ALL_USERS, {
-      token: await getToken(),
-    })
-  })
-
-  return () => {
-    const idx = usersListeners.indexOf(listener)
-
-    if (idx < 0) {
-      throw new Error('tried to unsubscribe twice')
-    }
-
-    usersListeners.splice(idx, 1)
-  }
-}
 ////////////////////////////////////////////////////////////////////////////////
 
 /** @typedef {(bio: string|null) => void} BioListener*/

@@ -1,8 +1,10 @@
+// @ts-nocheck
 import produce from 'immer'
+import { Schema } from 'shock-common'
 
 /**
  * @typedef {import('../app/actions').Action} Action
- * @typedef {import('../app/schema').User} User
+ * @typedef {Schema.User} User
  */
 
 /**

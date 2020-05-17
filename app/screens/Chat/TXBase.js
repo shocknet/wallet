@@ -214,7 +214,7 @@ export default class TXBase extends React.PureComponent {
               onPress={this.props.onPressDetails}
               style={styles.detailsTextLink}
             >
-              Details >
+              {'Details >'}
             </Text>
           </View>
         </View>

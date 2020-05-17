@@ -91,12 +91,13 @@
     "react-navigation": "^2.18.3",
     "react-redux": "^6.0.1",
     "readable-stream": "1.0.33",
-    "redux": "^4.0.4",
+    "redux": "^4.0.5",
     "redux-persist": "^6.0.0",
     "redux-persist-sensitive-storage": "^1.0.0",
     "redux-thunk": "^2.3.0",
     "safe-buffer": "^5.0.0",
     "scheduler": "0.16.1",
+    "shock-common": "^0.0.1",
     "socket.io-client": "2.1.1",
     "stream-browserify": "^1.0.0",
     "string_decoder": "~0.10.25",
@@ -143,7 +144,7 @@
     "react-test-renderer": "16.9.0",
     "rimraf": "^3.0.2",
     "rn-nodeify": "^10.2.0",
-    "typescript": "^3.7.4"
+    "typescript": "3.x.x"
   },
   "jest": {
     "preset": "react-native",

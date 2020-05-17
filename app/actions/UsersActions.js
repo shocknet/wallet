@@ -1,6 +1,8 @@
+import { Schema } from 'shock-common'
+
 /**
- * @typedef {import('../schema').PartialUser} PartialUser
- * @typedef {import('../schema').User} User
+ * @typedef {Schema.PartialUser} PartialUser
+ * @typedef {Schema.User} User
  */
 
 /**
