@@ -17,6 +17,7 @@ import Advanced, { ADVANCED_SCREEN } from '../screens/Advanced'
 import WalletOverview, { WALLET_OVERVIEW } from '../screens/WalletOverview'
 import SeedBackup, { SEED_BACKUP } from '../screens/SeedBackup'
 import WalletSettings, { WALLET_SETTINGS } from '../screens/WalletSettings'
+import Feed, { FEED } from '../screens/Feed_POC'
 
 import Login, { LOGIN } from '../screens/Login'
 
@@ -111,6 +112,12 @@ const drawerScreens = {
     screen: WalletSettings,
     navigationOptions: {
       title: 'Wallet Settings',
+    },
+  },
+  [FEED]: {
+    screen: Feed,
+    navigationOptions: {
+      title: 'Feed POC',
     },
   },
 }

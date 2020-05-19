@@ -71,8 +71,6 @@ import { RECEIVE_SCREEN } from '../Receive'
 import notificationService from '../../../notificationService'
 import * as Cache from '../../services/cache'
 
-import ShockWebView from '../../components/ShockWebView'
-
 /**
  * @typedef {object} Params
  * @prop {string=} lnurl On chan+LN+LNURL
@@ -1487,7 +1485,6 @@ class WalletOverview extends Component {
           </Text>
         ) : null}
 
-        <ShockWebView />
         <View style={styles.actionButtons}>
           <TouchableHighlight
             underlayColor="transparent"
