@@ -12,6 +12,7 @@ export default class ShockWebView extends React.Component {
         // eslint-disable-next-line
         style={{ width: '100%', aspectRatio: ratio_x / ratio_y }}
         allowUniversalAccessFromFileURLs
+        allowsFullscreenVideo
         mixedContentMode="always"
         originWhitelist={['*']}
         // eslint-disable-next-line
