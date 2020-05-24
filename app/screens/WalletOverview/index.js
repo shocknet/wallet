@@ -1211,17 +1211,37 @@ class WalletOverview extends Component {
       fetchRecentInvoices,
       loadNewInvoice,
       loadNewTransaction,
+      navigation,
     } = this.props
 
-    this.didFocus = this.props.navigation.addListener('didFocus', () => {
+    this.didFocus = navigation.addListener('didFocus', () => {
       StatusBar.setBackgroundColor(CSS.Colors.TRANSPARENT)
       StatusBar.setBarStyle('light-content')
       StatusBar.setTranslucent(true)
+
+      this.balanceIntervalID = setInterval(getWalletBalance, 4000)
+      this.exchangeRateIntervalID = setInterval(getUSDRate, 4000)
+      this.recentPaymentsIntervalID = setInterval(fetchRecentPayments, 4000)
     })
+
+    navigation.addListener('didBlur', () => {
+      if (this.balanceIntervalID) {
+        clearInterval(this.balanceIntervalID)
+      }
+
+      if (this.exchangeRateIntervalID) {
+        clearInterval(this.exchangeRateIntervalID)
+      }
+
+      if (this.exchangeRateIntervalID) {
+        clearInterval(this.exchangeRateIntervalID)
+      }
+    })
+
     //Check if this screen has a pending protocol link
     //to be processed, This will happen if the app was in background
     //on a screen different from WALLET_OVERVIEW
-    const { params } = this.props.navigation.state
+    const { params } = navigation.state
 
     if (params && params.lnurl) {
       const { lnurl } = params
@@ -1247,9 +1267,6 @@ class WalletOverview extends Component {
       await SocketManager.connectSocket()
     }
 
-    this.balanceIntervalID = setInterval(getWalletBalance, 4000)
-    this.exchangeRateIntervalID = setInterval(getUSDRate, 4000)
-    this.recentPaymentsIntervalID = setInterval(fetchRecentPayments, 4000)
     subscribeOnChats()
     await Promise.all([
       fetchRecentInvoices(),
