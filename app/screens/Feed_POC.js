@@ -66,9 +66,14 @@ class Feed extends React.Component {
   }
 
   async componentDidMount() {
-    notificationService.Log('TESTING', 'ECCOMI YO')
-    const { data } = await Http.get(`api/gun/feedpoc`)
-    notificationService.Log('TESTING', JSON.stringify(data))
+    try {
+      notificationService.Log('TESTING', 'ECCOMI YO')
+      const data = await Http.get(`/api/gun/feedpoc`)
+      notificationService.Log('TESTING', JSON.stringify(data))
+    } catch (e) {
+      notificationService.Log('TESTING', 'ERROR DETECTED')
+      notificationService.Log('TESTING', JSON.stringify(e))
+    }
   }
 
   render() {
