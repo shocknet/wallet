@@ -1,7 +1,9 @@
 import Logger from 'react-native-file-log'
+import notificationService from '../../notificationService'
 
 export const ACTIONS = {
   ADD_POST: 'feed/addPost',
+  LOAD_FEED: 'feed/loadFeed',
 }
 
 /**
@@ -34,4 +36,17 @@ export const addPost = post => dispatch => {
     data: post,
   })
   return post
+}
+/**
+ * @param {PartialFeed[]} feed
+ * @returns {import('redux-thunk').ThunkAction<feed, {}, {}, import('redux').AnyAction>}
+ */
+export const loadFeed = feed => dispatch => {
+  notificationService.Log('TESTING', JSON.stringify(feed))
+  Logger.log('loading feed')
+  dispatch({
+    type: ACTIONS.LOAD_FEED,
+    data: feed,
+  })
+  return feed
 }

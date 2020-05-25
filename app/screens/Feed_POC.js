@@ -5,7 +5,7 @@ import { connect } from 'react-redux'
 import ShockWebView from '../components/ShockWebView'
 import { WebView } from 'react-native-webview'
 import FeedItem from '../components/FeedItem'
-import { addPost } from '../actions/FeedActions'
+import { addPost, loadFeed } from '../actions/FeedActions'
 import notificationService from '../../notificationService'
 import Http from 'axios'
 
@@ -68,8 +68,9 @@ class Feed extends React.Component {
   async componentDidMount() {
     try {
       notificationService.Log('TESTING', 'ECCOMI YO')
-      const data = await Http.get(`/api/gun/feedpoc`)
-      notificationService.Log('TESTING', JSON.stringify(data))
+      const { data } = await Http.get(`/api/gun/feedpoc`)
+      this.props.loadFeed(data.data.feed)
+      //notificationService.Log('TESTING', JSON.stringify(data))
     } catch (e) {
       notificationService.Log('TESTING', 'ERROR DETECTED')
       notificationService.Log('TESTING', JSON.stringify(e))
@@ -105,6 +106,7 @@ const mapStateToProps = ({ feed }) => ({ feed })
 
 const mapDispatchToProps = {
   addPost,
+  loadFeed,
 }
 
 export default connect(
