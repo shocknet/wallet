@@ -5,6 +5,9 @@ import { connect } from 'react-redux'
 import ShockWebView from '../components/ShockWebView'
 import { WebView } from 'react-native-webview'
 import FeedItem from '../components/FeedItem'
+import { addPost } from '../actions/FeedActions'
+import notificationService from '../../notificationService'
+import Http from 'axios'
 
 //import { updateSelectedFee, updateFeesSource } from '../actions/FeesActions'
 //import ShockInput from '../components/ShockInput'
@@ -54,7 +57,7 @@ const DATA = [
 /**
  * @augments React.Component<Props, State, never>
  */
-export default class Feed extends React.Component {
+class Feed extends React.Component {
   /**
    * @type {import('react-navigation').NavigationScreenOptions}
    */
@@ -62,11 +65,24 @@ export default class Feed extends React.Component {
     header: null,
   }
 
+  async componentDidMount() {
+    notificationService.Log('TESTING', 'ECCOMI YO')
+    const { data } = await Http.get(`api/gun/feedpoc`)
+    notificationService.Log('TESTING', JSON.stringify(data))
+  }
+
   render() {
+    //notificationService.Log("TESTING",JSON.stringify(this.props.feed))
+    /*const feedData = []
+    this.props.feed.feed.forEach(element => {
+      //notificationService.Log("TESTING",JSON.stringify(element))
+      feedData.push(element.media[0])
+    });
+    notificationService.Log("TESTING",JSON.stringify(feedData))*/
     return (
       <SafeAreaView style={styles.container}>
         <FlatList
-          data={DATA}
+          data={this.props.feed.feed}
           //eslint-disable-next-line
           renderItem={({ item }) => <FeedItem {...item} />}
           //eslint-disable-next-line
@@ -76,6 +92,20 @@ export default class Feed extends React.Component {
     )
   }
 }
+
+/**
+ * @param {typeof import('../../reducers/index').default} state
+ */
+const mapStateToProps = ({ feed }) => ({ feed })
+
+const mapDispatchToProps = {
+  addPost,
+}
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(Feed)
 
 const styles = StyleSheet.create({
   container: {

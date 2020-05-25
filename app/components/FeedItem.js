@@ -4,24 +4,25 @@ import ShockWebView from './ShockWebView'
 import { newLogo } from '../res'
 import Pad from '../components/Pad'
 
-// @ts-ignore
-export default function FeedItem({ ratio_x, ratio_y, magnet }) {
+/**
+ *
+ * @param {import('../actions/FeedActions').PartialFeed} post
+ */
+export default function FeedItem(post) {
+  const [media] = post.media
   return (
     <View style={styles.container}>
       <View style={styles.row}>
         <Image source={newLogo} style={styles.image} />
-        <Text style={styles.title}>USERNAME</Text>
+        <Text style={styles.title}>{post.username}</Text>
       </View>
 
-      <Text>
-        A purely peer-to-peer version of electronic cash would allow online
-        payments to be sent directly from one party to another without going
-        through a financial institution. Digital signatures provide part of the
-        solution, but the main benefits are lost if a trusted third party is
-        still required to prevent double-spending. We propose a solution to the
-        double-spending problem using a peer-to-peer network
-      </Text>
-      <ShockWebView ratio_x={ratio_x} ratio_y={ratio_y} magnet={magnet} />
+      <Text>{post.paragraphs[0]}</Text>
+      <ShockWebView
+        ratio_x={media.ratio_x}
+        ratio_y={media.ratio_y}
+        magnet={media.magnetUri}
+      />
       <Pad amount={10} />
     </View>
   )
