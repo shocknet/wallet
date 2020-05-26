@@ -59,6 +59,12 @@ const generateKey = async (tag, size = 2048, retries = 0) => {
     return generateKey(tag, size, retries + 1)
   }
 
+  Logger.log('[ENCRYPTION] New key generated')
+  Logger.log('[ENCRYPTION] New Keypair', {
+    publicKey: keyPair.public,
+    tag,
+  })
+
   return keyPair
 }
 
@@ -83,8 +89,17 @@ export const exchangeKeyPair = ({
     const oldKeyTag = cachedSessionId
       ? `com.shocknet.APIKey.${cachedSessionId}`
       : null
+    const keypairExists = await RSAKeychain.keyExists(keyTag)
     Logger.log('Key Tag:', keyTag)
     Logger.log('Old Key Tag:', oldKeyTag)
+    Logger.log('Keypair Exists:', keypairExists)
+
+    if (keyTag === oldKeyTag && keypairExists) {
+      Logger.log('[ENCRYPTION] Key tag already exists!')
+      return {
+        success: true,
+      }
+    }
 
     // if (oldKeypair && oldKeyTag) {
     //   await RSAKeychain.deletePrivateKey(oldKeyTag)
@@ -92,11 +107,6 @@ export const exchangeKeyPair = ({
 
     Logger.log('[ENCRYPTION] Generating new RSA 2048 key...')
     const keyPair = await generateKey(keyTag, 2048)
-    Logger.log('[ENCRYPTION] New key generated')
-    Logger.log('[ENCRYPTION] New Keypair', {
-      publicKey: keyPair.public,
-      deviceId,
-    })
     const exchangedKeys = await Http.post(
       `${baseURL ? baseURL : ''}/api/security/exchangeKeys`,
       {
