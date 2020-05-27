@@ -1231,8 +1231,8 @@ class WalletOverview extends Component {
         clearTimeout(this.exchangeRateIntervalID)
       }
 
-      if (this.exchangeRateIntervalID) {
-        clearTimeout(this.exchangeRateIntervalID)
+      if (this.recentPaymentsIntervalID) {
+        clearTimeout(this.recentPaymentsIntervalID)
       }
     })
 
