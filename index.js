@@ -329,6 +329,7 @@ const decryptResponse = async response => {
         !!connection.APIPublicKey,
         !!response.data.encryptedData,
         !!connection.sessionId,
+        path,
       )
       cache.clear()
       await throttledExchangeKeyPair({
@@ -400,10 +401,18 @@ Http.interceptors.response.use(
         error.response.status === 401 &&
         !encryptionErrors.includes(decryptedResponse.data.field)
       ) {
+        Logger.log(
+          '[ENCRYPTION] An error has occurred:',
+          decryptedResponse.data,
+        )
         await Cache.writeStoredAuthData(null)
       }
 
       if (encryptionErrors.includes(decryptedResponse.data.field)) {
+        Logger.log(
+          '[ENCRYPTION] An error has occurred:',
+          decryptedResponse.data,
+        )
         cache.clear()
         await throttledExchangeKeyPair({
           deviceId: connection.deviceId,

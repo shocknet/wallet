@@ -67,3 +67,6 @@ shim.js
 
 # CocoaPods
 /ios/Pods/
+
+# 
+android/app/.settings/org.eclipse.buildship.core.prefs

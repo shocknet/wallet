@@ -14,6 +14,7 @@ import {
   View,
   Linking,
   ImageBackground,
+  InteractionManager,
   StatusBar,
 } from 'react-native'
 import EntypoIcons from 'react-native-vector-icons/Entypo'
@@ -1204,10 +1205,7 @@ class WalletOverview extends Component {
     const {
       fetchNodeInfo,
       subscribeOnChats,
-      getWalletBalance,
-      getUSDRate,
       fetchRecentTransactions,
-      fetchRecentPayments,
       fetchRecentInvoices,
       loadNewInvoice,
       loadNewTransaction,
@@ -1219,22 +1217,22 @@ class WalletOverview extends Component {
       StatusBar.setBarStyle('light-content')
       StatusBar.setTranslucent(true)
 
-      this.balanceIntervalID = setInterval(getWalletBalance, 4000)
-      this.exchangeRateIntervalID = setInterval(getUSDRate, 4000)
-      this.recentPaymentsIntervalID = setInterval(fetchRecentPayments, 4000)
+      this.balanceIntervalID = setTimeout(this.getWalletBalance, 4000)
+      this.exchangeRateIntervalID = setTimeout(this.getUSDRate, 4000)
+      this.recentPaymentsIntervalID = setTimeout(this.fetchRecentPayments, 4000)
     })
 
     navigation.addListener('didBlur', () => {
       if (this.balanceIntervalID) {
-        clearInterval(this.balanceIntervalID)
+        clearTimeout(this.balanceIntervalID)
       }
 
       if (this.exchangeRateIntervalID) {
-        clearInterval(this.exchangeRateIntervalID)
+        clearTimeout(this.exchangeRateIntervalID)
       }
 
-      if (this.exchangeRateIntervalID) {
-        clearInterval(this.exchangeRateIntervalID)
+      if (this.recentPaymentsIntervalID) {
+        clearTimeout(this.recentPaymentsIntervalID)
       }
     })
 
@@ -1304,6 +1302,48 @@ class WalletOverview extends Component {
       },
     )
   }
+
+  fetchRecentPayments = () =>
+    InteractionManager.runAfterInteractions(() => {
+      const { fetchRecentPayments } = this.props
+      try {
+        fetchRecentPayments()
+        this.recentPaymentsIntervalID = setTimeout(
+          this.fetchRecentPayments,
+          4000,
+        )
+        return
+      } catch (err) {
+        this.recentPaymentsIntervalID = setTimeout(
+          this.fetchRecentPayments,
+          4000,
+        )
+      }
+    })
+
+  getUSDRate = () =>
+    InteractionManager.runAfterInteractions(() => {
+      const { getUSDRate } = this.props
+      try {
+        getUSDRate()
+        this.exchangeRateIntervalID = setTimeout(this.getUSDRate, 4000)
+        return
+      } catch (err) {
+        this.exchangeRateIntervalID = setTimeout(this.getUSDRate, 4000)
+      }
+    })
+
+  getWalletBalance = () =>
+    InteractionManager.runAfterInteractions(() => {
+      const { getWalletBalance } = this.props
+      try {
+        getWalletBalance()
+        this.balanceIntervalID = setTimeout(this.getWalletBalance, 4000)
+        return
+      } catch (err) {
+        this.balanceIntervalID = setTimeout(this.getWalletBalance, 4000)
+      }
+    })
 
   componentWillUnmount() {
     if (this.balanceIntervalID) {
