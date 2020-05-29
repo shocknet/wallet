@@ -13,6 +13,9 @@ import { addPost } from '../actions/FeedActions'
 //import Http from 'axios'
 import ShockInput from '../components/ShockInput'
 import ShockButton from '../components/ShockButton'
+import Pad from '../components/Pad'
+import * as Thunks from '../thunks'
+import notificationService from '../../notificationService'
 
 //import { updateSelectedFee, updateFeesSource } from '../actions/FeesActions'
 //import ShockInput from '../components/ShockInput'
@@ -31,7 +34,15 @@ export const ADD_POST_TO_FEED = 'ADD_POST_TO_FEED'
  * @typedef {object} State
  * @prop {string} paragraph
  * @prop {string} magnet
+ * @prop {string} userPubKey
  */
+
+/** @type {State} */
+const DEFAULT_STATE = {
+  paragraph: '',
+  magnet: '',
+  userPubKey: '',
+}
 
 /**
  * @typedef {ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps} ConnectedRedux
@@ -48,6 +59,9 @@ class AddPostToFeed extends React.Component {
     header: null,
   }
 
+  /** @type {State} */
+  state = DEFAULT_STATE
+
   /**
    * @param {string} t
    */
@@ -62,16 +76,51 @@ class AddPostToFeed extends React.Component {
     this.setState({ paragraph: t })
   }
 
+  addPost = () => {
+    const { addPost } = this.props
+    const { paragraph, magnet } = this.state
+    const post = {
+      id: '',
+      paragraphs: [paragraph],
+      media: [
+        {
+          magnetUri: magnet,
+          width: 0,
+          height: 0,
+        },
+      ],
+    }
+    addPost(post)
+  }
+
+  /**
+   * @param {string} k
+   */
+  updateUserPubKey = k => {
+    this.setState({ userPubKey: k })
+  }
+
+  follow = () => {
+    notificationService.Log('TESTING', 'STEP 1')
+    const { userPubKey } = this.state
+    this.props.follow(userPubKey)
+  }
+
   render() {
     return (
       <View>
+        <Pad amount={15} />
         <Text>Text</Text>
         <ShockInput onChangeText={this.updateParagraph} numberOfLines={4} />
         <Text>Magnet</Text>
         <ShockInput onChangeText={this.updateMagnet} numberOfLines={1} />
-        <ShockButton />
+        <ShockButton title="POST" />
         <Text>{this.state.paragraph}</Text>
         <Text>{this.state.magnet}</Text>
+        <Pad amount={15} />
+        <Text>Pub Key</Text>
+        <ShockInput onChangeText={this.updateUserPubKey} numberOfLines={4} />
+        <ShockButton title="FOLLOW" onPress={this.follow} />
       </View>
     )
   }
@@ -82,8 +131,16 @@ class AddPostToFeed extends React.Component {
  */
 const mapStateToProps = ({ feed }) => ({ feed })
 
-const mapDispatchToProps = {
-  addPost,
+/**@param {function} dispatch*/
+const mapDispatchToProps = dispatch => {
+  return {
+    addPost,
+    /** @param {string} pk */
+    follow: pk => {
+      notificationService.Log('TESTING', 'STEP 2')
+      dispatch(Thunks.Follows.follow(pk))
+    },
+  }
 }
 
 export default connect(
