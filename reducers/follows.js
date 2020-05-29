@@ -11,8 +11,7 @@ import produce from 'immer'
  * @typedef {object} Follow
  * @prop {string} user
  * @prop {boolean} private
- * @prop {'processing'|'ok'|'error'} status
- * @prop {string|null} err
+ * @prop {'processing'|'ok'} status
  */
 /**
  * @typedef {Record<string, Follow>} State
@@ -27,7 +26,6 @@ const INITIAL_STATE = {}
  * @returns {Follow}
  */
 const createEmptyFollow = publicKey => ({
-  err: null,
   private: false,
   status:'processing',
   user:publicKey
@@ -40,16 +38,50 @@ const createEmptyFollow = publicKey => ({
  */
 const reducer = (state = INITIAL_STATE,action) => {
   switch(action.type){
-    case 'follow/follow':
+    case 'follows/beganFollow':
       return produce(state, draft =>{
-        const {user: pk} = action.data.followData
+        const {publicKey: pk} = action.data
+        draft[pk] = {
+          ...createEmptyFollow(pk),
+        }
+      })
+    case 'follows/finishedFollow':
+      return produce(state, draft =>{
+        const {publicKey: pk} = action.data
         draft[pk] = {
           ...createEmptyFollow(pk),
           ...(draft[pk] || {}),
-          ...action.data.followData
-        }
+          status:'ok',
+        } 
       })
-    default:
+    case 'follows/followError':
+      return produce(state, draft =>{
+        const {publicKey: pk} = action.data
+        delete draft[pk] 
+      })
+    case 'follows/finishedUnfollow':
+      return produce(state, draft =>{
+        const {publicKey: pk} = action.data
+        delete draft[pk] 
+      })
+    case 'follows/receivedFollow':
+      return produce(state, draft =>{
+        
+        /**
+         * @param {Follow} follow
+         * @param {string} pk
+         */
+        const followHandler = (follow,pk) =>{
+          //const {user:pk} = follow
+          draft[pk] = {
+            ...createEmptyFollow(pk),
+            ...(draft[pk] || {}),
+            ...follow
+          }
+        }
+        action.data.follows.forEach(followHandler);
+      })
+    default :
       return state
   }
 }

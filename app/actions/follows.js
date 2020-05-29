@@ -1,54 +1,95 @@
 //import { Schema } from 'shock-common'
-import { Follows } from '../thunk'
 
 //TODO: add @typedef {Schema.Follow} Follow
 /**
  * @typedef {object} Follow
  * @prop {string} user
  * @prop {boolean} private
- * @prop {'processing'|'ok'|'error'} status
- * @prop {string|null} err
+ * @prop {'processing'|'ok'} status
  */
 
 /**
- * @typedef {object} followAction
- * @prop {{ followData: Follow }} data
- * @prop {'follow/follow'} type
+ * @typedef {object} beganFollowAction
+ * @prop {{ publicKey: string }} data
+ * @prop {'follows/beganFollow'} type
  */
 /**
- * @typedef {object} unfollowAction
- * @prop {{ unfollowData: Follow }} data
- * @prop {'follow/unfollow'} type
+ * @typedef {object} finishedFollowAction
+ * @prop {{ publicKey: string }} data
+ * @prop {'follows/finishedFollow'} type
+ */
+/**
+ * @typedef {object} followErrorAction
+ * @prop {{ publicKey: string }} data
+ * @prop {'follows/followError'} type
+ */
+/**
+ * @typedef {object} finishedUnfollowAction
+ * @prop {{ publicKey: string }} data
+ * @prop {'follows/finishedUnfollow'} type
+ */
+/**
+ * @typedef {object} receivedfollowAction
+ * @prop {{ follows: Map<string,Follow> }} data
+ * @prop {'follows/receivedFollow'} type
+ */
+
+/**
+ * @typedef {beganFollowAction|finishedFollowAction|followErrorAction|finishedUnfollowAction|receivedfollowAction} followsActions
  */
 
 /**
  *
- * @param {string} recipientPublicKey
+ * @param {string} publicKey
+ * @returns {beganFollowAction}
  */
-export const follow = recipientPublicKey => {
-  return Follows.followThunk(recipientPublicKey)
-}
-
-/*
+export const beganFollow = publicKey => ({
+  data: {
+    publicKey,
+  },
+  type: 'follows/beganFollow',
+})
 /**
- * @param {Follow} followData
- * @returns {followAction}
- 
-export const follow = followData => ({
+ *
+ * @param {string} publicKey
+ * @returns {finishedFollowAction}
+ */
+export const finishedFollow = publicKey => ({
   data: {
-    followData,
+    publicKey,
   },
-  type: 'follow/follow',
+  type: 'follows/finishedFollow',
 })
-
-
- * @param {Follow} unfollowData
- * @returns {unfollowAction}
- 
-export const unfollow = unfollowData => ({
+/**
+ *
+ * @param {string} publicKey
+ * @returns {followErrorAction}
+ */
+export const followError = publicKey => ({
   data: {
-    unfollowData,
+    publicKey,
   },
-  type: 'follow/unfollow',
+  type: 'follows/followError',
 })
-*/
+/**
+ *
+ * @param {string} publicKey
+ * @returns {finishedUnfollowAction}
+ */
+export const finishedUnfollow = publicKey => ({
+  data: {
+    publicKey,
+  },
+  type: 'follows/finishedUnfollow',
+})
+/**
+ *
+ * @param {Map<string,Follow>} follows
+ * @returns {receivedfollowAction}
+ */
+export const receivedfollowAction = follows => ({
+  data: {
+    follows,
+  },
+  type: 'follows/receivedFollow',
+})

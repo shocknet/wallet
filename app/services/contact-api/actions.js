@@ -406,16 +406,16 @@ export const disconnect = async pub => {
 }
 
 /**
- * @param {string} recipientPublicKey
+ * @param {string} PublicKey
  * @returns {Promise<void>}
  */
-export const follow = recipientPublicKey => {
-  return Http.post('/api/gun/follow', { recipientPublicKey })
+export const follow = PublicKey => {
+  return Http.post('/api/gun/follow', { PublicKey })
 }
 /**
- * @param {string} recipientPublicKey
- * @returns {Promise<object>}
+ * @param {string} PublicKey
+ * @returns {Promise<void>}
  */
-export const unfollow = recipientPublicKey => {
-  return Http.post('/api/gun/unfollow', { recipientPublicKey })
+export const unfollow = PublicKey => {
+  return Http.post('/api/gun/unfollow', { PublicKey })
 }
