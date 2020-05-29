@@ -9,39 +9,49 @@
  */
 
 /**
- * @typedef {object} beganFollowAction
+ * @typedef {object} BeganFollowAction
  * @prop {{ publicKey: string }} data
  * @prop {'follows/beganFollow'} type
  */
 /**
- * @typedef {object} finishedFollowAction
+ * @typedef {object} FinishedFollowAction
  * @prop {{ publicKey: string }} data
  * @prop {'follows/finishedFollow'} type
  */
 /**
- * @typedef {object} followErrorAction
+ * @typedef {object} FollowErrorAction
  * @prop {{ publicKey: string }} data
  * @prop {'follows/followError'} type
  */
 /**
- * @typedef {object} finishedUnfollowAction
+ * @typedef {object} BeganUnfollowAction
+ * @prop {{ publicKey: string }} data
+ * @prop {'follows/beganUnfollow'} type
+ */
+/**
+ * @typedef {object} FinishedUnfollowAction
  * @prop {{ publicKey: string }} data
  * @prop {'follows/finishedUnfollow'} type
  */
 /**
- * @typedef {object} receivedfollowAction
+ * @typedef {object} UnfollowErrorAction
+ * @prop {{ publicKey: string }} data
+ * @prop {'follows/unfollowError'} type
+ */
+/**
+ * @typedef {object} ReceivedFollowAction
  * @prop {{ follows: Map<string,Follow> }} data
  * @prop {'follows/receivedFollow'} type
  */
 
 /**
- * @typedef {beganFollowAction|finishedFollowAction|followErrorAction|finishedUnfollowAction|receivedfollowAction} followsActions
+ * @typedef {BeganFollowAction|FinishedFollowAction|FollowErrorAction|BeganUnfollowAction|FinishedUnfollowAction|UnfollowErrorAction|ReceivedFollowAction} followsActions
  */
 
 /**
  *
  * @param {string} publicKey
- * @returns {beganFollowAction}
+ * @returns {BeganFollowAction}
  */
 export const beganFollow = publicKey => ({
   data: {
@@ -52,7 +62,7 @@ export const beganFollow = publicKey => ({
 /**
  *
  * @param {string} publicKey
- * @returns {finishedFollowAction}
+ * @returns {FinishedFollowAction}
  */
 export const finishedFollow = publicKey => ({
   data: {
@@ -63,7 +73,7 @@ export const finishedFollow = publicKey => ({
 /**
  *
  * @param {string} publicKey
- * @returns {followErrorAction}
+ * @returns {FollowErrorAction}
  */
 export const followError = publicKey => ({
   data: {
@@ -74,7 +84,18 @@ export const followError = publicKey => ({
 /**
  *
  * @param {string} publicKey
- * @returns {finishedUnfollowAction}
+ * @returns {BeganUnfollowAction}
+ */
+export const beganUnfollow = publicKey => ({
+  data: {
+    publicKey,
+  },
+  type: 'follows/beganUnfollow',
+})
+/**
+ *
+ * @param {string} publicKey
+ * @returns {FinishedUnfollowAction}
  */
 export const finishedUnfollow = publicKey => ({
   data: {
@@ -84,8 +105,19 @@ export const finishedUnfollow = publicKey => ({
 })
 /**
  *
+ * @param {string} publicKey
+ * @returns {UnfollowErrorAction}
+ */
+export const unfollowError = publicKey => ({
+  data: {
+    publicKey,
+  },
+  type: 'follows/unfollowError',
+})
+/**
+ *
  * @param {Map<string,Follow>} follows
- * @returns {receivedfollowAction}
+ * @returns {ReceivedFollowAction}
  */
 export const receivedfollowAction = follows => ({
   data: {

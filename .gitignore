@@ -67,3 +67,4 @@ shim.js
 
 # CocoaPods
 /ios/Pods/
+.vscode/settings.json

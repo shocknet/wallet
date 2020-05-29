@@ -2,26 +2,26 @@
 import * as API from '../services/contact-api'
 import * as FollowsActions from '../actions/follows'
 
-const follow = PublicKey => (dispatch, getState) => {
-  dispatch(FollowsActions.beganFollow(PublicKey))
-  return API.Actions.follow(PublicKey)
+const follow = publicKey => (dispatch, getState) => {
+  dispatch(FollowsActions.beganFollow(publicKey))
+  return API.Actions.follow(publicKey)
     .then(() => {
-      dispatch(FollowsActions.finishedFollow(PublicKey))
+      dispatch(FollowsActions.finishedFollow(publicKey))
     })
     .catch(e => {
       //TODO: Toast
-      dispatch(FollowsActions.followError(PublicKey))
+      dispatch(FollowsActions.followError(publicKey))
     })
 }
 
-const unfollow = PublicKey => (dispatch, getState) => {
-  return API.Actions.unfollow(PublicKey)
+const unfollow = publicKey => (dispatch, getState) => {
+  return API.Actions.unfollow(publicKey)
     .then(() => {
-      dispatch(FollowsActions.finishedUnfollow(PublicKey))
+      dispatch(FollowsActions.finishedUnfollow(publicKey))
     })
     .catch(e => {
       //TODO:Toast
-      dispatch(FollowsActions.followError(PublicKey))
+      dispatch(FollowsActions.unfollowError(publicKey))
     })
 }
-export { follow }
+export { follow, unfollow }

@@ -41,9 +41,7 @@ const reducer = (state = INITIAL_STATE,action) => {
     case 'follows/beganFollow':
       return produce(state, draft =>{
         const {publicKey: pk} = action.data
-        draft[pk] = {
-          ...createEmptyFollow(pk),
-        }
+        draft[pk] = createEmptyFollow(pk)
       })
     case 'follows/finishedFollow':
       return produce(state, draft =>{
@@ -59,10 +57,28 @@ const reducer = (state = INITIAL_STATE,action) => {
         const {publicKey: pk} = action.data
         delete draft[pk] 
       })
+    case 'follows/beganUnfollow':
+      return produce(state, draft =>{
+        const {publicKey: pk} = action.data
+        draft[pk] = {
+          ...createEmptyFollow(pk),
+          ...(draft[pk] || {}), 
+          status:'processing'
+        }
+      })
     case 'follows/finishedUnfollow':
       return produce(state, draft =>{
         const {publicKey: pk} = action.data
         delete draft[pk] 
+      })
+    case 'follows/unfollowError':
+      return produce(state, draft =>{
+        const {publicKey: pk} = action.data
+        draft[pk] = {
+          ...createEmptyFollow(pk),
+          ...(draft[pk] || {}), 
+          status:'ok'
+        } 
       })
     case 'follows/receivedFollow':
       return produce(state, draft =>{

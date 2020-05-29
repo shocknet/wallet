@@ -3,6 +3,8 @@ import React from 'react'
 import {
   Text,
   View /* StyleSheet, SafeAreaView, FlatList */,
+  SafeAreaView,
+  ScrollView,
 } from 'react-native'
 import { connect } from 'react-redux'
 //import ShockWebView from '../components/ShockWebView'
@@ -107,21 +109,40 @@ class AddPostToFeed extends React.Component {
   }
 
   render() {
+    const { follows } = this.props
+    const generateFollows = () => {
+      const followsArray = Object.values(follows)
+      if (followsArray.length === 0) {
+        return <Text>You are following no one</Text>
+      }
+      return followsArray.map(follow => {
+        return (
+          <View key={follow.user}>
+            <Text>You are following:</Text>
+            <Text>{follow.user}</Text>
+            <Text>{follow.status}</Text>
+          </View>
+        )
+      })
+    }
     return (
-      <View>
-        <Pad amount={15} />
-        <Text>Text</Text>
-        <ShockInput onChangeText={this.updateParagraph} numberOfLines={4} />
-        <Text>Magnet</Text>
-        <ShockInput onChangeText={this.updateMagnet} numberOfLines={1} />
-        <ShockButton title="POST" />
-        <Text>{this.state.paragraph}</Text>
-        <Text>{this.state.magnet}</Text>
-        <Pad amount={15} />
-        <Text>Pub Key</Text>
-        <ShockInput onChangeText={this.updateUserPubKey} numberOfLines={4} />
-        <ShockButton title="FOLLOW" onPress={this.follow} />
-      </View>
+      <SafeAreaView>
+        <ScrollView>
+          <Pad amount={15} />
+          <Text>Text</Text>
+          <ShockInput onChangeText={this.updateParagraph} numberOfLines={4} />
+          <Text>Magnet</Text>
+          <ShockInput onChangeText={this.updateMagnet} numberOfLines={1} />
+          <ShockButton title="POST" />
+          <Text>{this.state.paragraph}</Text>
+          <Text>{this.state.magnet}</Text>
+          <Pad amount={15} />
+          <Text>Pub Key</Text>
+          <ShockInput onChangeText={this.updateUserPubKey} numberOfLines={4} />
+          <ShockButton title="FOLLOW" onPress={this.follow} />
+          <View>{generateFollows()}</View>
+        </ScrollView>
+      </SafeAreaView>
     )
   }
 }
@@ -129,7 +150,7 @@ class AddPostToFeed extends React.Component {
 /**
  * @param {typeof import('../../reducers/index').default} state
  */
-const mapStateToProps = ({ feed }) => ({ feed })
+const mapStateToProps = ({ follows }) => ({ follows })
 
 /**@param {function} dispatch*/
 const mapDispatchToProps = dispatch => {
