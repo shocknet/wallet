@@ -6,6 +6,7 @@ import debounce from 'lodash/debounce'
 import once from 'lodash/once'
 import Logger from 'react-native-file-log'
 import { Constants, Schema } from 'shock-common'
+import Http from 'axios'
 
 import * as Cache from '../../services/cache'
 
@@ -402,4 +403,19 @@ export const disconnect = async pub => {
     }
     throw new Error(res.msg || 'Unknown Error')
   }
+}
+
+/**
+ * @param {string} recipientPublicKey
+ * @returns {Promise<void>}
+ */
+export const follow = recipientPublicKey => {
+  return Http.post('/api/gun/follow', { recipientPublicKey })
+}
+/**
+ * @param {string} recipientPublicKey
+ * @returns {Promise<object>}
+ */
+export const unfollow = recipientPublicKey => {
+  return Http.post('/api/gun/unfollow', { recipientPublicKey })
 }

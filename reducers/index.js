@@ -9,6 +9,7 @@ import ConnectionReducer from './ConnectionReducer'
 import FeesReducer from './FeesReducer'
 import UsersReducer, * as Users from './UsersReducer'
 import FeedReducer from './FeedReducer'
+import FollowsReducer from './follows'
 
 const rootReducer = {
   auth: AuthReducer,
@@ -21,6 +22,7 @@ const rootReducer = {
   fees: FeesReducer,
   users: UsersReducer,
   feed: FeedReducer,
+  follows: FollowsReducer,
 }
 
 /**
