@@ -422,7 +422,7 @@ export const follow = publicKey => {
  * @returns {Promise<void>}
  */
 export const unfollow = publicKey => {
-  return Http.post('/api/gun/unfollow', { publicKey })
+  return Http.delete(`/api/gun/follows/${publicKey}`)
 }
 /**
  * @param {number} page
