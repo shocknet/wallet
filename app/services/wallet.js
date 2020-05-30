@@ -351,6 +351,12 @@ export const balance = async () => {
     return data
   } catch (err) {
     const { response } = err
+
+    if (!response) {
+      Logger.log('[WALLET] Unknown error:', err)
+      throw err
+    }
+
     throw new Error(
       response.data.errorMessage || response.data.message || 'Unknown error.',
     )
@@ -382,6 +388,11 @@ export const getTransactions = async request => {
     return data
   } catch (err) {
     const { response } = err
+    if (!response) {
+      Logger.log('[WALLET] Unknown error:', err)
+      throw err
+    }
+
     throw new Error(
       response.data.errorMessage || response.data.message || 'Unknown error.',
     )
@@ -419,6 +430,11 @@ export const listPayments = async request => {
     return data
   } catch (err) {
     const { response } = err
+    if (!response) {
+      Logger.log('[WALLET] Unknown error:', err)
+      throw err
+    }
+
     throw new Error(
       response.data.errorMessage || response.data.message || 'Unknown error.',
     )
@@ -459,6 +475,7 @@ export const listInvoices = async request => {
   } catch (err) {
     const { response } = err
     if (!response) {
+      Logger.log('[WALLET] Unknown error:', err)
       throw err
     }
 
@@ -513,6 +530,11 @@ export const newAddress = async useOlderFormat => {
     return /** @type {NewAddressResponse} */ data.address
   } catch (err) {
     const { response } = err
+    if (!response) {
+      Logger.log('[WALLET] Unknown error:', err)
+      throw err
+    }
+
     throw new Error(
       response.data.errorMessage || response.data.message || 'Unknown error.',
     )
@@ -567,6 +589,11 @@ export const addInvoice = async request => {
     return data
   } catch (err) {
     const { response } = err
+    if (!response) {
+      Logger.log('[WALLET] Unknown error:', err)
+      throw err
+    }
+
     throw new Error(
       response.data.errorMessage || response.data.message || 'Unknown error.',
     )
@@ -638,6 +665,11 @@ export const sendCoins = async params => {
     return data
   } catch (err) {
     const { response } = err
+    if (!response) {
+      Logger.log('[WALLET] Unknown error:', err)
+      throw err
+    }
+
     throw new Error(
       response.data.errorMessage || response.data.message || 'Unknown error.',
     )
@@ -712,6 +744,11 @@ export const CAUTION_payInvoice = async ({ amt, payreq }) => {
     return data
   } catch (err) {
     const { response } = err
+    if (!response) {
+      Logger.log('[WALLET] Unknown error:', err)
+      throw err
+    }
+
     throw new Error(
       response.data.errorMessage || response.data.message || 'Unknown error.',
     )
@@ -834,6 +871,11 @@ export const addPeer = async uri => {
     return data
   } catch (err) {
     const { response } = err
+    if (!response) {
+      Logger.log('[WALLET] Unknown error:', err)
+      throw err
+    }
+
     throw new Error(
       response.data.errorMessage || response.data.message || 'Unknown error.',
     )
@@ -875,6 +917,11 @@ export const listPeers = async () => {
     return data.peers
   } catch (err) {
     const { response } = err
+    if (!response) {
+      Logger.log('[WALLET] Unknown error:', err)
+      throw err
+    }
+
     throw new Error(
       response.data.errorMessage || response.data.message || 'Unknown error.',
     )
@@ -1078,6 +1125,11 @@ export const getChaninfo = async chanID => {
     return data
   } catch (err) {
     const { response } = err
+    if (!response) {
+      Logger.log('[WALLET] Unknown error:', err)
+      throw err
+    }
+
     throw new Error(
       response.data.errorMessage || response.data.message || 'Unknown error.',
     )

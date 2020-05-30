@@ -154,7 +154,6 @@ class Socket {
   connectSocket = async () => {
     if (this.store) {
       const { connection } = this.store.getState()
-
       const nodeURL = await Cache.getNodeURL()
 
       const socket = SocketIO(`http://${nodeURL}`, {
