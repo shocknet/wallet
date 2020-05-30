@@ -1,3 +1,5 @@
+//@ts-nocheck
+/* eslint-disable */
 import React from 'react'
 import {
   Clipboard,
@@ -6,6 +8,7 @@ import {
   ToastAndroid,
   TouchableOpacity,
   View,
+  ScrollView,
 } from 'react-native'
 import moment from 'moment'
 import { connect } from 'react-redux'
@@ -21,6 +24,8 @@ import QR from '../WalletOverview/QR'
 import Pad from '../../components/Pad'
 import * as Reducers from '../../../reducers'
 import * as Routes from '../../routes'
+import { SafeAreaView } from 'react-navigation'
+import FeedItem from '../../components/FeedItem'
 /**
  * @typedef {Schema.User} UserType
  */
@@ -91,39 +96,49 @@ class User extends React.Component {
     const { displayName, lastSeenApp, publicKey } = this.getUser()
 
     return (
-      <View style={styles.container}>
-        <View style={styles.subContainer}>
-          <TouchableOpacity>
-            <ConnectedShockAvatar height={100} publicKey={publicKey} />
-          </TouchableOpacity>
+      <SafeAreaView>
+        <ScrollView style={styles.container}>
+          <View style={styles.subContainer}>
+            <TouchableOpacity>
+              <ConnectedShockAvatar height={100} publicKey={publicKey} />
+            </TouchableOpacity>
 
-          <Pad amount={4} />
+            <Pad amount={4} />
 
-          <Text style={styles.displayName}>
-            {displayName === null ? 'Loading...' : displayName}
-          </Text>
+            <Text style={styles.displayName}>
+              {displayName === null ? 'Loading...' : displayName}
+            </Text>
 
-          {/* <Pad amount={8} /> */}
+            {/* <Pad amount={8} /> */}
 
-          {/* <Text style={styles.bodyText}>{bio || 'Loading...'}</Text> */}
+            {/* <Text style={styles.bodyText}>{bio || 'Loading...'}</Text> */}
 
-          <Text>
-            {lastSeenApp === 0
-              ? 'Not seen recently'
-              : `Seen ${moment(lastSeenApp).fromNow()} ago`}
-          </Text>
-        </View>
+            <Text>
+              {lastSeenApp === 0
+                ? 'Not seen recently'
+                : `Seen ${moment(lastSeenApp).fromNow()} ago`}
+            </Text>
+          </View>
 
-        <View style={styles.subContainer}>
-          <TouchableOpacity onPress={this.copyDataToClipboard}>
-            <QR
-              size={256}
-              logoToShow="shock"
-              value={`$$__SHOCKWALLET__USER__${publicKey}`}
-            />
-          </TouchableOpacity>
-        </View>
-      </View>
+          <View style={styles.subContainer}>
+            <TouchableOpacity onPress={this.copyDataToClipboard}>
+              <QR
+                size={256}
+                logoToShow="shock"
+                value={`$$__SHOCKWALLET__USER__${publicKey}`}
+              />
+            </TouchableOpacity>
+          </View>
+
+          {this.props.singleFeed.map((feedItem, key) => {
+            return (
+              <View key={key + 'idk'} style={styles.subContainer}>
+                <FeedItem {...feedItem} />
+              </View>
+            )
+          })}
+        </ScrollView>
+      </SafeAreaView>
     )
   }
 }
@@ -139,6 +154,7 @@ const mapStateToProps = state => {
   return {
     // @ts-ignore
     users: Object.values(users),
+    singleFeed: state.singleFeed,
   }
 }
 
@@ -165,8 +181,7 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     backgroundColor: CSS.Colors.TEXT_WHITE,
-    flex: 1,
-    justifyContent: 'space-around',
+
     paddingBottom: 20,
     paddingTop: 20,
   },

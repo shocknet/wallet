@@ -33,11 +33,11 @@ const createEmptyPost = () => ({
  */
 const reducer = (state = INITIAL_STATE,action) => {
   switch(action.type){
-    case 'feed/beganLoadFeed':
+    case 'feed/beganLoadSingleFeed':
       return produce(state, draft =>{
         //TODO
       })
-    case 'feed/finishedLoadFeed':
+    case 'feed/finishedLoadSingleFeed':
       return produce(state, draft =>{
         /**
          * 
@@ -53,26 +53,9 @@ const reducer = (state = INITIAL_STATE,action) => {
         } 
         action.data.feed.forEach(FeedLoader)
       })
-    case 'feed/loadFeedError':
+    case 'feed/loadSingleFeedError':
       return produce(state, draft =>{
         //TODO 
-      })
-    case 'feed/beganAddPost':
-      return produce(state, draft =>{
-        //TODO
-      })
-    case 'feed/finishedAddPost':
-      return produce(state, draft =>{
-        const {post,id} = action.data
-        draft[id] = {
-          ...createEmptyPost(),
-            ...(draft[id] || {}),
-            ...post
-        }
-      })
-    case 'feed/addPostError':
-      return produce(state, draft =>{
-        //TODO
       })
     default :
       return state

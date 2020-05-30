@@ -10,7 +10,6 @@ import { connect } from 'react-redux'
 //import ShockWebView from '../components/ShockWebView'
 //import { WebView } from 'react-native-webview'
 //import FeedItem from '../components/FeedItem'
-import { addPost } from '../actions/FeedActions'
 //import notificationService from '../../notificationService'
 //import Http from 'axios'
 import ShockInput from '../components/ShockInput'
@@ -79,7 +78,7 @@ class AddPostToFeed extends React.Component {
   }
 
   addPost = () => {
-    const { addPost } = this.props
+    //const { addPost } = this.props
     const { paragraph, magnet } = this.state
     const post = {
       id: '',
@@ -92,7 +91,7 @@ class AddPostToFeed extends React.Component {
         },
       ],
     }
-    addPost(post)
+    //addPost(post)
   }
 
   /**
@@ -155,7 +154,6 @@ const mapStateToProps = ({ follows }) => ({ follows })
 /**@param {function} dispatch*/
 const mapDispatchToProps = dispatch => {
   return {
-    addPost,
     /** @param {string} pk */
     follow: pk => {
       notificationService.Log('TESTING', 'STEP 2')

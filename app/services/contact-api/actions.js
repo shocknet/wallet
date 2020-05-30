@@ -421,14 +421,25 @@ export const unfollow = PublicKey => {
 }
 /**
  * @param {number} page
- * @returns {Promise<object>}
+ * @returns {Promise<{data:Map<string,Schema.Post>}>}
  */
 export const loadFeed = page => {
-  return Http.post('/api/gun/loadfeed', { page })
+  //eslint-disable-next-line
+  console.log(page)
+  //return Http.post('/api/gun/loadfeed', { page })
+  return Http.get('/api/gun/feedpoc')
+}
+/**
+ * @param {number} page
+ * @param {string} publicKey
+ * @returns {Promise<{data:Map<string,Schema.Post>}>}
+ */
+export const loadSingleFeed = (page, publicKey) => {
+  return Http.post('/api/gun/loadfeed', { page, publicKey })
 }
 /**
  * @param {object} post
- * @returns {Promise<object>}
+ * @returns {Promise<{data:string}>}
  */
 export const addPost = post => {
   return Http.post('/api/gun/addpost', { post })

@@ -4,13 +4,13 @@ import notificationService from '../../../notificationService'
 
 export default class ShockWebView extends React.Component {
   render() {
-    const { ratio_x, ratio_y, magnet } = this.props
+    const { width, height, magnet } = this.props
     return (
       <WebView
         // eslint-disable-next-line
         ref={ref => (this.webview = ref)}
         // eslint-disable-next-line
-        style={{ width: '100%', aspectRatio: ratio_x / ratio_y }}
+        style={{ width: '100%', aspectRatio: width / height }}
         allowUniversalAccessFromFileURLs
         allowsFullscreenVideo
         mixedContentMode="always"

@@ -1,23 +1,8 @@
-//import { Schema } from 'shock-common'
+import { Schema } from 'shock-common'
 
 /**
- * @typedef {object} FeedMedia
- *
- * @property {'VIDEO'|'AUDIO'|'IMAGE'} type
- * @property {string} magnetUri
- * @property {number} ratio_x
- * @property {number} ratio_y
- *
- */
+ * @typedef {Schema.Post} Post
 
-/**
- * @typedef {object} PartialFeed
- * @property {string} id
- * @property {string} username
- * @property {string} profilePic
- * @property {string[]} paragraphs
- * @property {FeedMedia[]} media
- *
  */
 
 /**
@@ -27,7 +12,7 @@
  */
 /**
  * @typedef {object} FinishedLoadFeedAction
- * @prop {{ feed: Map<string,PartialFeed> }} data
+ * @prop {{ feed: Map<string,Post> }} data
  * @prop {'feed/finishedLoadFeed'} type
  */
 /**
@@ -37,22 +22,22 @@
  */
 /**
  * @typedef {object} BeganAddPostAction
- * @prop {{ post: PartialFeed }} data
+ * @prop {{ post: Post }} data
  * @prop {'feed/beganAddPost'} type
  */
 /**
  * @typedef {object} FinishedAddPostAction
- * @prop {{ post: PartialFeed }} data
+ * @prop {{ post: Post,id:string }} data
  * @prop {'feed/finishedAddPost'} type
  */
 /**
  * @typedef {object} AddPostErrorAction
- * @prop {{ post: PartialFeed }} data
+ * @prop {{ post: Post }} data
  * @prop {'feed/addPostError'} type
  */
 
 /**
- * @typedef {BeganLoadFeedAction|FinishedLoadFeedAction|LoadFeedErrorAction|BeganAddPostAction|FinishedAddPostAction|AddPostErrorAction} feedActions
+ * @typedef {BeganLoadFeedAction|FinishedLoadFeedAction|LoadFeedErrorAction|BeganAddPostAction|FinishedAddPostAction|AddPostErrorAction} FeedActions
  */
 
 /**
@@ -67,7 +52,7 @@ export const beganLoadFeed = page => ({
 })
 
 /**
- * @param {Map<string,PartialFeed>} feed
+ * @param {Map<string,Post>} feed
  * @return {FinishedLoadFeedAction}
  */
 export const finishedLoadFeed = feed => ({
@@ -89,7 +74,7 @@ export const loadFeedError = page => ({
 })
 
 /**
- * @param {PartialFeed} post
+ * @param {Post} post
  * @return {BeganAddPostAction}
  */
 export const beganAddPost = post => ({
@@ -100,18 +85,20 @@ export const beganAddPost = post => ({
 })
 
 /**
- * @param {PartialFeed} post
+ * @param {Post} post
+ * @param {string} id
  * @return {FinishedAddPostAction}
  */
-export const finishedAddPost = post => ({
+export const finishedAddPost = (post, id) => ({
   data: {
     post,
+    id,
   },
   type: 'feed/finishedAddPost',
 })
 
 /**
- * @param {PartialFeed} post
+ * @param {Post} post
  * @return {AddPostErrorAction}
  */
 export const addPostError = post => ({
