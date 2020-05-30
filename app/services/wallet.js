@@ -348,6 +348,23 @@ export const balance = async () => {
       },
     })
 
+    if (typeof data !== 'object' || data === null) {
+      return {
+        content: [],
+        page: 1,
+        totalPages: 1,
+      }
+    }
+
+    if (!Array.isArray(data.content)) {
+      return {
+        ...data,
+        content: [],
+        page: 1,
+        totalPages: 1,
+      }
+    }
+
     return data
   } catch (err) {
     const { response } = err
