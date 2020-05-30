@@ -1,3 +1,4 @@
 import * as Follows from './follows'
+import * as Feed from './feed'
 
-export { Follows }
+export { Follows, Feed }

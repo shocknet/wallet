@@ -15,6 +15,7 @@ const follow = publicKey => (dispatch, getState) => {
 }
 
 const unfollow = publicKey => (dispatch, getState) => {
+  dispatch(FollowsActions.beganUnfollow(publicKey))
   return API.Actions.unfollow(publicKey)
     .then(() => {
       dispatch(FollowsActions.finishedUnfollow(publicKey))

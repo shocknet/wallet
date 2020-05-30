@@ -419,3 +419,17 @@ export const follow = PublicKey => {
 export const unfollow = PublicKey => {
   return Http.post('/api/gun/unfollow', { PublicKey })
 }
+/**
+ * @param {number} page
+ * @returns {Promise<object>}
+ */
+export const loadFeed = page => {
+  return Http.post('/api/gun/loadfeed', { page })
+}
+/**
+ * @param {object} post
+ * @returns {Promise<object>}
+ */
+export const addPost = post => {
+  return Http.post('/api/gun/addpost', { post })
+}
