@@ -483,6 +483,8 @@ export const listInvoices = async request => {
       return {
         ...data,
         content: [],
+        page: 1,
+        totalPages: 1,
       }
     }
 
