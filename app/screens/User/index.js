@@ -98,7 +98,7 @@ class User extends React.Component {
 
     return (
       <SafeAreaView>
-        <ScrollView style={styles.container}>
+        <ScrollView contentContainerStyle={styles.container}>
           <View style={styles.subContainer}>
             <TouchableOpacity>
               <ConnectedShockAvatar height={100} publicKey={publicKey} />
