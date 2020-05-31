@@ -409,21 +409,31 @@ export const disconnect = async pub => {
  * @param {string} publicKey
  * @returns {Promise<void>}
  */
-export const follow = publicKey => {
+export const follow = async publicKey => {
   /** @type {APISchema.FollowRequest} */
   const req = {
     publicKey,
   }
-  return Http.post('/api/gun/follows', req)
+
+  const res = await Http.post('/api/gun/follow', req)
+
+  if (res.status !== 200) {
+    throw new Error(res.data.errorMessage)
+  }
 }
 
 /**
  * @param {string} publicKey
  * @returns {Promise<void>}
  */
-export const unfollow = publicKey => {
-  return Http.delete(`/api/gun/follows/${publicKey}`)
+export const unfollow = async publicKey => {
+  const res = await Http.delete(`/api/gun/follows/${publicKey}`)
+
+  if (res.status !== 200) {
+    throw new Error(res.data.errorMessage)
+  }
 }
+
 /**
  * @param {number} page
  * @returns {Promise<{data:Map<string,Schema.Post>}>}

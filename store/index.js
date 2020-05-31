@@ -16,6 +16,7 @@ const storage = createSensitiveStorage({
 const config = {
   key: 'root',
   // blacklist: ['connection'],
+  blacklist: ['follows'],
   storage,
 }
 
@@ -27,6 +28,15 @@ export default () => {
   const persistor = persistStore(store)
   setStore(store)
   SocketManager.setStore(store)
+
+  let lastState = store.getState().follows
+  store.subscribe(() => {
+    const newState = store.getState().follows
+
+    if (newState !== lastState) {
+      console.warn(newState)
+    }
+  })
 
   return { persistor, store }
 }

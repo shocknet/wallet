@@ -1,10 +1,9 @@
-
 import produce from 'immer'
 //import { Schema } from 'shock-common'
 
 /**
  * @typedef {import('../app/actions').Action} Action
- * 
+ *
  */
 //TODO: add @typedef {Schema.Follow} Follow
 /**
@@ -21,14 +20,14 @@ import produce from 'immer'
 const INITIAL_STATE = {}
 
 /**
- * 
- * @param {string} publicKey 
+ *
+ * @param {string} publicKey
  * @returns {Follow}
  */
 const createEmptyFollow = publicKey => ({
   private: false,
-  status:'processing',
-  user:publicKey
+  status: 'processing',
+  user: publicKey,
 })
 
 /**
@@ -36,68 +35,68 @@ const createEmptyFollow = publicKey => ({
  * @param {Action} action
  * @returns {State}
  */
-const reducer = (state = INITIAL_STATE,action) => {
-  switch(action.type){
+const reducer = (state = INITIAL_STATE, action) => {
+  switch (action.type) {
     case 'follows/beganFollow':
-      return produce(state, draft =>{
-        const {publicKey: pk} = action.data
+      return produce(state, draft => {
+        const { publicKey: pk } = action.data
         draft[pk] = createEmptyFollow(pk)
       })
     case 'follows/finishedFollow':
-      return produce(state, draft =>{
-        const {publicKey: pk} = action.data
+      console.warn(`FINISHED FOLLOW`)
+      return produce(state, draft => {
+        const { publicKey: pk } = action.data
         draft[pk] = {
           ...createEmptyFollow(pk),
           ...(draft[pk] || {}),
-          status:'ok',
-        } 
+          status: 'ok',
+        }
       })
     case 'follows/followError':
-      return produce(state, draft =>{
-        const {publicKey: pk} = action.data
-        delete draft[pk] 
+      return produce(state, draft => {
+        const { publicKey: pk } = action.data
+        delete draft[pk]
       })
     case 'follows/beganUnfollow':
-      return produce(state, draft =>{
-        const {publicKey: pk} = action.data
+      return produce(state, draft => {
+        const { publicKey: pk } = action.data
         draft[pk] = {
           ...createEmptyFollow(pk),
-          ...(draft[pk] || {}), 
-          status:'processing'
+          ...(draft[pk] || {}),
+          status: 'processing',
         }
       })
     case 'follows/finishedUnfollow':
-      return produce(state, draft =>{
-        const {publicKey: pk} = action.data
-        delete draft[pk] 
+      return produce(state, draft => {
+        const { publicKey: pk } = action.data
+        delete draft[pk]
       })
     case 'follows/unfollowError':
-      return produce(state, draft =>{
-        const {publicKey: pk} = action.data
+      return produce(state, draft => {
+        const { publicKey: pk } = action.data
         draft[pk] = {
           ...createEmptyFollow(pk),
-          ...(draft[pk] || {}), 
-          status:'ok'
-        } 
+          ...(draft[pk] || {}),
+          status: 'ok',
+        }
       })
     case 'follows/receivedFollow':
-      return produce(state, draft =>{
-        
+      return produce(state, draft => {
         /**
          * @param {Follow} follow
          * @param {string} pk
          */
-        const followHandler = (follow,pk) =>{
+        const followHandler = (follow, pk) => {
           //const {user:pk} = follow
           draft[pk] = {
             ...createEmptyFollow(pk),
             ...(draft[pk] || {}),
-            ...follow
+            ...follow,
           }
         }
-        action.data.follows.forEach(followHandler);
+        action.data.follows.forEach(followHandler)
       })
-    default :
+    default:
       return state
   }
 }

@@ -1,4 +1,6 @@
 // @ts-nocheck
+import Http from 'axios'
+
 import * as API from '../services/contact-api'
 import * as FollowsActions from '../actions/follows'
 
@@ -24,5 +26,16 @@ const unfollow = publicKey => (dispatch, getState) => {
       //TODO:Toast
       dispatch(FollowsActions.unfollowError(publicKey))
     })
+}
+
+export const fetchFollows = () => async dispatch => {
+  const res = await Http.get('api/gun/follows')
+
+  if (!res.ok) {
+    console.warn(`fetchFollows() -> ${res.data.errorMessage}`)
+    return
+  }
+
+  dispatch(FollowsActions.receivedfollowAction(res.data))
 }
 export { follow, unfollow }
