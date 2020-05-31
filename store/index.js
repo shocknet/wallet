@@ -6,6 +6,7 @@ import thunk from 'redux-thunk'
 import { setStore } from '../app/services/contact-api/socket'
 import SocketManager from '../app/services/socket'
 import reducers from '../reducers'
+import * as Common from 'shock-common'
 
 const storage = createSensitiveStorage({
   keychainService: 'ShockWalletKeychain',
@@ -33,4 +34,18 @@ export default () => {
 /**
  * @typedef {object} State
  * @prop {ReturnType<typeof reducers.users>} users
+ * @prop {ReturnType<typeof reducers['follows']>} follows
  */
+
+export const Selectors = {
+  Follows: {
+    /**
+     * @param {State} state
+     * @param {string} publicKey
+     * @returns {Common.Schema.Follow | null}
+     */
+    getFollow(state, publicKey) {
+      return state.follows[publicKey] || null
+    },
+  },
+}
