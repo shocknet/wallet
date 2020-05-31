@@ -26,6 +26,7 @@ import * as Reducers from '../../../reducers'
 import * as Routes from '../../routes'
 import { SafeAreaView } from 'react-navigation'
 import FeedItem from '../../components/FeedItem'
+import FollowBtn from '../../components/FollowBtn'
 /**
  * @typedef {Schema.User} UserType
  */
@@ -129,6 +130,8 @@ class User extends React.Component {
               />
             </TouchableOpacity>
           </View>
+
+          <FollowBtn publicKey={publicKey} />
 
           {this.props.singleFeed.map((feedItem, key) => {
             return (
