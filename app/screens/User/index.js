@@ -157,7 +157,7 @@ const mapStateToProps = state => {
   return {
     // @ts-ignore
     users: Object.values(users),
-    singleFeed: state.singleFeed,
+    singleFeed: [], // state.singleFeed,
   }
 }
 
