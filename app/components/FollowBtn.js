@@ -4,6 +4,7 @@ import { connect } from 'react-redux'
 import * as Common from 'shock-common'
 import * as Store from '../../store'
 import * as Actions from '../actions'
+import * as Thunks from '../thunks'
 
 /**
  * @typedef {object} StateProps
@@ -77,10 +78,12 @@ const mapState = (state, ownProps) => ({
  */
 const mapDispatch = (dispatch, ownProps) => ({
   onPressFollow: () => {
-    dispatch(Actions.Follows.beganFollow(ownProps.publicKey))
+    // @ts-expect-error
+    dispatch(Thunks.Follows.follow(ownProps.publicKey))
   },
   onPressUnfollow: () => {
-    dispatch(Actions.Follows.beganUnfollow(ownProps.publicKey))
+    // @ts-expect-error
+    dispatch(Thunks.Follows.unfollow(ownProps.publicKey))
   },
 })
 
