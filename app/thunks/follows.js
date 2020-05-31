@@ -29,7 +29,7 @@ const unfollow = publicKey => (dispatch, getState) => {
 }
 
 export const fetchFollows = () => async dispatch => {
-  const res = await Http.get('api/gun/follows')
+  const res = await Http.get('/api/gun/follows')
 
   if (!res.ok) {
     console.warn(`fetchFollows() -> ${res.data.errorMessage}`)
