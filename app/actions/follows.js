@@ -119,7 +119,7 @@ export const unfollowError = publicKey => ({
  * @param {Map<string,Follow>} follows
  * @returns {ReceivedFollowAction}
  */
-export const receivedfollowAction = follows => ({
+export const receivedFollows = follows => ({
   data: {
     follows,
   },
