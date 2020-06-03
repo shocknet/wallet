@@ -5,7 +5,7 @@
 import debounce from 'lodash/debounce'
 import once from 'lodash/once'
 import Logger from 'react-native-file-log'
-import { Constants, Schema, APISchema } from 'shock-common'
+import { Constants, Schema } from 'shock-common'
 import Http from 'axios'
 
 import * as Cache from '../../services/cache'
@@ -410,12 +410,7 @@ export const disconnect = async pub => {
  * @returns {Promise<void>}
  */
 export const follow = async publicKey => {
-  /** @type {APISchema.FollowRequest} */
-  const req = {
-    publicKey,
-  }
-
-  const res = await Http.post('/api/gun/follow', req)
+  const res = await Http.post(`/api/gun/follows/${publicKey}`)
 
   if (res.status !== 200) {
     throw new Error(res.data.errorMessage)
