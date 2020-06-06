@@ -35,6 +35,11 @@ import { WALLET_OVERVIEW } from './app/screens/WalletOverview'
 import * as Wallet from './app/services/wallet'
 import * as Auth from './app/services/auth'
 
+/**
+ * Has matching toggle API-side.
+ */
+const DISABLE_SHOCK_ENCRYPTION = false
+
 Logger.setTag('ShockWallet')
 Logger.setFileLogEnabled(true)
 Logger.setConsoleLogEnabled(__DEV__)
@@ -223,7 +228,8 @@ Http.interceptors.request.use(async config => {
     if (
       connection.APIPublicKey &&
       !nonEncryptedRoutes.includes(path) &&
-      config.data
+      config.data &&
+      !DISABLE_SHOCK_ENCRYPTION
     ) {
       const stringifiedData = JSON.stringify(config.data)
       const { encryptedData, encryptedKey, iv } = await Encryption.encryptData(
@@ -292,6 +298,10 @@ const decryptResponse = async response => {
     //     return { ...cachedData.response, status: 304 }
     //   }
     // }
+
+    if (DISABLE_SHOCK_ENCRYPTION) {
+      return response
+    }
 
     if (
       connection.APIPublicKey &&
