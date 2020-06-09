@@ -226,7 +226,7 @@ Http.interceptors.request.use(async config => {
       connection.APIPublicKey &&
       !nonEncryptedRoutes.includes(path) &&
       config.data &&
-      !DISABLE_SHOCK_ENCRYPTION
+      DISABLE_SHOCK_ENCRYPTION !== 'true'
     ) {
       const stringifiedData = JSON.stringify(config.data)
       const { encryptedData, encryptedKey, iv } = await Encryption.encryptData(
@@ -296,7 +296,7 @@ const decryptResponse = async response => {
     //   }
     // }
 
-    if (DISABLE_SHOCK_ENCRYPTION) {
+    if (DISABLE_SHOCK_ENCRYPTION === 'true') {
       return response
     }
 
