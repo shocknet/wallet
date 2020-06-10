@@ -430,10 +430,17 @@ export const follow = async publicKey => {
  * @returns {Promise<void>}
  */
 export const unfollow = async publicKey => {
-  const res = await Http.delete(`/api/gun/follows/${publicKey}`)
+  try {
+    const res = await Http.delete(`/api/gun/follows/${publicKey}`)
 
-  if (res.status !== 200) {
-    throw new Error(res.data.errorMessage)
+    if (res.status !== 200) {
+      throw new Error(res.data.errorMessage)
+    }
+  } catch (err) {
+    throw new Error(
+      `Could not follow publicKey: ${publicKey} due to : ${err.message ||
+        'Unknown Error (Did not receive msg from server)'}`,
+    )
   }
 }
 
