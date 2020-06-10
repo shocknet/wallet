@@ -410,10 +410,18 @@ export const disconnect = async pub => {
  * @returns {Promise<void>}
  */
 export const follow = async publicKey => {
-  const res = await Http.post(`/api/gun/follows/${publicKey}`)
+  try {
+    // TODO: Actual body
+    const res = await Http.put(`/api/gun/follows/${publicKey}`, {})
 
-  if (res.status !== 200) {
-    throw new Error(res.data.errorMessage)
+    if (res.status !== 200) {
+      throw new Error(res.data.errorMessage)
+    }
+  } catch (err) {
+    throw new Error(
+      `Could not follow publicKey: ${publicKey} due to : ${err.message ||
+        'Unknown Error (Did not receive msg from server)'}`,
+    )
   }
 }
 
