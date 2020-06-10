@@ -83,17 +83,16 @@ const reducer = (state = INITIAL_STATE, action) => {
       return produce(state, draft => {
         /**
          * @param {Follow} follow
-         * @param {string} pk
          */
-        const followHandler = (follow, pk) => {
-          //const {user:pk} = follow
+        const followHandler = follow => {
+          const { user: pk } = follow
           draft[pk] = {
             ...createEmptyFollow(pk),
             ...(draft[pk] || {}),
             ...follow,
           }
         }
-        action.data.follows.forEach(followHandler)
+        Object.values(action.data.follows).forEach(followHandler)
       })
     default:
       return state

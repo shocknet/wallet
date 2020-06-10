@@ -40,7 +40,7 @@
  */
 /**
  * @typedef {object} ReceivedFollowAction
- * @prop {{ follows: Map<string,Follow> }} data
+ * @prop {{ follows: Record<string,Follow> }} data
  * @prop {'follows/receivedFollow'} type
  */
 
@@ -116,7 +116,7 @@ export const unfollowError = publicKey => ({
 })
 /**
  *
- * @param {Map<string,Follow>} follows
+ * @param {Record<string,Follow>} follows
  * @returns {ReceivedFollowAction}
  */
 export const receivedFollows = follows => ({
