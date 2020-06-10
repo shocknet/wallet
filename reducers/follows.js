@@ -43,7 +43,6 @@ const reducer = (state = INITIAL_STATE, action) => {
         draft[pk] = createEmptyFollow(pk)
       })
     case 'follows/finishedFollow':
-      console.warn(`FINISHED FOLLOW`)
       return produce(state, draft => {
         const { publicKey: pk } = action.data
         draft[pk] = {
