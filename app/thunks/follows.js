@@ -52,8 +52,6 @@ export const fetchFollows = () => async dispatch => {
       throw new Error(res.data.errorMessage || res.data || 'Unknown error')
     }
 
-    console.warn(`did receive follows`)
-
     dispatch(FollowsActions.receivedFollows(res.data))
   } catch (err) {
     ToastAndroid.show(
