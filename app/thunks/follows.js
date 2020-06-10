@@ -46,10 +46,10 @@ export const unfollow = publicKey => dispatch => {
  */
 export const fetchFollows = () => async dispatch => {
   try {
-    const res = await Http.get('/api/gun/follows')
+    const res = await Http.get('/api/gun/follows/')
 
     if (res.status !== 200) {
-      throw new Error(res.data.errorMessage || 'Unknown error')
+      throw new Error(res.data.errorMessage || res.data || 'Unknown error')
     }
 
     console.warn(`did receive follows`)
@@ -57,11 +57,11 @@ export const fetchFollows = () => async dispatch => {
     dispatch(FollowsActions.receivedFollows(res.data))
   } catch (err) {
     ToastAndroid.show(
-      `Could not fetch follows: ${res.data.errorMessage || 'Unknown error'}`,
+      `Could not fetch follows: ${err.message || err.data || 'Unknown error'}`,
       800,
     )
     Logger.log(
-      `Could not fetch follows: ${res.data.errorMessage || 'Unknown error'}`,
+      `Could not fetch follows: ${err.message || err.data || 'Unknown error'}`,
     )
   }
 }
