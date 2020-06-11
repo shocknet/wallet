@@ -118,7 +118,7 @@
     "@types/jest": "23.x.x",
     "@types/lodash": "^4.14.149",
     "@types/react": "^16.8.22",
-    "@types/react-native": "0.57.7",
+    "@types/react-native": "0.61.5",
     "@types/react-native-qrcode": "^0.2.2",
     "@types/react-native-vector-icons": "^6.4.5",
     "@types/react-native-video": "^3.1.5",
@@ -144,7 +144,7 @@
     "react-test-renderer": "16.9.0",
     "rimraf": "^3.0.2",
     "rn-nodeify": "^10.2.0",
-    "typescript": "3.x.x"
+    "typescript": "3.9.5"
   },
   "jest": {
     "preset": "react-native",
