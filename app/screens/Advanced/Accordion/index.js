@@ -62,6 +62,8 @@ export default class Accordion extends Component {
       toValue: menuOpen ? 0 : 1,
       easing: Easing.inOut(Easing.ease),
       duration: 200,
+      // used to be undefined
+      useNativeDriver: false,
     }).start()
     this.setState({
       menuOpen: !menuOpen,
