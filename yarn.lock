@@ -4271,6 +4271,11 @@ immer@^6.0.3:
   resolved "https://registry.yarnpkg.com/immer/-/immer-6.0.3.tgz#94d5051cd724668160a900d66d85ec02816f29bd"
   integrity sha512-12VvNrfSrXZdm/BJgi/KDW2soq5freVSf3I1+4CLunUM8mAGx2/0Njy0xBVzi5zewQZiwM7z1/1T+8VaI7NkmQ==
 
+immer@^6.0.6:
+  version "6.0.9"
+  resolved "https://registry.yarnpkg.com/immer/-/immer-6.0.9.tgz#b9dd69b8e69b3a12391e87db1e3ff535d1b26485"
+  integrity sha512-SyCYnAuiRf67Lvk0VkwFvwtDoEiCMjeamnHvRfnVDyc7re1/rQrNxuL+jJ7lA3WvdC4uznrvbmm+clJ9+XXatg==
+
 import-fresh@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/import-fresh/-/import-fresh-2.0.0.tgz#d81355c15612d386c61f9ddd3922d4304822a546"
@@ -7885,13 +7890,17 @@ shellwords@^0.1.1:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/shellwords/-/shellwords-0.1.1.tgz#d6b9181c1a48d397324c84871efbcfc73fc0654b"
 
-shock-common@0.x.x:
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/shock-common/-/shock-common-0.2.0.tgz#b942d4b8730890aaf192eb873957c235333eddca"
-  integrity sha512-K9UysxR4LnArhljK3kRNdRM2yeI52YxPe0dZ62SNvsHO5oJgE6wDV0qGy9UZYS5FoAprF5QRzzADxgqmGWin+Q==
+shock-common@2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/shock-common/-/shock-common-2.1.0.tgz#afb2cd036a2d450131d8a7b346d0cb95cff73e49"
+  integrity sha512-eAV/jho6tCqDvZKJD+3qP7NaCk2xAE9OSweka0+2zJO9abRd2RzuB7O4IcUJAhFVoW2u+anzwKOCrO9hjEkKwA==
   dependencies:
+    immer "^6.0.6"
     lodash "^4.17.15"
     normalizr "^3.6.0"
+    redux "^4.0.5"
+    redux-thunk "^2.3.0"
+    uuid "3.x.x"
 
 signal-exit@^3.0.0, signal-exit@^3.0.2:
   version "3.0.2"
@@ -8602,6 +8611,11 @@ utils-merge@1.0.1:
 uuid@3.3.3, uuid@^3.3.2:
   version "3.3.3"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.3.3.tgz#4568f0216e78760ee1dbf3a4d2cf53e224112866"
+
+uuid@3.x.x:
+  version "3.4.0"
+  resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.4.0.tgz#b23e4358afa8a202fe7a100af1f5f883f02007ee"
+  integrity sha512-HjSDRw6gZE5JMggctHBcjVak08+KEVhSIiDzFnT9S9aegmp85S/bReBVTb4QTFaRNptJ9kuYaNhnbNEOkbKb/A==
 
 v8-compile-cache@^2.0.3:
   version "2.1.0"
