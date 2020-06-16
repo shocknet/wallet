@@ -438,7 +438,7 @@ export const unfollow = async publicKey => {
     }
   } catch (err) {
     throw new Error(
-      `Could not follow publicKey: ${publicKey} due to : ${err.message ||
+      `Could not UN-follow publicKey: ${publicKey} due to : ${err.message ||
         'Unknown Error (Did not receive msg from server)'}`,
     )
   }
