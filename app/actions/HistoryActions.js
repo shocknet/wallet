@@ -1,5 +1,6 @@
 import * as Wallet from '../services/wallet'
 import { ToastAndroid } from 'react-native'
+import Logger from 'react-native-file-log'
 
 export const ACTIONS = {
   LOAD_CHANNELS: 'channels/load',
@@ -204,7 +205,9 @@ export const fetchRecentPayments = () => async dispatch => {
 
     const decodedRequests = await Promise.all(
       payments.content.map(payment =>
-        Wallet.decodeInvoice({ payReq: payment.payment_request }),
+        Wallet.decodeInvoice({ payReq: payment.payment_request }).catch(e => {
+          Logger.log(`HistoryActions.fetchRecentPayments() -> ${e.message}`)
+        }),
       ),
     )
 

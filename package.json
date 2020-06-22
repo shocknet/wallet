@@ -23,6 +23,7 @@
     "@react-native-community/netinfo": "2.x.x",
     "@tradle/react-native-http": "^2.0.0",
     "@types/node": "^13.1.8",
+    "@types/react-native-dotenv": "^0.2.0",
     "@types/react-native-modalbox": "^1.4.8",
     "assert": "^1.1.1",
     "axios": "^0.19.0",
@@ -63,6 +64,7 @@
     "react-native-crypto": "^2.1.0",
     "react-native-deep-link": "^0.2.9",
     "react-native-deep-linking": "^2.2.0",
+    "react-native-dotenv": "^0.2.0",
     "react-native-elements": "^0.19.1",
     "react-native-file-log": "Emad-salah/react-native-file-log#693c33089dbd21a6cc2ceefcf7a6fae2db3f15f9",
     "react-native-gesture-handler": "^1.5.3",
@@ -119,7 +121,7 @@
     "@types/jest": "23.x.x",
     "@types/lodash": "^4.14.149",
     "@types/react": "^16.8.22",
-    "@types/react-native": "0.57.7",
+    "@types/react-native": "0.61.5",
     "@types/react-native-qrcode": "^0.2.2",
     "@types/react-native-vector-icons": "^6.4.5",
     "@types/react-native-video": "^3.1.5",
@@ -145,7 +147,7 @@
     "react-test-renderer": "16.9.0",
     "rimraf": "^3.0.2",
     "rn-nodeify": "^10.2.0",
-    "typescript": "3.x.x"
+    "typescript": "3.9.5"
   },
   "jest": {
     "preset": "react-native",

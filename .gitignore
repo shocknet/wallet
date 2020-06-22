@@ -73,3 +73,6 @@ shim.js
 
 # Android Settings
 android/app/.settings/
+
+# Env file
+.env

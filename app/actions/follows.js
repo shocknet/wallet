@@ -45,7 +45,7 @@
  */
 
 /**
- * @typedef {BeganFollowAction|FinishedFollowAction|FollowErrorAction|BeganUnfollowAction|FinishedUnfollowAction|UnfollowErrorAction|ReceivedFollowAction} FollowsActions
+ * @typedef {BeganFollowAction|FinishedFollowAction|FollowErrorAction|BeganUnfollowAction|FinishedUnfollowAction|UnfollowErrorAction|ReceivedFollowAction} FollowsAction
  */
 
 /**
