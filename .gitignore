@@ -68,5 +68,11 @@ shim.js
 # CocoaPods
 /ios/Pods/
 
+# VS Code Settings
+.vscode/settings.json
+
 # Android Settings
 android/app/.settings/
+
+# Env file
+.env

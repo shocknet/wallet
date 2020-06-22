@@ -175,6 +175,11 @@ const showCopiedToClipboardToast = () => {
  */
 class WalletOverview extends Component {
   /**
+   * @type any
+   */
+  webview = null
+
+  /**
    * @type {import('react-navigation').NavigationBottomTabScreenOptions}
    */
   static navigationOptions = {
@@ -1536,6 +1541,7 @@ class WalletOverview extends Component {
             You are using Testnet network
           </Text>
         ) : null}
+
         <View style={styles.actionButtons}>
           <TouchableHighlight
             underlayColor="transparent"
@@ -1546,7 +1552,11 @@ class WalletOverview extends Component {
           </TouchableHighlight>
           <TouchableHighlight
             underlayColor="transparent"
-            onPress={this.onPressRequest}
+            //onPress={this.onPressRequest}
+            // eslint-disable-next-line
+            onPress={() => {
+              this.webview.postMessage('YO BRAH IS IT OK!!!')
+            }}
             style={[
               styles.actionButton,
               { backgroundColor: CSS.Colors.FUN_BLUE },
