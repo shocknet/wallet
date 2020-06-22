@@ -6,6 +6,7 @@ import debounce from 'lodash/debounce'
 import once from 'lodash/once'
 import Logger from 'react-native-file-log'
 import { Constants, Schema } from 'shock-common'
+import Http from 'axios'
 
 import * as Cache from '../../services/cache'
 
@@ -402,4 +403,69 @@ export const disconnect = async pub => {
     }
     throw new Error(res.msg || 'Unknown Error')
   }
+}
+
+/**
+ * @param {string} publicKey
+ * @returns {Promise<void>}
+ */
+export const follow = async publicKey => {
+  try {
+    // TODO: Actual body
+    const res = await Http.put(`/api/gun/follows/${publicKey}`, {})
+
+    if (res.status !== 200) {
+      throw new Error(res.data.errorMessage)
+    }
+  } catch (err) {
+    throw new Error(
+      `Could not follow publicKey: ${publicKey} due to : ${err.message ||
+        'Unknown Error (Did not receive msg from server)'}`,
+    )
+  }
+}
+
+/**
+ * @param {string} publicKey
+ * @returns {Promise<void>}
+ */
+export const unfollow = async publicKey => {
+  try {
+    const res = await Http.delete(`/api/gun/follows/${publicKey}`)
+
+    if (res.status !== 200) {
+      throw new Error(res.data.errorMessage)
+    }
+  } catch (err) {
+    throw new Error(
+      `Could not UN-follow publicKey: ${publicKey} due to : ${err.message ||
+        'Unknown Error (Did not receive msg from server)'}`,
+    )
+  }
+}
+
+/**
+ * @param {number} page
+ * @returns {Promise<{data:Map<string,Schema.Post>}>}
+ */
+export const loadFeed = page => {
+  //eslint-disable-next-line
+  console.log(page)
+  //return Http.post('/api/gun/loadfeed', { page })
+  return Http.get('/api/gun/feedpoc')
+}
+/**
+ * @param {number} page
+ * @param {string} publicKey
+ * @returns {Promise<{data:Map<string,Schema.Post>}>}
+ */
+export const loadSingleFeed = (page, publicKey) => {
+  return Http.post('/api/gun/loadfeed', { page, publicKey })
+}
+/**
+ * @param {object} post
+ * @returns {Promise<{data:string}>}
+ */
+export const addPost = post => {
+  return Http.post('/api/gun/addpost', { post })
 }

@@ -1,4 +1,5 @@
 import * as Wallet from '../services/wallet'
+import { ToastAndroid } from 'react-native'
 import Logger from 'react-native-file-log'
 
 export const ACTIONS = {
@@ -194,32 +195,39 @@ export const fetchRecentInvoices = () => async dispatch => {
  * @returns {import('redux-thunk').ThunkAction<Promise<void>, {}, {}, import('redux').AnyAction>}
  */
 export const fetchRecentPayments = () => async dispatch => {
-  const payments = await Wallet.listPayments({
-    include_incomplete: false,
-    itemsPerPage: 100,
-    page: 1,
-    paginate: true,
-  })
+  try {
+    const payments = await Wallet.listPayments({
+      include_incomplete: false,
+      itemsPerPage: 100,
+      page: 1,
+      paginate: true,
+    })
 
-  const decodedRequests = await Promise.all(
-    payments.content.map(payment =>
-      Wallet.decodeInvoice({ payReq: payment.payment_request }).catch(e => {
-        Logger.log(`HistoryActions.fetchRecentPayments() -> ${e.message}`)
-      }),
-    ),
-  )
+    const decodedRequests = await Promise.all(
+      payments.content.map(payment =>
+        Wallet.decodeInvoice({ payReq: payment.payment_request }).catch(e => {
+          Logger.log(`HistoryActions.fetchRecentPayments() -> ${e.message}`)
+        }),
+      ),
+    )
 
-  const recentPayments = payments.content.map((payment, key) => ({
-    ...payment,
-    decodedPayment: decodedRequests[key],
-  }))
+    const recentPayments = payments.content.map((payment, key) => ({
+      ...payment,
+      decodedPayment: decodedRequests[key],
+    }))
 
-  dispatch({
-    type: ACTIONS.LOAD_RECENT_PAYMENTS,
-    data: recentPayments,
-  })
+    dispatch({
+      type: ACTIONS.LOAD_RECENT_PAYMENTS,
+      data: recentPayments,
+    })
 
-  dispatch(unifyTransactions())
+    dispatch(unifyTransactions())
+  } catch (err) {
+    ToastAndroid.show(
+      `Error inside fetchRecentPayments() -> ${err.message}`,
+      800,
+    )
+  }
 }
 
 /**

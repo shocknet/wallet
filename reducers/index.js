@@ -8,6 +8,9 @@ import InvoiceReducer from './InvoiceReducer'
 import ConnectionReducer from './ConnectionReducer'
 import FeesReducer from './FeesReducer'
 import UsersReducer, * as Users from './UsersReducer'
+import FeedReducer from './feed'
+import FollowsReducer from './follows'
+import SingleFeedReducer from './singleFeed'
 
 const rootReducer = {
   auth: AuthReducer,
@@ -19,6 +22,9 @@ const rootReducer = {
   invoice: InvoiceReducer,
   fees: FeesReducer,
   users: UsersReducer,
+  feed: FeedReducer,
+  follows: FollowsReducer,
+  singleFeed: SingleFeedReducer,
 }
 
 /**
