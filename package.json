@@ -65,6 +65,7 @@
     "react-native-deep-linking": "^2.2.0",
     "react-native-elements": "^0.19.1",
     "react-native-file-log": "Emad-salah/react-native-file-log#693c33089dbd21a6cc2ceefcf7a6fae2db3f15f9",
+    "react-native-file-picker": "^0.0.19",
     "react-native-gesture-handler": "^1.5.3",
     "react-native-gifted-chat": "^0.13.0",
     "react-native-image-crop-picker": "0.24.x",
