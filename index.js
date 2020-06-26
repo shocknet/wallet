@@ -320,10 +320,12 @@ const decryptResponse = async response => {
         ...response,
         data: JSON.parse(decryptedData),
       }
-      cache.set(path, {
-        hash: response.data.metadata.hash,
-        response: decryptedResponse,
-      })
+      if (response.config.method?.toLowerCase() === 'get') {
+        cache.set(path, {
+          hash: response.data.metadata.hash,
+          response: decryptedResponse,
+        })
+      }
       return decryptedResponse
     }
 
