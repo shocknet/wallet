@@ -28,7 +28,7 @@ export const CREATE_POST = 'CREATE_POST'
  * @typedef {object} State
  * @prop {boolean} isCreating
  * @prop {string[]} images
- * @prop {string[]} paragraphs
+ * @prop {string[]} description
  */
 
 /** @type {State} */
