@@ -186,7 +186,7 @@ export const setHandshakeAddress = addr => {
 
 const addrFetcher = async () => {
   if (!(await isAuth())) {
-    setTimeout(avatarFetcher, POLL_INTERVAL)
+    setTimeout(addrFetcher, POLL_INTERVAL)
     return
   }
 
@@ -262,7 +262,7 @@ export const setDisplayName = dn => {
 
 const dnFetcher = async () => {
   if (!(await isAuth())) {
-    setTimeout(avatarFetcher, POLL_INTERVAL)
+    setTimeout(dnFetcher, POLL_INTERVAL)
     return
   }
 
@@ -328,7 +328,7 @@ let receivedReqsSubbed = false
 
 const receivedReqsFetcher = async () => {
   if (!(await isAuth())) {
-    setTimeout(avatarFetcher, POLL_INTERVAL)
+    setTimeout(receivedReqsFetcher, POLL_INTERVAL)
     return
   }
 
@@ -393,7 +393,7 @@ export const setSentReqs = sentReqs => {
 
 const sentReqsFetcher = async () => {
   if (!(await isAuth())) {
-    setTimeout(avatarFetcher, POLL_INTERVAL)
+    setTimeout(sentReqsFetcher, POLL_INTERVAL)
     return
   }
 
@@ -457,7 +457,7 @@ const notifyBioListeners = debounce(() => {
 
 const bioFetcher = async () => {
   if (!(await isAuth())) {
-    setTimeout(avatarFetcher, POLL_INTERVAL)
+    setTimeout(bioFetcher, POLL_INTERVAL)
     return
   }
 
