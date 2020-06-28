@@ -35,6 +35,7 @@ import BasicDialog from '../../components/BasicDialog'
 import ShockInput from '../../components/ShockInput'
 import IGDialogBtn from '../../components/IGDialogBtn'
 import Post from '../../components/Post'
+import { CREATE_POST } from '../../screens/CreatePost'
 
 import SetBioDialog from './SetBioDialog'
 
@@ -427,6 +428,10 @@ export default class MyProfile extends React.Component<Props, State> {
     return (item as Common.Schema.Post).id || (item as Sentinel).type
   }
 
+  onPressCreate = () => {
+    this.props.navigation.navigate(CREATE_POST)
+  }
+
   render() {
     return (
       <View style={styles.container}>
@@ -442,6 +447,12 @@ export default class MyProfile extends React.Component<Props, State> {
             />
           }
         />
+
+        <TouchableOpacity style={styles.createBtn} onPress={this.onPressCreate}>
+          <View>
+            <FontAwesome5 name="pencil-alt" color="white" size={22} />
+          </View>
+        </TouchableOpacity>
       </View>
     )
   }
@@ -455,6 +466,18 @@ const styles = StyleSheet.create({
     marginLeft: 90,
     marginRight: 90,
     textAlign: 'center',
+  },
+
+  createBtn: {
+    height: 60,
+    width: 60,
+    borderRadius: 30,
+    backgroundColor: CSS.Colors.CAUTION_YELLOW,
+    position: 'absolute',
+    right: 20,
+    bottom: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   dialog: {
