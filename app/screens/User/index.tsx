@@ -1,5 +1,3 @@
-//@ts-nocheck
-/* eslint-disable */
 import React from 'react'
 import {
   Clipboard,
@@ -13,9 +11,9 @@ import {
 import moment from 'moment'
 import { connect } from 'react-redux'
 import { Schema } from 'shock-common'
-/**
- * @typedef {import('react-navigation').NavigationScreenProp<{}, Routes.UserParams>} Navigation
- */
+import { NavigationScreenProp, NavigationScreenOptions } from 'react-navigation'
+
+type Navigation = NavigationScreenProp<{}, Routes.UserParams>
 
 import { SET_LAST_SEEN_APP_INTERVAL } from '../../services/utils'
 import * as CSS from '../../res/css'
@@ -25,30 +23,24 @@ import Pad from '../../components/Pad'
 import * as Reducers from '../../../reducers'
 import * as Routes from '../../routes'
 import { SafeAreaView } from 'react-navigation'
-import FeedItem from '../../components/FeedItem'
 import FollowBtn from '../../components/FollowBtn'
-/**
- * @typedef {Schema.User} UserType
- */
 
-/**
- * @typedef {object} Props
- * @prop {Navigation} navigation
- * @prop {UserType[]} users
- */
+type UserType = Schema.User
+
+interface ConnectedProps {
+  users: UserType[]
+}
+
+export interface Props extends ConnectedProps {
+  navigation: Navigation
+}
 
 const showCopiedToClipboardToast = () => {
   ToastAndroid.show('Copied to clipboard!', 800)
 }
 
-/**
- * @augments React.Component<Props>
- */
-class User extends React.Component {
-  /**
-   * @type {import('react-navigation').NavigationScreenOptions}
-   */
-  static navigationOptions = {
+class User extends React.Component<Props> {
+  static navigationOptions: NavigationScreenOptions = {
     header: undefined,
     headerStyle: {
       elevation: 0,
@@ -60,8 +52,7 @@ class User extends React.Component {
     },
   }
 
-  /** @type {number|null} */
-  intervalID = 0
+  intervalID: number | null = 0
 
   componentDidMount() {
     this.intervalID = setInterval(() => {
@@ -84,12 +75,19 @@ class User extends React.Component {
     showCopiedToClipboardToast()
   }
 
-  /** @returns {UserType} */
-  getUser() {
+  getUser(): UserType {
     // TODO fix this
-    // @ts-ignore
-    return this.props.users.find(
-      u => u.publicKey === this.props.navigation.getParam('publicKey'),
+    return (
+      this.props.users.find(
+        u => u.publicKey === this.props.navigation.getParam('publicKey'),
+      ) || {
+        avatar: null,
+        bio: null,
+        displayName: null,
+        lastSeenApp: 0,
+        lastSeenNode: 0,
+        publicKey: this.props.navigation.getParam('publicKey'),
+      }
     )
   }
 
@@ -132,32 +130,19 @@ class User extends React.Component {
           </View>
 
           <FollowBtn publicKey={publicKey} />
-
-          {this.props.singleFeed.map((feedItem, key) => {
-            return (
-              <View key={key + 'idk'} style={styles.subContainer}>
-                <FeedItem {...feedItem} />
-              </View>
-            )
-          })}
         </ScrollView>
       </SafeAreaView>
     )
   }
 }
 
-/**
- * @param {Reducers.State} state
- * @returns {Props}
- */
-const mapStateToProps = state => {
+const mapStateToProps = (state: Reducers.State): ConnectedProps => {
   //  TODO: find out a way to get a single user here
   const users = Reducers.selectAllUsers(state)
+  const usersArr = Object.values(users) as Schema.User[]
 
   return {
-    // @ts-ignore
-    users: Object.values(users),
-    singleFeed: [], // state.singleFeed,
+    users: usersArr,
   }
 }
 
@@ -166,15 +151,6 @@ const ConnectedUserScreen = connect(mapStateToProps)(User)
 export default ConnectedUserScreen
 
 const styles = StyleSheet.create({
-  // bodyText: {
-  //   color: CSS.Colors.TEXT_GRAY_LIGHT,
-  //   fontFamily: 'Montserrat-400',
-  //   fontSize: 12,
-  //   marginLeft: 90,
-  //   marginRight: 90,
-  //   textAlign: 'center',
-  // },
-
   displayName: {
     color: CSS.Colors.TEXT_GRAY,
     fontFamily: 'Montserrat-700',
