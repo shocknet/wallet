@@ -74,22 +74,7 @@ class User extends React.Component<Props, State> {
 
   state: State = {
     lastPageFetched: 0,
-    posts: [
-      {
-        author: this.getUser(),
-        contentItems: {
-          asjdkaskldjlkasd: {
-            type: 'text/paragraph',
-            text: 'aksjdhjkashjkasd',
-          },
-        },
-        date: Date.now(),
-        id: 'asjdklasd',
-        status: 'publish',
-        tags: '',
-        title: 'alksjljkasd',
-      },
-    ],
+    posts: [],
     loadingNextPage: true,
   }
 
