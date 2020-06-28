@@ -8,14 +8,22 @@ import {
   TouchableOpacity,
   View,
   StatusBar,
+  FlatList,
+  ListRenderItemInfo,
+  RefreshControl,
 } from 'react-native'
 import ImagePicker from 'react-native-image-crop-picker'
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'
 import Logger from 'react-native-file-log'
+import {
+  NavigationScreenProp,
+  NavigationBottomTabScreenOptions,
+} from 'react-navigation'
+import * as Common from 'shock-common'
+import Http from 'axios'
+import * as R from 'ramda'
 // import { AirbnbRating } from 'react-native-ratings'
-/**
- * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation
- */
+type Navigation = NavigationScreenProp<{}>
 
 import * as API from '../../services/contact-api'
 import * as CSS from '../../res/css'
@@ -26,6 +34,8 @@ import Pad from '../../components/Pad'
 import BasicDialog from '../../components/BasicDialog'
 import ShockInput from '../../components/ShockInput'
 import IGDialogBtn from '../../components/IGDialogBtn'
+import Post from '../../components/Post'
+import { CREATE_POST } from '../../screens/CreatePost'
 
 import SetBioDialog from './SetBioDialog'
 
@@ -35,26 +45,32 @@ const showCopiedToClipboardToast = () => {
   ToastAndroid.show('Copied to clipboard!', 800)
 }
 
-/**
- * @typedef {object} State
- * @prop {Cache.AuthData|null} authData
- * @prop {string|null} avatar
- * @prop {string|null} displayName
- * @prop {boolean} displayNameDialogOpen
- * @prop {string} displayNameInput
- * @prop {string|null} bio
- */
+interface Props {
+  navigation: Navigation
+}
 
-/**
- * @augments React.Component<{ navigation: Navigation }, State, never>
- */
-export default class MyProfile extends React.Component {
-  /**
-   * @type {import('react-navigation').NavigationBottomTabScreenOptions}
-   */
-  static navigationOptions = {
+interface State {
+  authData: Cache.AuthData | null
+  avatar: string | null
+  displayName: string | null
+  displayNameDialogOpen: boolean
+  displayNameInput: string
+  bio: string | null
+  posts: Common.Schema.Post[]
+  lastPageFetched: number
+  loadingNextPage: boolean
+}
+
+interface Sentinel {
+  type: '@@Sentinel'
+}
+
+type Item = Sentinel | Common.Schema.Post
+
+export default class MyProfile extends React.Component<Props, State> {
+  static navigationOptions: NavigationBottomTabScreenOptions = {
     tabBarIcon: ({ focused }) => {
-      return ((
+      return (
         <FontAwesome5
           color={
             focused ? CSS.Colors.BLUE_MEDIUM_DARK : CSS.Colors.GRAY_MEDIUM_LIGHT
@@ -63,12 +79,11 @@ export default class MyProfile extends React.Component {
           // reverseColor={'#CED0CE'}
           size={32}
         />
-      ))
+      )
     },
   }
 
-  /** @type {State} */
-  state = {
+  state: State = {
     authData: null,
     avatar: API.Events.getAvatar(),
     displayName: API.Events.getDisplayName(),
@@ -76,12 +91,68 @@ export default class MyProfile extends React.Component {
     displayNameInput: '',
 
     bio: API.Events.currentBio,
+    posts: [],
+    lastPageFetched: 0,
+    loadingNextPage: true,
   }
 
-  /**
-   * @type {React.RefObject<SetBioDialog>}
-   */
-  setBioDialog = React.createRef()
+  fetchNextPage = async () => {
+    this.setState({
+      loadingNextPage: true,
+    })
+
+    try {
+      const res = await Http.get(
+        `/api/gun/wall/${this.props.navigation.getParam(
+          'publicKey',
+        )}?page=${this.state.lastPageFetched - 1}`,
+      )
+
+      if (res.status !== 200) {
+        throw new Error(`Not 200`)
+      }
+
+      this.setState(({ posts, lastPageFetched }) => {
+        const { posts: postsRecord } = res.data
+        const fetchedPosts: Common.Schema.Post[] = Object.values(postsRecord)
+        console.warn(fetchedPosts)
+        const mixedWithExisting = [...posts, ...fetchedPosts]
+        const dedupped = R.uniqBy(R.prop('id'), mixedWithExisting)
+
+        const sorted = R.sort((a, b) => b.date - a.date, dedupped)
+
+        console.warn(sorted)
+
+        return {
+          posts: sorted,
+          lastPageFetched: lastPageFetched - 1,
+        }
+      })
+    } catch (err) {
+      Logger.log(err)
+      ToastAndroid.show(
+        `Error fetching posts: ${err.message ||
+          err.errorMessage ||
+          'Unknown error'}`,
+        800,
+      )
+    } finally {
+      this.setState({
+        loadingNextPage: false,
+      })
+    }
+  }
+
+  reload = () => {
+    this.setState(
+      {
+        lastPageFetched: 0,
+      },
+      this.fetchNextPage,
+    )
+  }
+
+  setBioDialog: React.RefObject<SetBioDialog> = React.createRef()
 
   onAvatarUnsub = () => {}
 
@@ -125,10 +196,7 @@ export default class MyProfile extends React.Component {
     this.onBioUnsub()
   }
 
-  /**
-   * @param {string} dn
-   */
-  onChangeDisplayNameInput = dn => {
+  onChangeDisplayNameInput = (dn: string) => {
     this.setState({
       displayNameInput: dn,
     })
@@ -219,16 +287,44 @@ export default class MyProfile extends React.Component {
     current && current.open()
   }
 
-  /**
-   * @param {string} bio
-   */
-  onSubmitBio = bio => {
+  onSubmitBio = (bio: string) => {
     this.setState({ bio })
 
     API.Actions.setBio(bio)
   }
 
-  render() {
+  renderItem = ({ item }: ListRenderItemInfo<Item>) => {
+    if (Common.Schema.isPost(item)) {
+      const imageCIEntries = Object.entries(item.contentItems).filter(
+        ([_, ci]) => ci.type === 'image/embedded',
+      ) as [string, Common.Schema.EmbeddedImage][]
+
+      const paragraphCIEntries = Object.entries(item.contentItems).filter(
+        ([_, ci]) => ci.type === 'text/paragraph',
+      ) as [string, Common.Schema.Paragraph][]
+
+      const images = imageCIEntries.map(([key, imageCI]) => ({
+        id: key,
+        data: imageCI.magnetURI,
+      }))
+
+      const paragraphhs = paragraphCIEntries.map(([key, paragraphCI]) => ({
+        id: key,
+        text: paragraphCI.text,
+      }))
+
+      return (
+        <Post
+          author={item.author}
+          date={item.date}
+          images={images}
+          paragraphs={paragraphhs}
+          // @ts-expect-error
+          parentScrollViewRef={undefined}
+        />
+      )
+    }
+
     const {
       displayName,
       authData,
@@ -244,29 +340,29 @@ export default class MyProfile extends React.Component {
 
     return (
       <>
-        <View style={styles.container}>
-          <View style={styles.subContainer}>
-            <TouchableOpacity>
-              <ShockAvatar
-                height={100}
-                image={avatar}
-                onPress={this.onPressAvatar}
-                lastSeenApp={Date.now()}
-              />
-            </TouchableOpacity>
+        <Pad amount={60} />
+        <View style={styles.subContainer}>
+          <TouchableOpacity>
+            <ShockAvatar
+              height={100}
+              image={avatar}
+              onPress={this.onPressAvatar}
+              lastSeenApp={Date.now()}
+            />
+          </TouchableOpacity>
 
-            <Pad amount={4} />
+          <Pad amount={4} />
 
-            <TouchableOpacity
-              onPress={this.toggleSetupDisplayName}
-              disabled={displayName === null}
-            >
-              <Text style={styles.displayName}>
-                {displayName === null ? 'Loading...' : displayName}
-              </Text>
-            </TouchableOpacity>
+          <TouchableOpacity
+            onPress={this.toggleSetupDisplayName}
+            disabled={displayName === null}
+          >
+            <Text style={styles.displayName}>
+              {displayName === null ? 'Loading...' : displayName}
+            </Text>
+          </TouchableOpacity>
 
-            {/* <Pad amount={6} />
+          {/* <Pad amount={6} />
 
             <TouchableOpacity>
               <AirbnbRating
@@ -277,28 +373,27 @@ export default class MyProfile extends React.Component {
               />
             </TouchableOpacity> */}
 
-            <Pad amount={8} />
+          <Pad amount={8} />
 
-            <TouchableOpacity onPress={this.onPressBio}>
-              <Text style={styles.bodyText}>{bio || 'Loading...'}</Text>
+          <TouchableOpacity onPress={this.onPressBio}>
+            <Text style={styles.bodyText}>{bio || 'Loading...'}</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.subContainer}>
+          <React.Fragment>
+            <TouchableOpacity onPress={this.copyDataToClipboard}>
+              <QR
+                size={256}
+                logoToShow="shock"
+                value={`$$__SHOCKWALLET__USER__${authData.publicKey}`}
+              />
             </TouchableOpacity>
-          </View>
-
-          <View style={styles.subContainer}>
-            <React.Fragment>
-              <TouchableOpacity onPress={this.copyDataToClipboard}>
-                <QR
-                  size={256}
-                  logoToShow="shock"
-                  value={`$$__SHOCKWALLET__USER__${authData.publicKey}`}
-                />
-              </TouchableOpacity>
-              <Pad amount={10} />
-              <Text style={styles.bodyText}>
-                Other users can scan this QR to contact you.
-              </Text>
-            </React.Fragment>
-          </View>
+            <Pad amount={10} />
+            <Text style={styles.bodyText}>
+              Other users can scan this QR to contact you.
+            </Text>
+          </React.Fragment>
         </View>
 
         <BasicDialog
@@ -324,6 +419,43 @@ export default class MyProfile extends React.Component {
       </>
     )
   }
+
+  getData = (): Item[] => {
+    return [{ type: '@@Sentinel' }, ...this.state.posts]
+  }
+
+  keyExtractor = (item: Item) => {
+    return (item as Common.Schema.Post).id || (item as Sentinel).type
+  }
+
+  onPressCreate = () => {
+    this.props.navigation.navigate(CREATE_POST)
+  }
+
+  render() {
+    return (
+      <View style={styles.container}>
+        <FlatList
+          renderItem={this.renderItem}
+          data={this.getData()}
+          keyExtractor={this.keyExtractor}
+          onEndReached={this.fetchNextPage}
+          refreshControl={
+            <RefreshControl
+              refreshing={this.state.loadingNextPage}
+              onRefresh={this.fetchNextPage}
+            />
+          }
+        />
+
+        <TouchableOpacity style={styles.createBtn} onPress={this.onPressCreate}>
+          <View>
+            <FontAwesome5 name="pencil-alt" color="white" size={22} />
+          </View>
+        </TouchableOpacity>
+      </View>
+    )
+  }
 }
 
 const styles = StyleSheet.create({
@@ -334,6 +466,18 @@ const styles = StyleSheet.create({
     marginLeft: 90,
     marginRight: 90,
     textAlign: 'center',
+  },
+
+  createBtn: {
+    height: 60,
+    width: 60,
+    borderRadius: 30,
+    backgroundColor: CSS.Colors.CAUTION_YELLOW,
+    position: 'absolute',
+    right: 20,
+    bottom: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   dialog: {
@@ -350,9 +494,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: CSS.Colors.TEXT_WHITE,
     flex: 1,
-    justifyContent: 'space-around',
-    paddingBottom: 20,
-    paddingTop: 20,
   },
 
   subContainer: {
