@@ -2,6 +2,9 @@ import React from 'react'
 import { View, Text, StyleSheet, Dimensions } from 'react-native'
 // @ts-ignore
 import Carousel from 'react-native-smart-carousel'
+/**
+ * @typedef {import('react-native').ScrollView} ScrollView
+ */
 
 import * as CSS from '../../res/css'
 
@@ -16,6 +19,7 @@ const { width } = Dimensions.get('window')
  * @prop {number} date
  * @prop {{ id: string , text: string}[]} paragraphs
  * @prop {{id: string , data: string }[]} images
+ * @prop {ScrollView} parentScrollViewRef
  */
 
 /**
@@ -26,6 +30,7 @@ const Post = ({
   date,
   paragraphs = [],
   images = [],
+  parentScrollViewRef,
 }) => {
   const carouselWidth = Math.round(width) - 20
   const dataCarousel = images.map(image => ({
@@ -48,6 +53,7 @@ const Post = ({
           navigationType="dots"
           navigationColor={CSS.Colors.BUTTON_BLUE}
           navigation
+          parentScrollViewRef={parentScrollViewRef}
         />
       )}
     </View>
