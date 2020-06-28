@@ -19,6 +19,7 @@ import SeedBackup, { SEED_BACKUP } from '../screens/SeedBackup'
 import WalletSettings, { WALLET_SETTINGS } from '../screens/WalletSettings'
 import Feed, { FEED } from '../screens/Feed_POC'
 import AddPostToFeed, { ADD_POST_TO_FEED } from '../screens/AddPostToFeed'
+import CreatePost, { CREATE_POST } from '../screens/CreatePost'
 
 import Login, { LOGIN } from '../screens/Login'
 
@@ -123,6 +124,12 @@ const drawerScreens = {
   },
   [ADD_POST_TO_FEED]: {
     screen: AddPostToFeed,
+    navigationOptions: {
+      title: 'Add Post to Feed',
+    },
+  },
+  [CREATE_POST]: {
+    screen: CreatePost,
     navigationOptions: {
       title: 'Add Post to Feed',
     },
