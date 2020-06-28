@@ -3,30 +3,19 @@ import { View, Text, StyleSheet, Dimensions } from 'react-native'
 // @ts-ignore
 import Carousel from 'react-native-smart-carousel'
 
+import * as CSS from '../../res/css'
+
 import UserInfo from './UserInfo'
-import { Colors, styles } from '../../res/css'
 
 const { width } = Dimensions.get('window')
-
-const style = StyleSheet.create({
-  postContainer: {
-    width: '100%',
-    backgroundColor: Colors.BACKGROUND_NEAR_WHITE,
-  },
-  paragraphStyle: {
-    ...styles.fontMontserrat,
-    ...styles.fontSize14,
-    margin: 10,
-  },
-})
 
 /**
  * @typedef {object} Props
  * @prop {string} authorPublicKey
  * @prop {string} authorDisplayName
  * @prop {number} date
- * @prop {string[]} paragraphs
- * @prop {string[]} images
+ * @prop {{ id: string , text: string}[]} paragraphs
+ * @prop {{id: string , data: string }[]} images
  */
 
 /**
@@ -39,17 +28,17 @@ const Post = ({
   images = [],
 }) => {
   const carouselWidth = Math.round(width) - 20
-  const dataCarousel = images.map((image, i) => ({
-    id: i,
-    imagePath: `data:image/jpeg;base64,${image}`,
+  const dataCarousel = images.map(image => ({
+    id: image.id,
+    imagePath: `data:image/jpeg;base64,${image.data}`,
   }))
 
   return ((
-    <View style={style.postContainer}>
+    <View style={styles.postContainer}>
       <UserInfo authorDisplayName={authorDisplayName} date={date} />
       {paragraphs.map(paragraph => (
-        <Text style={style.paragraphStyle} key={paragraph}>
-          {paragraph}
+        <Text style={xStyles.paragraph} key={paragraph.id}>
+          {paragraph.text}
         </Text>
       ))}
       {dataCarousel.length > 0 && (
@@ -57,12 +46,30 @@ const Post = ({
           width={carouselWidth}
           data={dataCarousel}
           navigationType="dots"
-          navigationColor={Colors.BUTTON_BLUE}
+          navigationColor={CSS.Colors.BUTTON_BLUE}
           navigation
         />
       )}
     </View>
   ))
+}
+
+const styles = StyleSheet.create({
+  postContainer: {
+    width: '100%',
+    backgroundColor: CSS.Colors.BACKGROUND_NEAR_WHITE,
+  },
+  paragraphBase: {
+    margin: 10,
+  },
+})
+
+const xStyles = {
+  paragraph: [
+    styles.paragraphBase,
+    CSS.styles.fontMontserrat,
+    CSS.styles.fontSize14,
+  ],
 }
 
 export default Post
