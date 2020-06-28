@@ -6,14 +6,18 @@ import {
   ToastAndroid,
   TouchableOpacity,
   View,
-  ScrollView,
+  FlatList,
+  ListRenderItemInfo,
+  RefreshControl,
 } from 'react-native'
 import moment from 'moment'
 import { connect } from 'react-redux'
-import { Schema } from 'shock-common'
-import { NavigationScreenProp, NavigationScreenOptions } from 'react-navigation'
+import * as Common from 'shock-common'
+import Http from 'axios'
+import * as R from 'ramda'
+import Logger from 'react-native-file-log'
 
-type Navigation = NavigationScreenProp<{}, Routes.UserParams>
+import { NavigationScreenProp, NavigationScreenOptions } from 'react-navigation'
 
 import { SET_LAST_SEEN_APP_INTERVAL } from '../../services/utils'
 import * as CSS from '../../res/css'
@@ -24,8 +28,10 @@ import * as Reducers from '../../../reducers'
 import * as Routes from '../../routes'
 import { SafeAreaView } from 'react-navigation'
 import FollowBtn from '../../components/FollowBtn'
+import Post from '../../components/Post'
 
-type UserType = Schema.User
+type UserType = Common.Schema.User
+type Navigation = NavigationScreenProp<{}, Routes.UserParams>
 
 interface ConnectedProps {
   users: UserType[]
@@ -35,11 +41,23 @@ export interface Props extends ConnectedProps {
   navigation: Navigation
 }
 
+interface State {
+  posts: Common.Schema.Post[]
+  lastPageFetched: number
+  loadingNextPage: boolean
+}
+
 const showCopiedToClipboardToast = () => {
   ToastAndroid.show('Copied to clipboard!', 800)
 }
 
-class User extends React.Component<Props> {
+interface Sentinel {
+  type: '@@Sentinel'
+}
+
+type Item = Sentinel | Common.Schema.Post
+
+class User extends React.Component<Props, State> {
   static navigationOptions: NavigationScreenOptions = {
     header: undefined,
     headerStyle: {
@@ -54,10 +72,89 @@ class User extends React.Component<Props> {
 
   intervalID: number | null = 0
 
+  state: State = {
+    lastPageFetched: 0,
+    posts: [
+      {
+        author: this.getUser(),
+        contentItems: {
+          asjdkaskldjlkasd: {
+            type: 'text/paragraph',
+            text: 'aksjdhjkashjkasd',
+          },
+        },
+        date: Date.now(),
+        id: 'asjdklasd',
+        status: 'publish',
+        tags: '',
+        title: 'alksjljkasd',
+      },
+    ],
+    loadingNextPage: true,
+  }
+
+  fetchNextPage = async () => {
+    this.setState({
+      loadingNextPage: true,
+    })
+
+    try {
+      const res = await Http.get(
+        `/api/gun/wall/${this.props.navigation.getParam(
+          'publicKey',
+        )}?page=${this.state.lastPageFetched - 1}`,
+      )
+
+      if (res.status !== 200) {
+        throw new Error(`Not 200`)
+      }
+
+      this.setState(({ posts, lastPageFetched }) => {
+        const { posts: postsRecord } = res.data
+        const fetchedPosts: Common.Schema.Post[] = Object.values(postsRecord)
+        console.warn(fetchedPosts)
+        const mixedWithExisting = [...posts, ...fetchedPosts]
+        const dedupped = R.uniqBy(R.prop('id'), mixedWithExisting)
+
+        const sorted = R.sort((a, b) => b.date - a.date, dedupped)
+
+        console.warn(sorted)
+
+        return {
+          posts: sorted,
+          lastPageFetched: lastPageFetched - 1,
+        }
+      })
+    } catch (err) {
+      Logger.log(err)
+      ToastAndroid.show(
+        `Error fetching posts: ${err.message ||
+          err.errorMessage ||
+          'Unknown error'}`,
+        800,
+      )
+    } finally {
+      this.setState({
+        loadingNextPage: false,
+      })
+    }
+  }
+
+  reload = () => {
+    this.setState(
+      {
+        lastPageFetched: 0,
+      },
+      this.fetchNextPage,
+    )
+  }
+
   componentDidMount() {
     this.intervalID = setInterval(() => {
       this.forceUpdate()
     }, SET_LAST_SEEN_APP_INTERVAL)
+
+    this.fetchNextPage()
   }
 
   componentWillUnmount() {
@@ -91,46 +188,102 @@ class User extends React.Component<Props> {
     )
   }
 
-  render() {
+  renderItem = ({ item }: ListRenderItemInfo<Item>) => {
+    if (Common.Schema.isPost(item)) {
+      const imageCIEntries = Object.entries(item.contentItems).filter(
+        ([_, ci]) => ci.type === 'image/embedded',
+      ) as [string, Common.Schema.EmbeddedImage][]
+
+      const paragraphCIEntries = Object.entries(item.contentItems).filter(
+        ([_, ci]) => ci.type === 'text/paragraph',
+      ) as [string, Common.Schema.Paragraph][]
+
+      const images = imageCIEntries.map(([key, imageCI]) => ({
+        id: key,
+        data: imageCI.magnetURI,
+      }))
+
+      const paragraphhs = paragraphCIEntries.map(([key, paragraphCI]) => ({
+        id: key,
+        text: paragraphCI.text,
+      }))
+
+      return (
+        <Post
+          author={item.author}
+          date={item.date}
+          images={images}
+          paragraphs={paragraphhs}
+          // @ts-expect-error
+          parentScrollViewRef={undefined}
+        />
+      )
+    }
+
     const { displayName, lastSeenApp, publicKey } = this.getUser()
 
     return (
-      <SafeAreaView>
-        <ScrollView contentContainerStyle={styles.container}>
-          <View style={styles.subContainer}>
-            <TouchableOpacity>
-              <ConnectedShockAvatar height={100} publicKey={publicKey} />
-            </TouchableOpacity>
+      <View>
+        <View style={styles.subContainer}>
+          <TouchableOpacity>
+            <ConnectedShockAvatar height={100} publicKey={publicKey} />
+          </TouchableOpacity>
 
-            <Pad amount={4} />
+          <Pad amount={4} />
 
-            <Text style={styles.displayName}>
-              {displayName === null ? 'Loading...' : displayName}
-            </Text>
+          <Text style={styles.displayName}>
+            {displayName === null ? 'Loading...' : displayName}
+          </Text>
 
-            {/* <Pad amount={8} /> */}
+          {/* <Pad amount={8} /> */}
 
-            {/* <Text style={styles.bodyText}>{bio || 'Loading...'}</Text> */}
+          {/* <Text style={styles.bodyText}>{bio || 'Loading...'}</Text> */}
 
-            <Text>
-              {lastSeenApp === 0
-                ? 'Not seen recently'
-                : `Seen ${moment(lastSeenApp).fromNow()} ago`}
-            </Text>
-          </View>
+          <Text>
+            {lastSeenApp === 0
+              ? 'Not seen recently'
+              : `Seen ${moment(lastSeenApp).fromNow()} ago`}
+          </Text>
+        </View>
 
-          <View style={styles.subContainer}>
-            <TouchableOpacity onPress={this.copyDataToClipboard}>
-              <QR
-                size={256}
-                logoToShow="shock"
-                value={`$$__SHOCKWALLET__USER__${publicKey}`}
-              />
-            </TouchableOpacity>
-          </View>
+        <View style={styles.subContainer}>
+          <TouchableOpacity onPress={this.copyDataToClipboard}>
+            <QR
+              size={256}
+              logoToShow="shock"
+              value={`$$__SHOCKWALLET__USER__${publicKey}`}
+            />
+          </TouchableOpacity>
+        </View>
 
-          <FollowBtn publicKey={publicKey} />
-        </ScrollView>
+        <FollowBtn publicKey={publicKey} />
+      </View>
+    )
+  }
+
+  getData = (): Item[] => {
+    return [{ type: '@@Sentinel' }, ...this.state.posts]
+  }
+
+  keyExtractor = (item: Item) => {
+    return (item as Common.Schema.Post).id || (item as Sentinel).type
+  }
+
+  render() {
+    return (
+      <SafeAreaView style={styles.container}>
+        <FlatList
+          renderItem={this.renderItem}
+          data={this.getData()}
+          keyExtractor={this.keyExtractor}
+          onEndReached={this.fetchNextPage}
+          refreshControl={
+            <RefreshControl
+              refreshing={this.state.loadingNextPage}
+              onRefresh={this.fetchNextPage}
+            />
+          }
+        />
       </SafeAreaView>
     )
   }
@@ -139,7 +292,7 @@ class User extends React.Component<Props> {
 const mapStateToProps = (state: Reducers.State): ConnectedProps => {
   //  TODO: find out a way to get a single user here
   const users = Reducers.selectAllUsers(state)
-  const usersArr = Object.values(users) as Schema.User[]
+  const usersArr = Object.values(users) as Common.Schema.User[]
 
   return {
     users: usersArr,
@@ -160,6 +313,7 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     backgroundColor: CSS.Colors.TEXT_WHITE,
+    flex: 1,
 
     paddingBottom: 20,
     paddingTop: 20,
