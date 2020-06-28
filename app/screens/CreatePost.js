@@ -7,11 +7,14 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
+  ToastAndroid,
+  ActivityIndicator,
 } from 'react-native'
 import ImagePicker from 'react-native-image-crop-picker'
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'
 import Logger from 'react-native-file-log'
 import _ from 'lodash'
+import Http from 'axios'
 
 import TextInput from '../components/TextInput'
 import ShockButton from '../components/ShockButton'
@@ -27,8 +30,8 @@ export const CREATE_POST = 'CREATE_POST'
 /**
  * @typedef {object} State
  * @prop {boolean} isCreating
- * @prop {string[]} images
- * @prop {string[]} description
+ * @prop {any[]} images
+ * @prop {string} description
  */
 
 /** @type {State} */
@@ -84,31 +87,43 @@ class CreatePost extends React.Component {
     ImagePicker.openPicker({
       cropping: true,
       width: SIZE,
-      height: SIZE,
       multiple: true,
       includeBase64: true,
       cropperCircleOverlay: true,
       useFrontCamera: true,
       compressImageQuality: 0.5,
       compressImageMaxWidth: SIZE,
-      compressImageMaxHeight: SIZE,
       mediaType: 'photo',
     })
-      .then(images => {
-        if (images === null) {
-          throw new TypeError('image.data === null')
-        }
+      .then(imageOrImages => {
+        const images = Array.isArray(imageOrImages)
+          ? imageOrImages
+          : [imageOrImages]
 
-        this.setState({
-          images,
-        })
+        for (const img of images) {
+          if (img.width > SIZE) {
+            throw new RangeError('Expected image width to not exceed 640')
+          }
+
+          if (img.mime !== 'image/jpeg') {
+            throw new TypeError('Expected image to be jpeg')
+          }
+
+          if (img.data === null) {
+            throw new TypeError('image.data === null')
+          }
+        }
       })
       .catch(e => {
+        ToastAndroid.show(`Error inside image picker: ${e.message}`, 800)
         Logger.log(e.message)
       })
   }
 
-  onPressCreate = () => {
+  onPressCreate = async () => {
+    this.setState({
+      isCreating: true,
+    })
     const { description, images } = this.state
     const dataToSendToService = {
       paragraphs: description.split('\n'),
@@ -116,6 +131,40 @@ class CreatePost extends React.Component {
     }
     // eslint-disable-next-line no-console
     console.log('onPressCreate dataToSendToService', dataToSendToService)
+
+    try {
+      const res = await Http.post(`/api/gun/wall`, {
+        tags: [],
+        title: 'Post',
+        contentItems: [
+          ...dataToSendToService.paragraphs.map(p => ({
+            type: 'text/paragraph',
+            text: p,
+          })),
+          ...dataToSendToService.images.map(i => ({
+            type: 'image/embedded',
+            magnetURI: i,
+            width: 480,
+          })),
+        ],
+      })
+
+      if (res.status !== 200) {
+        throw new Error(`Status not OK`)
+      } else {
+        this.props.navigation.goBack()
+      }
+    } catch (e) {
+      const msg = `Error: ${e.message ||
+        e.data.errorMessage ||
+        'Unknown error'}`
+      ToastAndroid.show(msg, 800)
+      Logger.log(msg)
+    } finally {
+      this.setState({
+        isCreating: false,
+      })
+    }
   }
 
   render() {
@@ -151,7 +200,11 @@ class CreatePost extends React.Component {
             </Text>
           ))}
           {imageListFileNames.length > 0 && <View style={style.space} />}
-          <ShockButton onPress={this.onPressCreate} title="Submit Listing" />
+          {this.state.isCreating ? (
+            <ActivityIndicator />
+          ) : (
+            <ShockButton onPress={this.onPressCreate} title="Submit Listing" />
+          )}
         </ScrollView>
       </SafeAreaView>
     )
