@@ -1,9 +1,10 @@
 import React from 'react'
 import { View, Text, StyleSheet } from 'react-native'
 import Moment from 'moment'
+import * as Common from 'shock-common'
 
 import { styles } from '../../res/css'
-import ShockAvatar from '../ShockAvatar'
+import { ConnectedShockAvatar } from '../ShockAvatar'
 
 const style = StyleSheet.create({
   userInfoContainer: {
@@ -31,18 +32,18 @@ const style = StyleSheet.create({
 
 /**
  * @typedef {object} Props
- * @prop {string} authorDisplayName
+ * @prop {Common.Schema.User} author
  * @prop {number} date
  */
 
 /**
  * @type {React.FC<Props>}
  */
-const Post = ({ authorDisplayName, date }) => ((
+const Post = ({ author, date }) => ((
   <View style={style.userInfoContainer}>
-    <ShockAvatar image={null} lastSeenApp={null} height={60} />
+    <ConnectedShockAvatar height={60} publicKey={author.publicKey} />
     <View style={style.userInfoTextContainer}>
-      <Text style={style.authorDisplayNameStyle}>{authorDisplayName}</Text>
+      <Text style={style.authorDisplayNameStyle}>{author.displayName}</Text>
       <Text style={style.dateStyle}>
         {Moment(date)
           .subtract(10, 'hours')
