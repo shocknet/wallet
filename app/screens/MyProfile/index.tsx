@@ -12,10 +12,12 @@ import {
 import ImagePicker from 'react-native-image-crop-picker'
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'
 import Logger from 'react-native-file-log'
+import {
+  NavigationScreenProp,
+  NavigationBottomTabScreenOptions,
+} from 'react-navigation'
 // import { AirbnbRating } from 'react-native-ratings'
-/**
- * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation
- */
+type Navigation = NavigationScreenProp<{}>
 
 import * as API from '../../services/contact-api'
 import * as CSS from '../../res/css'
@@ -35,26 +37,23 @@ const showCopiedToClipboardToast = () => {
   ToastAndroid.show('Copied to clipboard!', 800)
 }
 
-/**
- * @typedef {object} State
- * @prop {Cache.AuthData|null} authData
- * @prop {string|null} avatar
- * @prop {string|null} displayName
- * @prop {boolean} displayNameDialogOpen
- * @prop {string} displayNameInput
- * @prop {string|null} bio
- */
+interface Props {
+  navigation: Navigation
+}
 
-/**
- * @augments React.Component<{ navigation: Navigation }, State, never>
- */
-export default class MyProfile extends React.Component {
-  /**
-   * @type {import('react-navigation').NavigationBottomTabScreenOptions}
-   */
-  static navigationOptions = {
+interface State {
+  authData: Cache.AuthData | null
+  avatar: string | null
+  displayName: string | null
+  displayNameDialogOpen: boolean
+  displayNameInput: string
+  bio: string | null
+}
+
+export default class MyProfile extends React.Component<Props, State> {
+  static navigationOptions: NavigationBottomTabScreenOptions = {
     tabBarIcon: ({ focused }) => {
-      return ((
+      return (
         <FontAwesome5
           color={
             focused ? CSS.Colors.BLUE_MEDIUM_DARK : CSS.Colors.GRAY_MEDIUM_LIGHT
@@ -63,12 +62,11 @@ export default class MyProfile extends React.Component {
           // reverseColor={'#CED0CE'}
           size={32}
         />
-      ))
+      )
     },
   }
 
-  /** @type {State} */
-  state = {
+  state: State = {
     authData: null,
     avatar: API.Events.getAvatar(),
     displayName: API.Events.getDisplayName(),
@@ -78,10 +76,7 @@ export default class MyProfile extends React.Component {
     bio: API.Events.currentBio,
   }
 
-  /**
-   * @type {React.RefObject<SetBioDialog>}
-   */
-  setBioDialog = React.createRef()
+  setBioDialog: React.RefObject<SetBioDialog> = React.createRef()
 
   onAvatarUnsub = () => {}
 
@@ -125,10 +120,7 @@ export default class MyProfile extends React.Component {
     this.onBioUnsub()
   }
 
-  /**
-   * @param {string} dn
-   */
-  onChangeDisplayNameInput = dn => {
+  onChangeDisplayNameInput = (dn: string) => {
     this.setState({
       displayNameInput: dn,
     })
@@ -219,10 +211,7 @@ export default class MyProfile extends React.Component {
     current && current.open()
   }
 
-  /**
-   * @param {string} bio
-   */
-  onSubmitBio = bio => {
+  onSubmitBio = (bio: string) => {
     this.setState({ bio })
 
     API.Actions.setBio(bio)
