@@ -2,6 +2,7 @@ import React from 'react'
 import { View, Text, StyleSheet, Dimensions } from 'react-native'
 // @ts-ignore
 import Carousel from 'react-native-smart-carousel'
+import * as Common from 'shock-common'
 /**
  * @typedef {import('react-native').ScrollView} ScrollView
  */
@@ -14,8 +15,7 @@ const { width } = Dimensions.get('window')
 
 /**
  * @typedef {object} Props
- * @prop {string} authorPublicKey
- * @prop {string} authorDisplayName
+ * @prop {Common.Schema.User} author
  * @prop {number} date
  * @prop {{ id: string , text: string}[]} paragraphs
  * @prop {{id: string , data: string }[]} images
@@ -26,7 +26,7 @@ const { width } = Dimensions.get('window')
  * @type {React.FC<Props>}
  */
 const Post = ({
-  authorDisplayName = 'Shock User',
+  author,
   date,
   paragraphs = [],
   images = [],
@@ -40,7 +40,7 @@ const Post = ({
 
   return ((
     <View style={styles.postContainer}>
-      <UserInfo authorDisplayName={authorDisplayName} date={date} />
+      <UserInfo author={author} date={date} />
       {paragraphs.map(paragraph => (
         <Text style={xStyles.paragraph} key={paragraph.id}>
           {paragraph.text}
