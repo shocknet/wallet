@@ -119,6 +119,7 @@ export default class ShockWallet extends React.Component {
    * @param {{url: string}} e */
   handleUrl = async e => {
     try {
+      ToastAndroid.show('LNURL detected, decoding...', 1500)
       const authData = await Cache.getStoredAuthData()
       const walletStatus = await Wallet.walletStatus()
       const nodeURL = await Cache.getNodeURL()
