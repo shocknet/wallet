@@ -79,15 +79,18 @@ class User extends React.Component<Props, State> {
   }
 
   fetchNextPage = async () => {
+    const publicKey = this.props.navigation.getParam('publicKey')
+    if (!publicKey) {
+      return
+    }
+
     this.setState({
       loadingNextPage: true,
     })
 
     try {
       const res = await Http.get(
-        `/api/gun/wall/${this.props.navigation.getParam(
-          'publicKey',
-        )}?page=${this.state.lastPageFetched - 1}`,
+        `/api/gun/wall/${publicKey}?page=${this.state.lastPageFetched - 1}`,
       )
 
       if (res.status !== 200) {

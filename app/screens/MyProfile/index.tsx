@@ -103,9 +103,7 @@ export default class MyProfile extends React.Component<Props, State> {
 
     try {
       const res = await Http.get(
-        `/api/gun/wall/${this.props.navigation.getParam(
-          'publicKey',
-        )}?page=${this.state.lastPageFetched - 1}`,
+        `/api/gun/wall?page=${this.state.lastPageFetched - 1}`,
       )
 
       if (res.status !== 200) {
