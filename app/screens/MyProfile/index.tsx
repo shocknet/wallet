@@ -113,13 +113,10 @@ export default class MyProfile extends React.Component<Props, State> {
       this.setState(({ posts, lastPageFetched }) => {
         const { posts: postsRecord } = res.data
         const fetchedPosts: Common.Schema.Post[] = Object.values(postsRecord)
-        console.warn(fetchedPosts)
         const mixedWithExisting = [...posts, ...fetchedPosts]
         const dedupped = R.uniqBy(R.prop('id'), mixedWithExisting)
 
         const sorted = R.sort((a, b) => b.date - a.date, dedupped)
-
-        console.warn(sorted)
 
         return {
           posts: sorted,
