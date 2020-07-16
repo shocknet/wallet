@@ -1065,6 +1065,7 @@ class WalletOverview extends Component {
     //on the screen WALLET_OVERVIEW
     if (newParams.lnurl) {
       const { lnurl } = newParams
+      this.props.navigation.setParams({ lnurl: undefined })
       this._handleOpenURL({ url: lnurl })
       return
     }
@@ -1248,6 +1249,7 @@ class WalletOverview extends Component {
 
     if (params && params.lnurl) {
       const { lnurl } = params
+      navigation.setParams({ lnurl: undefined })
       this._handleOpenURL({ url: lnurl })
     }
     //The initial url exists only if the app was closed and
@@ -1552,11 +1554,7 @@ class WalletOverview extends Component {
           </TouchableHighlight>
           <TouchableHighlight
             underlayColor="transparent"
-            //onPress={this.onPressRequest}
-            // eslint-disable-next-line
-            onPress={() => {
-              this.webview.postMessage('YO BRAH IS IT OK!!!')
-            }}
+            onPress={this.onPressRequest}
             style={[
               styles.actionButton,
               { backgroundColor: CSS.Colors.FUN_BLUE },
