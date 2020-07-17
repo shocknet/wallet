@@ -12,6 +12,7 @@ const { Aes } = NativeModules
  * @prop {string} encryptedData
  * @prop {string} encryptedKey
  * @prop {string} iv
+ * @prop {string?} encryptedToken
  */
 
 /**
@@ -45,20 +46,23 @@ export const generateRandomBytes = (length = 16) =>
 /**
  * @param {string} data
  * @param {string} rsaKey
+ * @param {string?} token
  * @returns {Promise<EncryptResult>}
  */
-export const encryptData = async (data, rsaKey) => {
+export const encryptData = async (data, rsaKey, token = null) => {
   const [key, iv] = await Promise.all([
     generateRandomBytes(32),
     generateRandomBytes(16),
   ])
-  const [encryptedData, encryptedKey] = await Promise.all([
+  const [encryptedData, encryptedKey, encryptedToken] = await Promise.all([
     Aes.encrypt(data, key, iv),
     encryptKey(key, rsaKey),
+    token ? Aes.encrypt(data, key, iv) : null,
   ])
   return {
     encryptedData,
     encryptedKey,
+    encryptedToken,
     iv,
   }
 }

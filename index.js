@@ -10,7 +10,7 @@ import {
   ToastAndroid,
 } from 'react-native'
 import moment from 'moment'
-import Http from 'axios'
+import Http, { AxiosRequestConfig } from 'axios'
 import Logger from 'react-native-file-log'
 // @ts-ignore
 import { DISABLE_SHOCK_ENCRYPTION } from 'react-native-dotenv'
@@ -178,6 +178,25 @@ export default class ShockWallet extends React.Component {
 
 const cache = new Map()
 
+/**
+ * @param {AxiosRequestConfig} config
+ */
+const getAuthorizationToken = async config => {
+  if (!config.headers.Authorization) {
+    try {
+      const token = await Cache.getToken()
+      // eslint-disable-next-line require-atomic-updates
+      return `Bearer ${token}`
+    } catch (err) {
+      Logger.log(`Unable to retrieve token: ${err.message}`)
+      Logger.log(JSON.stringify(err))
+      return null
+    }
+  }
+
+  return null
+}
+
 // Adds an Authorization token to the header before sending any request
 Http.interceptors.request.use(async config => {
   try {
@@ -191,17 +210,6 @@ Http.interceptors.request.use(async config => {
     } catch (err) {
       Logger.log(`Unable to retrieve base URL: ${err.message}`)
       Logger.log(JSON.stringify(err))
-    }
-
-    if (!config.headers.Authorization) {
-      try {
-        const token = await Cache.getToken()
-        // eslint-disable-next-line require-atomic-updates
-        config.headers.common.Authorization = `Bearer ${token}`
-      } catch (err) {
-        Logger.log(`Unable to retrieve token: ${err.message}`)
-        Logger.log(JSON.stringify(err))
-      }
     }
 
     Logger.log('Device ID:', connection.deviceId)
@@ -230,14 +238,22 @@ Http.interceptors.request.use(async config => {
       DISABLE_SHOCK_ENCRYPTION !== 'true'
     ) {
       const stringifiedData = JSON.stringify(config.data)
-      const { encryptedData, encryptedKey, iv } = await Encryption.encryptData(
+      const authToken = await getAuthorizationToken(config)
+      const {
+        encryptedData,
+        encryptedKey,
+        iv,
+        encryptedToken,
+      } = await Encryption.encryptData(
         stringifiedData,
         connection.APIPublicKey,
+        authToken,
       )
       // eslint-disable-next-line require-atomic-updates
       config.data = {
         data: encryptedData,
         encryptionKey: encryptedKey,
+        token: encryptedToken,
         iv,
       }
       // @ts-ignore
