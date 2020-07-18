@@ -273,6 +273,10 @@ export default class MyProfile extends React.Component<Props, State> {
       })
       .catch(e => {
         Logger.log(e.message)
+        ToastAndroid.show(
+          `Error setting avatar: ${e.message}`,
+          ToastAndroid.LONG,
+        )
       })
   }
 
