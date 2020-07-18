@@ -228,7 +228,7 @@ export default class MyProfile extends React.Component<Props, State> {
   }
 
   onPressAvatar = () => {
-    const AVATAR_EDGE = 640
+    const AVATAR_EDGE = 320
     ImagePicker.openPicker({
       cropping: true,
       width: AVATAR_EDGE,
