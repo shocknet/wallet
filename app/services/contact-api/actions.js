@@ -7,6 +7,7 @@ import once from 'lodash/once'
 import Logger from 'react-native-file-log'
 import { Constants, Schema } from 'shock-common'
 import Http from 'axios'
+import { ToastAndroid } from 'react-native'
 
 import * as Cache from '../../services/cache'
 
@@ -66,56 +67,37 @@ export const generateNewHandshakeNode = () => {
 
 /**
  * @param {string} avatar
+ * @returns {Promise<void>}
  */
-export const setAvatar = avatar => {
-  if (!socket || !(socket && socket.connected)) {
-    throw new Error('NOT_CONNECTED')
-  }
-
-  const uuid = Math.random().toString() + Date.now().toString()
-  const oldAvatar = Events.getAvatar()
-  Events.setAvatar(avatar)
-
-  const cb = once(res => {
-    if (!socket || !(socket && socket.connected)) {
-      throw new Error('NOT_CONNECTED')
-    }
-    socket.off(Action.SET_AVATAR, cb)
-    if (!res.ok) {
-      if (res.origBody.uuid === uuid) {
-        Events.setAvatar(oldAvatar)
-      }
-    }
-  })
-
-  socket.on(Action.SET_AVATAR, cb)
-
-  getToken().then(token => {
-    if (!socket || !(socket && socket.connected)) {
-      throw new Error('NOT_CONNECTED')
-    }
-
-    socket.emit(Action.SET_AVATAR, {
-      token,
+export const setAvatar = async avatar => {
+  try {
+    await Http.put(`/api/gun/me`, {
       avatar,
     })
-  })
+  } catch (err) {
+    Logger.log(err)
+    ToastAndroid.show(`Could not set avatar: ${err.message}`, ToastAndroid.LONG)
+    throw err
+  }
 }
 
 /**
  * @param {string} displayName
  * @returns {Promise<void>}
  */
-export const setDisplayName = displayName => {
-  return getToken().then(token => {
-    if (!socket || !(socket && socket.connected)) {
-      throw new Error('NOT_CONNECTED')
-    }
-    socket.emit(Action.SET_DISPLAY_NAME, {
-      token,
+export const setDisplayName = async displayName => {
+  try {
+    await Http.put(`/api/gun/me`, {
       displayName,
     })
-  })
+  } catch (err) {
+    Logger.log(err)
+    ToastAndroid.show(
+      `Could not set display name: ${err.message}`,
+      ToastAndroid.LONG,
+    )
+    throw err
+  }
 }
 
 /**
@@ -320,33 +302,14 @@ export const sendPayment = async (recipientPub, amount, memo) => {
  * @returns {Promise<void>}
  */
 export const setBio = async bio => {
-  const token = await getToken()
-  if (!socket || !(socket && socket.connected)) {
-    throw new Error('NOT_CONNECTED')
-  }
-
-  const uuid = Date.now().toString()
-
-  socket.emit(Action.SET_BIO, {
-    token,
-    bio,
-    uuid,
-  })
-
-  const res = await new Promise(resolve => {
-    socket &&
-      socket.on(
-        Action.SET_BIO,
-        once(res => {
-          if (res.origBody.uuid === uuid) {
-            resolve(res)
-          }
-        }),
-      )
-  })
-
-  if (!res.ok) {
-    throw new Error(res.msg || 'Unknown Error')
+  try {
+    await Http.put(`/api/gun/me`, {
+      bio,
+    })
+  } catch (err) {
+    Logger.log(err)
+    ToastAndroid.show(`Could not set bio: ${err.message}`, ToastAndroid.LONG)
+    throw err
   }
 }
 
