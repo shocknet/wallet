@@ -15,12 +15,12 @@ import { getFeedPage } from '../services/feed'
  */
 
 export const thunkGetFeedPage = pageNumber => async dispatch => {
-  dispatch(Actions.Feed.beganLoadFeed(pageNumber))
+  dispatch(Actions.FeedWall.beganLoadFeed(pageNumber))
   try {
     const data = await getFeedPage(pageNumber)
     // @ts-ignore
-    dispatch(Actions.Feed.finishedLoadFeed(data))
+    dispatch(Actions.FeedWall.finishedLoadFeed(data))
   } catch (error) {
-    dispatch(Actions.Feed.loadFeedError(pageNumber))
+    dispatch(Actions.FeedWall.loadFeedError(pageNumber))
   }
 }
