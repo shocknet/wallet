@@ -28,52 +28,65 @@ interface ConnectedProps {
   posts: Posts
   count: number
   totalPages: number
+  loadingNextPage: boolean
+  lastPageFetched: number
 }
 
 interface Props {
   posts: Posts
   count: number
   totalPages: number
+  loadingNextPage: boolean
+  lastPageFetched: number
   getFeedPage: (pageNumber: number) => void
   navigation: Navigation
 }
 
-interface State {
-  posts: Posts
-  lastPageFetched: number
-  loadingNextPage: boolean
-}
-
-class Feed extends React.Component<Props, State> {
+class Feed extends React.Component<Props> {
   static navigationOptions: NavigationScreenOptions = {
     header: null,
   }
 
-  state: State = {
-    posts: [],
-    lastPageFetched: 0,
-    loadingNextPage: true,
-  }
-
   componentDidMount() {
-    this.fetchNextPage(0)
+    this.props.getFeedPage(0)
   }
 
-  fetchNextPage = (pageNumber: number) => {
-    this.setState({
-      loadingNextPage: true,
-    })
-    this.props.getFeedPage(pageNumber)
+  onEndReached = () => {
+    if (Math.abs(this.props.lastPageFetched) >= this.props.totalPages - 1)
+      return
+    this.props.getFeedPage(this.props.lastPageFetched - 1)
+  }
+
+  onRefresh = () => {
+    this.props.getFeedPage(0)
   }
 
   renderItem = ({ item }: ListRenderItemInfo<Item>) => {
+    if (!Common.Schema.isPost(item)) return null
+    const imageCIEntries = Object.entries(item.contentItems).filter(
+      ([_, ci]) => ci.type === 'image/embedded',
+    ) as [string, Common.Schema.EmbeddedImage][]
+
+    const paragraphCIEntries = Object.entries(item.contentItems).filter(
+      ([_, ci]) => ci.type === 'text/paragraph',
+    ) as [string, Common.Schema.Paragraph][]
+
+    const images = imageCIEntries.map(([key, imageCI]) => ({
+      id: key,
+      data: imageCI.magnetURI,
+    }))
+
+    const paragraphs = paragraphCIEntries.map(([key, paragraphCI]) => ({
+      id: key,
+      text: paragraphCI.text,
+    }))
+
     return (
       <Post
         author={item.author}
         date={item.date}
-        images={[]}
-        // paragraphs={paragraphs}
-        paragraphs={[]}
+        images={images}
+        paragraphs={paragraphs}
         // @ts-expect-error
         parentScrollViewRef={undefined}
       />
@@ -87,13 +100,19 @@ class Feed extends React.Component<Props, State> {
       <SafeAreaView style={styles.container}>
         <FlatList
           renderItem={this.renderItem}
-          data={this.state.posts}
+          data={this.props.posts}
           keyExtractor={this.keyExtractor}
-          onEndReached={this.fetchNextPage}
+          ListEmptyComponent={
+            <Text style={styles.emptyMessageText}>
+              Follow people to see their posts
+            </Text>
+          }
+          onEndReached={this.onEndReached}
+          onEndReachedThreshold={0.5}
           refreshControl={
             <RefreshControl
-              refreshing={this.state.loadingNextPage}
-              onRefresh={this.fetchNextPage}
+              refreshing={this.props.loadingNextPage}
+              onRefresh={this.onRefresh}
             />
           }
         />
@@ -103,40 +122,13 @@ class Feed extends React.Component<Props, State> {
 }
 
 const mapStateToProps = (state: Reducers.State): ConnectedProps => {
-  const mockData = {
-    count: 1,
-    posts: {
-      'kci1w4ro5sP94numFMGe~htWIQrIDmHGERmpVuJIx7dgOBtPagfY_aet1XogrLx4.JGi-XnnCuHAXcY_7OVmH5Z3XF3KWokOHB_017Jm79W4.': {
-        contentItems: {
-          'kci1w56zAyx6uCUE4E3W~htWIQrIDmHGERmpVuJIx7dgOBtPagfY_aet1XogrLx4.JGi-XnnCuHAXcY_7OVmH5Z3XF3KWokOHB_017Jm79W4.': {
-            text: 'Helli',
-            type: 'text/paragraph',
-          },
-        },
-        date: 1594496239908,
-        status: 'publish',
-        tags: '',
-        title: 'Post',
-        id:
-          'kci1w4ro5sP94numFMGe~htWIQrIDmHGERmpVuJIx7dgOBtPagfY_aet1XogrLx4.JGi-XnnCuHAXcY_7OVmH5Z3XF3KWokOHB_017Jm79W4.',
-        author: {
-          bio: 'A little bit about myself.',
-          displayName: 'anonhtWIQrID',
-          lastSeenApp: 1594500214223,
-          lastSeenNode: 1594500210239,
-          publicKey:
-            'htWIQrIDmHGERmpVuJIx7dgOBtPagfY_aet1XogrLx4.JGi-XnnCuHAXcY_7OVmH5Z3XF3KWokOHB_017Jm79W4',
-        },
-      },
-    },
-    totalPages: 1,
-  }
-  const posts = mockData.posts
-  const postsArr = (_.values(posts) as unknown) as Posts
+  const postsArr = (_.values(state.feedWall.posts) as unknown) as Posts
   return {
-    count: mockData.count,
-    totalPages: mockData.totalPages,
+    count: state.feedWall.count,
+    totalPages: state.feedWall.totalPages,
     posts: postsArr,
+    loadingNextPage: state.feedWall.loadingNextPage,
+    lastPageFetched: state.feedWall.lastPageFetched,
   }
 }
 
@@ -156,6 +148,12 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
     backgroundColor: CSS.Colors.BACKGROUND_NEAR_WHITE,
-    padding: CSS.SCREEN_PADDING,
+  },
+  emptyMessageText: {
+    color: CSS.Colors.TEXT_GRAY,
+    fontFamily: 'Montserrat-700',
+    fontSize: 16,
+    textAlign: 'center',
+    margin: 10,
   },
 })
