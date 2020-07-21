@@ -1,13 +1,24 @@
 import React from 'react'
 import Logger from 'react-native-file-log'
-import ShockModal from '../../components/ShockModal'
-import { Text, View, Switch, StyleSheet, ToastAndroid } from 'react-native'
-import { nodeInfo, addPeer, addInvoice } from '../../services/wallet'
-import ShockButton from '../../components/ShockButton'
-import ShockInput from '../../components/ShockInput'
-import Pad from '../../components/Pad'
-import * as CSS from '../../res/css'
-
+import {
+  Text,
+  View,
+  Switch,
+  StyleSheet,
+  ToastAndroid,
+  Clipboard,
+} from 'react-native'
+import { nodeInfo, addPeer, addInvoice } from '../services/wallet'
+import ShockButton from '../components/ShockButton'
+import ShockInput from '../components/ShockInput'
+import Pad from '../components/Pad'
+import * as CSS from '../res/css'
+//@ts-ignore
+import bech32 from 'bech32'
+import { connect } from 'react-redux'
+import notificationService from '../../notificationService'
+import * as Cache from '../services/cache'
+export const LNURL_SCREEN = 'LNURL_SCREEN'
 /**@typedef {{  tag:string,
  *              uri:string,
  *              metadata:string,
@@ -17,7 +28,7 @@ import * as CSS from '../../res/css'
  *              maxWithdrawable:number,
  *              shockPubKey:string,
  *          }} LNURLdataType */
-export default class LNURL extends React.Component {
+class LNURL extends React.Component {
   /**@param {object} props */
   constructor(props) {
     super(props)
@@ -40,6 +51,7 @@ export default class LNURL extends React.Component {
       didChange: false,
       hasMemo: false,
       memo: '',
+      LNURLdata: null,
     }
   }
 
@@ -189,8 +201,11 @@ export default class LNURL extends React.Component {
     return <Text>{this.state.error}</Text>
   }
 
-  /**@param   {LNURLdataType} LNURLdata*/
+  /**@param   {LNURLdataType | null} LNURLdata*/
   handleUrl = LNURLdata => {
+    if (LNURLdata === null) {
+      return this.renderEmpty()
+    }
     switch (LNURLdata.tag) {
       case 'channelRequest': {
         Logger.log('this url is a channel request')
@@ -345,34 +360,136 @@ export default class LNURL extends React.Component {
     return <Text>LNURL : Unknown Request</Text>
   }
 
-  componentWillReceiveProps() {
-    const { resetLNURL } = this.props
-    if (resetLNURL) {
-      this.localReset()
+  renderEmpty = () => {
+    return (
+      <View>
+        <Text>WIP</Text>
+
+        <ShockButton title="Copy from clip" onPress={this.copyFromClipboard} />
+      </View>
+    )
+  }
+  /**
+   *
+   * @param {any} nextProps
+   */
+
+  componentWillReceiveProps(nextProps) {
+    const p1 = nextProps.navigation.state.params
+    const p2 = this.props.navigation.state.params
+    notificationService.Log('TESTING', 'P1' + JSON.stringify(p1))
+    notificationService.Log('TESTING', 'P2' + JSON.stringify(p2))
+    if (!p1 || !p2) {
+      return
+    }
+    if (p1.lnurl === p2.lnurl) {
+      return
+    }
+    const params = p1
+    notificationService.Log('TESTING', JSON.stringify(params))
+    notificationService.Log('TESTING', 's2')
+    this.props.navigation.setParams({ lnurl: undefined })
+    this.decodeLNURL(params.lnurl)
+  }
+
+  componentDidMount() {
+    const { params } = this.props.navigation.state
+    if (params && params.lnurl) {
+      notificationService.Log('TESTING', 's1')
+      this.props.navigation.setParams({ lnurl: undefined })
+      this.decodeLNURL(params.lnurl)
     }
   }
 
-  render() {
-    const visible = this.props.LNURLdata !== null
-    if (visible === false) {
-      return null
+  /**
+   * @param {string} data
+   */
+  async decodeLNURL(data) {
+    let lnurl = data
+    //notificationService.Log("TESTING","BRTOH"+lnurl)
+    Logger.log(lnurl)
+    const isClean = lnurl.split(':')
+    const hasHttp = lnurl.startsWith('http')
+    if (!hasHttp && isClean.length === 2) {
+      const decodedBytes = bech32.fromWords(
+        bech32.decode(isClean[1], 1500).words,
+      )
+      lnurl = String.fromCharCode(...decodedBytes)
     }
-    Logger.log('LNURL')
-    Logger.log(this.props.LNURLdata)
+    notificationService.Log('TESTING', 'DAFAQ' + lnurl)
+    try {
+      const res = await fetch(lnurl)
+      const json = await res.json()
+
+      const authData = await Cache.getStoredAuthData()
+
+      json.shockPubKey = authData?.authData.publicKey
+      //Logger.log(json)
+      this.setState({
+        LNURLdata: json,
+      })
+
+      switch (json.tag) {
+        case 'channelRequest': {
+          Logger.log('this url is a channel request')
+          break
+        }
+        case 'withdrawRequest': {
+          Logger.log('this url is a withdrawal request')
+          break
+        }
+        case 'hostedChannelRequest': {
+          Logger.log('this url is a hosted channel request')
+          break
+        }
+        case 'login': {
+          Logger.log('this url is a login ')
+          break
+        }
+        case 'payRequest': {
+          Logger.log('this url is a pay request')
+          break
+        }
+        default: {
+          Logger.log('unknown tag')
+        }
+      }
+    } catch (e) {
+      Logger.log(e)
+    }
+  }
+
+  copyFromClipboard = () => {
+    Clipboard.getString().then(async lnurl => {
+      notificationService.Log('TESTING', lnurl)
+      await this.decodeLNURL(lnurl)
+    })
+  }
+
+  render() {
     const { done, error } = this.state
     return (
-      <ShockModal visible={visible} onRequestClose={this.props.requestClose}>
-        <View style={styles.flexCenter}>
-          {done === null &&
-            error === null &&
-            this.handleUrl(this.props.LNURLdata)}
-          {done !== null && this.handleDone()}
-          {error !== null && this.handleError()}
-        </View>
-      </ShockModal>
+      <View style={styles.flexCenter}>
+        {done === null &&
+          error === null &&
+          this.handleUrl(this.state.LNURLdata)}
+        {done !== null && this.handleDone()}
+        {error !== null && this.handleError()}
+      </View>
     )
   }
 }
+/**
+ * @param {typeof import('../../reducers/index').default} state
+ */
+const mapStateToProps = ({ history }) => ({ history })
+
+const mapDispatchToProps = {}
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(LNURL)
 
 const styles = StyleSheet.create({
   bigBold: {

@@ -65,7 +65,7 @@ import UnifiedTrx from './UnifiedTrx'
 //@ts-ignore
 import bech32 from 'bech32'
 //import { Buffer } from 'safe-buffer'
-import LNURL from './LNURL'
+import { LNURL_SCREEN } from '../LNURL'
 import { SEND_SCREEN } from '../Send'
 import { RECEIVE_SCREEN } from '../Receive'
 
@@ -74,7 +74,8 @@ import * as Cache from '../../services/cache'
 
 /**
  * @typedef {object} Params
- * @prop {string=} lnurl On chan+LN+LNURL
+ * @prop {string=} lnurl LNURL
+ * @prop {string=} protocol_link On chan+LN
  * @prop {string=} rawInvoice
  * @prop {string|null} recipientDisplayName
  * @prop {string|null} recipientAvatar
@@ -156,9 +157,6 @@ import * as Cache from '../../services/cache'
  * @prop {boolean} sendingInvoiceToShockUser
  * @prop {string} sendingInvoiceToShockUserMsg
  *
- * @prop {object | null} LNURLdata
- * @prop {boolean} resetLNURL
- *
  * @prop {string | null} avatar
  */
 
@@ -169,6 +167,8 @@ export const WALLET_OVERVIEW = 'WALLET_OVERVIEW'
 const showCopiedToClipboardToast = () => {
   ToastAndroid.show('Copied to clipboard!', 800)
 }
+
+let gotInitialLink = false
 
 /**
  * @augments Component<Props, State, never>
@@ -251,9 +251,6 @@ class WalletOverview extends Component {
 
     sendingInvoiceToShockUser: false,
     sendingInvoiceToShockUserMsg: '',
-    LNURLdata: null,
-    resetLNURL: false,
-
     avatar: ContactAPI.Events.getAvatar(),
   }
 
@@ -1063,10 +1060,10 @@ class WalletOverview extends Component {
     //Check if this screen has a pending protocol link
     //to be processed, This will happen if the app was in background
     //on the screen WALLET_OVERVIEW
-    if (newParams.lnurl) {
-      const { lnurl } = newParams
-      this.props.navigation.setParams({ lnurl: undefined })
-      this._handleOpenURL({ url: lnurl })
+    if (newParams.protocol_link) {
+      const { protocol_link } = newParams
+      this.props.navigation.setParams({ protocol_link: undefined })
+      this._handleOpenURL({ url: protocol_link })
       return
     }
     this.setState(
@@ -1105,11 +1102,10 @@ class WalletOverview extends Component {
    * @param {{url: string}} event
    */
   _handleOpenURL = event => {
-    this.requestCloseLNURL()
     /**
      * @param {string} url
      */
-    const middle = async url => {
+    const middle = url => {
       //const url = event.url
       Logger.log(url)
       const protocol = url.split(':')
@@ -1142,65 +1138,12 @@ class WalletOverview extends Component {
           )
 
           const lnurl = String.fromCharCode(...decodedBytes)
-          Logger.log(lnurl)
-
-          try {
-            const res = await fetch(lnurl)
-            const json = await res.json()
-
-            const authData = await Cache.getStoredAuthData()
-
-            json.shockPubKey = authData?.authData.publicKey
-            //Logger.log(json)
-            this.setState({
-              LNURLdata: json,
-            })
-
-            switch (json.tag) {
-              case 'channelRequest': {
-                Logger.log('this url is a channel request')
-                break
-              }
-              case 'withdrawRequest': {
-                Logger.log('this url is a withdrawal request')
-                break
-              }
-              case 'hostedChannelRequest': {
-                Logger.log('this url is a hosted channel request')
-                break
-              }
-              case 'login': {
-                Logger.log('this url is a login ')
-                break
-              }
-              case 'payRequest': {
-                Logger.log('this url is a pay request')
-                break
-              }
-              default: {
-                Logger.log('unknown tag')
-              }
-            }
-          } catch (e) {
-            Logger.log(e)
-          }
+          notificationService.Log('TESTING', 'navigatig')
+          this.props.navigation.navigate(LNURL_SCREEN, { lnurl })
         }
       }
     }
     middle(event.url)
-  }
-
-  requestCloseLNURL = () => {
-    this.setState({
-      LNURLdata: null,
-      resetLNURL: true,
-    })
-  }
-
-  refreshLNURL = () => {
-    this.setState({
-      resetLNURL: false,
-    })
   }
 
   didFocus = { remove() {} }
@@ -1247,24 +1190,28 @@ class WalletOverview extends Component {
     //on a screen different from WALLET_OVERVIEW
     const { params } = navigation.state
 
-    if (params && params.lnurl) {
-      const { lnurl } = params
-      navigation.setParams({ lnurl: undefined })
-      this._handleOpenURL({ url: lnurl })
+    if (params && params.protocol_link) {
+      const { protocol_link } = params
+      navigation.setParams({ protocol_link: undefined })
+      this._handleOpenURL({ url: protocol_link })
     }
     //The initial url exists only if the app was closed and
     //a protocol link caused it to open
-    Linking.getInitialURL()
-      .then(url => {
-        if (url) {
-          Logger.log('Initial url is: ' + url)
-          this._handleOpenURL({ url })
-        }
+    const url = await Linking.getInitialURL()
+    notificationService.Log('TESTING', 'LING' + JSON.stringify(gotInitialLink))
+    if (url && !gotInitialLink) {
+      gotInitialLink = true
+      notificationService.Log('TESTING', 'IS THIS?')
+      Logger.log('Initial url is: ' + url)
+      this._handleOpenURL({ url })
+    }
+    /*.then(url => {
+        
       })
       .catch(err => {
         ToastAndroid.show(`Protocol Link: ${err.message}`, 800)
         Logger.log('An error occurred with protocol links', err)
-      })
+      })*/
 
     this.startNotificationService()
 
@@ -1360,6 +1307,9 @@ class WalletOverview extends Component {
     if (this.exchangeRateIntervalID) {
       clearInterval(this.exchangeRateIntervalID)
     }
+    //if (!SocketManager.socket?.connected) {
+    //  SocketManager.socket.disconnect()
+    //}
   }
 
   onPressRequest = () => {
@@ -1481,8 +1431,6 @@ class WalletOverview extends Component {
 
       sendingInvoiceToShockUser,
       sendingInvoiceToShockUserMsg,
-      LNURLdata,
-      resetLNURL,
     } = this.state
 
     const { nodeInfo } = this.props.node
@@ -1518,13 +1466,13 @@ class WalletOverview extends Component {
 
     return (
       <View style={styles.container}>
-        <LNURL
+        {/*<LNURL
           LNURLdata={LNURLdata}
           requestClose={this.requestCloseLNURL}
           payInvoice={this.payLightningInvoice}
           resetLNURL={resetLNURL}
           refreshLNURL={this.refreshLNURL}
-        />
+        />*/}
         <StatusBar
           translucent
           backgroundColor="transparent"

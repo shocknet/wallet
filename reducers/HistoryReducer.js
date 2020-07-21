@@ -176,7 +176,7 @@ const history = (state = INITIAL_STATE, action) => {
           }
 
           if (Wallet.isTransaction(unifiedTransaction)) {
-            return true
+            return unifiedTransaction.num_confirmations > 0
           }
 
           return false
