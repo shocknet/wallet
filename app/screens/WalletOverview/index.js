@@ -76,6 +76,7 @@ import * as Cache from '../../services/cache'
  * @typedef {object} Params
  * @prop {string=} lnurl LNURL
  * @prop {string=} protocol_link On chan+LN
+ * @prop {string=} lnurlInvoice
  * @prop {string=} rawInvoice
  * @prop {string|null} recipientDisplayName
  * @prop {string|null} recipientAvatar
@@ -168,7 +169,7 @@ const showCopiedToClipboardToast = () => {
   ToastAndroid.show('Copied to clipboard!', 800)
 }
 
-let gotInitialLink = false
+let initialLinkUrl = ''
 
 /**
  * @augments Component<Props, State, never>
@@ -1066,6 +1067,9 @@ class WalletOverview extends Component {
       this._handleOpenURL({ url: protocol_link })
       return
     }
+    if (newParams.lnurlInvoice) {
+      this.payLightningInvoice({ invoice: newParams.lnurlInvoice })
+    }
     this.setState(
       {
         displayingConfirmInvoicePaymentDialog: true,
@@ -1138,7 +1142,6 @@ class WalletOverview extends Component {
           )
 
           const lnurl = String.fromCharCode(...decodedBytes)
-          notificationService.Log('TESTING', 'navigatig')
           this.props.navigation.navigate(LNURL_SCREEN, { lnurl })
         }
       }
@@ -1189,6 +1192,10 @@ class WalletOverview extends Component {
     //to be processed, This will happen if the app was in background
     //on a screen different from WALLET_OVERVIEW
     const { params } = navigation.state
+    if (params && params.lnurlInvoice) {
+      const { lnurlInvoice } = params
+      this.payLightningInvoice({ invoice: lnurlInvoice })
+    }
 
     if (params && params.protocol_link) {
       const { protocol_link } = params
@@ -1198,10 +1205,8 @@ class WalletOverview extends Component {
     //The initial url exists only if the app was closed and
     //a protocol link caused it to open
     const url = await Linking.getInitialURL()
-    notificationService.Log('TESTING', 'LING' + JSON.stringify(gotInitialLink))
-    if (url && !gotInitialLink) {
-      gotInitialLink = true
-      notificationService.Log('TESTING', 'IS THIS?')
+    if (url && url !== initialLinkUrl) {
+      initialLinkUrl = url
       Logger.log('Initial url is: ' + url)
       this._handleOpenURL({ url })
     }
