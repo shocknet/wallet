@@ -580,6 +580,7 @@ export const newAddress = async useOlderFormat => {
  * invoice will increment this index making it monotonically increasing.
  * Callers to the SubscribeInvoices call can use this to instantly get notified
  * of all added invoices with an add_index greater than this one.
+ * @prop {boolean} liquidityCheck check the remote balance of the largest channel
  */
 
 /**
