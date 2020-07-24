@@ -588,7 +588,7 @@ export const setChats = chats => {
 
 const chatsFetcher = async () => {
   if (!(await isAuth())) {
-    setTimeout(avatarFetcher, POLL_INTERVAL)
+    setTimeout(chatsFetcher, POLL_INTERVAL)
     return
   }
 
