@@ -6,7 +6,8 @@ import isEmpty from 'lodash/isEmpty'
 import debounce from 'lodash/debounce'
 import Logger from 'react-native-file-log'
 import { Constants } from 'shock-common'
-
+//@ts-ignore
+import { DISABLE_SHOCK_ENCRYPTION } from 'react-native-dotenv'
 import * as Cache from '../../services/cache'
 import { ACTIONS as ConnectionAction } from '../../actions/ConnectionActions'
 
@@ -68,6 +69,10 @@ export const setStore = initializedStore => {
  * @param {object} data
  */
 export const encryptSocketData = async data => {
+  if (DISABLE_SHOCK_ENCRYPTION === 'true') {
+    return data
+  }
+
   const { APIPublicKey } = store.getState().connection
 
   Logger.log('APIPublicKey', APIPublicKey)
