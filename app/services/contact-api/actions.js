@@ -256,7 +256,7 @@ export const disconnect = async pub => {
       Events.setChats(currChats)
     }
 
-    const res = await Http.delete(`api/gun/chat/${pub}`)
+    const res = await Http.delete(`api/gun/chats/${pub}`)
 
     if (res.status !== 200) {
       if (deletedChat.length) {
