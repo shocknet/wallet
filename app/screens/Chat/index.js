@@ -643,7 +643,7 @@ export default class Chat extends React.Component {
 
     const { recipientPublicKey } = theChat
 
-    API.Actions.sendMessage(recipientPublicKey, text).catch(e => {
+    API.Actions.sendMessageNew(recipientPublicKey, text).catch(e => {
       Logger.log(`Error sending a message with text: ${text} -> ${e.message}`)
     })
   }
