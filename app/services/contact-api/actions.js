@@ -35,7 +35,7 @@ const getToken = async () => {
  */
 export const acceptRequest = async requestID => {
   try {
-    await Http.put(`api/requests/${requestID}`, {
+    await Http.put(`api/gun/requests/${requestID}`, {
       accept: true,
     })
   } catch (e) {
