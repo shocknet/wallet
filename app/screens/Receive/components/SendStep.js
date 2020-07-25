@@ -208,9 +208,11 @@ class SendStep extends Component {
                   {invoice.amount ? invoice.amount : 'N/A'}
                 </Text>
               </View>
-              <Text>{JSON.stringify(invoice)}WWW</Text>
+
               {invoice.liquidityCheck === false && (
-                <Text style={styles.redText}>IDK SOMMETHING YO</Text>
+                <Text style={styles.redText}>
+                  not enough liquidity to receive this payment{' '}
+                </Text>
               )}
               <View
                 style={[styles.invoiceDetail, styles.noBorderInvoiceDetail]}

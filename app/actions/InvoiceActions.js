@@ -8,6 +8,7 @@ export const ACTIONS = {
   SET_UNIT_SELECTED: 'invoice/unit',
   SET_ADDRESS: 'invoice/address',
   DECODE_PAYMENT_REQUEST: 'invoice/load',
+  SET_LIQUIDITY_CHECK: 'invoice/liquidityCheck',
 
   ADD_INVOICE: 'invoice/add',
   RESET_INVOICE: 'invoice/reset',
@@ -119,6 +120,12 @@ export const addInvoice = invoice => async dispatch => {
     type: ACTIONS.ADD_INVOICE,
     data: newInvoice.payment_request,
   })
+  if (newInvoice.liquidityCheck !== undefined) {
+    dispatch({
+      type: ACTIONS.SET_LIQUIDITY_CHECK,
+      data: newInvoice.liquidityCheck,
+    })
+  }
 }
 
 /**
