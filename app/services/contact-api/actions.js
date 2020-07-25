@@ -2,7 +2,6 @@
  * @format
  */
 
-import debounce from 'lodash/debounce'
 import once from 'lodash/once'
 import Logger from 'react-native-file-log'
 import { Constants, Schema } from 'shock-common'
@@ -15,7 +14,6 @@ import * as Events from './events'
 import { socket } from './socket'
 
 const { Action } = Constants
-const { Event } = Constants
 
 /**
  * @throws {Error} If no data is cached.
@@ -33,21 +31,17 @@ const getToken = async () => {
 
 /**
  * @param {string} requestID
+ * @returns {Promise<void>}
  */
-export const acceptRequest = requestID => {
-  return Cache.getToken().then(token => {
-    if (!socket || !(socket && socket.connected)) {
-      throw new Error('NOT_CONNECTED')
-    }
-    socket.emit(Action.ACCEPT_REQUEST, {
-      token,
-      requestID,
+export const acceptRequest = async requestID => {
+  try {
+    await Http.put(`api/gun/requests/${requestID}`, {
+      accept: true,
     })
-
-    socket.emit(Event.ON_CHATS, {
-      token,
-    })
-  })
+  } catch (e) {
+    Logger.log(e)
+    throw e
+  }
 }
 
 /**
@@ -105,48 +99,30 @@ export const setDisplayName = async displayName => {
  * @returns {Promise<void>}
  */
 export const sendHandshakeRequest = async recipientPublicKey => {
-  const currSentReqs = Events.getCurrSentReqs()
-  const currChats = Events.getCurrChats()
-  const uuid = Date.now().toString() + Math.random().toString()
-
-  if (currChats.find(c => c.recipientPublicKey === recipientPublicKey)) {
-    throw new Error('Handshake already in place')
-  }
-
-  const existingReq = currSentReqs.find(
-    r => r.recipientPublicKey === recipientPublicKey,
-  )
-
-  if (existingReq && !existingReq.recipientChangedRequestAddress) {
-    throw new Error('A request is already in place')
-  }
-
-  const token = await getToken()
-
-  if (!socket || !(socket && socket.connected)) {
-    throw new Error('NOT_CONNECTED')
-  }
-
-  socket.emit(Action.SEND_HANDSHAKE_REQUEST, {
-    token,
-    recipientPublicKey,
-    uuid,
-  })
-
-  /** @type {import('./socket').Emission} */
-  const res = await new Promise(resolve => {
-    if (!socket || !(socket && socket.connected)) {
-      throw new Error('NOT_CONNECTED')
-    }
-    socket.on(Action.SEND_HANDSHAKE_REQUEST, res => {
-      if (res.origBody.uuid === uuid) {
-        resolve(res)
-      }
+  try {
+    return await Http.post(`api/gun/requests`, {
+      publicKey: recipientPublicKey,
     })
-  })
+  } catch (e) {
+    Logger.log(e)
+    throw e
+  }
+}
 
-  if (!res.ok) {
-    throw new Error(res.msg || 'Unknown Error')
+/**
+ * Returns the message id.
+ * @param {string} recipientPublicKey
+ * @param {string} body
+ * @returns {Promise<Schema.ChatMessage>} The message id.
+ */
+export const sendMessageNew = async (recipientPublicKey, body) => {
+  try {
+    return await Http.post(`api/gun/chats/${recipientPublicKey}`, {
+      body,
+    })
+  } catch (err) {
+    Logger.log(err)
+    throw err
   }
 }
 
@@ -156,42 +132,8 @@ export const sendHandshakeRequest = async recipientPublicKey => {
  * @param {string} body
  * @returns {Promise<string>} The message id.
  */
-export const sendMessage = async (recipientPublicKey, body) => {
-  const uuid = Math.random().toString() + Date.now().toString()
-
-  getToken().then(token => {
-    if (!socket || !(socket && socket.connected)) {
-      throw new Error('NOT_CONNECTED')
-    }
-
-    socket.emit(Action.SEND_MESSAGE, {
-      token,
-      recipientPublicKey,
-      body,
-      uuid,
-    })
-  })
-
-  const res = await new Promise(resolve => {
-    if (!socket || !(socket && socket.connected)) {
-      throw new Error('NOT_CONNECTED')
-    }
-    socket.on(
-      Action.SEND_MESSAGE,
-      once(res => {
-        if (res.origBody.uuid === uuid) {
-          resolve(res)
-        }
-      }),
-    )
-  })
-
-  if (!res.ok) {
-    throw new Error(res.msg || 'Unknown Error')
-  }
-
-  return res.msg
-}
+export const sendMessage = async (recipientPublicKey, body) =>
+  (await sendMessageNew(recipientPublicKey, body)).id
 
 /**
  * @param {string} recipientPublicKey
@@ -200,34 +142,14 @@ export const sendMessage = async (recipientPublicKey, body) => {
  * @returns {Promise<void>}
  */
 export const sendReqWithInitialMsg = async (recipientPublicKey, initialMsg) => {
-  const token = await getToken()
-  if (!socket || !(socket && socket.connected)) {
-    throw new Error('NOT_CONNECTED')
-  }
-
-  socket.emit(Action.SEND_HANDSHAKE_REQUEST_WITH_INITIAL_MSG, {
-    token,
-    recipientPublicKey,
-    initialMsg,
-  })
-
-  const res = await new Promise(resolve => {
-    socket &&
-      socket.on(
-        Action.SEND_HANDSHAKE_REQUEST_WITH_INITIAL_MSG,
-        debounce(
-          once(res => {
-            resolve(res)
-          }),
-          1000,
-        ),
-      )
-  })
-
-  Logger.log(`res in sendreqwithinitialmsg: ${JSON.stringify(res)}`)
-
-  if (!res.ok) {
-    throw new Error(res.msg)
+  try {
+    return await Http.post(`api/gun/requests`, {
+      publicKey: recipientPublicKey,
+      initialMsg,
+    })
+  } catch (e) {
+    Logger.log(e)
+    throw e
   }
 }
 
@@ -319,52 +241,32 @@ export const setBio = async bio => {
  * @returns {Promise<void>}
  */
 export const disconnect = async pub => {
-  const chatIdx = Events.currentChats.findIndex(
-    c => c.recipientPublicKey === pub,
-  )
-
-  /** @type {Schema.Chat[]} */
-  let deletedChat = []
-
-  // it's fine if it doesn't exist in our cache
-  if (chatIdx !== -1) {
-    const currChats = Events.getCurrChats()
-    deletedChat = currChats.splice(chatIdx, 1)
-    Events.setChats(currChats)
-  }
-
-  const token = await getToken()
-  const uuid = Math.random().toString() + Date.now().toString()
-
-  if (!socket || !(socket && socket.connected)) {
-    throw new Error('NOT_CONNECTED')
-  }
-
-  socket.emit(Action.DISCONNECT, {
-    pub,
-    token,
-    uuid,
-  })
-
-  const res = await new Promise(resolve => {
-    if (!socket || !(socket && socket.connected)) {
-      throw new Error('NOT_CONNECTED')
-    }
-    socket.on(
-      Action.DISCONNECT,
-      once(res => {
-        if (res.origBody.uuid === uuid) {
-          resolve(res)
-        }
-      }),
+  try {
+    const chatIdx = Events.currentChats.findIndex(
+      c => c.recipientPublicKey === pub,
     )
-  })
 
-  if (!res.ok) {
-    if (deletedChat.length) {
-      Events.setChats([...Events.getCurrChats(), deletedChat[0]])
+    /** @type {Schema.Chat[]} */
+    let deletedChat = []
+
+    // it's fine if it doesn't exist in our cache
+    if (chatIdx !== -1) {
+      const currChats = Events.getCurrChats()
+      deletedChat = currChats.splice(chatIdx, 1)
+      Events.setChats(currChats)
     }
-    throw new Error(res.msg || 'Unknown Error')
+
+    const res = await Http.delete(`api/gun/chats/${pub}`)
+
+    if (res.status !== 200) {
+      if (deletedChat.length) {
+        Events.setChats([...Events.getCurrChats(), deletedChat[0]])
+      }
+      throw new Error(res.data.errorMessage || 'Unknown Error')
+    }
+  } catch (e) {
+    Logger.log(e)
+    throw e
   }
 }
 
