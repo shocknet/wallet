@@ -9,6 +9,8 @@ import { Constants, Schema } from 'shock-common'
 
 import * as Cache from '../cache'
 import { SET_LAST_SEEN_APP_INTERVAL } from '../../services/utils'
+import * as Store from '../../../store'
+import * as Actions from '../../actions'
 
 import * as Socket from './socket'
 // eslint-disable-next-line no-unused-vars
@@ -588,7 +590,7 @@ export const setChats = chats => {
 
 const chatsFetcher = async () => {
   if (!(await isAuth())) {
-    setTimeout(avatarFetcher, POLL_INTERVAL)
+    setTimeout(chatsFetcher, POLL_INTERVAL)
     return
   }
 
@@ -756,6 +758,15 @@ export const setupEvents = theSocket => {
   onSentRequests(() => {})()
   onReceivedRequests(() => {})()
   onBio(() => {})()
+
+  const store = Store.getStore()
+
+  // @ts-ignore
+  store.dispatch(Actions.ChatActions.subscribeOnChats())
+  // @ts-ignore
+  store.dispatch(Actions.RequestActions.subscribeReceivedRequests())
+  // @ts-ignore
+  store.dispatch(Actions.RequestActions.subscribeSentRequests())
 
   Cache.getToken().then(token => {
     pollIntervalIDs.push(
