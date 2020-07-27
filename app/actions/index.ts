@@ -27,4 +27,5 @@ export {
   Feed,
   SingleFeed,
   FeedWall,
+  Me,
 }
