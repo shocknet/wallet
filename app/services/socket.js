@@ -1,6 +1,8 @@
 import SocketIO from 'socket.io-client'
 import isEmpty from 'lodash/isEmpty'
 import Logger from 'react-native-file-log'
+//@ts-ignore
+import { DISABLE_SHOCK_ENCRYPTION } from 'react-native-dotenv'
 
 import * as Cache from './cache'
 import * as Encryption from './encryption'
@@ -96,6 +98,9 @@ class Socket {
    * @param {object} data
    */
   encryptSocketData = async data => {
+    if (DISABLE_SHOCK_ENCRYPTION === 'true') {
+      return data
+    }
     if (this.store) {
       const { APIPublicKey } = this.store.getState().connection
 
