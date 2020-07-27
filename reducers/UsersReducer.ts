@@ -1,25 +1,16 @@
-// @ts-nocheck
 import produce from 'immer'
 import { Schema } from 'shock-common'
 import uniqBy from 'lodash/uniqBy'
+import { Reducer } from 'redux'
 
-/**
- * @typedef {import('../app/actions').Action} Action
- * @typedef {Schema.User} User
- */
+import { Action } from '../app/actions'
 
-/**
- * @typedef {Record<string, User|undefined>} State
- */
+type State = Record<string, Schema.User | undefined>
 
 /** @type {State} */
 const INITIAL_STATE = {}
 
-/**
- * @param {string} publicKey
- * @returns {User}
- */
-const createEmptyUser = publicKey => ({
+const createEmptyUser = (publicKey: string): Schema.User => ({
   avatar: null,
   bio: null,
   displayName: null,
@@ -28,12 +19,10 @@ const createEmptyUser = publicKey => ({
   publicKey,
 })
 
-/**
- * @param {State} state
- * @param {Action} action
- * @returns {State}
- */
-const reducer = (state = INITIAL_STATE, action) => {
+const reducer: Reducer<State, Action> = (
+  state = INITIAL_STATE,
+  action: Action,
+) => {
   switch (action.type) {
     case 'users/receivedUsersData':
       return produce(state, draft => {
@@ -125,14 +114,12 @@ const reducer = (state = INITIAL_STATE, action) => {
  * @param {State} users
  * @returns {State}
  */
-export const selectAllUsers = users => users
+export const selectAllUsers = (users: State) => users
 
-/**
- * @param {State} users
- * @param {{ publicKey: string }} props
- * @returns {User}
- */
-export const selectUser = (users, { publicKey }) => {
+export const selectUser = (
+  users: State,
+  { publicKey }: { publicKey: string },
+): Schema.User => {
   const user = users[publicKey]
 
   return user || createEmptyUser(publicKey)
