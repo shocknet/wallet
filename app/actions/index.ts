@@ -5,6 +5,7 @@ import * as Follows from './follows'
 import * as Feed from './feed'
 import * as FeedWall from './FeedAction'
 import * as SingleFeed from './singleFeed'
+import * as Me from './me'
 
 export type Action =
   | UsersActions.ReceivedUsersDataAction
@@ -16,6 +17,7 @@ export type Action =
   | FeedWall.FinishedLoadFeedAction
   | FeedWall.LoadFeedErrorAction
   | Feed.FeedActions
+  | Me.MeAction
 
 export {
   ChatActions,
