@@ -1,6 +1,7 @@
 // @ts-nocheck
 import produce from 'immer'
 import { Schema } from 'shock-common'
+import uniqBy from 'lodash/uniqBy'
 
 /**
  * @typedef {import('../app/actions').Action} Action
@@ -88,6 +89,31 @@ const reducer = (state = INITIAL_STATE, action) => {
             displayName: sentRequest.displayName,
           }
         })
+      })
+
+    case 'feedWall/finishedLoadFeed':
+      return produce(state, draft => {
+        /** @type {Schema.Post[]} */
+        const posts = Object.values(action.data.data)
+        const authors = posts.map(p => p.author)
+        const users = uniqBy(authors, a => a.publicKey)
+
+        users.forEach(u => {
+          draft[u.publicKey] = {
+            ...createEmptyUser(u.publicKey),
+            ...(draft[u.publicKey] || {}),
+            ...u,
+          }
+        })
+      })
+
+    case 'feed/finishedAddPost':
+      return produce(state, draft => {
+        const { author: user } = action.data.post
+
+        draft[user.publicKey] = {
+          ...user,
+        }
       })
 
     default:
