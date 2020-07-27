@@ -156,7 +156,7 @@ class ContactsSearch extends PureComponent {
    */
   selectContact = contact => () => {
     const { selectContact } = this.props
-    selectContact({ ...contact, type: 'contact' })
+    selectContact(contact)
   }
 
   filterContacts = () => {

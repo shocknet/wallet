@@ -237,7 +237,6 @@ class SendScreen extends Component {
           name={invoice.paymentRequest}
           onPress={this.resetSearchState}
           type="invoice"
-          // @ts-expect-error
           style={styles.suggestion}
         />
       )
@@ -263,7 +262,6 @@ class SendScreen extends Component {
           name={chat.selectedContact.address}
           onPress={this.resetSearchState}
           type="btc"
-          // @ts-expect-error
           style={styles.suggestion}
         />
       )
@@ -276,7 +274,6 @@ class SendScreen extends Component {
         // @ts-ignore
         avatar={chat.selectedContact.avatar}
         onPress={this.resetSearchState}
-        // @ts-expect-error
         style={styles.suggestion}
       />
     )

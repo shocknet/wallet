@@ -77,7 +77,7 @@ export const decodePaymentRequest = paymentRequest => async dispatch => {
 /**
  * Set Invoice Mode
  * @param {boolean} invoiceMode
- * @returns {import('redux-thunk').ThunkAction<void, {}, {}, import('redux').AnyAction>}
+ * @returns {(dispatch:any)=>void}
  */
 export const setInvoiceMode = invoiceMode => dispatch => {
   dispatch({
