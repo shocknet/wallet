@@ -5,10 +5,15 @@ import { Reducer } from 'redux'
 
 import { Action } from '../app/actions'
 
-type State = Record<string, Schema.User | undefined>
+type State = Record<string, Schema.User | undefined> & {
+  // TODO get this out of here
+  myPublicKey: string
+}
 
-/** @type {State} */
-const INITIAL_STATE = {}
+const INITIAL_STATE = {
+  // We don't want to type this as nullable anyways. Will set it at auth
+  myPublicKey: '',
+} as State
 
 const createEmptyUser = (publicKey: string): Schema.User => ({
   avatar: null,
@@ -102,6 +107,17 @@ const reducer: Reducer<State, Action> = (
 
         draft[user.publicKey] = {
           ...user,
+        }
+      })
+
+    case 'me/receivedMeData':
+      return produce(state, draft => {
+        if (action.data.publicKey) {
+          draft.myPublicKey = action.data.publicKey
+        }
+
+        if (draft.myPublicKey) {
+          Object.assign(draft[draft.myPublicKey], action.data)
         }
       })
 
