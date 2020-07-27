@@ -682,7 +682,7 @@ export const onSeedBackup = listener => {
 /**
  * @param {import('./socket').SimpleSocket} theSocket
  */
-export const setupEvents = theSocket => {
+export const setupEvents = async theSocket => {
   if (!theSocket) {
     Logger.log('Called setupEvents() before creating the socket')
     return
@@ -767,6 +767,16 @@ export const setupEvents = theSocket => {
   store.dispatch(Actions.RequestActions.subscribeReceivedRequests())
   // @ts-ignore
   store.dispatch(Actions.RequestActions.subscribeSentRequests())
+
+  const ad = await Cache.getStoredAuthData()
+
+  if (ad) {
+    store.dispatch(
+      Actions.Me.receivedMeData({
+        publicKey: ad.authData.publicKey,
+      }),
+    )
+  }
 
   Cache.getToken().then(token => {
     pollIntervalIDs.push(
