@@ -39,7 +39,7 @@ const style = StyleSheet.create({
 /**
  * @type {React.FC<Props>}
  */
-const Post = ({ author, date }) => ((
+const UserInfo = ({ author, date }) => ((
   <View style={style.userInfoContainer}>
     <ConnectedShockAvatar height={60} publicKey={author.publicKey} />
     <View style={style.userInfoTextContainer}>
@@ -49,4 +49,4 @@ const Post = ({ author, date }) => ((
   </View>
 ))
 
-export default Post
+export default UserInfo
