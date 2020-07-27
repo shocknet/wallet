@@ -132,7 +132,7 @@ export default class ShockWallet extends React.Component {
 
       if (walletStatus === 'unlocked') {
         if (authData !== null && isGunAuth) {
-          NavigationService.navigate(WALLET_OVERVIEW, { lnurl: e.url })
+          NavigationService.navigate(WALLET_OVERVIEW, { protocol_link: e.url })
           return
         }
       }

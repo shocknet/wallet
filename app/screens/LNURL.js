@@ -1,13 +1,18 @@
 import React from 'react'
 import Logger from 'react-native-file-log'
-import ShockModal from '../../components/ShockModal'
-import { Text, View, Switch, StyleSheet, ToastAndroid } from 'react-native'
-import { nodeInfo, addPeer, addInvoice } from '../../services/wallet'
-import ShockButton from '../../components/ShockButton'
-import ShockInput from '../../components/ShockInput'
-import Pad from '../../components/Pad'
-import * as CSS from '../../res/css'
-
+import { Text, View, Switch, StyleSheet, Clipboard } from 'react-native'
+import { nodeInfo, addPeer, addInvoice } from '../services/wallet'
+import ShockButton from '../components/ShockButton'
+import ShockInput from '../components/ShockInput'
+import Pad from '../components/Pad'
+import * as CSS from '../res/css'
+//@ts-ignore
+import bech32 from 'bech32'
+import { connect } from 'react-redux'
+import * as Cache from '../services/cache'
+import { WALLET_OVERVIEW } from './WalletOverview'
+import QRCodeScanner from '../components/QRScanner'
+export const LNURL_SCREEN = 'LNURL_SCREEN'
 /**@typedef {{  tag:string,
  *              uri:string,
  *              metadata:string,
@@ -16,15 +21,9 @@ import * as CSS from '../../res/css'
  *              maxSendable:number,
  *              maxWithdrawable:number,
  *              shockPubKey:string,
+ *              k1:string
  *          }} LNURLdataType */
-export default class LNURL extends React.Component {
-  /**@param {object} props */
-  constructor(props) {
-    super(props)
-
-    this.state = this.getInitialLNURLState()
-  }
-
+class LNURL extends React.Component {
   localReset = () => {
     this.props.refreshLNURL()
     this.setState(this.getInitialLNURLState())
@@ -40,8 +39,28 @@ export default class LNURL extends React.Component {
       didChange: false,
       hasMemo: false,
       memo: '',
+      LNURLdata: null,
+      disablePaste: false,
+      scanQR: false,
     }
   }
+  /**
+   * @type {{
+   *  privateChannel:boolean
+   *  done:boolean|null
+   *  error:boolean|null
+   *  payAmount:number
+   *  withdrawAmount:number
+   *  didChange:boolean
+   *  hasMemo:boolean
+   *  memo:string
+   *  LNURLdata:LNURLdataType|null
+   * disablePaste:boolean
+   * scanQR:boolean
+   * }}
+   */
+
+  state = this.getInitialLNURLState()
 
   /**@param {string} text */
   setWithdrawAmount = text => {
@@ -87,18 +106,27 @@ export default class LNURL extends React.Component {
    * @const {boolean} privateChan
    */
   confirmChannelReq = async () => {
-    const { uri, callback, k1 } = this.props.LNURLdata
+    if (this.state.LNURLdata === null) {
+      return
+    }
+    const { uri, callback, k1 } = this.state.LNURLdata
     let newK1 = k1
     if (k1 === 'gun' && this.props.LNURLdata.shockPubKey) {
       newK1 = `$$__SHOCKWALLET__USER__${this.props.LNURLdata.shockPubKey}`
     }
-    try {
-      await addPeer(uri)
-    } catch (e) {
-      Logger.log(e)
-      ToastAndroid.show(e.toString(), 800)
+    /**
+     *
+     * @param {{pub_key:string,address:string}} e
+     */
+    const samePeer = e => {
+      const localUri = `${e.pub_key}@${e.address}`
+      return localUri === uri
     }
     try {
+      const alreadyPeer = this.props.history.peers.find(samePeer)
+      if (!alreadyPeer) {
+        await addPeer(uri)
+      }
       const node = await nodeInfo()
       //Logger.log(node)
 
@@ -128,7 +156,10 @@ export default class LNURL extends React.Component {
 
   confirmPayReq = async () => {
     try {
-      const { callback } = this.props.LNURLdata
+      if (this.state.LNURLdata === null) {
+        return
+      }
+      const { callback } = this.state.LNURLdata
       const { payAmount } = this.state
       const completeUrl = `${callback}?amount=${payAmount * 1000}`
       Logger.log(completeUrl)
@@ -142,8 +173,9 @@ export default class LNURL extends React.Component {
         return
       }
       Logger.log(json.pr)
-      this.props.requestClose()
-      this.props.payInvoice({ invoice: json.pr })
+      this.props.navigation.navigate(WALLET_OVERVIEW, { lnurlInvoice: json.pr })
+      //this.props.requestClose()
+      //this.props.payInvoice({ invoice: json.pr })
     } catch (e) {
       Logger.log(e)
       this.setState({
@@ -154,7 +186,10 @@ export default class LNURL extends React.Component {
 
   confirmWithdrawReq = async () => {
     try {
-      const { callback, k1 } = this.props.LNURLdata
+      if (this.state.LNURLdata === null) {
+        return
+      }
+      const { callback, k1 } = this.state.LNURLdata
       const payReq = await addInvoice({
         value: this.state.withdrawAmount,
         memo: this.state.memo,
@@ -189,8 +224,11 @@ export default class LNURL extends React.Component {
     return <Text>{this.state.error}</Text>
   }
 
-  /**@param   {LNURLdataType} LNURLdata*/
+  /**@param   {LNURLdataType | null} LNURLdata*/
   handleUrl = LNURLdata => {
+    if (LNURLdata === null) {
+      return this.renderEmpty()
+    }
     switch (LNURLdata.tag) {
       case 'channelRequest': {
         Logger.log('this url is a channel request')
@@ -345,34 +383,173 @@ export default class LNURL extends React.Component {
     return <Text>LNURL : Unknown Request</Text>
   }
 
-  componentWillReceiveProps() {
-    const { resetLNURL } = this.props
-    if (resetLNURL) {
-      this.localReset()
+  renderEmpty = () => {
+    return (
+      <View>
+        <Text style={styles.bigBold}>LNURL</Text>
+        <Pad amount={10} />
+        <ShockButton
+          disabled={this.state.disablePaste}
+          title="ScanQR"
+          onPress={this.scanQR}
+        />
+        <Pad amount={10} />
+        <ShockButton
+          disabled={this.state.disablePaste}
+          title="Paste from clipboard"
+          onPress={this.copyFromClipboard}
+        />
+      </View>
+    )
+  }
+  /**
+   *
+   * @param {any} nextProps
+   */
+
+  componentWillReceiveProps(nextProps) {
+    const p1 = nextProps.navigation.state.params
+    const p2 = this.props.navigation.state.params
+    if (!p1 || !p2) {
+      return
+    }
+    if (p1.lnurl === p2.lnurl) {
+      return
+    }
+    const params = p1
+    this.props.navigation.setParams({ lnurl: undefined })
+    this.decodeLNURL(params.lnurl)
+  }
+
+  componentDidMount() {
+    const { params } = this.props.navigation.state
+    if (params && params.lnurl) {
+      this.props.navigation.setParams({ lnurl: undefined })
+      this.decodeLNURL(params.lnurl)
     }
   }
 
-  render() {
-    const visible = this.props.LNURLdata !== null
-    if (visible === false) {
-      return null
+  /**
+   * @param {string} data
+   */
+  async decodeLNURL(data) {
+    let lnurl = data
+    Logger.log(lnurl)
+    const isClean = lnurl.split(':')
+    const hasHttp = lnurl.startsWith('http')
+    const startLnurl = lnurl.startsWith('LNURL')
+    if (startLnurl) {
+      const decodedBytes = bech32.fromWords(bech32.decode(lnurl, 1500).words)
+      lnurl = String.fromCharCode(...decodedBytes)
     }
-    Logger.log('LNURL')
-    Logger.log(this.props.LNURLdata)
-    const { done, error } = this.state
+    if (!hasHttp && isClean.length === 2) {
+      const decodedBytes = bech32.fromWords(
+        bech32.decode(isClean[1], 1500).words,
+      )
+      lnurl = String.fromCharCode(...decodedBytes)
+    }
+    try {
+      const res = await fetch(lnurl)
+      const json = await res.json()
+
+      const authData = await Cache.getStoredAuthData()
+
+      json.shockPubKey = authData?.authData.publicKey
+      //Logger.log(json)
+      this.setState({
+        LNURLdata: json,
+        disablePaste: false,
+      })
+
+      switch (json.tag) {
+        case 'channelRequest': {
+          Logger.log('this url is a channel request')
+          break
+        }
+        case 'withdrawRequest': {
+          Logger.log('this url is a withdrawal request')
+          break
+        }
+        case 'hostedChannelRequest': {
+          Logger.log('this url is a hosted channel request')
+          break
+        }
+        case 'login': {
+          Logger.log('this url is a login ')
+          break
+        }
+        case 'payRequest': {
+          Logger.log('this url is a pay request')
+          break
+        }
+        default: {
+          Logger.log('unknown tag')
+        }
+      }
+    } catch (e) {
+      Logger.log(e)
+    }
+  }
+
+  copyFromClipboard = () => {
+    this.setState({ disablePaste: true })
+    Clipboard.getString().then(async lnurl => {
+      await this.decodeLNURL(lnurl)
+    })
+  }
+
+  /**
+   * @param {{data:string}} e
+   */
+  onScanQR = e => {
+    this.setState({
+      scanQR: false,
+    })
+    this.decodeLNURL(e.data)
+  }
+
+  scanQR = () => {
+    this.setState({
+      scanQR: true,
+    })
+  }
+
+  closeScanQR = () => {
+    this.setState({
+      scanQR: false,
+    })
+  }
+
+  render() {
+    const { done, error, LNURLdata, scanQR } = this.state
+    if (scanQR) {
+      return (
+        <QRCodeScanner
+          onRead={this.onScanQR}
+          onRequestClose={this.closeScanQR}
+        />
+      )
+    }
     return (
-      <ShockModal visible={visible} onRequestClose={this.props.requestClose}>
-        <View style={styles.flexCenter}>
-          {done === null &&
-            error === null &&
-            this.handleUrl(this.props.LNURLdata)}
-          {done !== null && this.handleDone()}
-          {error !== null && this.handleError()}
-        </View>
-      </ShockModal>
+      <View style={styles.flexCenter}>
+        {done === null && error === null && this.handleUrl(LNURLdata)}
+        {done !== null && this.handleDone()}
+        {error !== null && this.handleError()}
+      </View>
     )
   }
 }
+/**
+ * @param {typeof import('../../reducers/index').default} state
+ */
+const mapStateToProps = ({ history }) => ({ history })
+
+const mapDispatchToProps = {}
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(LNURL)
 
 const styles = StyleSheet.create({
   bigBold: {
@@ -383,8 +560,10 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   flexCenter: {
+    flex: 1,
     display: 'flex',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   switch: {
     display: 'flex',

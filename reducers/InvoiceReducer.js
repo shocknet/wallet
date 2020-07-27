@@ -10,6 +10,7 @@ import { ACTIONS } from '../app/actions/InvoiceActions'
  * @prop {string} paymentRequest
  * @prop {string} btcAddress
  * @prop {string} unitSelected
+ * @prop {boolean=} liquidityCheck
  */
 
 // TO DO: typings for data
@@ -92,6 +93,13 @@ const invoice = (state = INITIAL_STATE, action) => {
         ...state,
         // @ts-ignore TODO
         paymentRequest: data,
+      }
+    }
+    case ACTIONS.SET_LIQUIDITY_CHECK:{
+      const {data} = action
+      return {
+        ...state,
+        liquidityCheck:data
       }
     }
     case ACTIONS.SET_ADDRESS: {
