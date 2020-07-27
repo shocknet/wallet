@@ -15,6 +15,7 @@ export type Action =
   | FeedWall.BeganLoadFeedAction
   | FeedWall.FinishedLoadFeedAction
   | FeedWall.LoadFeedErrorAction
+  | Feed.FeedActions
 
 export {
   ChatActions,
