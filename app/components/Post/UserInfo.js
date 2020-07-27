@@ -44,13 +44,7 @@ const Post = ({ author, date }) => ((
     <ConnectedShockAvatar height={60} publicKey={author.publicKey} />
     <View style={style.userInfoTextContainer}>
       <Text style={style.authorDisplayNameStyle}>{author.displayName}</Text>
-      <Text style={style.dateStyle}>
-        {Moment(date)
-          .subtract(10, 'hours')
-          .startOf('hour')
-          .fromNow()}{' '}
-        ago
-      </Text>
+      <Text style={style.dateStyle}>{Moment(date).format('hh:mm')}</Text>
     </View>
   </View>
 ))
