@@ -116,9 +116,17 @@ const reducer: Reducer<State, Action> = (
           draft.myPublicKey = action.data.publicKey
         }
 
-        if (draft.myPublicKey) {
-          Object.assign(draft[draft.myPublicKey], action.data)
+        const publicKey = action.data.publicKey || state.myPublicKey
+
+        if (!publicKey) {
+          return
         }
+
+        if (!draft[publicKey]) {
+          draft[publicKey] = createEmptyUser(publicKey)
+        }
+
+        Object.assign(draft[publicKey], action.data)
       })
 
     default:
