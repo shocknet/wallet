@@ -74,6 +74,7 @@ const nonEncryptedRoutes = [
   '/healthz',
   '/ping',
   '/api/lnd/wallet/status',
+  '/api/gun/auth',
 ]
 
 // Http.interceptors.response.use(
@@ -128,7 +129,7 @@ export default class ShockWallet extends React.Component {
           'You tried to open a protocol link before authenticating',
         )
       }
-      const isGunAuth = await Auth.isGunAuthed(nodeURL)
+      const isGunAuth = await Auth.isGunAuthed()
 
       if (walletStatus === 'unlocked') {
         if (authData !== null && isGunAuth) {
