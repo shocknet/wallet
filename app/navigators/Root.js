@@ -34,6 +34,7 @@ import Debug, { DEBUG } from '../screens/Debug'
 import UserScreen from '../screens/User'
 
 import * as Routes from '../routes'
+import LNURL, { LNURL_SCREEN } from '../screens/LNURL'
 
 export const APP = 'APP'
 export const BOTTOM_NAV = 'BOTTOM_NAV'
@@ -132,6 +133,12 @@ const drawerScreens = {
     screen: CreatePost,
     navigationOptions: {
       title: 'Add Post to Feed',
+    },
+  },
+  [LNURL_SCREEN]: {
+    screen: LNURL,
+    navigationOptions: {
+      title: 'LNURL utils',
     },
   },
 }

@@ -223,6 +223,12 @@ class SendStep extends Component {
                   {invoice.amount ? invoice.amount : 'N/A'}
                 </Text>
               </View>
+
+              {invoice.liquidityCheck === false && (
+                <Text style={styles.redText}>
+                  not enough liquidity to receive this payment{' '}
+                </Text>
+              )}
               <View
                 style={[styles.invoiceDetail, styles.noBorderInvoiceDetail]}
               >
@@ -381,5 +387,8 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: 'Montserrat-700',
     color: CSS.Colors.TEXT_GRAY,
+  },
+  redText: {
+    color: CSS.Colors.FAILURE_RED,
   },
 })

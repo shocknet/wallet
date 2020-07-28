@@ -82,6 +82,7 @@ public class NotificationService extends Service {
         @Override
         public void call(final Object... args) {
             try{
+                Log.d(TAG,args[0].toString());
                 String mex = DecryptMessage(args[0].toString());
                 Log.d(TAG,mex);
                 JSONObject res = new JSONObject(mex);
@@ -164,8 +165,8 @@ public class NotificationService extends Service {
             JSONObject jsonMex = new JSONObject(encMex);
             String stringMex = jsonMex.toString();
             
-            mSocket.emit("ON_TRANSACTION", stringMex);
-            mSocket.emit("ON_INVOICE", stringMex);
+            mSocket.emit("transaction:new", stringMex);
+            mSocket.emit("invoice:new", stringMex);
             mSocket.emit("ON_CHATS", stringMex);
         } catch(Exception e){
             Log.d(TAG,e.toString());
@@ -254,8 +255,8 @@ public class NotificationService extends Service {
         super.onDestroy();
         this.handler.removeCallbacks(this.runnableCode);
         mSocket.disconnect();
-        mSocket.off("ON_TRANSACTION", newTransaction);
-        mSocket.off("ON_INVOICE", newInvoice);
+        mSocket.off("transaction:new", newTransaction);
+        mSocket.off("invoice:new", newInvoice);
         mSocket.off("ON_CHATS", newChat);
     }
     
@@ -377,8 +378,8 @@ public class NotificationService extends Service {
 
                         //mSocket = IO.socket("http://"+NotificationService.ip+"?x-shockwallet-device-id=7601a723-b6d4-4020-95a6-6113fb40e2f8");
                         mSocket = IO.socket("http://"+NotificationService.ip+"?x-shockwallet-device-id="+deviceId);
-                        mSocket.on("ON_TRANSACTION", newTransaction);
-                        mSocket.on("ON_INVOICE", newInvoice);
+                        mSocket.on("transaction:new", newTransaction);
+                        mSocket.on("invoice:new", newInvoice);
                         mSocket.on("ON_CHATS", newChat);
                         mSocket.connect();
                         attemptSend();
