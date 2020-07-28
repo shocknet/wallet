@@ -751,15 +751,21 @@ export const setupEvents = async theSocket => {
     l(theSocket.connected)
   })
 
-  onAvatar(() => {})()
-  onDisplayName(() => {})()
+  const store = Store.getStore()
+
+  onAvatar(avatar => {
+    store.dispatch(Actions.Me.receivedMeData({ avatar }))
+  })
+  onDisplayName(displayName => {
+    store.dispatch(Actions.Me.receivedMeData({ displayName }))
+  })
   onHandshakeAddr(() => {})()
   onChats(() => {})()
   onSentRequests(() => {})()
   onReceivedRequests(() => {})()
-  onBio(() => {})()
-
-  const store = Store.getStore()
+  onBio(bio => {
+    store.dispatch(Actions.Me.receivedMeData({ bio }))
+  })()
 
   // @ts-ignore
   store.dispatch(Actions.ChatActions.subscribeOnChats())
