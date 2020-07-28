@@ -59,7 +59,7 @@ export default class CreateWallet extends React.Component {
         throw new Error('NODE URL IS NULL BEFORE IS_GUN_AUTH')
       }
       Logger.log('GETTING IS_GUN_AUTH')
-      const isGunAuth = await Auth.isGunAuthed(nodeURL)
+      const isGunAuth = await Auth.isGunAuthed()
 
       if (walletStatus === 'noncreated') {
         Logger.log('WALLET NON CREATED INVALIDATING CACHED AUTH DATA')
