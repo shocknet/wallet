@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React from 'react'
 import { Text, View, StyleSheet } from 'react-native'
 import { connect } from 'react-redux'
@@ -26,9 +25,16 @@ export const WALLET_SETTINGS = 'WALLET_SETTINGS'
  * @typedef {object} Params
  * @prop {string|null} err
  */
-
 /**
- * @typedef {object} Props
+ * @typedef {ReturnType<typeof mapStateToProps>} ConnectedRedux
+ */
+/**
+ * @typedef {object} TmpProps
+ *  @prop {(feeSource:string)=>void} updateFeesSource
+ *  @prop {(feesLevel:import('../actions/FeesActions').feeLevel)=>void} updateSelectedFee
+ */
+/**
+ * @typedef {ConnectedRedux & TmpProps} Props
  *
  */
 
@@ -46,7 +52,7 @@ export const WALLET_SETTINGS = 'WALLET_SETTINGS'
  */
 
 /**
- * @typedef {ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps} ConnectedRedux
+ * @extends Component<Props, State, never>
  */
 
 /**
@@ -223,7 +229,7 @@ class WalletSettings extends React.Component {
 }
 
 /**
- * @param {typeof import('../../reducers/index').default} state
+ * @param {{fees:import('../../reducers/FeesReducer').State}} state
  */
 const mapStateToProps = ({ fees }) => ({ fees })
 

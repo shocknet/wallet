@@ -40,7 +40,6 @@ import { CHATS_ROUTE } from '../../Chats'
 
 /**
  * @typedef {object} TmpProps
- * @prop {(step: number) => void} setStep
  * @prop {Navigation} navigation
  * @prop {()=>void} editInvoice
  * @prop {(invoiceMode:boolean)=>void} setInvoiceMode

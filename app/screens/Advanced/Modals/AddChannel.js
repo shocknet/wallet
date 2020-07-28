@@ -12,7 +12,7 @@ import { Colors } from '../../../res/css'
  * @typedef {object} Props
  * @prop {React.RefObject<any>} modalRef
  * @prop {(key: keyof import("../index").State) => (value: any) => void} onChange
- * @prop {[{pub_key : string}]} peers
+ * @prop {import('../../../services/wallet').Peer[]} peers
  * @prop {string} channelCapacity
  * @prop {string} channelPushAmount
  * @prop {() => void} submit

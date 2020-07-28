@@ -16,6 +16,9 @@ export const ACTIONS = {
 /**
  * @typedef {({ type: 'error', error: Error }|undefined)} DecodeResponse
  */
+/**
+ * @typedef {'BTC' | 'sats' | 'Bits'} SelectedUnit
+ */
 
 /**
  * @typedef {object} WalletBalance
@@ -26,7 +29,7 @@ export const ACTIONS = {
 
 /**
  * Set Invoice Amount
- * @param {number} amount
+ * @param {string} amount
  * @returns {import('redux-thunk').ThunkAction<void, {}, {}, import('redux').AnyAction>}
  */
 export const setAmount = amount => dispatch => {
@@ -88,7 +91,7 @@ export const setInvoiceMode = invoiceMode => dispatch => {
 
 /**
  * Set Unit Selected
- * @param {'BTC' | 'sats' | 'Bits'} unit
+ * @param {SelectedUnit} unit
  * @returns {import('redux-thunk').ThunkAction<void, {}, {}, import('redux').AnyAction>}
  */
 export const setUnitSelected = unit => dispatch => {
