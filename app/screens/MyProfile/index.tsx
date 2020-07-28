@@ -383,6 +383,7 @@ export default class MyProfile extends React.Component<Props, State> {
               image={avatar}
               onPress={this.onPressAvatar}
               lastSeenApp={Date.now()}
+              disableOnlineRing
             />
           </TouchableOpacity>
 

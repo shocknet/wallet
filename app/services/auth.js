@@ -68,45 +68,6 @@ export const unlockWallet = async (alias, password) => {
 /**
  * @param {string} alias
  * @param {string} password
- * @returns {Promise<{ token: string , publicKey: string }>}
- */
-export const registerExistingWallet = async (alias, password) => {
-  const nodeURL = await Cache.getNodeURL()
-
-  if (nodeURL === null) {
-    throw new TypeError('nodeURL === null')
-  }
-
-  try {
-    const { data: body } = await Http.post(
-      `/api/lnd/wallet/existing`,
-      { alias, password },
-      { headers: { 'Content-Type': 'application/json' } },
-    )
-
-    if (typeof body.authorization !== 'string') {
-      throw new TypeError("typeof body.authorization !== 'string'")
-    }
-
-    if (typeof body.user.publicKey !== 'string') {
-      throw new TypeError("typeof body.user.publicKey !== 'string'")
-    }
-
-    Logger.log(body)
-
-    return {
-      publicKey: body.user.publicKey,
-      token: body.authorization,
-    }
-  } catch (err) {
-    const body = err?.response?.data
-    throw new Error(body.errorMessage || body.message || 'Unknown error.')
-  }
-}
-
-/**
- * @param {string} alias
- * @param {string} password
  * @throws {Error|TypeError}
  * @returns {Promise<AuthResponse>}
  */

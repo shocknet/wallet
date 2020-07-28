@@ -327,6 +327,7 @@ export const loadFeed = page => {
 export const loadSingleFeed = (page, publicKey) => {
   return Http.post('/api/gun/loadfeed', { page, publicKey })
 }
+
 /**
  * @param {object} post
  * @returns {Promise<{data:string}>}

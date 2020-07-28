@@ -39,20 +39,14 @@ const style = StyleSheet.create({
 /**
  * @type {React.FC<Props>}
  */
-const Post = ({ author, date }) => ((
+const UserInfo = ({ author, date }) => ((
   <View style={style.userInfoContainer}>
     <ConnectedShockAvatar height={60} publicKey={author.publicKey} />
     <View style={style.userInfoTextContainer}>
       <Text style={style.authorDisplayNameStyle}>{author.displayName}</Text>
-      <Text style={style.dateStyle}>
-        {Moment(date)
-          .subtract(10, 'hours')
-          .startOf('hour')
-          .fromNow()}{' '}
-        ago
-      </Text>
+      <Text style={style.dateStyle}>{Moment(date).format('hh:mm')}</Text>
     </View>
   </View>
 ))
 
-export default Post
+export default UserInfo
