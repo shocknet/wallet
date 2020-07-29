@@ -218,6 +218,9 @@ Http.interceptors.request.use(async config => {
 
     const path = url.parse(config.url).pathname
 
+    // eslint-disable-next-line require-atomic-updates
+    config.headers.common['shock-cache-hash'] = 'N/A'
+
     if (cache.has(path)) {
       const cachedData = cache.get(path)
       // eslint-disable-next-line require-atomic-updates

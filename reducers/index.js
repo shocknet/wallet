@@ -8,6 +8,7 @@ import ConnectionReducer from './ConnectionReducer'
 import FeesReducer from './FeesReducer'
 import UsersReducer, * as Users from './UsersReducer'
 import FeedReducer from './feed'
+import FeedWallReducer from './FeedReducer'
 import FollowsReducer from './follows'
 import SingleFeedReducer from './singleFeed'
 
@@ -22,6 +23,7 @@ const rootReducer = {
   fees: FeesReducer,
   users: UsersReducer,
   feed: FeedReducer,
+  feedWall: FeedWallReducer,
   follows: FollowsReducer,
   singleFeed: SingleFeedReducer,
 }

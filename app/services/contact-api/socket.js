@@ -305,5 +305,5 @@ export const connect = debounce(async () => {
     lastConnCheck = Date.now()
   })
 
-  Events.setupEvents(socket)
+  await Events.setupEvents(socket)
 }, 1000)
