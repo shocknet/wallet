@@ -111,8 +111,8 @@ class LNURL extends React.Component {
     }
     const { uri, callback, k1 } = this.state.LNURLdata
     let newK1 = k1
-    if (k1 === 'gun' && this.props.LNURLdata.shockPubKey) {
-      newK1 = `$$__SHOCKWALLET__USER__${this.props.LNURLdata.shockPubKey}`
+    if (k1 === 'gun' && this.state.LNURLdata.shockPubKey) {
+      newK1 = `$$__SHOCKWALLET__USER__${this.state.LNURLdata.shockPubKey}`
     }
     /**
      *
