@@ -1,24 +1,21 @@
-// @ts-nocheck
 import produce from 'immer'
 import { Schema } from 'shock-common'
+import uniqBy from 'lodash/uniqBy'
+import { Reducer } from 'redux'
 
-/**
- * @typedef {import('../app/actions').Action} Action
- * @typedef {Schema.User} User
- */
+import { Action } from '../app/actions'
 
-/**
- * @typedef {Record<string, User|undefined>} State
- */
+type State = Record<string, Schema.User | undefined> & {
+  // TODO get this out of here
+  myPublicKey: string
+}
 
-/** @type {State} */
-const INITIAL_STATE = {}
+const INITIAL_STATE = {
+  // We don't want to type this as nullable anyways. Will set it at auth
+  myPublicKey: '',
+} as State
 
-/**
- * @param {string} publicKey
- * @returns {User}
- */
-const createEmptyUser = publicKey => ({
+const createEmptyUser = (publicKey: string): Schema.User => ({
   avatar: null,
   bio: null,
   displayName: null,
@@ -27,12 +24,10 @@ const createEmptyUser = publicKey => ({
   publicKey,
 })
 
-/**
- * @param {State} state
- * @param {Action} action
- * @returns {State}
- */
-const reducer = (state = INITIAL_STATE, action) => {
+const reducer: Reducer<State, Action> = (
+  state = INITIAL_STATE,
+  action: Action,
+) => {
   switch (action.type) {
     case 'users/receivedUsersData':
       return produce(state, draft => {
@@ -90,6 +85,50 @@ const reducer = (state = INITIAL_STATE, action) => {
         })
       })
 
+    case 'feedWall/finishedLoadFeed':
+      return produce(state, draft => {
+        /** @type {Schema.Post[]} */
+        const posts = Object.values(action.data.data)
+        const authors = posts.map(p => p.author)
+        const users = uniqBy(authors, a => a.publicKey)
+
+        users.forEach(u => {
+          draft[u.publicKey] = {
+            ...createEmptyUser(u.publicKey),
+            ...(draft[u.publicKey] || {}),
+            ...u,
+          }
+        })
+      })
+
+    case 'feed/finishedAddPost':
+      return produce(state, draft => {
+        const { author: user } = action.data.post
+
+        draft[user.publicKey] = {
+          ...user,
+        }
+      })
+
+    case 'me/receivedMeData':
+      return produce(state, draft => {
+        if (action.data.publicKey) {
+          draft.myPublicKey = action.data.publicKey
+        }
+
+        const publicKey = action.data.publicKey || state.myPublicKey
+
+        if (!publicKey) {
+          return
+        }
+
+        if (!draft[publicKey]) {
+          draft[publicKey] = createEmptyUser(publicKey)
+        }
+
+        Object.assign(draft[publicKey], action.data)
+      })
+
     default:
       return state
   }
@@ -99,14 +138,12 @@ const reducer = (state = INITIAL_STATE, action) => {
  * @param {State} users
  * @returns {State}
  */
-export const selectAllUsers = users => users
+export const selectAllUsers = (users: State) => users
 
-/**
- * @param {State} users
- * @param {{ publicKey: string }} props
- * @returns {User}
- */
-export const selectUser = (users, { publicKey }) => {
+export const selectUser = (
+  users: State,
+  { publicKey }: { publicKey: string },
+): Schema.User => {
   const user = users[publicKey]
 
   return user || createEmptyUser(publicKey)

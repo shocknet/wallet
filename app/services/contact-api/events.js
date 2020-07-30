@@ -682,7 +682,7 @@ export const onSeedBackup = listener => {
 /**
  * @param {import('./socket').SimpleSocket} theSocket
  */
-export const setupEvents = theSocket => {
+export const setupEvents = async theSocket => {
   if (!theSocket) {
     Logger.log('Called setupEvents() before creating the socket')
     return
@@ -751,15 +751,21 @@ export const setupEvents = theSocket => {
     l(theSocket.connected)
   })
 
-  onAvatar(() => {})()
-  onDisplayName(() => {})()
+  const store = Store.getStore()
+
+  onAvatar(avatar => {
+    store.dispatch(Actions.Me.receivedMeData({ avatar }))
+  })
+  onDisplayName(displayName => {
+    store.dispatch(Actions.Me.receivedMeData({ displayName }))
+  })
   onHandshakeAddr(() => {})()
   onChats(() => {})()
   onSentRequests(() => {})()
   onReceivedRequests(() => {})()
-  onBio(() => {})()
-
-  const store = Store.getStore()
+  onBio(bio => {
+    store.dispatch(Actions.Me.receivedMeData({ bio }))
+  })()
 
   // @ts-ignore
   store.dispatch(Actions.ChatActions.subscribeOnChats())
@@ -767,6 +773,16 @@ export const setupEvents = theSocket => {
   store.dispatch(Actions.RequestActions.subscribeReceivedRequests())
   // @ts-ignore
   store.dispatch(Actions.RequestActions.subscribeSentRequests())
+
+  const ad = await Cache.getStoredAuthData()
+
+  if (ad) {
+    store.dispatch(
+      Actions.Me.receivedMeData({
+        publicKey: ad.authData.publicKey,
+      }),
+    )
+  }
 
   Cache.getToken().then(token => {
     pollIntervalIDs.push(
