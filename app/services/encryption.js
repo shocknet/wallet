@@ -57,7 +57,7 @@ export const encryptData = async (data, rsaKey, token = null) => {
   const [encryptedData, encryptedKey, encryptedToken] = await Promise.all([
     Aes.encrypt(data, key, iv),
     encryptKey(key, rsaKey),
-    token ? Aes.encrypt(data, key, iv) : null,
+    token ? Aes.encrypt(token, key, iv) : null,
   ])
   return {
     encryptedData,
