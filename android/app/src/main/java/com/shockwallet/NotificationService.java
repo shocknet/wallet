@@ -79,17 +79,24 @@ public class NotificationService extends Service {
     private RSA rsa;
 
     private Emitter.Listener newTransaction = new Emitter.Listener() {
+        private String lastTX = "";
         @Override
         public void call(final Object... args) {
             try{
-                Log.d(TAG,args[0].toString());
                 String mex = DecryptMessage(args[0].toString());
                 Log.d(TAG,mex);
                 JSONObject res = new JSONObject(mex);
-            
-                doNotification("New Transaction",res.getString("msg"),R.drawable.icon,"");
+                String last = res.getString("tx_hash");
+                int confirmations =  res.getInt("num_confirmations");
+                Log.d(TAG,last == lastTX ? "true" : "false");
+                if(last.equals(lastTX) || confirmations == 0){
+                    return;
+                }
+                lastTX = last;
+                String id = last.substring(0,5)+"...";
+                doNotification("New Transaction","value: "+res.getString("amount")+"\nTx: "+last,R.drawable.icon,"");
             }catch (Exception e){
-                Log.d(TAG,e.toString());
+                Log.d(TAG,"Tx err"+e.toString());
             }
         }
     };
@@ -101,10 +108,14 @@ public class NotificationService extends Service {
                 String mex = DecryptMessage(args[0].toString());
                 Log.d(TAG,mex);
                 JSONObject res = new JSONObject(mex);
+                boolean settled = res.getBoolean("settled");
+                if(!settled){
+                    return;
+                }
                 
-                doNotification("New Invoice",res.getString("msg"),R.drawable.icon,"");
+                doNotification("New Invoice","value: "+res.getString("value"),R.drawable.icon,"");
             }catch (Exception e){
-                Log.d(TAG,e.toString());
+                Log.d(TAG,"Inv err"+e.toString());
             }
         }
     };
@@ -154,7 +165,7 @@ public class NotificationService extends Service {
                     doNotification(latestSender,latestBody,R.drawable.user,latestAvatar);
                 }
             }catch (Exception e){
-                Log.d(TAG,e.toString());
+                Log.d(TAG,"Cha err"+e.toString());
             }
         }
     };
@@ -325,6 +336,9 @@ public class NotificationService extends Service {
     private String DecryptMessage(String response) throws Exception{
         JSONObject resJ = new JSONObject(response);
         String encryptedKey = resJ.getString("encryptedKey");
+        if(encryptedKey.equals("")){
+            return response;
+        }
         String iv = resJ.getString("iv");
         String cipherText = resJ.getString("encryptedData");
         String keyS = rsa.decrypt(encryptedKey);
@@ -377,7 +391,7 @@ public class NotificationService extends Service {
                         NotificationService.ApiPubKey = resJson.getString("APIPublicKey");
 
                         //mSocket = IO.socket("http://"+NotificationService.ip+"?x-shockwallet-device-id=7601a723-b6d4-4020-95a6-6113fb40e2f8");
-                        mSocket = IO.socket("http://"+NotificationService.ip+"?x-shockwallet-device-id="+deviceId);
+                        mSocket = IO.socket("http://"+NotificationService.ip+"?x-shockwallet-device-id="+deviceId+"&IS_LND_SOCKET=true");
                         mSocket.on("transaction:new", newTransaction);
                         mSocket.on("invoice:new", newInvoice);
                         mSocket.on("ON_CHATS", newChat);

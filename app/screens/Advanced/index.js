@@ -382,13 +382,13 @@ class AdvancedScreen extends Component {
           throw new Error('Unset sat_per_byte')
         }
       }
-
-      await Http.post(`/api/lnd/openchannel`, {
+      const payload = {
         pubkey: channelPublicKey,
         channelCapacity,
-        channelPushAmount,
+        channelPushAmount: channelPushAmount === '' ? '0' : channelPushAmount,
         satPerByte: satXbyte,
-      })
+      }
+      await Http.post(`/api/lnd/openchannel`, payload)
       ToastAndroid.show('Added successfully', 800)
 
       fetchChannels()
