@@ -143,7 +143,7 @@ class ContactsSearch extends PureComponent {
 
   isLightningInvoice = () => {
     const { value } = this.props
-    return /^(ln(tb|bc))[0-9][a-z0-9]{180,7089}$/.test(value.toLowerCase())
+    return /^(ln(tb|bc|bcrt))[0-9][a-z0-9]{180,7089}$/.test(value.toLowerCase())
   }
 
   setBTCAddress = () => {
@@ -156,7 +156,7 @@ class ContactsSearch extends PureComponent {
    */
   selectContact = contact => () => {
     const { selectContact } = this.props
-    selectContact({ ...contact, type: 'contact' })
+    selectContact(contact)
   }
 
   filterContacts = () => {

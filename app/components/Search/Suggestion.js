@@ -13,9 +13,9 @@ import * as CSS from '../../res/css'
 /**
  * @typedef {object} Props
  * @prop {string} name
- * @prop {(import('react-native').ImageSourcePropType)=} avatar
+ * @prop {(import('react-native').ImageSourcePropType|string)=} avatar
  * @prop {('contact'|'btc'|'invoice')=} type
- * @prop {(import('react-native').RegisteredStyle<object>)=} style
+ * @prop {(import('react-native').RegisteredStyle<object>|object)=} style
  * @prop {((event: import('react-native').GestureResponderEvent) => void)=} onPress
  */
 
@@ -34,6 +34,7 @@ const Suggestion = ({
       return (
         <ImageBackground
           style={styles.suggestionAvatar}
+          //@ts-ignore
           source={avatar}
           resizeMode="cover"
         />

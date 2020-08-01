@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { Component } from 'react'
 import {
   // Clipboard,
@@ -87,15 +86,31 @@ export const ADVANCED_SCREEN = 'ADVANCED_SCREEN'
  */
 
 /**
- * @typedef {ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps} ConnectedRedux
+ * @typedef {ReturnType<typeof mapStateToProps>} ConnectedRedux
+ */
+/**
+ * @typedef {object} PageToFetch
+ * @prop {(number)=} page
+ * @prop {(number)=} itemsPerPage
+ * @prop {(boolean)=} reset
  */
 
 /**
- * @typedef {object} Props
+ * @typedef {object} TmpProps
+ *  @prop {()=>void} fetchChannels,
+ *  @prop {(invoice:PageToFetch)=>void} fetchInvoices,
+ *  @prop {(payment:PageToFetch)=>void} fetchPayments,
+ *  @prop {()=>void} fetchPeers,
+ *  @prop {(transaction:PageToFetch)=>void} fetchTransactions,
+ *  @prop {()=>void} fetchHistory,
+ *  @prop {()=>void} fetchNodeInfo,
+ */
+/**
+ * @typedef {ConnectedRedux & TmpProps} Props
  */
 
 /**
- * @augments React.Component<ConnectedRedux & Props, State, never>
+ * @augments React.Component<Props, State, never>
  */
 class AdvancedScreen extends Component {
   /** @type {State} */
@@ -267,6 +282,7 @@ class AdvancedScreen extends Component {
       fetchPayments,
       fetchTransactions,
     } = this.props
+    //@ts-ignore
     const currentData = history[routeName]
 
     if (routeName === 'invoices') {
@@ -347,6 +363,7 @@ class AdvancedScreen extends Component {
       })
       const feesReq = await fetch(fees.feesSource)
       const feesData = await feesReq.json()
+
       let satXbyte = 0
       switch (fees.feesLevel) {
         case 'MIN': {
@@ -365,14 +382,13 @@ class AdvancedScreen extends Component {
           throw new Error('Unset sat_per_byte')
         }
       }
-
-      await Http.post(`/api/lnd/openchannel`, {
+      const payload = {
         pubkey: channelPublicKey,
         channelCapacity,
-        channelPushAmount,
+        channelPushAmount: channelPushAmount === '' ? '0' : channelPushAmount,
         satPerByte: satXbyte,
-      })
-
+      }
+      await Http.post(`/api/lnd/openchannel`, payload)
       ToastAndroid.show('Added successfully', 800)
 
       fetchChannels()
@@ -714,6 +730,7 @@ class AdvancedScreen extends Component {
             />
             <AccordionItem
               fetchNextPage={this.fetchNextPage('transactions')}
+              //@ts-ignore
               data={history.transactions}
               Item={Transaction}
               title="Transactions"
@@ -813,7 +830,12 @@ class AdvancedScreen extends Component {
 }
 
 /**
- * @param {typeof import('../../../reducers/index').default} state
+ * @param {{
+ * history:import('../../../reducers/HistoryReducer').State
+ * node:import('../../../reducers/NodeReducer').State
+ * wallet:import('../../../reducers/WalletReducer').State
+ * fees:import('../../../reducers/FeesReducer').State
+ * }} state
  */
 const mapStateToProps = ({ history, node, wallet, fees }) => ({
   history,

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { ACTIONS } from '../app/actions/FeesActions'
 /**
  * @typedef {import('../app/actions/FeesActions').feeLevel} feeLevel

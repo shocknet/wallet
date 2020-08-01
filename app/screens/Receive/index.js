@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { Component } from 'react'
 import {
   // Clipboard,
@@ -29,17 +28,22 @@ export const RECEIVE_SCREEN = 'RECEIVE_SCREEN'
  */
 
 /**
- * @typedef {ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps} ConnectedRedux
+ * @typedef {ReturnType<typeof mapStateToProps>} ConnectedRedux
  */
 
 /**
- * @typedef {object} Props
- * @prop {(Navigation)=} navigation
+ * @typedef {object} TmpProps
+ * @prop {Navigation} navigation
  * @prop {boolean} isFocused
+ * @prop {()=>void} resetInvoice
+ * @prop {()=>void} resetSelectedContact
+ */
+/**
+ * @typedef {ConnectedRedux & TmpProps & import('react-navigation').NavigationFocusInjectedProps<{}>} Props
  */
 
 /**
- * @augments React.Component<Props & ConnectedRedux, {}, never>
+ * @extends Component<Props, {}, never>
  */
 class ReceiveScreen extends Component {
   state = {
@@ -58,14 +62,12 @@ class ReceiveScreen extends Component {
    */
   componentDidUpdate(prevProps) {
     const { isFocused, invoice, resetInvoice } = this.props
-    // @ts-ignore
     if (prevProps.isFocused !== isFocused && invoice.paymentRequest) {
       resetInvoice()
     }
   }
 
   isFilled = () => {
-    // @ts-ignore
     const { amount } = this.props.invoice
     if (!amount.trim()) {
       return false
@@ -171,7 +173,8 @@ class ReceiveScreen extends Component {
 }
 
 /**
- * @param {typeof import('../../../reducers/index').default} state
+ * @param {{
+ * invoice:import('../../../reducers/InvoiceReducer').State}} state
  */
 const mapStateToProps = ({ invoice }) => ({ invoice })
 
@@ -183,7 +186,6 @@ const mapDispatchToProps = {
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-  // @ts-ignore
 )(withNavigationFocus(ReceiveScreen))
 
 const styles = StyleSheet.create({
