@@ -177,13 +177,14 @@ class SendScreen extends Component {
       this.setState({
         sending: true,
       })
-      await Wallet.CAUTION_payInvoice({
+      const payload = {
         amt:
           invoice.paymentRequest && invoice.amount && Big(invoice.amount).gt(0)
             ? undefined
             : parseInt(amount, 10),
         payreq: invoice.paymentRequest,
-      })
+      }
+      await Wallet.CAUTION_payInvoice(payload)
       this.setState({
         sending: false,
         paymentSuccessful: true,
@@ -237,7 +238,6 @@ class SendScreen extends Component {
           name={invoice.paymentRequest}
           onPress={this.resetSearchState}
           type="invoice"
-          // @ts-expect-error
           style={styles.suggestion}
         />
       )
@@ -263,7 +263,6 @@ class SendScreen extends Component {
           name={chat.selectedContact.address}
           onPress={this.resetSearchState}
           type="btc"
-          // @ts-expect-error
           style={styles.suggestion}
         />
       )
@@ -276,7 +275,6 @@ class SendScreen extends Component {
         // @ts-ignore
         avatar={chat.selectedContact.avatar}
         onPress={this.resetSearchState}
-        // @ts-expect-error
         style={styles.suggestion}
       />
     )
@@ -327,7 +325,7 @@ class SendScreen extends Component {
    * @param {string} value
    */
   isLightningInvoice = value =>
-    /^(ln(tb|bc))[0-9][a-z0-9]{180,7089}$/.test(value.toLowerCase())
+    /^(ln(tb|bc|bcrt))[0-9][a-z0-9]{180,7089}$/.test(value.toLowerCase())
 
   /**
    * @param {string} data

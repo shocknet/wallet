@@ -8,6 +8,7 @@ export const ACTIONS = {
   SET_UNIT_SELECTED: 'invoice/unit',
   SET_ADDRESS: 'invoice/address',
   DECODE_PAYMENT_REQUEST: 'invoice/load',
+  SET_LIQUIDITY_CHECK: 'invoice/liquidityCheck',
 
   ADD_INVOICE: 'invoice/add',
   RESET_INVOICE: 'invoice/reset',
@@ -15,6 +16,9 @@ export const ACTIONS = {
 
 /**
  * @typedef {({ type: 'error', error: Error }|undefined)} DecodeResponse
+ */
+/**
+ * @typedef {'BTC' | 'sats' | 'Bits'} SelectedUnit
  */
 
 /**
@@ -26,7 +30,7 @@ export const ACTIONS = {
 
 /**
  * Set Invoice Amount
- * @param {number} amount
+ * @param {string} amount
  * @returns {import('redux-thunk').ThunkAction<void, {}, {}, import('redux').AnyAction>}
  */
 export const setAmount = amount => dispatch => {
@@ -77,7 +81,7 @@ export const decodePaymentRequest = paymentRequest => async dispatch => {
 /**
  * Set Invoice Mode
  * @param {boolean} invoiceMode
- * @returns {import('redux-thunk').ThunkAction<void, {}, {}, import('redux').AnyAction>}
+ * @returns {(dispatch:any)=>void}
  */
 export const setInvoiceMode = invoiceMode => dispatch => {
   dispatch({
@@ -88,7 +92,7 @@ export const setInvoiceMode = invoiceMode => dispatch => {
 
 /**
  * Set Unit Selected
- * @param {'BTC' | 'sats' | 'Bits'} unit
+ * @param {SelectedUnit} unit
  * @returns {import('redux-thunk').ThunkAction<void, {}, {}, import('redux').AnyAction>}
  */
 export const setUnitSelected = unit => dispatch => {
@@ -119,6 +123,12 @@ export const addInvoice = invoice => async dispatch => {
     type: ACTIONS.ADD_INVOICE,
     data: newInvoice.payment_request,
   })
+  if (newInvoice.liquidityCheck !== undefined) {
+    dispatch({
+      type: ACTIONS.SET_LIQUIDITY_CHECK,
+      data: newInvoice.liquidityCheck,
+    })
+  }
 }
 
 /**

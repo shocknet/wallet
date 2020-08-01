@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @typedef {object} State
  * @prop {string} host

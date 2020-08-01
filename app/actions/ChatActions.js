@@ -16,19 +16,19 @@ export const ACTIONS = {
  * @prop {string} pk
  * @prop {string} avatar
  * @prop {string} displayName
- * @prop {string} type
+ * @prop {'contact'} type
  */
 
 /**
  * @typedef {object} BTCAddress
  * @prop {string} address
- * @prop {string} type
+ * @prop {'btc'} type
  */
 
 /**
  * @typedef {object} Invoice
  * @prop {string} paymentRequest
- * @prop {string} type
+ * @prop {'invoice'} type
  */
 
 /**

@@ -17,7 +17,8 @@ import Advanced, { ADVANCED_SCREEN } from '../screens/Advanced'
 import WalletOverview, { WALLET_OVERVIEW } from '../screens/WalletOverview'
 import SeedBackup, { SEED_BACKUP } from '../screens/SeedBackup'
 import WalletSettings, { WALLET_SETTINGS } from '../screens/WalletSettings'
-import Feed, { FEED } from '../screens/Feed_POC'
+// import Feed, { FEED } from '../screens/Feed_POC'
+import Feed, { FEED } from '../screens/Feed'
 import AddPostToFeed, { ADD_POST_TO_FEED } from '../screens/AddPostToFeed'
 import CreatePost, { CREATE_POST } from '../screens/CreatePost'
 
@@ -34,6 +35,7 @@ import Debug, { DEBUG } from '../screens/Debug'
 import UserScreen from '../screens/User'
 
 import * as Routes from '../routes'
+import LNURL, { LNURL_SCREEN } from '../screens/LNURL'
 
 export const APP = 'APP'
 export const BOTTOM_NAV = 'BOTTOM_NAV'
@@ -132,6 +134,12 @@ const drawerScreens = {
     screen: CreatePost,
     navigationOptions: {
       title: 'Add Post to Feed',
+    },
+  },
+  [LNURL_SCREEN]: {
+    screen: LNURL,
+    navigationOptions: {
+      title: 'LNURL utils',
     },
   },
 }

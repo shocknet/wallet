@@ -5,7 +5,7 @@ import { Schema } from 'shock-common'
 /**
  * @typedef {import('../app/actions').Action} Action
  * @typedef {Schema.Post} Post
- * 
+ *
  */
 /**
  * @typedef {Record<string, Post>} State
@@ -14,16 +14,15 @@ import { Schema } from 'shock-common'
 /** @type {State} */
 const INITIAL_STATE = {}
 
-/** 
+/**
  * @returns {Post}
  */
 const createEmptyPost = () => ({
-  contentItems:{},
-  date:0,
-  tags:'',
-  title:'',
-  status:'draft',
-
+  contentItems: {},
+  date: 0,
+  tags: '',
+  title: '',
+  status: 'draft',
 })
 
 /**
@@ -31,50 +30,50 @@ const createEmptyPost = () => ({
  * @param {Action} action
  * @returns {State}
  */
-const reducer = (state = INITIAL_STATE,action) => {
-  switch(action.type){
+const reducer = (state = INITIAL_STATE, action) => {
+  switch (action.type) {
     case 'feed/beganLoadFeed':
-      return produce(state, draft =>{
+      return produce(state, draft => {
         //TODO
       })
     case 'feed/finishedLoadFeed':
-      return produce(state, draft =>{
+      return produce(state, draft => {
         /**
-         * 
-         * @param {Post} feedElement 
-         * @param {string} id 
+         *
+         * @param {Post} feedElement
+         * @param {string} id
          */
-        const FeedLoader = (feedElement,id) => {
+        const FeedLoader = (feedElement, id) => {
           draft[id] = {
             ...createEmptyPost(),
             ...(draft[id] || {}),
-            ...feedElement
+            ...feedElement,
           }
-        } 
+        }
         action.data.feed.forEach(FeedLoader)
       })
     case 'feed/loadFeedError':
-      return produce(state, draft =>{
-        //TODO 
+      return produce(state, draft => {
+        //TODO
       })
     case 'feed/beganAddPost':
-      return produce(state, draft =>{
+      return produce(state, draft => {
         //TODO
       })
     case 'feed/finishedAddPost':
-      return produce(state, draft =>{
-        const {post,id} = action.data
+      return produce(state, draft => {
+        const { post, id } = action.data
         draft[id] = {
           ...createEmptyPost(),
-            ...(draft[id] || {}),
-            ...post
+          ...(draft[id] || {}),
+          ...post,
         }
       })
     case 'feed/addPostError':
-      return produce(state, draft =>{
+      return produce(state, draft => {
         //TODO
       })
-    default :
+    default:
       return state
   }
 }

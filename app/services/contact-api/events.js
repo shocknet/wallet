@@ -9,6 +9,8 @@ import { Constants, Schema } from 'shock-common'
 
 import * as Cache from '../cache'
 import { SET_LAST_SEEN_APP_INTERVAL } from '../../services/utils'
+import * as Store from '../../../store'
+import * as Actions from '../../actions'
 
 import * as Socket from './socket'
 // eslint-disable-next-line no-unused-vars
@@ -588,7 +590,7 @@ export const setChats = chats => {
 
 const chatsFetcher = async () => {
   if (!(await isAuth())) {
-    setTimeout(avatarFetcher, POLL_INTERVAL)
+    setTimeout(chatsFetcher, POLL_INTERVAL)
     return
   }
 
@@ -680,7 +682,7 @@ export const onSeedBackup = listener => {
 /**
  * @param {import('./socket').SimpleSocket} theSocket
  */
-export const setupEvents = theSocket => {
+export const setupEvents = async theSocket => {
   if (!theSocket) {
     Logger.log('Called setupEvents() before creating the socket')
     return
@@ -749,13 +751,38 @@ export const setupEvents = theSocket => {
     l(theSocket.connected)
   })
 
-  onAvatar(() => {})()
-  onDisplayName(() => {})()
+  const store = Store.getStore()
+
+  onAvatar(avatar => {
+    store.dispatch(Actions.Me.receivedMeData({ avatar }))
+  })
+  onDisplayName(displayName => {
+    store.dispatch(Actions.Me.receivedMeData({ displayName }))
+  })
   onHandshakeAddr(() => {})()
   onChats(() => {})()
   onSentRequests(() => {})()
   onReceivedRequests(() => {})()
-  onBio(() => {})()
+  onBio(bio => {
+    store.dispatch(Actions.Me.receivedMeData({ bio }))
+  })()
+
+  // @ts-ignore
+  store.dispatch(Actions.ChatActions.subscribeOnChats())
+  // @ts-ignore
+  store.dispatch(Actions.RequestActions.subscribeReceivedRequests())
+  // @ts-ignore
+  store.dispatch(Actions.RequestActions.subscribeSentRequests())
+
+  const ad = await Cache.getStoredAuthData()
+
+  if (ad) {
+    store.dispatch(
+      Actions.Me.receivedMeData({
+        publicKey: ad.authData.publicKey,
+      }),
+    )
+  }
 
   Cache.getToken().then(token => {
     pollIntervalIDs.push(

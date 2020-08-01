@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { ACTIONS } from '../app/actions/WalletActions'
 import Big from 'big.js'
 /**

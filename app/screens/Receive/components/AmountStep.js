@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React from 'react'
 import { View, StyleSheet, Text } from 'react-native'
 import { connect } from 'react-redux'
@@ -13,11 +12,21 @@ import {
 } from '../../../actions/InvoiceActions'
 
 /**
- * @typedef {ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps} ConnectedRedux
+ * @typedef {ReturnType<typeof mapStateToProps>} ConnectedRedux
+ */
+/**
+ * @typedef {import('react-navigation').NavigationScreenProp<{}, {}>} Navigation
  */
 
 /**
- * @typedef {ConnectedRedux & object} Props
+ * @typedef {object} TmpProps
+ * @prop {Navigation} navigation
+ * @prop {(amount:string)=>void} setAmount
+ * @prop {(description:string)=>void} setDescription
+ * @prop {(unit:import('../../../actions/InvoiceActions').SelectedUnit)=>void} setUnitSelected
+ */
+/**
+ * @typedef {ConnectedRedux & TmpProps} Props
  */
 
 /**
@@ -74,7 +83,8 @@ const AmountStep = ({
 ))
 
 /**
- * @param {typeof import('../../../../reducers/index').default} state
+ * @param {{
+ * invoice:import('../../../../reducers/InvoiceReducer').State}} state
  */
 const mapStateToProps = ({ invoice }) => ({ invoice })
 

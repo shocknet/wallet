@@ -52,10 +52,13 @@ interface Props {
 interface State {
   authData: Cache.AuthData | null
   avatar: string | null
+  settingAvatar: boolean
   displayName: string | null
   displayNameDialogOpen: boolean
   displayNameInput: string
+  settingDisplayName: boolean
   bio: string | null
+  settingBio: boolean
   posts: Common.Schema.Post[]
   lastPageFetched: number
   loadingNextPage: boolean
@@ -86,11 +89,13 @@ export default class MyProfile extends React.Component<Props, State> {
   state: State = {
     authData: null,
     avatar: API.Events.getAvatar(),
+    settingAvatar: false,
     displayName: API.Events.getDisplayName(),
     displayNameDialogOpen: false,
     displayNameInput: '',
-
+    settingDisplayName: false,
     bio: API.Events.currentBio,
+    settingBio: false,
     posts: [],
     lastPageFetched: 0,
     loadingNextPage: true,
@@ -206,11 +211,25 @@ export default class MyProfile extends React.Component<Props, State> {
 
   setDisplayName = () => {
     const { displayNameInput } = this.state
-    this.setState({
-      displayName: displayNameInput,
-    })
+
     this.toggleSetupDisplayName()
+
+    this.setState({
+      settingDisplayName: true,
+    })
+
     API.Actions.setDisplayName(displayNameInput)
+      .then(() => {
+        this.setState({
+          displayName: displayNameInput,
+        })
+      })
+      .catch(() => {})
+      .finally(() => {
+        this.setState({
+          settingDisplayName: false,
+        })
+      })
   }
 
   copyDataToClipboard = () => {
@@ -227,53 +246,65 @@ export default class MyProfile extends React.Component<Props, State> {
     showCopiedToClipboardToast()
   }
 
-  onPressAvatar = () => {
-    const AVATAR_EDGE = 640
-    ImagePicker.openPicker({
-      cropping: true,
-      width: AVATAR_EDGE,
-      height: AVATAR_EDGE,
-      multiple: false,
-      includeBase64: true,
-      cropperCircleOverlay: true,
-      useFrontCamera: true,
-      compressImageQuality: 0.5,
-      compressImageMaxWidth: AVATAR_EDGE,
-      compressImageMaxHeight: AVATAR_EDGE,
-      mediaType: 'photo',
-    })
-      .then(image => {
-        if (Array.isArray(image)) {
-          throw new TypeError(
-            'Expected image obtained from image picker to not be an array',
-          )
-        }
-
-        if (image.width > AVATAR_EDGE) {
-          throw new RangeError('Expected image width to not exceed 640')
-        }
-
-        if (image.height > AVATAR_EDGE) {
-          throw new RangeError('Expected image width to not exceed 640')
-        }
-
-        if (image.mime !== 'image/jpeg') {
-          throw new TypeError('Expected image to be jpeg')
-        }
-
-        if (image.data === null) {
-          throw new TypeError('image.data === null')
-        }
-
-        API.Actions.setAvatar(image.data)
-
-        this.setState({
-          avatar: image.data,
-        })
+  onPressAvatar = async () => {
+    try {
+      const AVATAR_EDGE = 320
+      const image = await ImagePicker.openPicker({
+        cropping: true,
+        width: AVATAR_EDGE,
+        height: AVATAR_EDGE,
+        multiple: false,
+        includeBase64: true,
+        cropperCircleOverlay: true,
+        useFrontCamera: true,
+        compressImageQuality: 0.5,
+        compressImageMaxWidth: AVATAR_EDGE,
+        compressImageMaxHeight: AVATAR_EDGE,
+        mediaType: 'photo',
       })
-      .catch(e => {
-        Logger.log(e.message)
+
+      if (Array.isArray(image)) {
+        throw new TypeError(
+          'Expected image obtained from image picker to not be an array',
+        )
+      }
+
+      if (image.width > AVATAR_EDGE) {
+        throw new RangeError('Expected image width to not exceed 640')
+      }
+
+      if (image.height > AVATAR_EDGE) {
+        throw new RangeError('Expected image width to not exceed 640')
+      }
+
+      if (image.mime !== 'image/jpeg') {
+        throw new TypeError('Expected image to be jpeg')
+      }
+
+      if (image.data === null) {
+        throw new TypeError('image.data === null')
+      }
+
+      this.setState({
+        settingAvatar: true,
       })
+
+      await API.Actions.setAvatar(image.data)
+
+      this.setState({
+        avatar: image.data,
+      })
+    } catch (err) {
+      Logger.log(err.message)
+      ToastAndroid.show(
+        `Error setting avatar: ${err.message}`,
+        ToastAndroid.LONG,
+      )
+    } finally {
+      this.setState({
+        settingAvatar: false,
+      })
+    }
   }
 
   onPressBio = () => {
@@ -283,9 +314,18 @@ export default class MyProfile extends React.Component<Props, State> {
   }
 
   onSubmitBio = (bio: string) => {
-    this.setState({ bio })
+    this.setState({ settingBio: true })
 
     API.Actions.setBio(bio)
+      .then(() => {
+        this.setState({
+          bio,
+        })
+      })
+      .catch()
+      .finally(() => {
+        this.setState({ settingBio: false })
+      })
   }
 
   renderItem = ({ item }: ListRenderItemInfo<Item>) => {
@@ -343,6 +383,7 @@ export default class MyProfile extends React.Component<Props, State> {
               image={avatar}
               onPress={this.onPressAvatar}
               lastSeenApp={Date.now()}
+              disableOnlineRing
             />
           </TouchableOpacity>
 
@@ -428,27 +469,41 @@ export default class MyProfile extends React.Component<Props, State> {
   }
 
   render() {
-    return (
-      <View style={styles.container}>
-        <FlatList
-          renderItem={this.renderItem}
-          data={this.getData()}
-          keyExtractor={this.keyExtractor}
-          onEndReached={this.fetchNextPage}
-          refreshControl={
-            <RefreshControl
-              refreshing={this.state.loadingNextPage}
-              onRefresh={this.fetchNextPage}
-            />
-          }
-        />
+    const { settingAvatar, settingBio, settingDisplayName } = this.state
 
-        <TouchableOpacity style={styles.createBtn} onPress={this.onPressCreate}>
-          <View>
-            <FontAwesome5 name="pencil-alt" color="white" size={22} />
-          </View>
-        </TouchableOpacity>
-      </View>
+    return (
+      <>
+        <View style={styles.container}>
+          <FlatList
+            renderItem={this.renderItem}
+            data={this.getData()}
+            keyExtractor={this.keyExtractor}
+            onEndReached={this.fetchNextPage}
+            refreshControl={
+              <RefreshControl
+                refreshing={this.state.loadingNextPage}
+                onRefresh={this.fetchNextPage}
+              />
+            }
+          />
+
+          <TouchableOpacity
+            style={styles.createBtn}
+            onPress={this.onPressCreate}
+          >
+            <View>
+              <FontAwesome5 name="pencil-alt" color="white" size={22} />
+            </View>
+          </TouchableOpacity>
+        </View>
+
+        <BasicDialog
+          visible={settingAvatar || settingBio || settingDisplayName}
+          onRequestClose={() => {}}
+        >
+          <ActivityIndicator />
+        </BasicDialog>
+      </>
     )
   }
 }

@@ -1,52 +1,22 @@
-import once from 'lodash/once'
 import Http from 'axios'
-import SocketIO from 'socket.io-client'
 import Logger from 'react-native-file-log'
 
 import * as Cache from './cache'
 import * as Wallet from './wallet'
 
-// TO DO: Move this constant to common repo
-const IS_GUN_AUTH = 'IS_GUN_AUTH'
-
 /**
- * @param {string} nodeURL
  * @returns {Promise<boolean>}
  */
-export const isGunAuthed = async nodeURL => {
-  const socket = SocketIO(`http://${nodeURL}`, {
-    autoConnect: false,
-    query: {
-      IS_GUN_AUTH: true,
-    },
+export const isGunAuthed = async () => {
+  const timeout = new Promise((_, rej) => {
+    setTimeout(() => {
+      rej(new Error('Could not retrieve gun auth status in under 5 seconds'))
+    }, 5000)
   })
-  // ideally we would place socket.disconnect() inside a finally clause, but
-  // those are bugged as of current react native version
-  try {
-    const socketPromise = new Promise(res => {
-      socket.on(
-        IS_GUN_AUTH,
-        once(response => {
-          res(response.msg.isGunAuth)
-        }),
-      )
-      socket.emit(IS_GUN_AUTH, {})
-    })
 
-    const timeout = new Promise((_, rej) => {
-      setTimeout(() => {
-        rej(new Error('Could not retrieve gun auth status in under 15 seconds'))
-      }, 15000)
-    })
+  const res = await Promise.race([Http.get(`/api/gun/auth`), timeout])
 
-    socket.connect()
-    const res = await Promise.race([socketPromise, timeout])
-    socket.disconnect()
-    return res
-  } catch (err) {
-    socket.disconnect()
-    throw err
-  }
+  return res.data.data
 }
 
 /**
@@ -92,45 +62,6 @@ export const unlockWallet = async (alias, password) => {
         ? err.response.data.errorMessage || err.response.data.message
         : 'Unknown error.',
     )
-  }
-}
-
-/**
- * @param {string} alias
- * @param {string} password
- * @returns {Promise<{ token: string , publicKey: string }>}
- */
-export const registerExistingWallet = async (alias, password) => {
-  const nodeURL = await Cache.getNodeURL()
-
-  if (nodeURL === null) {
-    throw new TypeError('nodeURL === null')
-  }
-
-  try {
-    const { data: body } = await Http.post(
-      `/api/lnd/wallet/existing`,
-      { alias, password },
-      { headers: { 'Content-Type': 'application/json' } },
-    )
-
-    if (typeof body.authorization !== 'string') {
-      throw new TypeError("typeof body.authorization !== 'string'")
-    }
-
-    if (typeof body.user.publicKey !== 'string') {
-      throw new TypeError("typeof body.user.publicKey !== 'string'")
-    }
-
-    Logger.log(body)
-
-    return {
-      publicKey: body.user.publicKey,
-      token: body.authorization,
-    }
-  } catch (err) {
-    const body = err?.response?.data
-    throw new Error(body.errorMessage || body.message || 'Unknown error.')
   }
 }
 

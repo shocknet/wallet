@@ -1,4 +1,3 @@
-// @ts-nocheck
 import reverse from 'lodash/reverse'
 import { ACTIONS } from '../app/actions/HistoryActions'
 import * as Wallet from '../app/services/wallet'
@@ -6,6 +5,7 @@ import * as Wallet from '../app/services/wallet'
 /**
  * @typedef {Wallet.Invoice | Wallet.Payment | Wallet.Transaction} UnifiedTransaction
  */
+
 
 /**
  * @typedef {object} State
@@ -21,9 +21,13 @@ import * as Wallet from '../app/services/wallet'
  */
 // TO DO: typings for data
 /**
+ * @typedef {import('../app/services/wallet').Channel} Channel
+ * @typedef {import('../app/services/wallet').Peer} Peer
+ */
+/**
  * @typedef {object} Action
  * @prop {string} type
- * @prop {({}|any[]|number)=} data
+ * @prop {(object|Channel[]|Peer[])=} data
  */
 
 /** @type {State} */
@@ -62,17 +66,22 @@ const history = (state = INITIAL_STATE, action) => {
   switch (action.type) {
     case ACTIONS.LOAD_CHANNELS: {
       const { data } = action
+      if(!Array.isArray(data)){
+        return state
+      }
       return {
         ...state,
-
+        //@ts-ignore 
         channels: data,
       }
     }
     case ACTIONS.LOAD_INVOICES: {
       const { data } = action
+      if(typeof data !== 'object'){
+        return state
+      }
       return {
         ...state,
-        // @ts-ignore TODO
         invoices: data,
       }
     }
@@ -82,25 +91,30 @@ const history = (state = INITIAL_STATE, action) => {
       return {
         ...state,
         invoices: {
-          // @ts-ignore TODO
           ...data,
+          //@ts-ignore
           content: [...invoices.content, ...data.content],
         },
       }
     }
     case ACTIONS.LOAD_PEERS: {
       const { data } = action
+      if(!Array.isArray(data)){
+        return state
+      }
       return {
         ...state,
-        // @ts-ignore TODO
+        //@ts-ignore
         peers: data,
       }
     }
     case ACTIONS.LOAD_PAYMENTS: {
       const { data } = action
+      if(typeof data !== 'object'){
+        return state
+      }
       return {
         ...state,
-        // @ts-ignore TODO
         payments: data,
       }
     }
@@ -110,17 +124,19 @@ const history = (state = INITIAL_STATE, action) => {
       return {
         ...state,
         payments: {
-          // @ts-ignore TODO
           ...data,
+          //@ts-ignore
           content: [...payments.content, ...data.content],
         },
       }
     }
     case ACTIONS.LOAD_TRANSACTIONS: {
       const { data } = action
+      if(typeof data !== 'object'){
+        return state
+      }
       return {
         ...state,
-        // @ts-ignore TODO
         transactions: data,
       }
     }
@@ -130,8 +146,8 @@ const history = (state = INITIAL_STATE, action) => {
       return {
         ...state,
         transactions: {
-          // @ts-ignore TODO
           ...data,
+          //@ts-ignore
           content: [...transactions.content, ...data.content],
         },
       }
@@ -144,16 +160,18 @@ const history = (state = INITIAL_STATE, action) => {
 
       return {
         ...state,
-        // @ts-ignore TODO
+        //@ts-ignore
         recentTransactions: data.content,
       }
     }
     case ACTIONS.LOAD_NEW_RECENT_INVOICE: {
       const { data } = action
-
+      if(!Array.isArray(data)){
+        return state
+      }
       return {
         ...state,
-        // @ts-ignore TODO
+        //@ts-ignore
         recentInvoices: [data, ...state.recentInvoices],
       }
     }
@@ -232,19 +250,23 @@ const history = (state = INITIAL_STATE, action) => {
     }
     case ACTIONS.LOAD_NEW_RECENT_TRANSACTION: {
       const { data } = action
-
+      if(!Array.isArray(data)){
+        return state
+      }
       return {
         ...state,
-        // @ts-ignore TODO
+        //@ts-ignore
         recentTransactions: [data, ...state.recentTransactions],
       }
     }
     case ACTIONS.LOAD_RECENT_INVOICES: {
       const { data } = action
-
+      if(!Array.isArray(data)){
+        return state
+      }
       return {
         ...state,
-        // @ts-ignore TODO
+        //@ts-ignore
         recentInvoices: reverse(data),
       }
     }

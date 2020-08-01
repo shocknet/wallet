@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { Component } from 'react'
 import {
   View,
@@ -33,21 +32,32 @@ import BitcoinAccepted from '../../../assets/images/bitcoin-accepted.png'
 import { CHATS_ROUTE } from '../../Chats'
 
 /**
- * @typedef {ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps} ConnectedRedux
+ * @typedef {ReturnType<typeof mapStateToProps>} ConnectedRedux
+ */
+/**
+ * @typedef {import('react-navigation').NavigationScreenProp<{}, {}>} Navigation
  */
 
 /**
- * @typedef {ConnectedRedux & object} Props
- * @prop {(step: number) => void} setStep
+ * @typedef {object} TmpProps
+ * @prop {Navigation} navigation
+ * @prop {()=>void} editInvoice
+ * @prop {(invoiceMode:boolean)=>void} setInvoiceMode
+ * @prop {(invoice:import('../../../services/wallet').AddInvoiceRequest)=>void} addInvoice
+ * @prop {()=>void} newAddress
+ * @prop {()=>void} resetSelectedContact
+ */
+/**
+ * @typedef {ConnectedRedux & TmpProps} Props
  */
 
 /**
+ *
  * @typedef {object} State
  * @prop {string} contactsSearch
  */
-
 /**
- * @augments Component<Props, State, never>
+ * @extends Component<Props, State, never>
  */
 class SendStep extends Component {
   state = {
@@ -59,7 +69,7 @@ class SendStep extends Component {
     const { amount, description } = invoice
     await Promise.all([
       addInvoice({
-        value: amount,
+        value: parseInt(amount, 10),
         memo: description,
         expiry: 1800,
       }),
@@ -134,25 +144,30 @@ class SendStep extends Component {
       )
     }
 
-    return (
-      <Suggestion
-        name={chat.selectedContact.displayName}
-        avatar={chat.selectedContact.avatar}
-        onPress={this.resetSearchState}
-        style={styles.suggestion}
-      />
-    )
+    if (chat.selectedContact.type === 'contact') {
+      return (
+        <Suggestion
+          name={chat.selectedContact.displayName}
+          avatar={chat.selectedContact.avatar}
+          onPress={this.resetSearchState}
+          style={styles.suggestion}
+        />
+      )
+    }
+    return undefined
   }
 
   sendInvoice = async () => {
     const { chat, invoice, navigation } = this.props
     const { selectedContact } = chat
-    const { paymentRequest } = invoice
-    await API.Actions.sendReqWithInitialMsg(
-      selectedContact.pk,
-      '$$__SHOCKWALLET__INVOICE__' + paymentRequest,
-    )
-    navigation.navigate(CHATS_ROUTE)
+    if (selectedContact && selectedContact.type === 'contact') {
+      const { paymentRequest } = invoice
+      await API.Actions.sendReqWithInitialMsg(
+        selectedContact.pk,
+        '$$__SHOCKWALLET__INVOICE__' + paymentRequest,
+      )
+      navigation.navigate(CHATS_ROUTE)
+    }
   }
 
   render() {
@@ -208,6 +223,12 @@ class SendStep extends Component {
                   {invoice.amount ? invoice.amount : 'N/A'}
                 </Text>
               </View>
+
+              {invoice.liquidityCheck === false && (
+                <Text style={styles.redText}>
+                  not enough liquidity to receive this payment{' '}
+                </Text>
+              )}
               <View
                 style={[styles.invoiceDetail, styles.noBorderInvoiceDetail]}
               >
@@ -256,7 +277,10 @@ class SendStep extends Component {
 }
 
 /**
- * @param {typeof import('../../../../reducers/index').default} state
+ * @param {{
+ * invoice: import('../../../../reducers/InvoiceReducer').State,
+ * chat: import('../../../../reducers/ChatReducer').State
+ * }} state
  */
 const mapStateToProps = ({ invoice, chat }) => ({ invoice, chat })
 
@@ -363,5 +387,8 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: 'Montserrat-700',
     color: CSS.Colors.TEXT_GRAY,
+  },
+  redText: {
+    color: CSS.Colors.FAILURE_RED,
   },
 })
