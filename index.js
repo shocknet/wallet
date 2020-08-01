@@ -12,8 +12,7 @@ import {
 import moment from 'moment'
 import Http, { AxiosRequestConfig } from 'axios'
 import Logger from 'react-native-file-log'
-// @ts-ignore
-import { DISABLE_SHOCK_ENCRYPTION } from 'react-native-dotenv'
+import { DISABLE_ENCRYPTION } from './app/config'
 
 import { Provider } from 'react-redux'
 
@@ -239,7 +238,7 @@ Http.interceptors.request.use(async config => {
       connection.APIPublicKey &&
       !nonEncryptedRoutes.includes(path) &&
       config.data &&
-      DISABLE_SHOCK_ENCRYPTION !== 'true'
+      !DISABLE_ENCRYPTION
     ) {
       const stringifiedData = JSON.stringify(config.data)
       const authToken = await getAuthorizationToken(config)
@@ -317,7 +316,7 @@ const decryptResponse = async response => {
     //   }
     // }
 
-    if (DISABLE_SHOCK_ENCRYPTION === 'true') {
+    if (DISABLE_ENCRYPTION) {
       return response
     }
 

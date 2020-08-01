@@ -1,8 +1,7 @@
 import SocketIO from 'socket.io-client'
 import isEmpty from 'lodash/isEmpty'
 import Logger from 'react-native-file-log'
-// @ts-expect-error
-import { DISABLE_SHOCK_ENCRYPTION } from 'react-native-dotenv'
+import { DISABLE_ENCRYPTION } from '../config'
 
 import * as Cache from './cache'
 import * as Encryption from './encryption'
@@ -98,7 +97,7 @@ class Socket {
    * @param {object} data
    */
   encryptSocketData = async data => {
-    if (DISABLE_SHOCK_ENCRYPTION === 'true') {
+    if (DISABLE_ENCRYPTION) {
       return data
     }
 
