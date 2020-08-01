@@ -6,8 +6,7 @@ import isEmpty from 'lodash/isEmpty'
 import debounce from 'lodash/debounce'
 import Logger from 'react-native-file-log'
 import { Constants } from 'shock-common'
-// @ts-expect-error
-import { DISABLE_SHOCK_ENCRYPTION } from 'react-native-dotenv'
+import { DISABLE_ENCRYPTION } from '../../config'
 
 import * as Cache from '../../services/cache'
 import { ACTIONS as ConnectionAction } from '../../actions/ConnectionActions'
@@ -70,7 +69,7 @@ export const setStore = initializedStore => {
  * @param {object} data
  */
 export const encryptSocketData = async data => {
-  if (DISABLE_SHOCK_ENCRYPTION === 'true') {
+  if (DISABLE_ENCRYPTION) {
     return data
   }
 
