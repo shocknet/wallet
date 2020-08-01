@@ -335,10 +335,11 @@ public class NotificationService extends Service {
     }
     private String DecryptMessage(String response) throws Exception{
         JSONObject resJ = new JSONObject(response);
-        String encryptedKey = resJ.getString("encryptedKey");
-        if(encryptedKey.equals("")){
+        //if encryption is disabled "encryptedKey" will be empty so no need to decrypt
+        if(!resJ.has("encryptedKey")){
             return response;
         }
+        String encryptedKey = resJ.getString("encryptedKey");
         String iv = resJ.getString("iv");
         String cipherText = resJ.getString("encryptedData");
         String keyS = rsa.decrypt(encryptedKey);
