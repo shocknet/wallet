@@ -203,7 +203,7 @@ Http.interceptors.request.use(async config => {
     const { connection } = store.getState()
     try {
       const nodeURL = await Cache.getNodeURL()
-      if (config.url && config.url.indexOf('http') === -1 && nodeURL) {
+      if (config.url && !config.url.includes('http') && nodeURL) {
         // eslint-disable-next-line require-atomic-updates
         config.baseURL = `http://${nodeURL}`
       }
@@ -234,6 +234,8 @@ Http.interceptors.request.use(async config => {
       config.headers.common['shock-cache-hash'] = cachedData.hash
     }
 
+    const authToken = await getAuthorizationToken(config)
+
     if (
       connection.APIPublicKey &&
       !nonEncryptedRoutes.includes(path) &&
@@ -241,7 +243,6 @@ Http.interceptors.request.use(async config => {
       !DISABLE_ENCRYPTION
     ) {
       const stringifiedData = JSON.stringify(config.data)
-      const authToken = await getAuthorizationToken(config)
       const {
         encryptedData,
         encryptedKey,
@@ -262,6 +263,14 @@ Http.interceptors.request.use(async config => {
       // @ts-ignore
       // eslint-disable-next-line require-atomic-updates
       config.originalData = stringifiedData
+    }
+
+    if (
+      DISABLE_SHOCK_ENCRYPTION === 'true' &&
+      !config.headers.common.Authorization
+    ) {
+      // eslint-disable-next-line require-atomic-updates
+      config.headers.common.Authorization = `Bearer ${authToken}`
     }
 
     // Logging for Network requests
