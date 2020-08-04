@@ -314,11 +314,10 @@ class SendScreen extends Component {
    */
   isBTCAddress = value => {
     const sanitizedAddress = this.sanitizeAddress(value)
-    const btcTest = /^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$/.test(sanitizedAddress)
-    const bech32Test = /^(bc1|[13])[a-zA-HJ-NP-Z0-9]{25,90}$/.test(
+    const bech32Test = /^(bc(1|r)|[123]|m|n|((t|x)pub)|(tb1))[a-zA-HJ-NP-Z0-9]{25,90}$/.test(
       sanitizedAddress,
     )
-    return btcTest || bech32Test
+    return bech32Test
   }
 
   /**
