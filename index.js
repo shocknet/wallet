@@ -186,7 +186,7 @@ const getAuthorizationToken = async config => {
     try {
       const token = await Cache.getToken()
       // eslint-disable-next-line require-atomic-updates
-      return `Bearer ${token}`
+      return token
     } catch (err) {
       Logger.log(`Unable to retrieve token: ${err.message}`)
       Logger.log(JSON.stringify(err))
@@ -235,14 +235,13 @@ Http.interceptors.request.use(async config => {
     }
 
     const authToken = await getAuthorizationToken(config)
-
     if (
       connection.APIPublicKey &&
       !nonEncryptedRoutes.includes(path) &&
-      config.data &&
+      //config.data &&
       !DISABLE_ENCRYPTION
     ) {
-      const stringifiedData = JSON.stringify(config.data)
+      const stringifiedData = config.data ? JSON.stringify(config.data) : ''
       const {
         encryptedData,
         encryptedKey,
@@ -253,6 +252,14 @@ Http.interceptors.request.use(async config => {
         connection.APIPublicKey,
         authToken,
       )
+      if (authToken) {
+        // eslint-disable-next-line require-atomic-updates
+        config.headers.common['X-Shock-Encryption-Token'] = encryptedToken
+        // eslint-disable-next-line require-atomic-updates
+        config.headers.common['X-Shock-Encryption-IV'] = iv
+        // eslint-disable-next-line require-atomic-updates
+        config.headers.common['X-Shock-Encryption-Key'] = encryptedKey
+      }
       // eslint-disable-next-line require-atomic-updates
       config.data = {
         data: encryptedData,
@@ -265,10 +272,7 @@ Http.interceptors.request.use(async config => {
       config.originalData = stringifiedData
     }
 
-    if (
-      DISABLE_SHOCK_ENCRYPTION === 'true' &&
-      !config.headers.common.Authorization
-    ) {
+    if (DISABLE_ENCRYPTION && !config.headers.common.Authorization) {
       // eslint-disable-next-line require-atomic-updates
       config.headers.common.Authorization = `Bearer ${authToken}`
     }
