@@ -23,7 +23,7 @@ import * as CSS from '../../res/css'
  */
 
 /**
- * @typedef {'btc'|'invoice'|'contacts'} EnabledFeatures
+ * @typedef {'btc'|'invoice'|'contacts'|'keysend'} EnabledFeatures
  */
 
 /**
@@ -80,6 +80,9 @@ class ContactsSearch extends PureComponent {
     if ('paymentRequest' in item) {
       return item.paymentRequest
     }
+    if ('dest' in item) {
+      return item.dest
+    }
 
     return index.toString()
   }
@@ -125,6 +128,16 @@ class ContactsSearch extends PureComponent {
       ))
     }
 
+    if (contact.item.type === 'keysend') {
+      return ((
+        <Suggestion
+          name={contact.item.dest}
+          type="keysend"
+          onPress={this.selectContact({ ...contact.item, type: 'keysend' })}
+        />
+      ))
+    }
+
     return ((
       <Suggestion
         name={contact.item.displayName}
@@ -144,6 +157,11 @@ class ContactsSearch extends PureComponent {
   isLightningInvoice = () => {
     const { value } = this.props
     return /^(ln(tb|bc|bcrt))[0-9][a-z0-9]{180,7089}$/.test(value.toLowerCase())
+  }
+
+  isLnPubKey = () => {
+    const { value } = this.props
+    return /^[a-f0-9]{66}$/.test(value.toLowerCase())
   }
 
   setBTCAddress = () => {
@@ -183,6 +201,10 @@ class ContactsSearch extends PureComponent {
 
     if (enabledFeatures.includes('invoice') && this.isLightningInvoice()) {
       return [{ paymentRequest: value, type: 'invoice' }, ...filteredContacts]
+    }
+
+    if (enabledFeatures.includes('keysend') && this.isLnPubKey()) {
+      return [{ dest: value, type: 'keysend' }, ...filteredContacts]
     }
 
     return filteredContacts

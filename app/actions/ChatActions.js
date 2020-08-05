@@ -32,7 +32,14 @@ export const ACTIONS = {
  */
 
 /**
- * @typedef {(Contact | BTCAddress | Invoice)} SelectedContact
+ *
+ * @typedef {object} Keysend
+ * @prop {string} dest
+ * @prop {'keysend'} type
+ */
+
+/**
+ * @typedef {(Contact | BTCAddress | Invoice | Keysend)} SelectedContact
  */
 
 /**
@@ -101,8 +108,8 @@ export const subscribeOnChats = callback => dispatch =>
 
 /**
  * Selects a contact (useful for easily referencing the currently focused contact)
- * @param {Contact|BTCAddress} contact
- * @returns {import('redux-thunk').ThunkAction<Contact|BTCAddress, {}, {}, import('redux').AnyAction>}
+ * @param {Contact|BTCAddress|Keysend} contact
+ * @returns {import('redux-thunk').ThunkAction<Contact|BTCAddress|Keysend, {}, {}, import('redux').AnyAction>}
  */
 export const selectContact = contact => dispatch => {
   dispatch({

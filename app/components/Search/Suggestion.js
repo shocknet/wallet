@@ -14,7 +14,7 @@ import * as CSS from '../../res/css'
  * @typedef {object} Props
  * @prop {string} name
  * @prop {(import('react-native').ImageSourcePropType|string)=} avatar
- * @prop {('contact'|'btc'|'invoice')=} type
+ * @prop {('contact'|'btc'|'invoice'|'keysend')=} type
  * @prop {(import('react-native').RegisteredStyle<object>|object)=} style
  * @prop {((event: import('react-native').GestureResponderEvent) => void)=} onPress
  */
@@ -55,6 +55,18 @@ const Suggestion = ({
     }
 
     if (type === 'invoice') {
+      return (
+        <View style={styles.suggestionAvatar}>
+          <Ionicons
+            name="md-list-box"
+            color="white"
+            size={18}
+            style={styles.suggestionIcon}
+          />
+        </View>
+      )
+    }
+    if (type === 'keysend') {
       return (
         <View style={styles.suggestionAvatar}>
           <Ionicons

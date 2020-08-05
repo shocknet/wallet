@@ -774,6 +774,34 @@ export const CAUTION_payInvoice = async ({ amt, payreq }) => {
 }
 
 /**
+ * @typedef {object} KeysendRequest
+ * @prop {number} amt
+ * @prop {string} dest
+ */
+/**
+ *
+ * @param {KeysendRequest} request
+ */
+export const payKeysend = async ({ amt, dest }) => {
+  const endpoint = `/api/lnd/sendpayment`
+  try {
+    const { data } = await Http.post(endpoint, { amt, dest, keysend: true })
+
+    return data
+  } catch (err) {
+    const { response } = err
+    if (!response) {
+      Logger.log('[WALLET] Unknown error:', err)
+      throw err
+    }
+
+    throw new Error(
+      response.data.errorMessage || response.data.message || 'Unknown error.',
+    )
+  }
+}
+
+/**
  * https://api.lightning.community/#grpc-response-payreq
  * @typedef {object} DecodedPayReq
  * @prop {string} destination
