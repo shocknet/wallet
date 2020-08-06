@@ -50,6 +50,7 @@
     "jsonwebtoken": "^8.4.0",
     "lodash": "^4.17.19",
     "moment": "^2.24.0",
+    "normalizr": "^3.6.0",
     "opencollective-postinstall": "^2.0.2",
     "path-browserify": "0.0.0",
     "process": "^0.11.0",
