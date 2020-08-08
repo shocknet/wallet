@@ -12,6 +12,8 @@ import {
   ActivityIndicator,
   Dimensions,
 } from 'react-native'
+// @ts-ignore
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scrollview'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 
 import * as CSS from '../res/css'
@@ -70,10 +72,17 @@ export default /** @type {React.FC<Props>} */ (React.memo(
               </View>
             )}
           </FlexCenter>
-        ) : (
+        ) : loading ? (
           <View style={xStyles.content}>
-            {loading ? <ActivityIndicator size="large" /> : children}
+            <ActivityIndicator size="large" color="white" />
           </View>
+        ) : (
+          <KeyboardAwareScrollView
+            contentContainerStyle={xStyles.keyboardAwareContent}
+            style={CSS.styles.width70}
+          >
+            {children}
+          </KeyboardAwareScrollView>
         )}
 
         {typeof onPressBack === 'function' && (
@@ -115,11 +124,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
     // when status bar is set to transparent, content is rendered below it
-    paddingTop: (StatusBar.currentHeight || 0) + 48,
+    paddingTop: StatusBar.currentHeight || 0,
 
     justifyContent: 'space-between',
 
-    paddingBottom: 48,
+    // Padding caused the scrollview to be cut-off from the bottom
+    // on smaller screens
+    // paddingBottom: 48,
   },
 
   shockLogo: { height: IMG_SIZE, width: IMG_SIZE },
@@ -161,6 +172,8 @@ const xStyles = {
     CSS.styles.width100,
     CSS.styles.flex,
   ],
+
+  keyboardAwareContent: [CSS.styles.deadCenter, CSS.styles.flex],
 
   logo: [
     CSS.styles.deadCenter,

@@ -18,6 +18,7 @@ export const styles = StyleSheet.create({
   alignItemsEnd: { alignItems: 'flex-end' },
   alignSelfStart: { alignSelf: 'flex-start' },
   alignSelfEnd: { alignSelf: 'flex-end' },
+  width70: { width: '70%' },
   backgroundBlueGray: { backgroundColor: Colors.BLUE_GRAY },
   backgroundRed: { backgroundColor: Colors.FAILURE_RED },
   backgroundGreen: { backgroundColor: Colors.SUCCESS_GREEN },
