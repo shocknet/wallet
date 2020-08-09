@@ -6,7 +6,6 @@ import * as Wallet from '../app/services/wallet'
  * @typedef {Wallet.Invoice | Wallet.Payment | Wallet.Transaction} UnifiedTransaction
  */
 
-
 /**
  * @typedef {object} State
  * @prop {Wallet.Channel[]} channels
@@ -68,12 +67,12 @@ const history = (state = INITIAL_STATE, action) => {
   switch (action.type) {
     case ACTIONS.LOAD_CHANNELS: {
       const { data } = action
-      if(!Array.isArray(data)){
+      if (!Array.isArray(data)) {
         return state
       }
       return {
         ...state,
-        //@ts-ignore 
+        //@ts-ignore
         channels: data,
       }
     }
@@ -90,7 +89,7 @@ const history = (state = INITIAL_STATE, action) => {
     }
     case ACTIONS.LOAD_INVOICES: {
       const { data } = action
-      if(typeof data !== 'object'){
+      if (typeof data !== 'object') {
         return state
       }
       return {
@@ -112,7 +111,7 @@ const history = (state = INITIAL_STATE, action) => {
     }
     case ACTIONS.LOAD_PEERS: {
       const { data } = action
-      if(!Array.isArray(data)){
+      if (!Array.isArray(data)) {
         return state
       }
       return {
@@ -123,7 +122,7 @@ const history = (state = INITIAL_STATE, action) => {
     }
     case ACTIONS.LOAD_PAYMENTS: {
       const { data } = action
-      if(typeof data !== 'object'){
+      if (typeof data !== 'object') {
         return state
       }
       return {
@@ -145,7 +144,7 @@ const history = (state = INITIAL_STATE, action) => {
     }
     case ACTIONS.LOAD_TRANSACTIONS: {
       const { data } = action
-      if(typeof data !== 'object'){
+      if (typeof data !== 'object') {
         return state
       }
       return {
@@ -177,9 +176,21 @@ const history = (state = INITIAL_STATE, action) => {
         recentTransactions: data.content,
       }
     }
+    case ACTIONS.LOAD_RECENT_PAYMENTS: {
+      /**
+       * @param {Wallet.Invoice | Wallet.Payment | Wallet.Transaction} unifiedTransaction
+       */
+      const { data } = action
+
+      return {
+        ...state,
+        //@ts-ignore
+        recentPayments: data,
+      }
+    }
     case ACTIONS.LOAD_NEW_RECENT_INVOICE: {
       const { data } = action
-      if(!Array.isArray(data)){
+      if (!Array.isArray(data)) {
         return state
       }
       return {
@@ -289,7 +300,7 @@ const history = (state = INITIAL_STATE, action) => {
     }
     case ACTIONS.LOAD_RECENT_INVOICES: {
       const { data } = action
-      if(!Array.isArray(data)){
+      if (!Array.isArray(data)) {
         return state
       }
       return {

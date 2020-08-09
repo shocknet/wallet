@@ -1228,6 +1228,7 @@ class WalletOverview extends Component {
     await Promise.all([
       fetchRecentInvoices(),
       fetchRecentTransactions(),
+      fetchRecentPayments(),
       fetchNodeInfo(),
     ])
 
