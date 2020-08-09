@@ -213,7 +213,8 @@ export const fetchRecentPayments = () => async dispatch => {
 
     const recentPayments = payments.content.map((payment, key) => ({
       ...payment,
-      decodedPayment: decodedRequests[key],
+      // @ts-ignore
+      decodedPayment: decodedRequests[key]?.decodedRequest ?? null,
     }))
 
     dispatch({
