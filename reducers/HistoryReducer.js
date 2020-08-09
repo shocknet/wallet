@@ -9,6 +9,7 @@ import * as Wallet from '../app/services/wallet'
 /**
  * @typedef {object} State
  * @prop {Wallet.Channel[]} channels
+ * @prop {Wallet.pendingChannels[]} pendingChannels
  * @prop {object} invoices
  * @prop {Wallet.Peer[]} peers
  * @prop {object} transactions
@@ -32,6 +33,7 @@ import * as Wallet from '../app/services/wallet'
 /** @type {State} */
 const INITIAL_STATE = {
   channels: [],
+  pendingChannels:[],
   invoices: {
     content: [],
     page: 0,
@@ -72,6 +74,17 @@ const history = (state = INITIAL_STATE, action) => {
         ...state,
         //@ts-ignore
         channels: data,
+      }
+    }
+    case ACTIONS.LOAD_PENDING_CHANNELS: {
+      const { data } = action
+      if(!Array.isArray(data)){
+        return state
+      }
+      return {
+        ...state,
+        //@ts-ignore 
+        pendingChannels: data,
       }
     }
     case ACTIONS.LOAD_INVOICES: {
@@ -260,14 +273,29 @@ const history = (state = INITIAL_STATE, action) => {
       }
     }
     case ACTIONS.LOAD_NEW_RECENT_TRANSACTION: {
+      /**
+       * @type {{data:import('../app/services/wallet').Transaction}}
+       */
+      //@ts-ignore
       const { data } = action
-      if (!Array.isArray(data)) {
-        return state
+      const { recentTransactions } = state
+      const {tx_hash : txHash} = data
+      /**
+       * 
+       * @param {import('../app/services/wallet').Transaction} tx 
+       */
+      const sameTx = tx => tx.tx_hash === txHash
+      const txIndex = recentTransactions.findIndex(sameTx)
+      const newContent = [...recentTransactions]
+      if(txIndex !== -1){
+        newContent[txIndex] = data
+      } else {
+        newContent.unshift(data)
       }
       return {
         ...state,
         //@ts-ignore
-        recentTransactions: [data, ...state.recentTransactions],
+        recentTransactions: newContent,
       }
     }
     case ACTIONS.LOAD_RECENT_INVOICES: {

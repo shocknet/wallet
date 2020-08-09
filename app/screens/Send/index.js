@@ -47,7 +47,7 @@ export const SEND_SCREEN = 'SEND_SCREEN'
  */
 
 /**
- * @typedef {import('../../actions/ChatActions').Contact | import('../../actions/ChatActions').BTCAddress} ContactTypes
+ * @typedef {import('../../actions/ChatActions').Contact | import('../../actions/ChatActions').BTCAddress | import('../../actions/ChatActions').Keysend} ContactTypes
  */
 
 /**
@@ -80,7 +80,7 @@ export const SEND_SCREEN = 'SEND_SCREEN'
  */
 
 /**
- * @augments React.Component<Props, State, never>
+ * @extends Component<Props, State, never>
  */
 class SendScreen extends Component {
   state = {
@@ -123,6 +123,7 @@ class SendScreen extends Component {
     return (
       // @ts-ignore
       ((selectedContact?.address?.length > 0 ||
+        selectedContact?.type === 'keysend' ||
         selectedContact?.type === 'contact') &&
         parseFloat(amount) > 0) ||
       (selectedContact?.type === 'btc' && sendAll) ||
@@ -148,7 +149,7 @@ class SendScreen extends Component {
       const transactionId = await Wallet.sendCoins({
         // @ts-ignore
         addr: selectedContact.address,
-        amount: sendAll ? parseInt(amount, 10) : undefined,
+        amount: sendAll ? undefined : parseInt(amount, 10),
         send_all: sendAll,
         fees: this.props.fees,
       })
@@ -185,6 +186,39 @@ class SendScreen extends Component {
         payreq: invoice.paymentRequest,
       }
       await Wallet.CAUTION_payInvoice(payload)
+      this.setState({
+        sending: false,
+        paymentSuccessful: true,
+      })
+      setTimeout(() => {
+        if (navigation) {
+          navigation.navigate(WALLET_OVERVIEW)
+        }
+      }, 500)
+    } catch (err) {
+      this.setState({
+        sending: false,
+        error: err,
+      })
+    }
+  }
+
+  payKeysend = async () => {
+    try {
+      const { navigation, chat } = this.props
+      const { selectedContact } = chat
+      if (!selectedContact || selectedContact.type !== 'keysend') {
+        return
+      }
+      const { dest } = selectedContact
+      const { amount } = this.state
+      this.setState({
+        sending: true,
+      })
+      await Wallet.payKeysend({
+        amt: parseInt(amount, 10),
+        dest,
+      })
       this.setState({
         sending: false,
         paymentSuccessful: true,
@@ -248,10 +282,20 @@ class SendScreen extends Component {
         <ContactsSearch
           onChange={this.onChange('contactsSearch')}
           onError={this.onChange('error')}
-          enabledFeatures={['btc', 'invoice', 'contacts']}
+          enabledFeatures={['btc', 'invoice', 'contacts', 'keysend']}
           placeholder="Enter invoice or address..."
           value={contactsSearch}
           style={styles.contactsSearch}
+        />
+      )
+    }
+    if (chat.selectedContact.type === 'keysend') {
+      return (
+        <Suggestion
+          name={chat.selectedContact.dest}
+          onPress={this.resetSearchState}
+          type="keysend"
+          style={styles.suggestion}
         />
       )
     }
@@ -327,6 +371,11 @@ class SendScreen extends Component {
     /^(ln(tb|bc|bcrt))[0-9][a-z0-9]{180,7089}$/.test(value.toLowerCase())
 
   /**
+   * @param {string} value
+   */
+  isLnPubKey = value => /^[a-f0-9]{66}$/.test(value.toLowerCase())
+
+  /**
    * @param {string} data
    */
   sanitizeQR = data => data.replace(/((lightning:)|(http(s)?:\/\/))/gi, '')
@@ -338,6 +387,7 @@ class SendScreen extends Component {
     Logger.log('QR Value:', sanitizedQR)
     Logger.log('Lightning Invoice?', this.isLightningInvoice(sanitizedQR))
     Logger.log('BTC Address?', this.isBTCAddress(sanitizedQR))
+    Logger.log('LN pub key?', this.isLnPubKey(sanitizedQR))
     this.onChange('error')('')
     if (this.isLightningInvoice(sanitizedQR)) {
       const data = await decodePaymentRequest(sanitizedQR)
@@ -346,6 +396,8 @@ class SendScreen extends Component {
       }
     } else if (this.isBTCAddress(sanitizedQR)) {
       selectContact({ address: this.sanitizeAddress(sanitizedQR), type: 'btc' })
+    } else if (this.isLnPubKey(sanitizedQR)) {
+      selectContact({ dest: sanitizedQR, type: 'keysend' })
     } else {
       this.onChange('error')('Invalid QR Code')
     }
@@ -358,6 +410,10 @@ class SendScreen extends Component {
       const { invoice, chat } = this.props
       if (chat.selectedContact?.type === 'contact') {
         await this.sendPayment()
+        return true
+      }
+      if (chat.selectedContact?.type === 'keysend') {
+        await this.payKeysend()
         return true
       }
 

@@ -12,6 +12,7 @@ import { connect } from 'react-redux'
 import * as Cache from '../services/cache'
 import { WALLET_OVERVIEW } from './WalletOverview'
 import QRCodeScanner from '../components/QRScanner'
+import { fetchPeers } from '../actions/HistoryActions'
 export const LNURL_SCREEN = 'LNURL_SCREEN'
 /**@typedef {{  tag:string,
  *              uri:string,
@@ -121,6 +122,9 @@ class LNURL extends React.Component {
     const samePeer = e => {
       const localUri = `${e.pub_key}@${e.address}`
       return localUri === uri
+    }
+    if (this.props.history.peers.length === 0) {
+      await this.props.fetchPeers()
     }
     try {
       const alreadyPeer = this.props.history.peers.find(samePeer)
@@ -544,7 +548,9 @@ class LNURL extends React.Component {
  */
 const mapStateToProps = ({ history }) => ({ history })
 
-const mapDispatchToProps = {}
+const mapDispatchToProps = {
+  fetchPeers,
+}
 
 export default connect(
   mapStateToProps,

@@ -4,6 +4,7 @@ import Logger from 'react-native-file-log'
 
 export const ACTIONS = {
   LOAD_CHANNELS: 'channels/load',
+  LOAD_PENDING_CHANNELS: 'channels/pending/load',
   LOAD_INVOICES: 'invoices/load',
   LOAD_MORE_INVOICES: 'invoices/loadMore',
   LOAD_PEERS: 'peers/load',
@@ -24,9 +25,21 @@ export const ACTIONS = {
  */
 export const fetchChannels = () => async dispatch => {
   const data = await Wallet.listChannels()
-
   dispatch({
     type: ACTIONS.LOAD_CHANNELS,
+    data,
+  })
+
+  return data
+}
+/**
+ * Fetches the Node's info
+ * @returns {import('redux-thunk').ThunkAction<Promise<Wallet.PendingChannel[]>, {}, {}, import('redux').AnyAction>}
+ */
+export const fetchPendingChannels = () => async dispatch => {
+  const data = await Wallet.pendingChannels()
+  dispatch({
+    type: ACTIONS.LOAD_PENDING_CHANNELS,
     data,
   })
 
@@ -113,7 +126,7 @@ export const fetchPayments = ({
  */
 export const fetchTransactions = ({
   page = 1,
-  itemsPerPage = 10,
+  itemsPerPage = 500,
   reset = false,
 }) => async dispatch => {
   const data = await Wallet.getTransactions({
@@ -121,21 +134,24 @@ export const fetchTransactions = ({
     itemsPerPage,
     paginate: true,
   })
-
+  const revData = {
+    ...data,
+    content: data.content.reverse(),
+  }
   if (reset) {
     dispatch({
       type: ACTIONS.LOAD_TRANSACTIONS,
-      data,
+      revData,
     })
-    return data
+    return revData
   }
 
   dispatch({
     type: ACTIONS.LOAD_MORE_TRANSACTIONS,
-    data,
+    revData,
   })
 
-  return data
+  return revData
 }
 
 /**
@@ -237,7 +253,7 @@ export const fetchRecentPayments = () => async dispatch => {
  */
 export const fetchRecentTransactions = () => async dispatch => {
   const invoiceResponse = await Wallet.getTransactions({
-    itemsPerPage: 100,
+    itemsPerPage: 500,
     page: 1,
     paginate: true,
   })
