@@ -1,6 +1,14 @@
 import React from 'react'
-import { View, Text, StyleSheet, Image, Linking } from 'react-native'
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  Clipboard,
+  ToastAndroid,
+} from 'react-native'
 import Moment from 'moment'
+import EntypoIcons from 'react-native-vector-icons/Entypo'
 
 import * as CSS from '../../../res/css'
 /**
@@ -9,7 +17,7 @@ import * as CSS from '../../../res/css'
 /** @type {number} */
 //@ts-ignore
 const paymentIcon = require('../../../assets/images/payment-icon.png')
-const blockExplorer = 'https://blockstream.info/tx/'
+//const blockExplorer = 'https://blockstream.info/tx/'
 
 /**
  * @typedef {object} Props
@@ -20,14 +28,10 @@ const blockExplorer = 'https://blockstream.info/tx/'
  *
  * @param {string} url
  */
-const openURL = url => async () => {
-  const supported = await Linking.canOpenURL(url)
-
-  if (supported) {
-    await Linking.openURL(url)
-    return true
-  }
-  return false
+const copyTxHash = url => () => {
+  Clipboard.setString(url)
+  ToastAndroid.show('Tx hash copied to clipboard', 800)
+  return true
 }
 
 /**
@@ -46,11 +50,16 @@ const _Transaction = ({ data }) => ((
           ellipsizeMode="tail"
           numberOfLines={1}
           style={styles.transactionHashText}
-          onPress={openURL(`${blockExplorer}${data.tx_hash}`)}
+          onPress={copyTxHash(data.tx_hash)}
         >
           {data.tx_hash}
         </Text>
-        <Text>Payment</Text>
+        <Text>
+          Payment{' '}
+          {parseInt(data.num_confirmations, 10) === 0 ? (
+            <EntypoIcons name="clock" color="red" size={10} />
+          ) : null}
+        </Text>
       </View>
     </View>
     <View>

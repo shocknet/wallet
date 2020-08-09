@@ -373,18 +373,14 @@ export const balance = async () => {
  * @returns {Promise<PaginatedTransactionsResponse>}
  */
 export const getTransactions = async request => {
-  const token = await Cache.getToken()
-
-  if (typeof token !== 'string') {
-    throw new TypeError(NO_CACHED_TOKEN)
-  }
-
   try {
-    const { data } = await Http.get(
+    const { data: oldData } = await Http.get(
       `/api/lnd/transactions?paginate=true&page=${request.page}&itemsPerPage=${request.itemsPerPage}`,
-      { headers: { Authorization: token } },
     )
-
+    const data = {
+      ...oldData,
+      content: oldData.content.reverse(),
+    }
     return data
   } catch (err) {
     const { response } = err
@@ -974,9 +970,33 @@ export const listPeers = async () => {
   }
 }
 
+/**@param {string} pubkey */
+export const disconnectPeer = async pubkey => {
+  const endpoint = `/api/lnd/disconnectpeer`
+
+  try {
+    const { data } = await Http.post(endpoint, {
+      pubkey,
+    })
+
+    return data
+  } catch (err) {
+    const { response } = err
+    if (!response) {
+      Logger.log('[WALLET] Unknown error:', err)
+      throw err
+    }
+
+    throw new Error(
+      response.data.errorMessage || response.data.message || 'Unknown error.',
+    )
+  }
+}
+
 /**
  * Partially based on https://api.lightning.community/#channel.
  * @typedef {object} Channel
+ * @prop {'channel'} type
  * @prop {string} chan_id
  * @prop {boolean} active
  * @prop {string} channel_point
@@ -990,21 +1010,10 @@ export const listPeers = async () => {
  * @returns {Promise<Channel[]>}
  */
 export const listChannels = async () => {
-  const token = await Cache.getToken()
-
-  if (typeof token !== 'string') {
-    throw new TypeError(NO_CACHED_TOKEN)
-  }
-
   const endpoint = `/api/lnd/listchannels`
 
   try {
-    const { data } = await Http.get(endpoint, {
-      headers: {
-        Accept: 'application/json',
-        Authorization: token,
-      },
-    })
+    const { data } = await Http.get(endpoint)
 
     const { channels } = data
 
@@ -1022,8 +1031,102 @@ export const listChannels = async () => {
       return {
         ...chan,
         ip: matchingPeer ? matchingPeer.address : '???.???.???.???',
+        type: 'channel',
       }
     })
+  } catch (err) {
+    const { response } = err
+    throw new Error(
+      'listChannels() -> ' + response.data.errorMessage ||
+        response.data.message ||
+        'Unknown error.',
+    )
+  }
+}
+/**
+ * @typedef {object} PendingOpenChannel
+ * @prop {'pendingOpen'} type
+ * @prop {string} channel_point
+ * @prop {string} local_balance AKA Sendable
+ * @prop {string} remote_balance AKA Receivable
+ * @prop {string} remote_node_pub
+ */
+/**
+ * @typedef {object} PendingCloseChannel
+ * @prop {'pendingClose'} type
+ * @prop {string} channel_point
+ * @prop {string} local_balance AKA Sendable
+ * @prop {string} remote_balance AKA Receivable
+ * @prop {string} remote_node_pub
+ */
+/**
+ * @typedef {object} PendingForceCloseChannel
+ * @prop {'pendingForceClose'} type
+ * @prop {string} channel_point
+ * @prop {string} local_balance AKA Sendable
+ * @prop {string} remote_balance AKA Receivable
+ * @prop {string} remote_node_pub
+ */
+/**
+ * @typedef {object} GetRes
+ * @prop {({channel:PendingOpenChannel})[]} pending_open_channels
+ * @prop {({channel:PendingCloseChannel})[]} waiting_close_channels
+ * @prop {({channel:PendingForceCloseChannel})[]} pending_force_closing_channels
+ */
+/**
+ * @typedef {PendingOpenChannel|PendingCloseChannel|PendingForceCloseChannel} PendingChannel
+ */
+/**
+ * @returns {Promise<PendingChannel[]>}
+ */
+export const pendingChannels = async () => {
+  const endpoint = `/api/lnd/pendingchannels`
+  try {
+    /**@type {{data:GetRes}} */
+    const { data } = await Http.get(endpoint)
+    const {
+      pending_open_channels,
+      waiting_close_channels,
+      pending_force_closing_channels,
+    } = data
+    if (!Array.isArray(pending_open_channels)) {
+      throw new Error(
+        'Wallet.pendingChannels() -> body.pending_open_channels not an array.',
+      )
+    }
+    if (!Array.isArray(waiting_close_channels)) {
+      throw new Error(
+        'Wallet.pendingChannels() -> body.waiting_close_channels not an array.',
+      )
+    }
+    if (!Array.isArray(pending_force_closing_channels)) {
+      throw new Error(
+        'Wallet.pendingChannels() -> body.pending_force_closing_channels not an array.',
+      )
+    }
+    /**@type {PendingOpenChannel[]} */
+    const pOpen = pending_open_channels.map(e => {
+      return {
+        ...e.channel,
+        type: 'pendingOpen',
+      }
+    })
+    /**@type {PendingCloseChannel[]} */
+    const pClose = waiting_close_channels.map(e => {
+      return {
+        ...e.channel,
+        type: 'pendingClose',
+      }
+    })
+    /**@type {PendingForceCloseChannel[]} */
+    const pForceClose = pending_force_closing_channels.map(e => {
+      return {
+        ...e.channel,
+        type: 'pendingForceClose',
+      }
+    })
+
+    return [...pOpen, ...pClose, ...pForceClose]
   } catch (err) {
     const { response } = err
     throw new Error(

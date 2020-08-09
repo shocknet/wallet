@@ -149,7 +149,7 @@ class SendScreen extends Component {
       const transactionId = await Wallet.sendCoins({
         // @ts-ignore
         addr: selectedContact.address,
-        amount: sendAll ? parseInt(amount, 10) : undefined,
+        amount: sendAll ? undefined : parseInt(amount, 10),
         send_all: sendAll,
         fees: this.props.fees,
       })

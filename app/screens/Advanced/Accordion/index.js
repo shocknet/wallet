@@ -12,6 +12,7 @@ import {
   ScrollView,
   TouchableOpacity,
   TouchableWithoutFeedback,
+  RefreshControl,
 } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 import Icon from 'react-native-vector-icons/Entypo'
@@ -40,6 +41,8 @@ import * as CSS from '../../../res/css'
  * @prop {(() => void)=} fetchNextPage Pass only when paginated
  * @prop {Data<T>} data Pass an array when not paginated.
  * @prop {boolean=} hideBottomBorder
+ * @prop {(()=>void)=} onRefresh
+ * @prop {boolean=} refreshing
  */
 
 /**
@@ -173,6 +176,8 @@ export default class Accordion extends Component {
       keyExtractor,
       onPressItem,
       hideBottomBorder,
+      onRefresh,
+      refreshing,
     } = this.props
     return (
       <View
@@ -203,9 +208,19 @@ export default class Accordion extends Component {
             style={open ? CSS.styles.height100 : CSS.styles.height0}
             keyExtractor={keyExtractor}
             onEndReached={this.onEndReached}
+            onRefresh={onRefresh}
+            refreshing={refreshing}
           />
         ) : (
-          <ScrollView style={open ? CSS.styles.height100 : CSS.styles.height0}>
+          <ScrollView
+            style={open ? CSS.styles.height100 : CSS.styles.height0}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing ? refreshing : false}
+                onRefresh={onRefresh}
+              />
+            }
+          >
             {data.map((item, i) => (
               <TouchableOpacity
                 // eslint-disable-next-line react/no-array-index-key

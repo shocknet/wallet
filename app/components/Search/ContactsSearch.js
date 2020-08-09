@@ -150,8 +150,10 @@ class ContactsSearch extends PureComponent {
 
   isBTCAddress = () => {
     const { value } = this.props
-
-    return /^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$/.test(value)
+    //as in app/screens/Send/index.js
+    return /^(bc(1|r)|[123]|m|n|((t|x)pub)|(tb1))[a-zA-HJ-NP-Z0-9]{25,90}$/.test(
+      value,
+    )
   }
 
   isLightningInvoice = () => {

@@ -9,6 +9,7 @@ import {
   StatusBar,
   ImageBackground,
   Keyboard,
+  Clipboard,
 } from 'react-native'
 import EntypoIcons from 'react-native-vector-icons/Entypo'
 import Feather from 'react-native-vector-icons/Feather'
@@ -33,19 +34,24 @@ import InfoChannelModal from './Modals/InfoChannel'
 // import { Icon } from 'react-native-elements'
 import {
   fetchChannels,
+  fetchPendingChannels,
   fetchInvoices,
   fetchPayments,
   fetchPeers,
   fetchTransactions,
+  fetchRecentTransactions,
   fetchHistory,
 } from '../../actions/HistoryActions'
 import { fetchNodeInfo } from '../../actions/NodeActions'
 import AddPeerModal from './Modals/AddPeer'
 import CloseChannelModal from './Modals/CloseChannel'
 import ShockDialog from '../../components/ShockDialog'
+import InfoPeerModal from './Modals/infoPeer'
+import { disconnectPeer } from '../../services/wallet'
 export const ADVANCED_SCREEN = 'ADVANCED_SCREEN'
 /**
  * @typedef {import('../../services/wallet').Channel} Channel
+ * @typedef {import('../../services/wallet').PendingChannel} PendingChannel
  */
 /**
  * @typedef {object} Accordions
@@ -81,8 +87,11 @@ export const ADVANCED_SCREEN = 'ADVANCED_SCREEN'
  * @prop {boolean} forceCloseChannel
  *
  * @prop {Channel} channelInfo
+ * @prop {{pubKey:string}} peerInfo
  * @prop {boolean} confirmCloseChannel
  * @prop {string} confirmCloseChannelText
+ * @prop {boolean} refreshingChannels
+ * @prop {boolean} refreshingTransactions
  */
 
 /**
@@ -98,10 +107,12 @@ export const ADVANCED_SCREEN = 'ADVANCED_SCREEN'
 /**
  * @typedef {object} TmpProps
  *  @prop {()=>void} fetchChannels,
+ *  @prop {()=>void} fetchPendingChannels,
  *  @prop {(invoice:PageToFetch)=>void} fetchInvoices,
  *  @prop {(payment:PageToFetch)=>void} fetchPayments,
  *  @prop {()=>void} fetchPeers,
  *  @prop {(transaction:PageToFetch)=>void} fetchTransactions,
+ *  @prop {()=>void} fetchRecentTransactions,
  *  @prop {()=>void} fetchHistory,
  *  @prop {()=>void} fetchNodeInfo,
  */
@@ -134,6 +145,7 @@ class AdvancedScreen extends Component {
     nodeInfoModal: false,
     forceCloseChannel: false,
     channelInfo: {
+      type: 'channel',
       active: false,
       chan_id: '',
       channel_point: '',
@@ -142,8 +154,13 @@ class AdvancedScreen extends Component {
       remote_balance: '',
       remote_pubkey: '',
     },
+    peerInfo: {
+      pubKey: '',
+    },
     confirmCloseChannel: false,
     confirmCloseChannelText: '',
+    refreshingChannels: false,
+    refreshingTransactions: false,
   }
 
   addChannelModal = React.createRef()
@@ -153,6 +170,8 @@ class AdvancedScreen extends Component {
   closeChannelModal = React.createRef()
 
   addPeerModal = React.createRef()
+
+  infoPeerModal = React.createRef()
 
   /**
    * @param {keyof State} key
@@ -284,17 +303,18 @@ class AdvancedScreen extends Component {
     } = this.props
     //@ts-ignore
     const currentData = history[routeName]
-
+    const { page } = currentData
+    const pageInt = typeof page === 'number' ? page : parseInt(page, 10)
     if (routeName === 'invoices') {
-      fetchInvoices({ page: currentData.page + 1 })
+      fetchInvoices({ page: pageInt + 1 })
     }
 
     if (routeName === 'payments') {
-      fetchPayments({ page: currentData.page + 1 })
+      fetchPayments({ page: pageInt + 1 })
     }
 
     if (routeName === 'transactions') {
-      fetchTransactions({ page: currentData.page + 1 })
+      fetchTransactions({ page: pageInt + 1 })
     }
   }
 
@@ -339,6 +359,27 @@ class AdvancedScreen extends Component {
       this.setState({
         modalLoading: false,
         peerURI: '',
+      })
+    }
+  }
+
+  disconnectPeer = async () => {
+    this.setState({
+      modalLoading: true,
+    })
+    const { pubKey } = this.state.peerInfo
+    try {
+      if (pubKey === '') {
+        return
+      }
+      await disconnectPeer(pubKey)
+      this.infoPeerModal.current.close()
+    } catch (e) {
+      this.setState({ err: e })
+    } finally {
+      this.setState({
+        modalLoading: false,
+        peerInfo: { pubKey: '' },
       })
     }
   }
@@ -506,10 +547,15 @@ class AdvancedScreen extends Component {
   /**
    * @param {string} pubKey
    */
-  openChannelPeer = pubKey => {
+  openInfoPeer = pubKey => {
+    this.infoPeerModal.current.open()
     this.setState({
-      channelPublicKey: pubKey,
+      peerInfo: { pubKey },
     })
+  }
+
+  closeInfoPeer = () => {
+    this.infoPeerModal.current.close()
   }
 
   closeCloseChannelDialog = () => {
@@ -564,16 +610,40 @@ class AdvancedScreen extends Component {
    *
    */
   onPressChannel = channelString => {
-    /**@type {Channel} channel*/
+    /**@type {Channel|PendingChannel} channel*/
     const channel = JSON.parse(channelString)
-    this.infoChannelModal.current.open()
-    this.setState({
-      channelInfo: channel,
-    })
+    if (channel.type === 'channel') {
+      this.infoChannelModal.current.open()
+      this.setState({
+        channelInfo: channel,
+      })
+    } else {
+      Clipboard.setString(channel.channel_point)
+      ToastAndroid.show('Channel Point copied to clipboard', 800)
+    }
   }
 
   closeInfoChannelModal = () => {
     this.infoChannelModal.current.close()
+  }
+
+  onRefreshChannels = async () => {
+    this.setState({
+      refreshingChannels: true,
+    })
+    const { fetchChannels, fetchPendingChannels } = this.props
+    await Promise.all([fetchChannels(), fetchPendingChannels()])
+    //notificationService.Log("TESTING","ALL"+JSON.stringify(this.props.history.))
+    this.setState({ refreshingChannels: false })
+  }
+
+  onRefreshTransactions = async () => {
+    this.setState({
+      refreshingTransactions: true,
+    })
+    const { fetchRecentTransactions } = this.props
+    await fetchRecentTransactions()
+    this.setState({ refreshingTransactions: false })
   }
 
   /** @param {string} text */
@@ -614,10 +684,12 @@ class AdvancedScreen extends Component {
       forceCloseChannel,
       willCloseChannelPoint,
       channelInfo,
-
+      peerInfo,
       nodeInfoModal,
       confirmCloseChannel,
       confirmCloseChannelText,
+      refreshingChannels,
+      refreshingTransactions,
     } = this.state
     //Logger.log(history.channels)
     Logger.log(channelPublicKey)
@@ -707,7 +779,8 @@ class AdvancedScreen extends Component {
           </ImageBackground>
           <View style={styles.accordionsContainer}>
             <AccordionItem
-              data={history.channels}
+              //@ts-ignore
+              data={[...history.pendingChannels, ...history.channels]}
               Item={Channel}
               keyExtractor={channelKeyExtractor}
               title="Channels"
@@ -727,16 +800,20 @@ class AdvancedScreen extends Component {
               toggleAccordion={this.toggleAccordion('channels')}
               onPressItem={this.onPressChannel}
               hideBottomBorder
+              onRefresh={this.onRefreshChannels}
+              refreshing={refreshingChannels}
             />
             <AccordionItem
               fetchNextPage={this.fetchNextPage('transactions')}
               //@ts-ignore
-              data={history.transactions}
+              data={history.recentTransactions}
               Item={Transaction}
               title="Transactions"
               open={accordions.transactions}
               toggleAccordion={this.toggleAccordion('transactions')}
               keyExtractor={this.transactionKeyExtractor}
+              onRefresh={this.onRefreshTransactions}
+              refreshing={refreshingTransactions}
             />
             <AccordionItem
               data={history.peers}
@@ -753,7 +830,7 @@ class AdvancedScreen extends Component {
                   },
                 },
               ]}
-              onPressItem={this.openChannelPeer}
+              onPressItem={this.openInfoPeer}
               toggleAccordion={this.toggleAccordion('peers')}
               keyExtractor={peerKeyExtractor}
             />
@@ -818,6 +895,16 @@ class AdvancedScreen extends Component {
           keyboardHeight={keyboardHeight}
           closeModal={this.closeAddPeerModal}
         />
+        <InfoPeerModal
+          disconnectPeer={this.disconnectPeer}
+          keyboardHeight={keyboardHeight}
+          keyboardOpen={keyboardOpen}
+          loading={modalLoading}
+          modalRef={this.infoPeerModal}
+          peer={peerInfo}
+          submit={this.closeInfoPeer}
+          error={err}
+        />
         <ShockDialog
           choiceToHandler={this.confirmCloseChoices}
           onRequestClose={this.closeCloseChannelDialog}
@@ -846,10 +933,12 @@ const mapStateToProps = ({ history, node, wallet, fees }) => ({
 
 const mapDispatchToProps = {
   fetchChannels,
+  fetchPendingChannels,
   fetchInvoices,
   fetchPayments,
   fetchPeers,
   fetchTransactions,
+  fetchRecentTransactions,
   fetchHistory,
   fetchNodeInfo,
 }
@@ -930,7 +1019,7 @@ const xStyles = {
 }
 
 /**
- * @param {Channel} channel
+ * @param {Channel|PendingChannel} channel
  */
 const channelKeyExtractor = channel => JSON.stringify(channel) //channel.channel_point
 
