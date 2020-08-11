@@ -23,6 +23,8 @@ import { getChaninfo } from '../../../services/wallet'
  * @prop {boolean} keyboardOpen
  * @prop {number} keyboardHeight
  * @prop {boolean} loading
+ * @prop {() => void} startLoading
+ * @prop {() => void} finishLoading
  * @prop {string} error
  * @prop {Channel} channel
  */
@@ -71,8 +73,9 @@ class InfoChannelModal extends React.Component {
    * @param {Props} prevProps
    */
   componentDidUpdate(prevProps) {
-    if (this.props.channel !== prevProps.channel) {
-      const { channel } = this.props
+    const { channel, startLoading, finishLoading } = this.props
+    if (channel !== prevProps.channel) {
+      startLoading()
       getChaninfo(channel.chan_id)
         .then(res => {
           if (channel.remote_pubkey === res.node1_pub) {
@@ -90,9 +93,11 @@ class InfoChannelModal extends React.Component {
               otherPolicy: res.node2_policy,
             })
           }
+          finishLoading()
         })
         .catch(e => {
           Logger.log(e)
+          finishLoading()
         })
     }
   }

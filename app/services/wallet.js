@@ -828,12 +828,6 @@ export const payKeysend = async ({ amt, dest }) => {
  * @returns {Promise<DecodeInvoiceResponse>}
  */
 export const decodeInvoice = async ({ payReq }) => {
-  const token = await Cache.getToken()
-
-  if (typeof token !== 'string') {
-    throw new TypeError(NO_CACHED_TOKEN)
-  }
-
   const endpoint = `/api/lnd/decodePayReq`
 
   if (typeof payReq !== 'string') {
@@ -853,15 +847,7 @@ export const decodeInvoice = async ({ payReq }) => {
   }
 
   try {
-    const { data } = await Http.post(
-      endpoint,
-      { payReq },
-      {
-        headers: {
-          Authorization: token,
-        },
-      },
-    )
+    const { data } = await Http.post(endpoint, { payReq })
 
     if (data.errorMessage) {
       throw new Error(data.errorMessage)
