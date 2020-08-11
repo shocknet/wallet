@@ -373,6 +373,7 @@ class AdvancedScreen extends Component {
         return
       }
       await disconnectPeer(pubKey)
+      ToastAndroid.show('Peer disconnected', 800)
       this.infoPeerModal.current.close()
     } catch (e) {
       this.setState({ err: e })
@@ -472,6 +473,8 @@ class AdvancedScreen extends Component {
     const { fetchChannels, fees } = this.props
     this.setState({
       willCloseChannelPoint: null,
+      confirmCloseChannel: false,
+      modalLoading: true,
     })
 
     if (willCloseChannelPoint) {
@@ -506,11 +509,13 @@ class AdvancedScreen extends Component {
         if (res.status !== 200) {
           throw new Error(res.data.errorMessage || 'Unknown error.')
         }
+        this.setState({ modalLoading: false })
         this.closeChannelModal.current.close()
         fetchChannels()
 
         ToastAndroid.show('Closed successfully', 800)
       } catch (err) {
+        this.setState({ modalLoading: false })
         this.showErr(err.response.data.errorMessage)
       }
     }
@@ -625,6 +630,18 @@ class AdvancedScreen extends Component {
 
   closeInfoChannelModal = () => {
     this.infoChannelModal.current.close()
+    this.setState({
+      channelInfo: {
+        type: 'channel',
+        active: false,
+        chan_id: '',
+        channel_point: '',
+        ip: '',
+        local_balance: '',
+        remote_balance: '',
+        remote_pubkey: '',
+      },
+    })
   }
 
   onRefreshChannels = async () => {
@@ -662,6 +679,14 @@ class AdvancedScreen extends Component {
   /** @param {string} text */
   onChangeChannelPushAmount = text => {
     this.handleInputChange('channelPushAmount', text)
+  }
+
+  startLoading = () => {
+    this.setState({ modalLoading: true })
+  }
+
+  finishLoading = () => {
+    this.setState({ modalLoading: false })
   }
 
   /**
@@ -864,6 +889,8 @@ class AdvancedScreen extends Component {
           modalRef={this.infoChannelModal}
           onChange={this.onChange}
           loading={modalLoading}
+          startLoading={this.startLoading}
+          finishLoading={this.finishLoading}
           closeChannel={this.onPressCloseChannel}
           submit={this.closeInfoChannelModal}
           error={err}

@@ -1,6 +1,13 @@
 import React from 'react'
 import Logger from 'react-native-file-log'
-import { Text, View, Switch, StyleSheet, Clipboard } from 'react-native'
+import {
+  Text,
+  View,
+  Switch,
+  StyleSheet,
+  Clipboard,
+  ActivityIndicator,
+} from 'react-native'
 import { nodeInfo, addPeer, addInvoice } from '../services/wallet'
 import ShockButton from '../components/ShockButton'
 import ShockInput from '../components/ShockInput'
@@ -43,6 +50,7 @@ class LNURL extends React.Component {
       LNURLdata: null,
       disablePaste: false,
       scanQR: false,
+      loading: false,
     }
   }
   /**
@@ -58,10 +66,15 @@ class LNURL extends React.Component {
    *  LNURLdata:LNURLdataType|null
    * disablePaste:boolean
    * scanQR:boolean
+   * loading:boolean
    * }}
    */
 
   state = this.getInitialLNURLState()
+
+  backToOverview = () => {
+    this.props.navigation.navigate(WALLET_OVERVIEW)
+  }
 
   /**@param {string} text */
   setWithdrawAmount = text => {
@@ -110,6 +123,7 @@ class LNURL extends React.Component {
     if (this.state.LNURLdata === null) {
       return
     }
+    this.setState({ loading: true })
     const { uri, callback, k1 } = this.state.LNURLdata
     let newK1 = k1
     if (k1 === 'gun' && this.state.LNURLdata.shockPubKey) {
@@ -144,16 +158,19 @@ class LNURL extends React.Component {
       if (json.status === 'OK') {
         this.setState({
           done: 'Channel request sent correctly',
+          loading: false,
         })
       } else {
         this.setState({
           error: json.reason,
+          loading: false,
         })
       }
     } catch (e) {
       Logger.log(e)
       this.setState({
         error: e.toString(),
+        loading: false,
       })
     }
   }
@@ -163,6 +180,7 @@ class LNURL extends React.Component {
       if (this.state.LNURLdata === null) {
         return
       }
+      this.setState({ loading: true })
       const { callback } = this.state.LNURLdata
       const { payAmount } = this.state
       const completeUrl = `${callback}?amount=${payAmount * 1000}`
@@ -173,9 +191,11 @@ class LNURL extends React.Component {
       if (json.status === 'ERROR') {
         this.setState({
           error: json.reason,
+          loading: false,
         })
         return
       }
+      this.setState({ loading: false })
       Logger.log(json.pr)
       this.props.navigation.navigate(WALLET_OVERVIEW, { lnurlInvoice: json.pr })
       //this.props.requestClose()
@@ -184,6 +204,7 @@ class LNURL extends React.Component {
       Logger.log(e)
       this.setState({
         error: e,
+        loading: false,
       })
     }
   }
@@ -193,6 +214,7 @@ class LNURL extends React.Component {
       if (this.state.LNURLdata === null) {
         return
       }
+      this.setState({ loading: true })
       const { callback, k1 } = this.state.LNURLdata
       const payReq = await addInvoice({
         value: this.state.withdrawAmount,
@@ -207,25 +229,40 @@ class LNURL extends React.Component {
       if (json.status === 'OK') {
         this.setState({
           done: 'Withdraw request sent correctly',
+          loading: false,
         })
       } else {
         this.setState({
           error: json.reason,
+          loading: false,
         })
       }
     } catch (e) {
       this.setState({
         error: e,
+        loading: false,
       })
     }
   }
 
   handleDone() {
-    return <Text>{this.state.done}</Text>
+    return (
+      <View style={styles.flexCenter}>
+        <Text>{this.state.done}</Text>
+        <Pad amount={10} />
+        <ShockButton title="OK" onPress={this.backToOverview} />
+      </View>
+    )
   }
 
   handleError() {
-    return <Text>{this.state.error}</Text>
+    return (
+      <View style={styles.flexCenter}>
+        <Text>{this.state.error}</Text>
+        <Pad amount={10} />
+        <ShockButton title="Back" onPress={this.backToOverview} />
+      </View>
+    )
   }
 
   /**@param   {LNURLdataType | null} LNURLdata*/
@@ -284,14 +321,24 @@ class LNURL extends React.Component {
 
   renderHostedChannelRequest = () => {
     return (
-      <Text>
-        LNURL : Hosted Channel Request - This Request is not supported
-      </Text>
+      <View style={styles.flexCenter}>
+        <Text>
+          LNURL : Hosted Channel Request - This Request is not supported
+        </Text>
+        <Pad amount={10} />
+        <ShockButton title="Back" onPress={this.backToOverview} />
+      </View>
     )
   }
 
   renderAuth = () => {
-    return <Text>LNURL : Auth Request - This Request is not supported</Text>
+    return (
+      <View style={styles.flexCenter}>
+        <Text>LNURL : Auth Request - This Request is not supported</Text>
+        <Pad amount={10} />
+        <ShockButton title="Back" onPress={this.backToOverview} />
+      </View>
+    )
   }
 
   /**@param   {LNURLdataType} LNURLdata*/
@@ -384,7 +431,13 @@ class LNURL extends React.Component {
   }
 
   renderUnknown = () => {
-    return <Text>LNURL : Unknown Request</Text>
+    return (
+      <View style={styles.flexCenter}>
+        <Text>LNURL : Unknown Request</Text>
+        <Pad amount={10} />
+        <ShockButton title="Back" onPress={this.backToOverview} />
+      </View>
+    )
   }
 
   renderEmpty = () => {
@@ -437,6 +490,7 @@ class LNURL extends React.Component {
    * @param {string} data
    */
   async decodeLNURL(data) {
+    this.setState({ loading: true })
     let lnurl = data
     Logger.log(lnurl)
     const isClean = lnurl.split(':')
@@ -463,6 +517,7 @@ class LNURL extends React.Component {
       this.setState({
         LNURLdata: json,
         disablePaste: false,
+        loading: false,
       })
 
       switch (json.tag) {
@@ -492,6 +547,7 @@ class LNURL extends React.Component {
       }
     } catch (e) {
       Logger.log(e)
+      this.setState({ loading: false })
     }
   }
 
@@ -525,7 +581,14 @@ class LNURL extends React.Component {
   }
 
   render() {
-    const { done, error, LNURLdata, scanQR } = this.state
+    const { done, error, LNURLdata, scanQR, loading } = this.state
+    if (loading) {
+      return (
+        <View style={styles.flexCenter}>
+          <ActivityIndicator />
+        </View>
+      )
+    }
     if (scanQR) {
       return (
         <QRCodeScanner

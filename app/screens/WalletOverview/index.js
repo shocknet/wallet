@@ -1069,7 +1069,12 @@ class WalletOverview extends Component {
     }
     if (newParams.lnurlInvoice) {
       this.payLightningInvoice({ invoice: newParams.lnurlInvoice })
+      return
     }
+    if (!newParams.rawInvoice) {
+      return
+    }
+
     this.setState(
       {
         displayingConfirmInvoicePaymentDialog: true,

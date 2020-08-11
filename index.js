@@ -33,8 +33,6 @@ import { ConnectionProvider } from './app/ctx/Connection'
 import RootStack from './app/navigators/Root'
 
 import { WALLET_OVERVIEW } from './app/screens/WalletOverview'
-import * as Wallet from './app/services/wallet'
-import * as Auth from './app/services/auth'
 
 Logger.setTag('ShockWallet')
 Logger.setFileLogEnabled(true)
@@ -114,11 +112,11 @@ export default class ShockWallet extends React.Component {
    * handleUrl is called when a protocol link brings the app back
    * from background
    * it is not called when the protocol link opens the app when closed
-   * if the app was put in background before login, the protocol link
-   * will not be processed
    * @param {{url: string}} e */
-  handleUrl = async e => {
-    try {
+  handleUrl = e => {
+    ToastAndroid.show('Protocol link detected', 1500)
+    NavigationService.navigate(WALLET_OVERVIEW, { protocol_link: e.url })
+    /*try {
       ToastAndroid.show('LNURL detected, decoding...', 1500)
       const authData = await Cache.getStoredAuthData()
       const walletStatus = await Wallet.walletStatus()
@@ -140,7 +138,7 @@ export default class ShockWallet extends React.Component {
     } catch (e) {
       Logger.log(e.message)
       ToastAndroid.show(e.message, 1500)
-    }
+    }*/
   }
 
   async componentDidMount() {
