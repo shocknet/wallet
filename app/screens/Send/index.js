@@ -41,9 +41,19 @@ import {
 } from '../../actions/InvoiceActions'
 import { WALLET_OVERVIEW } from '../WalletOverview'
 export const SEND_SCREEN = 'SEND_SCREEN'
+/**
+ * @typedef {import('../../services/validators').ExtractedBTCAddress} ExtractedBTCAddress
+ * @typedef {import('../../services/validators').ExtractedLNInvoice} ExtractedLNInvoice
+ * @typedef {import('../../services/validators').ExtractedKeysend} ExtractedKeysend
+ */
+/**
+ * @typedef {object} Params
+ * @prop {boolean|undefined} isRedirect
+ * @prop {ExtractedBTCAddress|ExtractedLNInvoice|ExtractedKeysend} data
+ */
 
 /**
- * @typedef {import('react-navigation').NavigationScreenProp<{}, {}>} Navigation
+ * @typedef {import('react-navigation').NavigationScreenProp<{}, Params>} Navigation
  */
 
 /**
@@ -56,7 +66,7 @@ export const SEND_SCREEN = 'SEND_SCREEN'
 
 /**
  * @typedef {object} Props
- * @prop {(Navigation)=} navigation
+ * @prop {Navigation} navigation
  * @prop {import('../../../reducers/ChatReducer').State} chat
  * @prop {import('../../../reducers/InvoiceReducer').State} invoice
  * @prop {(contact: ContactTypes) => ContactTypes} selectContact
@@ -77,6 +87,7 @@ export const SEND_SCREEN = 'SEND_SCREEN'
  * @prop {boolean} scanningQR
  * @prop {boolean} sendAll
  * @prop {Error|null} error
+ * @prop {boolean} isDecoding
  */
 
 /**
@@ -93,12 +104,80 @@ class SendScreen extends Component {
     sending: false,
     sendAll: false,
     error: null,
+    isDecoding: false,
   }
 
   amountOptionList = React.createRef()
 
+  /**
+   *
+   * @param {Params} params
+   */
+  handleRedirect(params) {
+    const { selectContact, decodePaymentRequest } = this.props
+    if (params.data) {
+      const { data } = params
+      this.resetSearchState()
+      switch (data.type) {
+        case 'btc': {
+          selectContact({
+            type: 'btc',
+            address: data.address,
+          })
+          if (data.amount) {
+            this.setState({ amount: data.amount.toString() })
+          }
+          break
+        }
+        case 'keysend': {
+          selectContact({
+            type: 'keysend',
+            dest: data.address,
+          })
+          break
+        }
+        case 'ln': {
+          this.startDecoding()
+          decodePaymentRequest(data.request)
+          break
+        }
+      }
+      this.props.navigation.setParams({
+        isRedirect: undefined,
+        data: undefined,
+      })
+    }
+    this.props.navigation.setParams({ isRedirect: undefined })
+  }
+
   componentDidMount() {
-    this.resetSearchState()
+    const { params } = this.props.navigation.state
+    if (params && params.isRedirect) {
+      this.handleRedirect(params)
+    } else {
+      this.resetSearchState()
+    }
+  }
+
+  /**
+   *
+   * @param {Props} prevProps
+   */
+  componentDidUpdate(prevProps) {
+    const p1 = this.props.navigation.state.params
+    const p2 = prevProps.navigation.state.params
+    if (!p1 || !p2) {
+      return
+    }
+    if (p1.isRedirect !== p2.isRedirect) {
+      if (p1.isRedirect) {
+        this.handleRedirect(p1)
+      }
+    }
+  }
+
+  startDecoding = () => {
+    this.setState({ isDecoding: true })
   }
 
   /**
@@ -259,6 +338,7 @@ class SendScreen extends Component {
     resetInvoice()
     this.setState({
       contactsSearch: '',
+      isDecoding: false,
     })
   }
 
@@ -282,6 +362,7 @@ class SendScreen extends Component {
         <ContactsSearch
           onChange={this.onChange('contactsSearch')}
           onError={this.onChange('error')}
+          startDecoding={this.startDecoding}
           enabledFeatures={['btc', 'invoice', 'contacts', 'keysend']}
           placeholder="Enter invoice or address..."
           value={contactsSearch}
@@ -440,6 +521,7 @@ class SendScreen extends Component {
       paymentSuccessful,
       scanningQR,
       sendAll,
+      isDecoding,
     } = this.state
     const { navigation, invoice, chat } = this.props
     const { width, height } = Dimensions.get('window')
@@ -449,7 +531,8 @@ class SendScreen extends Component {
         invoice.amount &&
         Big(invoice.amount).eq(0)
       ) || !invoice.paymentRequest
-
+    const decodingInvoice =
+      isDecoding && !invoice.decodeError && invoice.paymentRequest === ''
     if (scanningQR) {
       return (
         <View style={CSS.styles.flex}>
@@ -483,6 +566,11 @@ class SendScreen extends Component {
               {error ? (
                 <View style={styles.errorRow}>
                   <Text style={styles.errorText}>{this.getErrorMessage()}</Text>
+                </View>
+              ) : null}
+              {invoice.decodeError ? (
+                <View style={styles.errorRow}>
+                  <Text style={styles.errorText}>{invoice.decodeError}</Text>
                 </View>
               ) : null}
               <TouchableOpacity
@@ -551,6 +639,20 @@ class SendScreen extends Component {
                 inputStyle={styles.descInput}
                 disabled={!!invoice.paymentRequest}
               />
+              {decodingInvoice ? (
+                <View
+                  style={[
+                    styles.sendingOverlay,
+                    {
+                      width: width - 50,
+                      height: height - 194,
+                    },
+                  ]}
+                >
+                  <ActivityIndicator color={CSS.Colors.FUN_BLUE} size="large" />
+                  <Text style={styles.sendingText}>Decoding invoice...</Text>
+                </View>
+              ) : null}
               {sending ? (
                 <View
                   style={[

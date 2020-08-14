@@ -8,7 +8,6 @@ import {
   createSwitchNavigator,
   createDrawerNavigator,
 } from 'react-navigation'
-
 import * as CSS from '../res/css'
 
 import Chat, { CHAT_ROUTE } from '../screens/Chat'
@@ -36,6 +35,8 @@ import UserScreen from '../screens/User'
 
 import * as Routes from '../routes'
 import LNURL, { LNURL_SCREEN } from '../screens/LNURL'
+
+import CustomDrawer from '../components/CustomDrawer'
 
 export const APP = 'APP'
 export const BOTTOM_NAV = 'BOTTOM_NAV'
@@ -156,6 +157,7 @@ if (__DEV__) {
 const MainDrawer = createDrawerNavigator(drawerScreens, {
   initialRouteName: WALLET_NAV,
   drawerPosition: 'right',
+  contentComponent: CustomDrawer,
 })
 
 MainDrawer.navigationOptions = {

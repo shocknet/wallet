@@ -9,7 +9,7 @@ export const ACTIONS = {
   SET_ADDRESS: 'invoice/address',
   DECODE_PAYMENT_REQUEST: 'invoice/load',
   SET_LIQUIDITY_CHECK: 'invoice/liquidityCheck',
-
+  INVOICE_DECODE_ERROR: 'invoice/error',
   ADD_INVOICE: 'invoice/add',
   RESET_INVOICE: 'invoice/reset',
 }
@@ -71,6 +71,10 @@ export const decodePaymentRequest = paymentRequest => async dispatch => {
     })
     return
   } catch (err) {
+    dispatch({
+      type: ACTIONS.INVOICE_DECODE_ERROR,
+      data: 'invalid invoice',
+    })
     return {
       type: 'error',
       error: err,

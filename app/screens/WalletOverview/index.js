@@ -65,7 +65,6 @@ import UnifiedTrx from './UnifiedTrx'
 //@ts-ignore
 import bech32 from 'bech32'
 //import { Buffer } from 'safe-buffer'
-import { LNURL_SCREEN } from '../LNURL'
 import { SEND_SCREEN } from '../Send'
 import { RECEIVE_SCREEN } from '../Receive'
 
@@ -74,9 +73,6 @@ import * as Cache from '../../services/cache'
 
 /**
  * @typedef {object} Params
- * @prop {string=} lnurl LNURL
- * @prop {string=} protocol_link On chan+LN
- * @prop {string=} lnurlInvoice
  * @prop {string=} rawInvoice
  * @prop {string|null} recipientDisplayName
  * @prop {string|null} recipientAvatar
@@ -168,8 +164,6 @@ export const WALLET_OVERVIEW = 'WALLET_OVERVIEW'
 const showCopiedToClipboardToast = () => {
   ToastAndroid.show('Copied to clipboard!', 800)
 }
-
-let initialLinkUrl = ''
 
 /**
  * @augments Component<Props, State, never>
@@ -1061,16 +1055,6 @@ class WalletOverview extends Component {
     //Check if this screen has a pending protocol link
     //to be processed, This will happen if the app was in background
     //on the screen WALLET_OVERVIEW
-    if (newParams.protocol_link) {
-      const { protocol_link } = newParams
-      this.props.navigation.setParams({ protocol_link: undefined })
-      this._handleOpenURL({ url: protocol_link })
-      return
-    }
-    if (newParams.lnurlInvoice) {
-      this.payLightningInvoice({ invoice: newParams.lnurlInvoice })
-      return
-    }
     if (!newParams.rawInvoice) {
       return
     }
@@ -1103,55 +1087,6 @@ class WalletOverview extends Component {
           })
       },
     )
-  }
-
-  /**
-   * _handleUrl is called when a protocol link opens the app when closed
-   * or when the protocol link brings the app back from background
-   * @param {{url: string}} event
-   */
-  _handleOpenURL = event => {
-    /**
-     * @param {string} url
-     */
-    const middle = url => {
-      //const url = event.url
-      Logger.log(url)
-      const protocol = url.split(':')
-      if (
-        protocol.length !== 2 ||
-        (protocol[0] !== 'bitcoin' && protocol[0] !== 'lightning')
-      ) {
-        Logger.log('invalid url: ' + url)
-        return
-      }
-      const details = protocol[1].split('?amount=')
-
-      const hasDetails = details.length > 1
-      if (protocol[0] === 'bitcoin') {
-        this.sendToBTCAddress({
-          address: details[0],
-          amount: hasDetails ? Number(details[1]) * 100000000 : 0,
-        })
-      }
-      if (protocol[0] === 'lightning') {
-        //lightningInvoiceInput
-        const isLnurl = details[0].split('LNURL')
-
-        if (isLnurl.length === 1) {
-          this.payLightningInvoice({ invoice: details[0] })
-        }
-        if (isLnurl.length === 2) {
-          const decodedBytes = bech32.fromWords(
-            bech32.decode(details[0], 1500).words,
-          )
-
-          const lnurl = String.fromCharCode(...decodedBytes)
-          this.props.navigation.navigate(LNURL_SCREEN, { lnurl })
-        }
-      }
-    }
-    middle(event.url)
   }
 
   didFocus = { remove() {} }
@@ -1192,36 +1127,6 @@ class WalletOverview extends Component {
         clearTimeout(this.recentPaymentsIntervalID)
       }
     })
-
-    //Check if this screen has a pending protocol link
-    //to be processed, This will happen if the app was in background
-    //on a screen different from WALLET_OVERVIEW
-    const { params } = navigation.state
-    if (params && params.lnurlInvoice) {
-      const { lnurlInvoice } = params
-      this.payLightningInvoice({ invoice: lnurlInvoice })
-    }
-
-    if (params && params.protocol_link) {
-      const { protocol_link } = params
-      navigation.setParams({ protocol_link: undefined })
-      this._handleOpenURL({ url: protocol_link })
-    }
-    //The initial url exists only if the app was closed and
-    //a protocol link caused it to open
-    const url = await Linking.getInitialURL()
-    if (url && url !== initialLinkUrl) {
-      initialLinkUrl = url
-      Logger.log('Initial url is: ' + url)
-      this._handleOpenURL({ url })
-    }
-    /*.then(url => {
-        
-      })
-      .catch(err => {
-        ToastAndroid.show(`Protocol Link: ${err.message}`, 800)
-        Logger.log('An error occurred with protocol links', err)
-      })*/
 
     this.startNotificationService()
 
