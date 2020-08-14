@@ -32,7 +32,7 @@ import { PersistGate } from 'redux-persist/integration/react'
 import { ConnectionProvider } from './app/ctx/Connection'
 import RootStack from './app/navigators/Root'
 
-import { WALLET_OVERVIEW } from './app/screens/WalletOverview'
+import { LNURL_SCREEN } from './app/screens/LNURL'
 
 Logger.setTag('ShockWallet')
 Logger.setFileLogEnabled(true)
@@ -115,7 +115,7 @@ export default class ShockWallet extends React.Component {
    * @param {{url: string}} e */
   handleUrl = e => {
     ToastAndroid.show('Protocol link detected', 1500)
-    NavigationService.navigate(WALLET_OVERVIEW, { protocol_link: e.url })
+    NavigationService.navigate(LNURL_SCREEN, { protocol_link: e.url })
     /*try {
       ToastAndroid.show('LNURL detected, decoding...', 1500)
       const authData = await Cache.getStoredAuthData()
@@ -151,6 +151,10 @@ export default class ShockWallet extends React.Component {
       ready: true,
     })
     Linking.addEventListener('url', this.handleUrl)
+    const url = await Linking.getInitialURL()
+    if (url) {
+      this.handleUrl({ url })
+    }
   }
 
   componentWillUnmount() {

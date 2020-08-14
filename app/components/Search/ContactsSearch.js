@@ -44,6 +44,7 @@ import * as CSS from '../../res/css'
  * @prop {(string)=} placeholder
  * @prop {(contact: ContactTypes) => void} selectContact
  * @prop {(paymentRequest: string) => DecodeResponse} decodePaymentRequest
+ * @prop {(() => void)=} startDecoding
  * @prop {{ contacts: import('../../actions/ChatActions').Contact[] }} chat
  */
 
@@ -88,8 +89,11 @@ class ContactsSearch extends PureComponent {
   }
 
   decodeInvoice = () => {
-    const { decodePaymentRequest, value, onError } = this.props
+    const { decodePaymentRequest, value, onError, startDecoding } = this.props
     try {
+      if (startDecoding) {
+        startDecoding()
+      }
       const data = decodePaymentRequest(value)
       Logger.log(data)
       if (data && data.type === 'error') {

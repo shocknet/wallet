@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { Component } from 'react'
 import Logger from 'react-native-file-log'
 import {
   Text,
@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Clipboard,
   ActivityIndicator,
+  ToastAndroid,
 } from 'react-native'
 import { nodeInfo, addPeer, addInvoice } from '../services/wallet'
 import ShockButton from '../components/ShockButton'
@@ -20,23 +21,66 @@ import * as Cache from '../services/cache'
 import { WALLET_OVERVIEW } from './WalletOverview'
 import QRCodeScanner from '../components/QRScanner'
 import { fetchPeers } from '../actions/HistoryActions'
+import ExtractInfo from '../services/validators'
+import { SEND_SCREEN } from './Send'
 export const LNURL_SCREEN = 'LNURL_SCREEN'
-/**@typedef {{  tag:string,
- *              uri:string,
- *              metadata:string,
- *              callback:string,
- *              minSendable:number,
- *              maxSendable:number,
- *              maxWithdrawable:number,
- *              shockPubKey:string,
- *              k1:string
- *          }} LNURLdataType */
-class LNURL extends React.Component {
-  localReset = () => {
-    this.props.refreshLNURL()
-    this.setState(this.getInitialLNURLState())
-  }
+/**
+ * @typedef {object} Params
+ * @prop {string=} lnurl
+ * @prop {string=} protocol_link
+ * @prop {boolean=} qrRequest
+ * @prop {boolean=} clipboardRequest
+ */
+/**
+ * @typedef {import('react-navigation').NavigationScreenProp<{}, Params>} Navigation
+ */
+/**
+ * @typedef {import('../actions/ChatActions').BTCAddress} BTCAddress
+ * @typedef {import('../actions/ChatActions').Contact} Contact
+ * @typedef {import('../actions/ChatActions').Keysend} Keysend
+ */
 
+/**
+ * @typedef {object} LNURLdataType
+ * @prop {string} tag
+ * @prop {string} uri
+ * @prop {string} metadata
+ * @prop {string} callback
+ * @prop {number} minSendable
+ * @prop {number} maxSendable
+ * @prop {number} maxWithdrawable
+ * @prop {string} shockPubKey
+ * @prop {string} k1
+ * */
+
+/**
+ * @typedef {object} State
+ * @prop {boolean} privateChannel
+ * @prop {string|null} done
+ * @prop {string|null} error
+ * @prop {number} payAmount
+ * @prop {number} withdrawAmount
+ * @prop {boolean} didChange
+ * @prop {boolean} hasMemo
+ * @prop {string} memo
+ * @prop {LNURLdataType|null} LNURLdata
+ * @prop {boolean} disablePaste
+ * @prop {boolean} scanQR
+ * @prop {boolean} loading
+ */
+
+/**
+ * @typedef {object} Props
+ * @prop {Navigation} navigation
+ * @prop {import('../../reducers/HistoryReducer').State} history
+ * @prop {()=>void} fetchPeers
+ * @prop {(req:string)=>void} decodePaymentRequest
+ * @prop {(contact:Contact|BTCAddress|Keysend)=>void} selectContact
+ */
+/**
+ * @extends Component<Props, State, never>
+ */
+class LNURL extends React.Component {
   getInitialLNURLState = () => {
     return {
       privateChannel: true,
@@ -53,23 +97,8 @@ class LNURL extends React.Component {
       loading: false,
     }
   }
-  /**
-   * @type {{
-   *  privateChannel:boolean
-   *  done:boolean|null
-   *  error:boolean|null
-   *  payAmount:number
-   *  withdrawAmount:number
-   *  didChange:boolean
-   *  hasMemo:boolean
-   *  memo:string
-   *  LNURLdata:LNURLdataType|null
-   * disablePaste:boolean
-   * scanQR:boolean
-   * loading:boolean
-   * }}
-   */
 
+  /**@type {State} */
   state = this.getInitialLNURLState()
 
   backToOverview = () => {
@@ -197,7 +226,10 @@ class LNURL extends React.Component {
       }
       this.setState({ loading: false })
       Logger.log(json.pr)
-      this.props.navigation.navigate(WALLET_OVERVIEW, { lnurlInvoice: json.pr })
+      this.props.navigation.navigate(SEND_SCREEN, {
+        isRedirect: true,
+        data: { type: 'ln', request: json.pr },
+      })
       //this.props.requestClose()
       //this.props.payInvoice({ invoice: json.pr })
     } catch (e) {
@@ -459,30 +491,101 @@ class LNURL extends React.Component {
       </View>
     )
   }
+
   /**
    *
-   * @param {any} nextProps
+   * @param {Props} prevProps
    */
-
-  componentWillReceiveProps(nextProps) {
-    const p1 = nextProps.navigation.state.params
-    const p2 = this.props.navigation.state.params
+  componentDidUpdate(prevProps) {
+    const p1 = this.props.navigation.state.params
+    const p2 = prevProps.navigation.state.params
     if (!p1 || !p2) {
       return
     }
-    if (p1.lnurl === p2.lnurl) {
+    if (p1.protocol_link !== p2.protocol_link) {
+      const params = p1
+      this.props.navigation.setParams({ protocol_link: undefined })
+      if (params.protocol_link) {
+        this.decodeAll(params.protocol_link)
+      }
       return
     }
-    const params = p1
-    this.props.navigation.setParams({ lnurl: undefined })
-    this.decodeLNURL(params.lnurl)
+    if (p1.lnurl !== p2.lnurl) {
+      const params = p1
+      this.props.navigation.setParams({ lnurl: undefined })
+      if (params.lnurl) {
+        this.decodeLNURL(params.lnurl)
+      }
+      return
+    }
+    if (p1.qrRequest !== p2.qrRequest) {
+      if (p1.qrRequest) {
+        this.props.navigation.setParams({ qrRequest: undefined })
+        this.scanQR()
+        return
+      }
+    }
+    if (p1.clipboardRequest !== p2.clipboardRequest) {
+      if (p1.clipboardRequest) {
+        this.props.navigation.setParams({ clipboardRequest: undefined })
+        this.copyFromClipboard()
+      }
+    }
   }
 
   componentDidMount() {
     const { params } = this.props.navigation.state
+    if (params && params.protocol_link) {
+      this.props.navigation.setParams({ protocol_link: undefined })
+      this.decodeAll(params.protocol_link)
+      return
+    }
     if (params && params.lnurl) {
       this.props.navigation.setParams({ lnurl: undefined })
       this.decodeLNURL(params.lnurl)
+      return
+    }
+    if (params && params.qrRequest) {
+      this.props.navigation.setParams({ qrRequest: undefined })
+      this.scanQR()
+      return
+    }
+    if (params && params.clipboardRequest) {
+      this.props.navigation.setParams({ clipboardRequest: undefined })
+      this.copyFromClipboard()
+    }
+  }
+
+  /**
+   *
+   * @param {string} data
+   */
+  decodeAll(data) {
+    const info = ExtractInfo(data)
+    const { navigation } = this.props
+    switch (info.type) {
+      case 'btc':
+      case 'ln':
+      case 'keysend': {
+        navigation.navigate(SEND_SCREEN, {
+          isRedirect: true,
+          data: info,
+        })
+        return
+      }
+      case 'pk': {
+        ToastAndroid.show('Unimplemented', 800)
+        return
+      }
+      case 'lnurl': {
+        this.decodeLNURL(info.lnurl)
+        return
+      }
+      case 'unknown': {
+        this.setState({
+          error: 'cant decode' + JSON.stringify(info),
+        })
+      }
     }
   }
 
@@ -547,14 +650,18 @@ class LNURL extends React.Component {
       }
     } catch (e) {
       Logger.log(e)
-      this.setState({ loading: false })
+      this.setState({
+        loading: false,
+        error: e,
+      })
     }
   }
 
   copyFromClipboard = () => {
     this.setState({ disablePaste: true })
     Clipboard.getString().then(async lnurl => {
-      await this.decodeLNURL(lnurl)
+      ToastAndroid.show('Pasted!', 800)
+      await this.decodeAll(lnurl)
     })
   }
 
@@ -565,7 +672,7 @@ class LNURL extends React.Component {
     this.setState({
       scanQR: false,
     })
-    this.decodeLNURL(e.data)
+    this.decodeAll(e.data)
   }
 
   scanQR = () => {
@@ -607,7 +714,7 @@ class LNURL extends React.Component {
   }
 }
 /**
- * @param {typeof import('../../reducers/index').default} state
+ * @param {{history:import('../../reducers/HistoryReducer').State}} state
  */
 const mapStateToProps = ({ history }) => ({ history })
 

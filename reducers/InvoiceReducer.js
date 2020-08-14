@@ -10,6 +10,7 @@ import { ACTIONS } from '../app/actions/InvoiceActions'
  * @prop {string} btcAddress
  * @prop {string} unitSelected
  * @prop {boolean=} liquidityCheck
+ * @prop {string=} decodeError
  */
 
 // TO DO: typings for data
@@ -138,6 +139,13 @@ const invoice = (state = INITIAL_STATE, action) => {
         recipientAddress: data.destination,
         paymentRequest: data.payment_request,
         description: data.description,
+      }
+    }
+    case ACTIONS.INVOICE_DECODE_ERROR:{
+      const {data} = action
+      return {
+        ...state,
+        decodeError:data
       }
     }
     case ACTIONS.RESET_INVOICE: {
