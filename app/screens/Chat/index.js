@@ -15,9 +15,9 @@ import * as Wallet from '../../services/wallet'
 import * as Cache from '../../services/cache'
 import * as CSS from '../../res/css'
 const { Colors } = CSS
-import { WALLET_OVERVIEW } from '../WalletOverview'
+import { SEND_SCREEN } from '../Send'
 /**
- * @typedef {import('../WalletOverview').Params} WalletOverviewParams
+ * @typedef {import('../Send').Params} SendScreenParams
  */
 
 import ChatView from './View'
@@ -668,15 +668,20 @@ export default class Chat extends React.Component {
 
     const { recipientPublicKey } = theChat
 
-    /** @type {WalletOverviewParams} */
-    const params = {
-      rawInvoice,
-      recipientAvatar: null,
-      recipientDisplayName: this.getRecipientDisplayName(),
-      recipientPublicKey,
-    }
+    const dName = this.getRecipientDisplayName()
 
-    this.props.navigation.navigate(WALLET_OVERVIEW, params)
+    /** @type {SendScreenParams} */
+    const params = {
+      isRedirect: true,
+      data: {
+        type: 'ln',
+        request: rawInvoice,
+        recipientAvatar: undefined,
+        recipientDisplayName: dName ? dName : undefined,
+        recipientPublicKey,
+      },
+    }
+    this.props.navigation.navigate(SEND_SCREEN, params)
   }
 
   /**
