@@ -6,6 +6,7 @@ import Http from 'axios'
 import Logger from 'react-native-file-log'
 import { isEqual } from 'lodash'
 import { Constants, Schema } from 'shock-common'
+import { getMoreFeed } from 'shock-common/src/store/actions/feed'
 
 import * as Cache from '../cache'
 import { SET_LAST_SEEN_APP_INTERVAL } from '../../services/utils'
@@ -773,6 +774,9 @@ export const setupEvents = async theSocket => {
   store.dispatch(Actions.RequestActions.subscribeReceivedRequests())
   // @ts-ignore
   store.dispatch(Actions.RequestActions.subscribeSentRequests())
+
+  // @ts-ignore
+  store.dispatch(getMoreFeed())
 
   const ad = await Cache.getStoredAuthData()
 
