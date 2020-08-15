@@ -47,9 +47,15 @@ export const SEND_SCREEN = 'SEND_SCREEN'
  * @typedef {import('../../services/validators').ExtractedKeysend} ExtractedKeysend
  */
 /**
+ * @typedef {object} FromChat
+ * @prop {string=} recipientAvatar
+ * @prop {string=} recipientDisplayName
+ * @prop {string=} recipientPublicKey
+ */
+/**
  * @typedef {object} Params
  * @prop {boolean|undefined} isRedirect
- * @prop {ExtractedBTCAddress|ExtractedLNInvoice|ExtractedKeysend} data
+ * @prop {ExtractedBTCAddress|(ExtractedLNInvoice & FromChat)|ExtractedKeysend} data
  */
 
 /**
@@ -88,12 +94,15 @@ export const SEND_SCREEN = 'SEND_SCREEN'
  * @prop {boolean} sendAll
  * @prop {Error|null} error
  * @prop {boolean} isDecoding
+ * @prop {string=} paymentAvatar
+ * @prop {string=} paymentName
  */
 
 /**
  * @extends Component<Props, State, never>
  */
 class SendScreen extends Component {
+  /**@type State */
   state = {
     description: '',
     unitSelected: 'sats',
@@ -139,6 +148,12 @@ class SendScreen extends Component {
         case 'ln': {
           this.startDecoding()
           decodePaymentRequest(data.request)
+          if (data.recipientDisplayName) {
+            this.setState({
+              paymentName: data.recipientDisplayName,
+              paymentAvatar: data.recipientAvatar,
+            })
+          }
           break
         }
       }
@@ -339,17 +354,21 @@ class SendScreen extends Component {
     this.setState({
       contactsSearch: '',
       isDecoding: false,
+      paymentName: undefined,
+      paymentAvatar: undefined,
     })
   }
 
   renderContactsSearch = () => {
     const { chat, invoice } = this.props
-    const { contactsSearch } = this.state
+    const { contactsSearch, paymentName, paymentAvatar } = this.state
 
     if (invoice.paymentRequest) {
+      const showName = paymentName ? paymentName : invoice.paymentRequest
       return (
         <Suggestion
-          name={invoice.paymentRequest}
+          name={showName}
+          avatar={paymentAvatar}
           onPress={this.resetSearchState}
           type="invoice"
           style={styles.suggestion}
