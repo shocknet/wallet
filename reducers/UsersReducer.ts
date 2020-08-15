@@ -5,7 +5,7 @@ import { Reducer } from 'redux'
 
 import { Action } from '../app/actions'
 
-type State = Record<string, Schema.User | undefined> & {
+type State = Record<string, Schema.User> & {
   // TODO get this out of here
   myPublicKey: string
 }
