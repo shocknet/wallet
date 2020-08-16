@@ -6,59 +6,92 @@ import {
   StyleSheet,
   FlatList,
   Text,
+  View,
 } from 'react-native'
 import { connect } from 'react-redux'
 import { NavigationScreenProp, NavigationScreenOptions } from 'react-navigation'
 import _ from 'lodash'
 import * as Common from 'shock-common'
 
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'
+
 import * as Reducers from '../../../reducers'
 import Post from '../../components/Post'
 import * as Routes from '../../routes'
 import * as CSS from '../../res/css'
-import { thunkGetFeedPage } from '../../thunks/thunkFeed'
 
-export const FEED = 'FEED'
-
-type Posts = Common.Schema.Post[]
 type Navigation = NavigationScreenProp<{}, Routes.UserParams>
 type Item = Common.Schema.Post
 
-interface ConnectedProps {
-  posts: Posts
-  count: number
-  totalPages: number
-  loadingNextPage: boolean
-  lastPageFetched: number
+interface StateProps {
+  posts: Common.Schema.Post[]
 }
 
-interface Props {
-  posts: Posts
-  count: number
-  totalPages: number
-  loadingNextPage: boolean
-  lastPageFetched: number
-  getFeedPage: (pageNumber: number) => void
+interface DispatchProps {
+  requestBackfeed: () => void
+  requestMoreFeed: () => void
+  onViewportChanged: (newViewport: string[]) => void
+}
+
+interface OwnProps {
   navigation: Navigation
 }
 
-class Feed extends React.Component<Props> {
+interface State {
+  awaitingBackfeed: boolean
+  awaitingMoreFeed: boolean
+}
+
+class Feed extends React.Component<
+  StateProps & DispatchProps & OwnProps,
+  State
+> {
   static navigationOptions: NavigationScreenOptions = {
     header: null,
+    tabBarIcon: ({ focused }) => {
+      return (
+        <FontAwesome5
+          color={
+            focused ? CSS.Colors.BLUE_MEDIUM_DARK : CSS.Colors.GRAY_MEDIUM_LIGHT
+          }
+          name="bolt"
+          // reverseColor={'#CED0CE'}
+          size={32}
+        />
+      )
+    },
   }
 
-  componentDidMount() {
-    this.props.getFeedPage(0)
+  state: State = {
+    awaitingBackfeed: false,
+    awaitingMoreFeed: false,
   }
 
   onEndReached = () => {
-    if (Math.abs(this.props.lastPageFetched) >= this.props.totalPages - 1)
-      return
-    this.props.getFeedPage(this.props.lastPageFetched - 1)
+    console.warn(`onEndReached`)
+    if (!this.state.awaitingMoreFeed) {
+      this.setState(
+        {
+          awaitingMoreFeed: true,
+        },
+        () => {
+          this.props.requestMoreFeed()
+        },
+      )
+    }
   }
 
   onRefresh = () => {
-    this.props.getFeedPage(0)
+    if (!this.state.awaitingBackfeed) {
+      this.setState(
+        {
+          awaitingBackfeed: true,
+        },
+        () => {
+          this.props.requestBackfeed()
+        },
+      )
+    }
   }
 
   renderItem = ({ item }: ListRenderItemInfo<Item>) => {
@@ -93,7 +126,7 @@ class Feed extends React.Component<Props> {
     )
   }
 
-  keyExtractor = (item: Item) => (item as Common.Schema.Post).id
+  keyExtractor = (item: Item) => item.id
 
   render() {
     return (
@@ -103,15 +136,17 @@ class Feed extends React.Component<Props> {
           data={this.props.posts}
           keyExtractor={this.keyExtractor}
           ListEmptyComponent={
-            <Text style={styles.emptyMessageText}>
-              Follow people to see their posts
-            </Text>
+            <View style={[CSS.styles.flex, CSS.styles.deadCenter]}>
+              <Text style={styles.emptyMessageText}>
+                Follow people to see their posts
+              </Text>
+            </View>
           }
           onEndReached={this.onEndReached}
           onEndReachedThreshold={0.5}
           refreshControl={
             <RefreshControl
-              refreshing={this.props.loadingNextPage}
+              refreshing={this.state.awaitingBackfeed}
               onRefresh={this.onRefresh}
             />
           }
@@ -121,19 +156,24 @@ class Feed extends React.Component<Props> {
   }
 }
 
-const mapStateToProps = (state: Reducers.State): ConnectedProps => {
-  const postsArr = (_.values(state.feedWall.posts) as unknown) as Posts
+const mapStateToProps = (state: Reducers.State): StateProps => {
+  const postsIDs = _.flattenDeep(state.feed.currentFeed)
+  const noRepeats = _.uniq(postsIDs)
+
+  const posts = Common.Schema.denormalizePosts(noRepeats, state)
+
   return {
-    count: state.feedWall.count,
-    totalPages: state.feedWall.totalPages,
-    posts: postsArr,
-    loadingNextPage: state.feedWall.loadingNextPage,
-    lastPageFetched: state.feedWall.lastPageFetched,
+    posts,
   }
 }
 
-const mapDispatchToProps = {
-  getFeedPage: thunkGetFeedPage,
+const mapDispatchToProps: Record<
+  keyof DispatchProps,
+  (...args: any[]) => Common.Store.Actions.FeedAction
+> = {
+  onViewportChanged: Common.Store.Actions.viewportChanged,
+  requestBackfeed: Common.Store.Actions.getMoreBackfeed,
+  requestMoreFeed: Common.Store.Actions.getMoreFeed,
 }
 
 const ConnectedFeed = connect(
@@ -153,7 +193,5 @@ const styles = StyleSheet.create({
     color: CSS.Colors.TEXT_GRAY,
     fontFamily: 'Montserrat-700',
     fontSize: 16,
-    textAlign: 'center',
-    margin: 10,
   },
 })
