@@ -7,17 +7,26 @@ import * as FeedWall from './FeedAction'
 import * as SingleFeed from './singleFeed'
 import * as Me from './me'
 
+import * as Common from 'shock-common'
+
 export type Action =
   | UsersActions.ReceivedUsersDataAction
   | ChatActions.ReceivedChatsAction
   | RequestActions.ReceivedRequestsAction
   | RequestActions.SentRequestsAction
   | Follows.FollowsAction
-  | FeedWall.BeganLoadFeedAction
-  | FeedWall.FinishedLoadFeedAction
-  | FeedWall.LoadFeedErrorAction
-  | Feed.FeedActions
   | Me.MeAction
+  | Common.Store.Actions.FeedAction
+  | Common.Store.Actions.PostsAction
+  | Feed.FeedActions
+  | FeedWall.FeedActions
+
+export const receivedBackfeed = Common.Store.Actions.receivedBackfeed
+export const receivedFeed = Common.Store.Actions.receivedFeed
+export const sawPost = Common.Store.Actions.sawPost
+export const getMoreBackfeed = Common.Store.Actions.getMoreBackfeed
+export const getMoreFeed = Common.Store.Actions.getMoreFeed
+export const viewportChanged = Common.Store.Actions.viewportChanged
 
 export {
   ChatActions,
