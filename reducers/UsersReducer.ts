@@ -129,6 +129,22 @@ const reducer: Reducer<State, Action> = (
         Object.assign(draft[publicKey], action.data)
       })
 
+    case 'receivedBackfeed':
+    case 'receivedFeed':
+      return produce(state, draft => {
+        const { posts } = action.data
+        const authors = posts.map(p => p.author)
+        const users = uniqBy(authors, a => a.publicKey)
+
+        users.forEach(u => {
+          draft[u.publicKey] = {
+            ...createEmptyUser(u.publicKey),
+            ...(draft[u.publicKey] || {}),
+            ...u,
+          }
+        })
+      })
+
     default:
       return state
   }
