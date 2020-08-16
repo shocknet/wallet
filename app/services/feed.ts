@@ -1,5 +1,6 @@
 import Http, { AxiosResponse } from 'axios'
-import { feedPage as commonFeedPage } from 'shock-common/src/store/api'
+import { Store } from 'shock-common'
+const { feedPage: commonFeedPage } = Store
 
 export const getFeedPage = async (
   pageNumber: number,

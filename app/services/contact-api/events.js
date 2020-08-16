@@ -5,8 +5,10 @@ import debounce from 'lodash/debounce'
 import Http from 'axios'
 import Logger from 'react-native-file-log'
 import { isEqual } from 'lodash'
-import { Constants, Schema } from 'shock-common'
-import { getMoreFeed } from 'shock-common/src/store/actions/feed'
+import { Constants, Schema, Store as CommonStore } from 'shock-common'
+const {
+  Actions: { getMoreFeed },
+} = CommonStore
 
 import * as Cache from '../cache'
 import { SET_LAST_SEEN_APP_INTERVAL } from '../../services/utils'
