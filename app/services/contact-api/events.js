@@ -682,6 +682,8 @@ export const onSeedBackup = listener => {
   }
 }
 
+let feedRequested = false
+
 /**
  * @param {import('./socket').SimpleSocket} theSocket
  */
@@ -777,8 +779,12 @@ export const setupEvents = async theSocket => {
   // @ts-ignore
   store.dispatch(Actions.RequestActions.subscribeSentRequests())
 
-  // @ts-ignore
-  store.dispatch(getMoreFeed())
+  // Ensure only one request is ever done, independently of the socket
+  // reconnecting (which calls setupEvents() on every reconnection)
+  if (!feedRequested) {
+    store.dispatch(getMoreFeed())
+    feedRequested = true
+  }
 
   const ad = await Cache.getStoredAuthData()
 
