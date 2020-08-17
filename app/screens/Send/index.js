@@ -24,6 +24,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons'
 import { connect } from 'react-redux'
 import Big from 'big.js'
 import wavesBG from '../../assets/images/shock-bg.png'
+import wavesBGDark from '../../assets/images/shock-bg-dark.png'
 import Nav from '../../components/Nav'
 import InputGroup from '../../components/InputGroup'
 import ContactsSearch from '../../components/Search/ContactsSearch'
@@ -117,6 +118,8 @@ class SendScreen extends Component {
   }
 
   amountOptionList = React.createRef()
+
+  theme = 'dark'
 
   /**
    *
@@ -383,7 +386,7 @@ class SendScreen extends Component {
           onError={this.onChange('error')}
           startDecoding={this.startDecoding}
           enabledFeatures={['btc', 'invoice', 'contacts', 'keysend']}
-          placeholder="Enter invoice or address..."
+          placeholder="Insert Address / Invoice"
           value={contactsSearch}
           style={styles.contactsSearch}
         />
@@ -566,19 +569,29 @@ class SendScreen extends Component {
 
     return (
       <ImageBackground
-        source={wavesBG}
+        source={this.theme === 'dark' ? wavesBGDark : wavesBG}
         resizeMode="cover"
-        style={styles.container}
+        style={this.theme === 'dark' ? styles.containerDark : styles.container}
       >
         <Nav backButton title="Send" navigation={navigation} />
         <View
-          style={[
-            styles.sendContainer,
-            {
-              width: width - 50,
-              maxHeight: height - 200,
-            },
-          ]}
+          style={
+            this.theme === 'dark'
+              ? [
+                  styles.sendContainerDark,
+                  {
+                    width: width - 50,
+                    maxHeight: height - 200,
+                  },
+                ]
+              : [
+                  styles.sendContainer,
+                  {
+                    width: width - 50,
+                    maxHeight: height - 200,
+                  },
+                ]
+          }
         >
           <ScrollView>
             <View style={styles.scrollInnerContent}>
@@ -593,12 +606,24 @@ class SendScreen extends Component {
                 </View>
               ) : null}
               <TouchableOpacity
-                style={styles.scanBtn}
+                style={
+                  this.theme === 'dark' ? styles.scanBtnDark : styles.scanBtn
+                }
                 onPress={this.toggleQRScreen}
               >
-                <Text style={styles.scanBtnText}>SCAN QR</Text>
-                <Ionicons name="md-qr-scanner" color="gray" size={24} />
+                {this.theme === 'dark' ? (
+                  <>
+                    <Ionicons name="md-qr-scanner" color="white" size={24} />
+                    <Text style={styles.scanBtnTextDark}>Scan QR</Text>
+                  </>
+                ) : (
+                  <>
+                    <Text style={styles.scanBtnText}>SCAN QR</Text>
+                    <Ionicons name="md-qr-scanner" color="gray" size={24} />
+                  </>
+                )}
               </TouchableOpacity>
+
               {this.renderContactsSearch()}
               {invoice.paymentRequest ? (
                 <InputGroup
@@ -710,32 +735,57 @@ class SendScreen extends Component {
           </ScrollView>
         </View>
         <View style={styles.sendSwipeContainer}>
-          {this.isFilled() ? (
-            <SwipeVerify
-              width="100%"
-              buttonSize={60}
-              height={50}
-              style={styles.swipeBtn}
-              buttonColor={CSS.Colors.BACKGROUND_WHITE}
-              borderColor={CSS.Colors.TRANSPARENT}
-              backgroundColor={CSS.Colors.BACKGROUND_WHITE}
-              textColor="#37474F"
-              borderRadius={100}
-              swipeColor={CSS.Colors.GOLD}
-              icon={
-                <Image
-                  source={BitcoinAccepted}
-                  resizeMethod="resize"
-                  resizeMode="contain"
-                  style={styles.btcIcon}
-                />
-              }
-              disabled={!this.isFilled()}
-              onVerified={this.onSwipe}
-            >
-              <Text style={styles.swipeBtnText}>SLIDE TO SEND</Text>
-            </SwipeVerify>
-          ) : null}
+          {/*{this.isFilled() ? (*/}
+          {/*  <SwipeVerify*/}
+          {/*    width="100%"*/}
+          {/*    buttonSize={60}*/}
+          {/*    height={50}*/}
+          {/*    style={styles.swipeBtn}*/}
+          {/*    buttonColor={CSS.Colors.BACKGROUND_WHITE}*/}
+          {/*    borderColor={CSS.Colors.TRANSPARENT}*/}
+          {/*    backgroundColor={CSS.Colors.BACKGROUND_WHITE}*/}
+          {/*    textColor="#37474F"*/}
+          {/*    borderRadius={100}*/}
+          {/*    swipeColor={CSS.Colors.GOLD}*/}
+          {/*    icon={*/}
+          {/*      <Image*/}
+          {/*        source={BitcoinAccepted}*/}
+          {/*        resizeMethod="resize"*/}
+          {/*        resizeMode="contain"*/}
+          {/*        style={styles.btcIcon}*/}
+          {/*      />*/}
+          {/*    }*/}
+          {/*    disabled={!this.isFilled()}*/}
+          {/*    onVerified={this.onSwipe}*/}
+          {/*  >*/}
+          {/*    <Text style={styles.swipeBtnText}>SLIDE TO SEND</Text>*/}
+          {/*  </SwipeVerify>*/}
+          {/*) : null}*/}
+
+          <SwipeVerify
+            width="100%"
+            buttonSize={60}
+            height={50}
+            style={styles.swipeBtn}
+            buttonColor={CSS.Colors.BACKGROUND_WHITE}
+            borderColor={CSS.Colors.TRANSPARENT}
+            backgroundColor={CSS.Colors.BACKGROUND_WHITE}
+            textColor="#37474F"
+            borderRadius={100}
+            swipeColor={CSS.Colors.GOLD}
+            icon={
+              <Image
+                source={BitcoinAccepted}
+                resizeMethod="resize"
+                resizeMode="contain"
+                style={styles.btcIcon}
+              />
+            }
+            disabled={!this.isFilled()}
+            onVerified={this.onSwipe}
+          >
+            <Text style={styles.swipeBtnText}>SLIDE TO SEND</Text>
+          </SwipeVerify>
         </View>
       </ImageBackground>
     )
@@ -768,10 +818,22 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     alignItems: 'center',
   },
+  containerDark: {
+    flex: 1,
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+  },
   contactsSearch: { marginBottom: 20 },
   sendContainer: {
     marginTop: 5,
     backgroundColor: CSS.Colors.BACKGROUND_WHITE,
+    height: 'auto',
+    borderRadius: 40,
+    overflow: 'hidden',
+  },
+  sendContainerDark: {
+    marginTop: 5,
+    backgroundColor: CSS.Colors.TRANSPARENT,
     height: 'auto',
     borderRadius: 40,
     overflow: 'hidden',
@@ -831,8 +893,27 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     elevation: 10,
   },
+  scanBtnDark: {
+    width: '100%',
+    flexDirection: 'row',
+    backgroundColor: '#001220',
+    paddingVertical: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#EAEBEB',
+    marginBottom: 30,
+    elevation: 8,
+  },
   scanBtnText: {
     color: CSS.Colors.GRAY,
+    fontSize: 14,
+    fontFamily: 'Montserrat-700',
+    marginLeft: 10,
+  },
+  scanBtnTextDark: {
+    color: CSS.Colors.TEXT_WHITE,
     fontSize: 14,
     fontFamily: 'Montserrat-700',
     marginRight: 10,

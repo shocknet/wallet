@@ -80,6 +80,7 @@ class UnifiedTransactions extends React.Component {
   /**
    * @type {import('react-native').ListRenderItem<IUnifiedTransaction>}
    */
+
   renderItem = ({ item }) => {
     const { USDRate } = this.props.wallet
     return ((
@@ -97,7 +98,7 @@ class UnifiedTransactions extends React.Component {
     if (unifiedTrx === null) {
       return (
         <>
-          <Text style={styles.listTitle}>Recent Transactions</Text>
+          <Text style={styles.listTitleDark}>Recent Activity</Text>
           <ActivityIndicator size="large" color={CSS.Colors.ORANGE} />
         </>
       )
@@ -106,7 +107,7 @@ class UnifiedTransactions extends React.Component {
     return (
       <>
         {unifiedTrx ? (
-          <Text style={styles.listTitle}>Recent Transactions</Text>
+          <Text style={styles.listTitleDark}>Recent Activity</Text>
         ) : null}
         <FlatList
           data={unifiedTrx}
@@ -151,10 +152,18 @@ const styles = StyleSheet.create({
     height: 0,
     width: '100%',
   },
-  listTitle: {
-    textAlign: 'right',
+  // listTitle: {
+  //   textAlign: 'right',
+  //   fontFamily: 'Montserrat-600',
+  //   width: '100%',
+  //   marginBottom: 20,
+  // },
+  listTitleDark: {
+    textAlign: 'left',
     fontFamily: 'Montserrat-600',
     width: '100%',
     marginBottom: 20,
+    fontSize: 13,
+    color: CSS.Colors.TEXT_WHITE,
   },
 })

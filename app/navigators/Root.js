@@ -56,7 +56,8 @@ const BottomNav = createBottomTabNavigator(
       showLabel: false,
       style: {
         borderTopWidth: 0,
-        backgroundColor: CSS.Colors.BACKGROUND_WHITE,
+        // backgroundColor: CSS.Colors.BACKGROUND_WHITE,
+        backgroundColor: CSS.Colors.BACKGROUND_BLACK,
         height: CSS.BOTTOM_BAR_HEIGHT,
         shadowColor: '#000',
         shadowOffset: {
@@ -158,6 +159,11 @@ const MainDrawer = createDrawerNavigator(drawerScreens, {
   initialRouteName: WALLET_NAV,
   drawerPosition: 'right',
   contentComponent: CustomDrawer,
+  contentOptions: {
+    labelStyle: {
+      textAlign: 'right',
+    },
+  },
 })
 
 MainDrawer.navigationOptions = {

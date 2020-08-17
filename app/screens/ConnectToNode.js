@@ -79,6 +79,8 @@ class ConnectToNode extends React.Component {
     header: null,
   }
 
+  theme = 'dark'
+
   /** @type {State} */
   state = DEFAULT_STATE
 
@@ -276,7 +278,6 @@ class ConnectToNode extends React.Component {
           onChangeText={this.onChangeNodeURL}
           onPressQRBtn={this.toggleQRScreen}
           placeholder="Enter your node IP"
-          // placeholderTextColor="grey"
           value={nodeURL}
         />
 
