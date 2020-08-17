@@ -3,6 +3,8 @@ import { DrawerItems } from 'react-navigation'
 import { View, StyleSheet } from 'react-native'
 import AntDesign from 'react-native-vector-icons/AntDesign'
 import { LNURL_SCREEN } from '../screens/LNURL'
+// import ShockAvatar from './ShockAvatar'
+import Pad from './Pad'
 
 /**
  * @typedef {import('react-navigation').DrawerItemsProps} DrawerItemsProps
@@ -21,8 +23,10 @@ export default class CustomDrawer extends Component {
 
   render() {
     return (
-      <View style={styles.flexBetween}>
-        <DrawerItems {...this.props} />
+      // <View style={styles.flexBetween}>
+      <View style={styles.flexBetweenDark}>
+        <Pad amount={50} />
+        <DrawerItems {...this.props} labelStyle={styles.drawItemLabelDark} />
         <View style={styles.extraBit}>
           <AntDesign
             name="qrcode"
@@ -43,11 +47,22 @@ export default class CustomDrawer extends Component {
 }
 
 const styles = StyleSheet.create({
-  flexBetween: {
+  // flexBetween: {
+  //   display: 'flex',
+  //   flexDirection: 'column',
+  //   justifyContent: 'space-between',
+  //   height: '100%',
+  // },
+  drawItemLabelDark: {
+    color: '#ffffff',
+    textAlign: 'right',
+  },
+  flexBetweenDark: {
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'space-between',
     height: '100%',
+    backgroundColor: '#16191c',
   },
   extraBit: {
     margin: 3,

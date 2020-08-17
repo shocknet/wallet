@@ -55,7 +55,7 @@ export default class TabBarIcon extends React.Component {
           color={
             focused ? CSS.Colors.BLUE_MEDIUM_DARK : CSS.Colors.GRAY_MEDIUM_LIGHT
           }
-          name="comments"
+          name="envelope"
           // This one has to be larger than the others to match the design
           size={36}
         />

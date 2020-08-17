@@ -46,20 +46,18 @@ const Nav = ({ title, style, backButton, showAvatar, navigation }) => {
           style={typeof showAvatar === 'undefined' ? navStyles.hidden : null}
         >
           <ShockAvatar
-            height={48}
+            height={40}
             image={showAvatar || null}
             lastSeenApp={null}
           />
         </View>
       )}
-      <Text style={navStyles.navTitle}>
-        {title ? title.toUpperCase() : 'WALLET'}
-      </Text>
+      <Text style={navStyles.navTitle}>{title ? title.toUpperCase() : ''}</Text>
       {!backButton ? (
         <Ionicons
           name="md-menu"
           color={Colors.TEXT_WHITE}
-          size={40}
+          size={30}
           style={navStyles.navMenu}
           onPress={toggleDrawer}
         />

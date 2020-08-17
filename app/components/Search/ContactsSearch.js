@@ -17,6 +17,7 @@ import { selectContact } from '../../actions/ChatActions'
 import { decodePaymentRequest } from '../../actions/InvoiceActions'
 
 import * as CSS from '../../res/css'
+// import InputGroup from '../InputGroup'
 
 /**
  * @typedef {import('../../actions/ChatActions').SelectedContact} ContactTypes
@@ -61,6 +62,8 @@ class ContactsSearch extends PureComponent {
   //     focused,
   //   })
   // }
+
+  theme = 'dark'
 
   defaultFeatures = ['btc', 'invoice', 'contacts']
 
@@ -235,19 +238,28 @@ class ContactsSearch extends PureComponent {
       >
         <View style={styles.inputGroup}>
           <View
-            style={[
-              styles.inputContainer,
-              inputStyle,
-              disabled ? styles.disabledInput : null,
-            ]}
+            style={
+              this.theme === 'dark'
+                ? [
+                    styles.inputContainerDark,
+                    inputStyle,
+                    disabled ? styles.disabledInput : null,
+                  ]
+                : [
+                    styles.inputContainer,
+                    inputStyle,
+                    disabled ? styles.disabledInput : null,
+                  ]
+            }
           >
             <Ionicons name="md-search" color="#CBC5C5" size={16} />
             <TextInput
-              style={styles.input}
+              style={this.theme === 'dark' ? styles.inputDark : styles.input}
               value={value}
               editable={!disabled}
               onChangeText={onChange}
               placeholder={placeholder}
+              placeholderTextColor={this.theme === 'dark' ? '#BCBCBC' : 'grey'}
               // onFocus={this.setFocus(true)}
               // onBlur={value.length === 0 ? this.setFocus(false) : undefined}
             />
@@ -302,12 +314,30 @@ const styles = StyleSheet.create({
     backgroundColor: CSS.Colors.BACKGROUND_LIGHTEST_WHITE,
     overflow: 'hidden',
   },
+  inputContainerDark: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    width: '100%',
+    paddingHorizontal: 13,
+    height: 45,
+    marginBottom: 10,
+    backgroundColor: '#212937',
+    borderWidth: 1,
+    borderColor: '#4285B9',
+    overflow: 'hidden',
+  },
   disabledInput: {
     elevation: 0,
   },
   input: {
     flex: 1,
     marginLeft: 5,
+  },
+  inputDark: {
+    flex: 1,
+    marginLeft: 5,
+    color: '#BCBCBC',
+    fontFamily: 'Montserrat-600',
   },
   inputSuggestions: {
     backgroundColor: CSS.Colors.BACKGROUND_LIGHTEST_WHITE,

@@ -25,6 +25,9 @@ import * as Navigation from '../../services/navigation'
 import { ConnectionContext } from '../../ctx/Connection'
 import Nav from '../../components/Nav'
 import wavesBG from '../../assets/images/waves-bg.png'
+import wavesBGDark from '../../assets/images/waves-bg-dark.png'
+// import WalletIcon from '../../assets/images/navbar-icons/wallet.svg'
+
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}, {}>} Navigation
  */
@@ -141,6 +144,8 @@ class WalletOverview extends Component {
   didFocus = { remove() {} }
 
   subs = [() => {}]
+
+  theme = 'dark'
 
   componentDidMount = async () => {
     const {
@@ -348,7 +353,13 @@ class WalletOverview extends Component {
     }
 
     return (
-      <View style={styles.balanceContainer}>
+      <View
+        style={
+          this.theme === 'dark'
+            ? styles.balanceContainerDark
+            : styles.balanceContainer
+        }
+      >
         <Text
           style={[
             styles.balanceValueContainer,
@@ -358,10 +369,14 @@ class WalletOverview extends Component {
           <Text style={styles.balanceValue}>
             {totalBalance.replace(/(\d)(?=(\d{3})+$)/g, '$1,')}
           </Text>{' '}
-          <Text style={styles.balanceCurrency}>sats</Text>
+          <Text style={styles.balanceCurrency}>Sats</Text>
         </Text>
         <Text
-          style={[styles.balanceUSDValue, !isConnected && styles.yellowText]}
+          style={
+            this.theme === 'dark'
+              ? [styles.balanceUSDValueDark, !isConnected && styles.blueText]
+              : [styles.balanceUSDValue, !isConnected && styles.yellowText]
+          }
         >
           {USDRate === null
             ? 'Loading...'
@@ -393,39 +408,75 @@ class WalletOverview extends Component {
           barStyle="light-content"
         />
         <ImageBackground
-          source={wavesBG}
+          source={this.theme === 'dark' ? wavesBGDark : wavesBG}
           resizeMode="cover"
           style={styles.overview}
         >
-          <Nav title="Wallet" showAvatar={avatar} />
+          <Nav title="" showAvatar={avatar} />
           {this.renderBalance()}
-        </ImageBackground>
-        {nodeInfo && nodeInfo.testnet ? (
-          <Text style={styles.networkNotice}>
-            You are using Testnet network
-          </Text>
-        ) : null}
 
-        <View style={styles.actionButtons}>
-          <TouchableHighlight
-            underlayColor="transparent"
-            onPress={this.onPressSend}
-            style={styles.actionButton}
+          {nodeInfo && nodeInfo.testnet ? (
+            <Text style={styles.networkNotice}>
+              You are using Testnet network
+            </Text>
+          ) : null}
+          <View
+            style={
+              this.theme === 'dark'
+                ? styles.actionButtonsDark
+                : styles.actionButtons
+            }
           >
-            <Text style={styles.actionButtonText}>Send</Text>
-          </TouchableHighlight>
-          <TouchableHighlight
-            underlayColor="transparent"
-            onPress={this.onPressRequest}
-            style={[
-              styles.actionButton,
-              { backgroundColor: CSS.Colors.FUN_BLUE },
-            ]}
-          >
-            <Text style={styles.actionButtonText}>Request</Text>
-          </TouchableHighlight>
-        </View>
-        <View style={styles.trxContainer}>
+            <TouchableHighlight
+              underlayColor="transparent"
+              onPress={this.onPressSend}
+              style={
+                this.theme === 'dark'
+                  ? styles.actionButtonDark1
+                  : styles.actionButton
+              }
+            >
+              <Text
+                style={
+                  this.theme === 'dark'
+                    ? styles.actionButtonTextDark1
+                    : styles.actionButtonText
+                }
+              >
+                Send
+              </Text>
+            </TouchableHighlight>
+            <TouchableHighlight
+              underlayColor="transparent"
+              onPress={this.onPressRequest}
+              style={
+                this.theme === 'dark'
+                  ? [styles.actionButtonDark2, { backgroundColor: '#4285B9' }]
+                  : [
+                      styles.actionButton,
+                      { backgroundColor: CSS.Colors.FUN_BLUE },
+                    ]
+              }
+            >
+              <Text
+                style={
+                  this.theme === 'dark'
+                    ? styles.actionButtonTextDark2
+                    : styles.actionButtonText
+                }
+              >
+                Request
+              </Text>
+            </TouchableHighlight>
+          </View>
+        </ImageBackground>
+        <View
+          style={
+            this.theme === 'dark'
+              ? styles.trxContainerDark
+              : styles.trxContainer
+          }
+        >
           <UnifiedTrx unifiedTrx={unifiedTransactions} />
         </View>
       </View>
@@ -477,6 +528,9 @@ const styles = StyleSheet.create({
     marginVertical: 32,
     marginBottom: 57,
   },
+  balanceContainerDark: {
+    marginHorizontal: 25,
+  },
   balanceValueContainer: {
     alignItems: 'flex-end',
     flexDirection: 'row',
@@ -500,6 +554,12 @@ const styles = StyleSheet.create({
     fontFamily: 'Montserrat-600',
     color: CSS.Colors.TEXT_ORANGE,
   },
+  balanceUSDValueDark: {
+    fontSize: 16,
+    letterSpacing: 2,
+    fontFamily: 'Montserrat-600',
+    color: '#2D92E1',
+  },
   container: {
     backgroundColor: CSS.Colors.BACKGROUND_WHITE,
     flex: 1,
@@ -521,6 +581,14 @@ const styles = StyleSheet.create({
     marginTop: 25,
     marginBottom: 25,
   },
+  actionButtonsDark: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    paddingHorizontal: 25,
+    paddingVertical: 33,
+  },
   actionButton: {
     width: '45%',
     height: 40,
@@ -529,9 +597,39 @@ const styles = StyleSheet.create({
     borderRadius: 100,
     backgroundColor: CSS.Colors.ORANGE,
   },
+  actionButtonDark1: {
+    width: '48%',
+    height: 54,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 13,
+    backgroundColor: CSS.Colors.TRANSPARENT,
+    borderColor: '#4285B9',
+    borderWidth: 1,
+  },
+  actionButtonDark2: {
+    width: '48%',
+    height: 54,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 13,
+    backgroundColor: CSS.Colors.TRANSPARENT,
+    borderColor: CSS.Colors.BACKGROUND_WHITE,
+    borderWidth: 1,
+  },
   actionButtonText: {
     color: CSS.Colors.TEXT_WHITE,
     fontFamily: 'Montserrat-700',
+  },
+  actionButtonTextDark1: {
+    color: '#4285B9',
+    fontFamily: 'Montserrat-700',
+    fontSize: 14,
+  },
+  actionButtonTextDark2: {
+    color: '#212937',
+    fontFamily: 'Montserrat-700',
+    fontSize: 14,
   },
   trxContainer: {
     backgroundColor: CSS.Colors.BACKGROUND_WHITE,
@@ -540,7 +638,18 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingHorizontal: 30,
   },
+  trxContainerDark: {
+    backgroundColor: '#292E35',
+    height,
+    flex: 1,
+    width: '100%',
+    paddingHorizontal: 30,
+    color: CSS.Colors.TEXT_WHITE,
+  },
   yellowText: {
     color: CSS.Colors.CAUTION_YELLOW,
+  },
+  blueText: {
+    color: '#2D92E1',
   },
 })
