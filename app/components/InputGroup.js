@@ -33,6 +33,8 @@ import * as CSS from '../res/css'
 class InputGroup extends PureComponent {
   state = {}
 
+  theme = 'dark'
+
   render() {
     const {
       label,
@@ -54,25 +56,57 @@ class InputGroup extends PureComponent {
           disabled ? styles.disabledContainer : null,
         ]}
       >
-        {label ? <Text style={styles.label}>{label}</Text> : null}
-        <View
-          style={[
-            styles.inputContainer,
-            inputStyle,
-            disabled ? styles.disabledInput : null,
-          ]}
-        >
-          {icon ? <Ionicons name={icon} color="#CBC5C5" size={22} /> : null}
-          <TextInput
-            style={[styles.input, multiline ? styles.multilineInput : null]}
-            keyboardType={type}
-            value={value}
-            editable={!disabled}
-            multiline={multiline}
-            placeholder={placeholder}
-            onChangeText={onChange}
-          />
-        </View>
+        {label ? (
+          <Text style={this.theme === 'dark' ? styles.labelDark : styles.label}>
+            {label}
+          </Text>
+        ) : null}
+
+        {this.theme === 'dark' && (
+          <View
+            style={[
+              styles.inputContainerDark,
+              inputStyle,
+              disabled ? styles.disabledInput : null,
+            ]}
+          >
+            {icon ? <Ionicons name={icon} color="#CBC5C5" size={22} /> : null}
+            <TextInput
+              style={[
+                styles.inputDark,
+                multiline ? styles.multilineInput : null,
+              ]}
+              keyboardType={type}
+              value={value}
+              editable={!disabled}
+              multiline={multiline}
+              placeholder={placeholder}
+              onChangeText={onChange}
+              placeholderTextColor="white"
+            />
+          </View>
+        )}
+
+        {this.theme !== 'dark' && (
+          <View
+            style={[
+              styles.inputContainer,
+              inputStyle,
+              disabled ? styles.disabledInput : null,
+            ]}
+          >
+            {icon ? <Ionicons name={icon} color="#CBC5C5" size={22} /> : null}
+            <TextInput
+              style={[styles.input, multiline ? styles.multilineInput : null]}
+              keyboardType={type}
+              value={value}
+              editable={!disabled}
+              multiline={multiline}
+              placeholder={placeholder}
+              onChangeText={onChange}
+            />
+          </View>
+        )}
       </View>
     )
   }
@@ -91,6 +125,12 @@ const styles = StyleSheet.create({
     fontFamily: 'Montserrat-600',
     marginBottom: 11,
   },
+  labelDark: {
+    fontSize: 14,
+    color: CSS.Colors.TEXT_WHITE,
+    fontFamily: 'Montserrat-600',
+    marginBottom: 11,
+  },
   disabledContainer: {
     opacity: 0.7,
   },
@@ -104,6 +144,19 @@ const styles = StyleSheet.create({
     backgroundColor: CSS.Colors.BACKGROUND_LIGHTEST_WHITE,
     elevation: 4,
   },
+  inputContainerDark: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    width: '100%',
+    paddingHorizontal: 13,
+    height: 45,
+    marginBottom: 10,
+    backgroundColor: '#212937',
+    borderWidth: 1,
+    borderColor: '#4285B9',
+    overflow: 'hidden',
+    opacity: 0.7,
+  },
   disabledInput: {
     elevation: 0,
   },
@@ -112,6 +165,13 @@ const styles = StyleSheet.create({
     fontFamily: 'Montserrat-600',
     textAlignVertical: 'center',
     fontSize: 12,
+  },
+  inputDark: {
+    flex: 1,
+    fontFamily: 'Montserrat-600',
+    textAlignVertical: 'center',
+    fontSize: 12,
+    color: CSS.Colors.TEXT_WHITE,
   },
   multilineInput: {
     height: '100%',

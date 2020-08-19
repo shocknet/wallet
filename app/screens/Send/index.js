@@ -508,6 +508,66 @@ class SendScreen extends Component {
     this.toggleQRScreen()
   }
 
+  renderSlideToSendButton = () => {
+    if (this.isFilled()) {
+      if (this.theme === 'dark') {
+        return (
+          <SwipeVerify
+            width="100%"
+            buttonSize={83}
+            height={59}
+            style={styles.swipeBtnDark}
+            buttonColor="#212937"
+            borderColor="#4285B9"
+            backgroundColor={CSS.Colors.TRANSPARENT}
+            textColor={CSS.Colors.TEXT_WHITE}
+            borderRadius={42}
+            swipeColor="#4285B9"
+            icon={
+              <Image
+                source={BitcoinAccepted}
+                resizeMethod="resize"
+                resizeMode="contain"
+                style={styles.btcIconDark}
+              />
+            }
+            disabled={!this.isFilled()}
+            onVerified={this.onSwipe}
+          >
+            <Text style={styles.swipeBtnTextDark}>SLIDE TO SEND</Text>
+          </SwipeVerify>
+        )
+      }
+      return (
+        <SwipeVerify
+          width="100%"
+          buttonSize={60}
+          height={50}
+          style={styles.swipeBtn}
+          buttonColor={CSS.Colors.BACKGROUND_WHITE}
+          borderColor={CSS.Colors.TRANSPARENT}
+          backgroundColor={CSS.Colors.BACKGROUND_WHITE}
+          textColor="#37474F"
+          borderRadius={100}
+          swipeColor={CSS.Colors.GOLD}
+          icon={
+            <Image
+              source={BitcoinAccepted}
+              resizeMethod="resize"
+              resizeMode="contain"
+              style={styles.btcIcon}
+            />
+          }
+          disabled={!this.isFilled()}
+          onVerified={this.onSwipe}
+        >
+          <Text style={styles.swipeBtnText}>SLIDE TO SEND</Text>
+        </SwipeVerify>
+      )
+    }
+    return null
+  }
+
   onSwipe = async () => {
     try {
       const { invoice, chat } = this.props
@@ -624,6 +684,10 @@ class SendScreen extends Component {
                 )}
               </TouchableOpacity>
 
+              {this.theme === 'dark' && (
+                <Text style={styles.label}>Contacts / Recents</Text>
+              )}
+
               {this.renderContactsSearch()}
               {invoice.paymentRequest ? (
                 <InputGroup
@@ -654,14 +718,46 @@ class SendScreen extends Component {
                   ]}
                   disabled={!editable}
                   onChangeText={this.onChange('unitSelected')}
-                  containerStyle={styles.amountSelect}
+                  containerStyle={
+                    this.theme === 'dark'
+                      ? styles.amountSelectDark
+                      : styles.amountSelect
+                  }
                   value={invoice.paymentRequest ? 'sats' : unitSelected}
                   lineWidth={0}
-                  inputContainerStyle={styles.amountSelectInput}
+                  inputContainerStyle={
+                    this.theme === 'dark'
+                      ? styles.amountSelectInputDark
+                      : styles.amountSelectInput
+                  }
                   rippleOpacity={0}
-                  pickerStyle={styles.amountPicker}
-                  dropdownOffset={{ top: 8, left: 0 }}
-                  rippleInsets={{ top: 8, bottom: 0, right: 0, left: 0 }}
+                  pickerStyle={
+                    this.theme === 'dark'
+                      ? styles.amountPickerDark
+                      : styles.amountPicker
+                  }
+                  dropdownOffset={
+                    this.theme === 'dark'
+                      ? { top: 0, left: 0 }
+                      : { top: 8, left: 0 }
+                  }
+                  rippleInsets={
+                    this.theme === 'dark'
+                      ? { top: 0, bottom: 0, right: 0, left: 0 }
+                      : { top: 8, bottom: 0, right: 0, left: 0 }
+                  }
+                  textColor={
+                    this.theme === 'dark' ? '#EBEBEB' : 'rgba(0,0,0, .87)'
+                  }
+                  itemColor={
+                    this.theme === 'dark' ? '#CBCBCB' : 'rgba(0,0,0, .54)'
+                  }
+                  selectedItemColor={
+                    this.theme === 'dark' ? '#EBEBEB' : 'rgba(0,0,0, .87)'
+                  }
+                  baseColor={
+                    this.theme === 'dark' ? '#4285B9' : 'rgba(0,0,0, .38)'
+                  }
                 />
               </View>
               {chat.selectedContact?.type === 'btc' ? (
@@ -680,8 +776,13 @@ class SendScreen extends Component {
                 }
                 multiline
                 onChange={this.onChange('description')}
-                inputStyle={styles.descInput}
+                inputStyle={
+                  this.theme === 'dark'
+                    ? styles.descInputDark
+                    : styles.descInput
+                }
                 disabled={!!invoice.paymentRequest}
+                placeholder="(Optional)"
               />
               {decodingInvoice ? (
                 <View
@@ -734,7 +835,13 @@ class SendScreen extends Component {
             </View>
           </ScrollView>
         </View>
-        <View style={styles.sendSwipeContainer}>
+        <View
+          style={
+            this.theme === 'dark'
+              ? styles.sendSwipeContainerDark
+              : styles.sendSwipeContainer
+          }
+        >
           {/*{this.isFilled() ? (*/}
           {/*  <SwipeVerify*/}
           {/*    width="100%"*/}
@@ -762,30 +869,7 @@ class SendScreen extends Component {
           {/*  </SwipeVerify>*/}
           {/*) : null}*/}
 
-          <SwipeVerify
-            width="100%"
-            buttonSize={60}
-            height={50}
-            style={styles.swipeBtn}
-            buttonColor={CSS.Colors.BACKGROUND_WHITE}
-            borderColor={CSS.Colors.TRANSPARENT}
-            backgroundColor={CSS.Colors.BACKGROUND_WHITE}
-            textColor="#37474F"
-            borderRadius={100}
-            swipeColor={CSS.Colors.GOLD}
-            icon={
-              <Image
-                source={BitcoinAccepted}
-                resizeMethod="resize"
-                resizeMode="contain"
-                style={styles.btcIcon}
-              />
-            }
-            disabled={!this.isFilled()}
-            onVerified={this.onSwipe}
-          >
-            <Text style={styles.swipeBtnText}>SLIDE TO SEND</Text>
-          </SwipeVerify>
+          {this.renderSlideToSendButton()}
         </View>
       </ImageBackground>
     )
@@ -905,6 +989,12 @@ const styles = StyleSheet.create({
     borderColor: '#EAEBEB',
     marginBottom: 30,
     elevation: 8,
+    shadowColor: '#FFFFFF29',
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowRadius: 6,
   },
   scanBtnText: {
     color: CSS.Colors.GRAY,
@@ -916,7 +1006,7 @@ const styles = StyleSheet.create({
     color: CSS.Colors.TEXT_WHITE,
     fontSize: 14,
     fontFamily: 'Montserrat-700',
-    marginRight: 10,
+    marginLeft: 10,
   },
   amountContainer: {
     width: '100%',
@@ -934,6 +1024,11 @@ const styles = StyleSheet.create({
     marginBottom: 0,
     height: 45,
   },
+  amountSelectDark: {
+    width: '35%',
+    marginTop: 0,
+    height: 45,
+  },
   amountSelectInput: {
     borderBottomColor: CSS.Colors.TRANSPARENT,
     elevation: 4,
@@ -943,7 +1038,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: CSS.Colors.BACKGROUND_WHITE,
   },
+  amountSelectInputDark: {
+    paddingHorizontal: 15,
+    height: 45,
+    alignItems: 'center',
+    backgroundColor: CSS.Colors.TRANSPARENT,
+    fontFamily: 'Montserrat-700',
+    color: '#EBEBEB',
+    fontSize: 20,
+  },
   amountPicker: { borderRadius: 15 },
+  amountPickerDark: {
+    borderRadius: 0,
+    backgroundColor: '#212937',
+  },
   toggleContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -958,20 +1066,48 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: 10,
   },
+  sendSwipeContainerDark: {
+    width: '100%',
+
+    paddingHorizontal: 35,
+    justifyContent: 'center',
+    marginTop: 10,
+  },
   swipeBtn: {
+    marginBottom: 10,
+  },
+  swipeBtnDark: {
     marginBottom: 10,
   },
   btcIcon: {
     height: 30,
+  },
+  btcIconDark: {
+    height: 59,
   },
   swipeBtnText: {
     fontSize: 12,
     fontFamily: 'Montserrat-700',
     color: CSS.Colors.TEXT_GRAY,
   },
+  swipeBtnTextDark: {
+    fontSize: 12,
+    fontFamily: 'Montserrat-700',
+    color: CSS.Colors.TEXT_WHITE,
+  },
   descInput: {
     height: 90,
     borderRadius: 15,
     textAlignVertical: 'top',
+  },
+  descInputDark: {
+    height: 90,
+    textAlignVertical: 'top',
+  },
+  label: {
+    fontSize: 14,
+    color: CSS.Colors.TEXT_WHITE,
+    fontFamily: 'Montserrat-600',
+    marginBottom: 11,
   },
 })

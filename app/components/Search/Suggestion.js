@@ -17,6 +17,7 @@ import * as CSS from '../../res/css'
  * @prop {('contact'|'btc'|'invoice'|'keysend')=} type
  * @prop {(import('react-native').RegisteredStyle<object>|object)=} style
  * @prop {((event: import('react-native').GestureResponderEvent) => void)=} onPress
+ * @prop {(string)=} theme
  */
 
 /**
@@ -28,12 +29,17 @@ const Suggestion = ({
   style,
   onPress,
   type = 'contact',
+  theme = 'dark',
 }) => {
   const renderAvatar = () => {
     if (avatar) {
       return (
         <ImageBackground
-          style={styles.suggestionAvatar}
+          style={
+            theme === 'dark'
+              ? styles.suggestionAvatarDark
+              : styles.suggestionAvatar
+          }
           //@ts-ignore
           source={avatar}
           resizeMode="cover"
@@ -43,12 +49,22 @@ const Suggestion = ({
 
     if (type === 'btc') {
       return (
-        <View style={styles.suggestionAvatar}>
+        <View
+          style={
+            theme === 'dark'
+              ? styles.suggestionAvatarDark
+              : styles.suggestionAvatar
+          }
+        >
           <Ionicons
             name="logo-bitcoin"
             color="white"
             size={18}
-            style={styles.suggestionIcon}
+            style={
+              theme === 'dark'
+                ? styles.suggestionIconDark
+                : styles.suggestionIcon
+            }
           />
         </View>
       )
@@ -56,37 +72,73 @@ const Suggestion = ({
 
     if (type === 'invoice') {
       return (
-        <View style={styles.suggestionAvatar}>
+        <View
+          style={
+            theme === 'dark'
+              ? styles.suggestionAvatarDark
+              : styles.suggestionIcon
+          }
+        >
           <Ionicons
             name="md-list-box"
             color="white"
             size={18}
-            style={styles.suggestionIcon}
+            style={
+              theme === 'dark'
+                ? styles.suggestionIconDark
+                : styles.suggestionIcon
+            }
           />
         </View>
       )
     }
     if (type === 'keysend') {
       return (
-        <View style={styles.suggestionAvatar}>
+        <View
+          style={
+            theme === 'dark'
+              ? styles.suggestionAvatarDark
+              : styles.suggestionAvatar
+          }
+        >
           <Ionicons
             name="md-list-box"
             color="white"
             size={18}
-            style={styles.suggestionIcon}
+            style={
+              theme === 'dark'
+                ? styles.suggestionIconDark
+                : styles.suggestionIcon
+            }
           />
         </View>
       )
     }
 
-    return <View style={styles.suggestionAvatar} />
+    return (
+      <View
+        style={
+          theme === 'dark'
+            ? styles.suggestionAvatarDark
+            : styles.suggestionAvatar
+        }
+      />
+    )
   }
 
   return (
-    <TouchableOpacity style={[styles.inputSuggestion, style]} onPress={onPress}>
+    <TouchableOpacity
+      style={[
+        theme === 'dark' ? styles.inputSuggestionDark : styles.inputSuggestion,
+        style,
+      ]}
+      onPress={onPress}
+    >
       {renderAvatar()}
       <Text
-        style={styles.suggestionName}
+        style={
+          theme === 'dark' ? styles.suggestionNameDark : styles.suggestionName
+        }
         numberOfLines={1}
         ellipsizeMode="middle"
       >
@@ -105,6 +157,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  inputSuggestionDark: {
+    paddingHorizontal: 13,
+    paddingVertical: 7,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   suggestionAvatar: {
     width: 30,
     height: 30,
@@ -114,10 +172,26 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: 11,
   },
+  suggestionAvatarDark: {
+    width: 30,
+    height: 30,
+    borderRadius: 100,
+    backgroundColor: CSS.Colors.BUTTON_BLUE,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 11,
+  },
   suggestionIcon: { opacity: 0.4 },
+  suggestionIconDark: { opacity: 0.4 },
   suggestionName: {
     fontFamily: 'Montserrat-700',
     color: CSS.Colors.TEXT_GRAY,
+    fontSize: 12,
+    width: '70%',
+  },
+  suggestionNameDark: {
+    fontFamily: 'Montserrat-700',
+    color: CSS.Colors.TEXT_WHITE,
     fontSize: 12,
     width: '70%',
   },
