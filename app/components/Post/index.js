@@ -35,7 +35,7 @@ const Post = ({
   const carouselWidth = Math.round(width) - 20
   const dataCarousel = images.map(image => ({
     id: image.id,
-    imagePath: `data:image/jpeg;base64,${image.data}`,
+    imagePath: image.data,
   }))
 
   return ((
