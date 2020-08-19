@@ -43,6 +43,7 @@ import * as CSS from '../../res/css'
  * @prop {(boolean)=} multiline
  * @prop {(EnabledFeatures[])=} enabledFeatures
  * @prop {(string)=} placeholder
+ * @prop {(string)=} type
  * @prop {(contact: ContactTypes) => void} selectContact
  * @prop {(paymentRequest: string) => DecodeResponse} decodePaymentRequest
  * @prop {(() => void)=} startDecoding
@@ -114,7 +115,6 @@ class ContactsSearch extends PureComponent {
 
   /** @type {import('react-native').ListRenderItem<any>} */
   contactRender = contact => {
-    Logger.log('Contact:', contact)
     if (contact.item.type === 'btc') {
       return ((
         <Suggestion
@@ -227,6 +227,7 @@ class ContactsSearch extends PureComponent {
       style,
       inputStyle,
       disabled,
+      type, //normal or style for Request Step view
     } = this.props
     return (
       <View
@@ -241,7 +242,9 @@ class ContactsSearch extends PureComponent {
             style={
               this.theme === 'dark'
                 ? [
-                    styles.inputContainerDark,
+                    type === 'request_step'
+                      ? styles.inputContainerDark2
+                      : styles.inputContainerDark1,
                     inputStyle,
                     disabled ? styles.disabledInput : null,
                   ]
@@ -254,11 +257,20 @@ class ContactsSearch extends PureComponent {
           >
             <Ionicons name="md-search" color="#CBC5C5" size={16} />
             <TextInput
-              style={this.theme === 'dark' ? styles.inputDark : styles.input}
+              style={
+                this.theme === 'dark'
+                  ? [
+                      styles.inputDark,
+                      type === 'request_step' ? { textAlign: 'center' } : null,
+                    ]
+                  : styles.input
+              }
               value={value}
               editable={!disabled}
               onChangeText={onChange}
-              placeholder={placeholder}
+              placeholder={
+                type === 'request_step' ? 'Send to a contact' : placeholder
+              }
               placeholderTextColor={this.theme === 'dark' ? '#BCBCBC' : 'grey'}
               // onFocus={this.setFocus(true)}
               // onBlur={value.length === 0 ? this.setFocus(false) : undefined}
@@ -268,7 +280,11 @@ class ContactsSearch extends PureComponent {
             <FlatList
               data={this.getContacts()}
               renderItem={this.contactRender}
-              style={styles.inputSuggestions}
+              style={
+                this.theme === 'dark'
+                  ? styles.inputSuggestionsDark
+                  : styles.inputSuggestions
+              }
               keyExtractor={this.contactKeyExtractor}
             />
           ) : null}
@@ -314,7 +330,7 @@ const styles = StyleSheet.create({
     backgroundColor: CSS.Colors.BACKGROUND_LIGHTEST_WHITE,
     overflow: 'hidden',
   },
-  inputContainerDark: {
+  inputContainerDark1: {
     flexDirection: 'row-reverse',
     alignItems: 'center',
     width: '100%',
@@ -325,6 +341,20 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#4285B9',
     overflow: 'hidden',
+    opacity: 0.7,
+  },
+  inputContainerDark2: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    width: '100%',
+    paddingHorizontal: 13,
+    height: 45,
+    marginBottom: 10,
+    backgroundColor: '#001220',
+    borderWidth: 1,
+    borderColor: '#EAEBEB',
+    overflow: 'hidden',
+    opacity: 1,
   },
   disabledInput: {
     elevation: 0,
@@ -336,11 +366,17 @@ const styles = StyleSheet.create({
   inputDark: {
     flex: 1,
     marginLeft: 5,
-    color: '#BCBCBC',
     fontFamily: 'Montserrat-600',
+    color: CSS.Colors.TEXT_WHITE,
   },
   inputSuggestions: {
     backgroundColor: CSS.Colors.BACKGROUND_LIGHTEST_WHITE,
+    width: '100%',
+    height: 150,
+    borderRadius: 15,
+  },
+  inputSuggestionsDark: {
+    backgroundColor: '#4285B9',
     width: '100%',
     height: 150,
     borderRadius: 15,

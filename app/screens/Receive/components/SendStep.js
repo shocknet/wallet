@@ -64,6 +64,8 @@ class SendStep extends Component {
     contactsSearch: '',
   }
 
+  theme = 'dark'
+
   componentDidMount = async () => {
     const { addInvoice, newAddress, invoice } = this.props
     const { amount, description } = invoice
@@ -129,6 +131,7 @@ class SendStep extends Component {
           enabledFeatures={['contacts']}
           value={contactsSearch}
           style={styles.contactsSearch}
+          type="request_step"
         />
       )
     }
@@ -170,6 +173,61 @@ class SendStep extends Component {
     }
   }
 
+  renderSwipeVerifyButton = () => {
+    if (this.theme === 'dark') {
+      return (
+        <SwipeVerify
+          width="100%"
+          buttonSize={83}
+          height={59}
+          style={styles.swipeBtn}
+          buttonColor="#212937"
+          borderColor="#4285B9"
+          swipeColor={CSS.Colors.GOLD}
+          backgroundColor="#16191C"
+          textColor="#EBEBEB"
+          borderRadius={100}
+          icon={
+            <Image
+              source={BitcoinAccepted}
+              resizeMethod="resize"
+              resizeMode="contain"
+              style={styles.btcIconDark}
+            />
+          }
+          onVerified={this.sendInvoice}
+        >
+          <Text style={styles.swipeBtnTextDark}>SLIDE TO SEND</Text>
+        </SwipeVerify>
+      )
+    }
+    return (
+      <SwipeVerify
+        width="100%"
+        buttonSize={48}
+        height={40}
+        style={styles.swipeBtn}
+        buttonColor={CSS.Colors.BACKGROUND_WHITE}
+        borderColor={CSS.Colors.TRANSPARENT}
+        swipeColor={CSS.Colors.GOLD}
+        backgroundColor={CSS.Colors.BACKGROUND_NEAR_WHITE}
+        textColor="#37474F"
+        borderRadius={100}
+        icon={
+          <Image
+            source={BitcoinAccepted}
+            resizeMethod="resize"
+            resizeMode="contain"
+            style={styles.btcIcon}
+          />
+        }
+        onVerified={this.sendInvoice}
+      >
+        <Text style={styles.swipeBtnText}>SLIDE TO SEND</Text>
+      </SwipeVerify>
+    )
+  }
+
   render() {
     const { setInvoiceMode, invoice, chat } = this.props
     Logger.log(
@@ -185,7 +243,15 @@ class SendStep extends Component {
             <View style={styles.recipientContainer}>
               {this.renderQR()}
               <View style={styles.QRTypeContainer}>
-                <Text style={styles.invoiceMode}>BTC</Text>
+                <Text
+                  style={
+                    this.theme === 'dark'
+                      ? styles.invoiceModeBTC
+                      : styles.invoiceMode
+                  }
+                >
+                  BTC
+                </Text>
                 <Switch
                   trackColor={{
                     false: CSS.Colors.CAUTION_YELLOW,
@@ -195,17 +261,41 @@ class SendStep extends Component {
                   value={invoice.invoiceMode}
                   thumbColor={CSS.Colors.BACKGROUND_WHITE}
                 />
-                <Text style={styles.invoiceMode}>Invoice</Text>
+                <Text
+                  style={
+                    this.theme === 'dark'
+                      ? styles.invoiceModeInvoice
+                      : styles.invoiceMode
+                  }
+                >
+                  Invoice
+                </Text>
               </View>
               <TouchableOpacity
-                style={styles.modalButton}
+                style={
+                  this.theme === 'dark'
+                    ? styles.modalButtonDark
+                    : styles.modalButton
+                }
                 onPress={this.copyQRCode}
               >
-                <Text style={styles.modalText}>Copy to clipboard</Text>
+                <Text
+                  style={
+                    this.theme === 'dark'
+                      ? styles.modalTextDark
+                      : styles.modalText
+                  }
+                >
+                  Copy to clipboard
+                </Text>
                 <Ionicons
                   name="ios-copy"
                   size={20}
-                  color={CSS.Colors.TEXT_GRAY_LIGHTER}
+                  color={
+                    this.theme === 'dark'
+                      ? CSS.Colors.TEXT_WHITE
+                      : CSS.Colors.TEXT_GRAY_LIGHTER
+                  }
                   style={styles.modalIcon}
                 />
               </TouchableOpacity>
@@ -215,11 +305,39 @@ class SendStep extends Component {
                 style={styles.editInvoiceDetailsContainer}
                 onPress={this.props.editInvoice}
               >
-                <Text style={styles.editInvoice}>Change</Text>
+                <Text
+                  style={
+                    this.theme === 'dark'
+                      ? styles.editInvoiceDark
+                      : styles.editInvoice
+                  }
+                >
+                  Change
+                </Text>
               </TouchableOpacity>
-              <View style={styles.invoiceDetail}>
-                <Text style={styles.invoiceDetailTitle}>Amount</Text>
-                <Text style={styles.invoiceDetailValue}>
+              <View
+                style={
+                  this.theme === 'dark'
+                    ? styles.invoiceDetailDark
+                    : styles.invoiceDetail
+                }
+              >
+                <Text
+                  style={
+                    this.theme === 'dark'
+                      ? styles.invoiceDetailTitleDark
+                      : styles.invoiceDetailTitle
+                  }
+                >
+                  Amount
+                </Text>
+                <Text
+                  style={
+                    this.theme === 'dark'
+                      ? styles.invoiceDetailValueDark
+                      : styles.invoiceDetailValue
+                  }
+                >
                   {invoice.amount ? invoice.amount : 'N/A'}
                 </Text>
               </View>
@@ -232,9 +350,21 @@ class SendStep extends Component {
               <View
                 style={[styles.invoiceDetail, styles.noBorderInvoiceDetail]}
               >
-                <Text style={styles.invoiceDetailTitle}>Description</Text>
                 <Text
-                  style={styles.invoiceDetailValue}
+                  style={
+                    this.theme === 'dark'
+                      ? styles.invoiceDetailTitleDark
+                      : styles.invoiceDetailTitle
+                  }
+                >
+                  Description
+                </Text>
+                <Text
+                  style={
+                    this.theme === 'dark'
+                      ? styles.invoiceDetailValueDark
+                      : styles.invoiceDetailValue
+                  }
                   ellipsizeMode="tail"
                   numberOfLines={1}
                 >
@@ -246,31 +376,9 @@ class SendStep extends Component {
         </ScrollView>
         {chat.selectedContact &&
         chat.selectedContact.type === 'contact' &&
-        invoice.invoiceMode ? (
-          <SwipeVerify
-            width="100%"
-            buttonSize={48}
-            height={40}
-            style={styles.swipeBtn}
-            buttonColor={CSS.Colors.BACKGROUND_WHITE}
-            borderColor={CSS.Colors.TRANSPARENT}
-            swipeColor={CSS.Colors.GOLD}
-            backgroundColor={CSS.Colors.BACKGROUND_NEAR_WHITE}
-            textColor="#37474F"
-            borderRadius={100}
-            icon={
-              <Image
-                source={BitcoinAccepted}
-                resizeMethod="resize"
-                resizeMode="contain"
-                style={styles.btcIcon}
-              />
-            }
-            onVerified={this.sendInvoice}
-          >
-            <Text style={styles.swipeBtnText}>SLIDE TO SEND</Text>
-          </SwipeVerify>
-        ) : null}
+        invoice.invoiceMode
+          ? this.renderSwipeVerifyButton()
+          : null}
       </View>
     )
   }
@@ -317,6 +425,9 @@ const styles = StyleSheet.create({
   btcIcon: {
     height: 30,
   },
+  btcIconDark: {
+    height: 59,
+  },
   QRTypeContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -327,6 +438,16 @@ const styles = StyleSheet.create({
   invoiceMode: {
     fontSize: 14,
     fontFamily: 'Montserrat-700',
+  },
+  invoiceModeBTC: {
+    fontSize: 14,
+    fontFamily: 'Montserrat-700',
+    color: '#F5A623',
+  },
+  invoiceModeInvoice: {
+    fontSize: 14,
+    fontFamily: 'Montserrat-700',
+    color: '#4285B9',
   },
   modalButton: {
     width: '100%',
@@ -339,10 +460,34 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  modalButtonDark: {
+    width: '100%',
+    height: 46,
+    paddingVertical: 7,
+    backgroundColor: '#001220',
+    elevation: 4,
+    marginBottom: 23,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: CSS.Colors.TEXT_WHITE,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: CSS.Colors.TEXT_WHITE,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    flexDirection: 'row-reverse',
+  },
   modalText: {
     color: CSS.Colors.TEXT_GRAY_LIGHTER,
     fontFamily: 'Montserrat-700',
     fontSize: 13,
+  },
+  modalTextDark: {
+    color: CSS.Colors.TEXT_WHITE,
+    fontFamily: 'Montserrat-700',
+    fontSize: 13,
+    marginLeft: 16,
   },
   modalIcon: {
     marginLeft: 5,
@@ -360,6 +505,13 @@ const styles = StyleSheet.create({
     fontFamily: 'Montserrat-600',
     fontSize: 12,
   },
+  editInvoiceDark: {
+    color: '#4285B9',
+    width: '100%',
+    textAlign: 'right',
+    fontFamily: 'Montserrat-600',
+    fontSize: 12,
+  },
   invoiceDetail: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -367,16 +519,36 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: CSS.Colors.BORDER_GRAY,
   },
+  invoiceDetailDark: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#4285B9',
+  },
   invoiceDetailTitle: {
     fontFamily: 'Montserrat-700',
     fontSize: 13,
     color: CSS.Colors.TEXT_GRAY_LIGHTER,
     width: '48%',
   },
+  invoiceDetailTitleDark: {
+    fontFamily: 'Montserrat-700',
+    fontSize: 13,
+    color: '#EBEBEB',
+    width: '48%',
+  },
   invoiceDetailValue: {
     fontFamily: 'Montserrat-600',
     fontSize: 14,
     color: CSS.Colors.TEXT_GRAY_LIGHTER,
+    width: '48%',
+    textAlign: 'right',
+  },
+  invoiceDetailValueDark: {
+    fontFamily: 'Montserrat-600',
+    fontSize: 14,
+    color: '#EBEBEB',
     width: '48%',
     textAlign: 'right',
   },
@@ -387,6 +559,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: 'Montserrat-700',
     color: CSS.Colors.TEXT_GRAY,
+  },
+  swipeBtnTextDark: {
+    fontSize: 12,
+    fontFamily: 'Montserrat-700',
+    color: '#EBEBEB',
   },
   redText: {
     color: CSS.Colors.FAILURE_RED,
