@@ -337,17 +337,43 @@ class SendScreen extends Component {
 
   sendPayment = async () => {
     try {
-      const { chat } = this.props
+      const { navigation, chat, fees } = this.props
       const { amount, description } = this.state
       const { selectedContact } = chat
-      // @ts-ignore
-      await API.Actions.sendPayment(selectedContact.pk, amount, description)
-      return true
-    } catch (err) {
+      this.setState({
+        sending: true,
+      })
+      await API.Actions.sendPayment(
+        // @ts-ignore
+        selectedContact.pk,
+        amount,
+        description,
+        fees,
+      )
       this.setState({
         sending: false,
-        error: err,
+        paymentSuccessful: true,
       })
+      setTimeout(() => {
+        if (navigation) {
+          navigation.navigate(WALLET_OVERVIEW)
+        }
+      }, 500)
+      return true
+    } catch (err) {
+      if (err.response && err.response.data && err.response.data.errorMessage) {
+        const error = err.response.data.errorMessage
+        this.setState({
+          sending: false,
+          error,
+        })
+      } else {
+        this.setState({
+          sending: false,
+          error: err,
+        })
+      }
+
       return false
     }
   }

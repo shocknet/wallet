@@ -710,8 +710,12 @@ export default class Chat extends React.Component {
         },
       },
     }))
-
-    API.Actions.sendPayment(theChat.recipientPublicKey, amt, memo)
+    //TMP fix before connecting to redux
+    const fees = {
+      absoluteFee: '10',
+      relativeFee: '0.006',
+    }
+    API.Actions.sendPayment(theChat.recipientPublicKey, amt, memo, fees)
       .then(preimage => {
         this.setState(({ spontPaymentsInTransit }) => ({
           spontPaymentsInTransit: {
