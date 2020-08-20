@@ -11,6 +11,8 @@ import {
   FlatList,
   ListRenderItemInfo,
   RefreshControl,
+  ImageBackground,
+  ScrollView,
 } from 'react-native'
 import ImagePicker from 'react-native-image-crop-picker'
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'
@@ -38,6 +40,12 @@ import Post from '../../components/Post'
 import { CREATE_POST } from '../../screens/CreatePost'
 
 import SetBioDialog from './SetBioDialog'
+
+import profileBG from '../../assets/images/profile-bg.png'
+// @ts-ignore
+import SettingIcon from '../../assets/images/profile/setting-icon.svg'
+// @ts-ignore
+import QrCode from '../../assets/images/qrcode.svg'
 
 export const MY_PROFILE = 'MY_PROFILE'
 
@@ -69,6 +77,8 @@ interface Sentinel {
 }
 
 type Item = Sentinel | Common.Schema.Post
+
+const theme = 'dark'
 
 export default class MyProfile extends React.Component<Props, State> {
   static navigationOptions: NavigationBottomTabScreenOptions = {
@@ -164,8 +174,14 @@ export default class MyProfile extends React.Component<Props, State> {
 
   async componentDidMount() {
     this.didFocus = this.props.navigation.addListener('didFocus', () => {
-      StatusBar.setBackgroundColor(CSS.Colors.BACKGROUND_WHITE)
-      StatusBar.setBarStyle('dark-content')
+      if (theme === 'dark') {
+        StatusBar.setBackgroundColor(CSS.Colors.TRANSPARENT)
+        StatusBar.setBarStyle('light-content')
+      } else {
+        StatusBar.setBackgroundColor(CSS.Colors.BACKGROUND_WHITE)
+        StatusBar.setBarStyle('dark-content')
+      }
+
     })
     this.onDisplayNameUnsub = API.Events.onDisplayName(dn => {
       this.setState({
@@ -469,8 +485,119 @@ export default class MyProfile extends React.Component<Props, State> {
   }
 
   render() {
-    const { settingAvatar, settingBio, settingDisplayName } = this.state
+    const { settingAvatar, settingBio, settingDisplayName, avatar, displayName, bio } = this.state
 
+    if (theme === 'dark') {
+      return (
+          <View style={styles.container}>
+            <StatusBar
+              translucent
+              backgroundColor="transparent"
+              barStyle="light-content"
+            />
+
+            <ImageBackground
+              source={profileBG}
+              resizeMode="cover"
+              style={styles.backImage}
+            />
+            <View style={styles.overview}>
+              <TouchableOpacity>
+                <ShockAvatar
+                  height={133}
+                  image={avatar}
+                  onPress={this.onPressAvatar}
+                  lastSeenApp={Date.now()}
+                  avatarStyle={styles.avatarStyle}
+                  disableOnlineRing
+                />
+              </TouchableOpacity>
+              <View style={styles.bio}>
+                <TouchableOpacity
+                  onPress={this.toggleSetupDisplayName}
+                  disabled={displayName === null}
+                >
+                  <Text style={styles.displayNameDark}>
+                    {displayName === null ? 'Loading...' : displayName}
+                  </Text>
+                </TouchableOpacity>
+
+                <Pad amount={8}/>
+
+                <TouchableOpacity onPress={this.onPressBio}>
+                  <Text style={styles.bodyTextDark}>{bio || 'Loading...'}</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.configButtonDark}
+                >
+                  <SettingIcon/>
+                  <Text
+                    style={styles.configButtonTextDark}
+                  >
+                    Config
+                  </Text>
+                </TouchableOpacity>
+
+              </View>
+            </View>
+
+            <ScrollView style={styles.mainButtons}>
+              <TouchableOpacity
+                style={styles.actionButtonDark}
+              >
+                <Text
+                  style={styles.actionButtonTextDark}
+                >
+                  Offer a Product
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.actionButtonDark}
+              >
+                <Text
+                  style={styles.actionButtonTextDark}
+                >
+                  Offer a Service
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.actionButtonDark}
+                onPress={this.onPressCreate}
+              >
+                <Text
+                  style={styles.actionButtonTextDark}
+                >
+                  Publish Content
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.actionButtonDark}
+                onPress={this.onPressCreate}
+              >
+                <Text
+                  style={styles.actionButtonTextDark}
+                >
+                  Create a Post
+                </Text>
+              </TouchableOpacity>
+            </ScrollView>
+
+            <TouchableOpacity
+              style={styles.createBtn}
+              onPress={this.onPressCreate}
+            >
+              <View>
+                <QrCode size={25}/>
+              </View>
+            </TouchableOpacity>
+          </View>
+
+      )
+    }
     return (
       <>
         <View style={styles.container}>
@@ -517,11 +644,16 @@ const styles = StyleSheet.create({
     marginRight: 90,
     textAlign: 'center',
   },
-
+  bodyTextDark: {
+    color: '#F3EFEF',
+    fontFamily: 'Montserrat-600',
+    fontSize: 12,
+    textAlign: 'left',
+  },
   createBtn: {
-    height: 60,
-    width: 60,
-    borderRadius: 30,
+    height: 75,
+    width: 75,
+    borderRadius: 38,
     backgroundColor: CSS.Colors.CAUTION_YELLOW,
     position: 'absolute',
     right: 20,
@@ -539,14 +671,89 @@ const styles = StyleSheet.create({
     fontFamily: 'Montserrat-700',
     fontSize: 16,
   },
+  displayNameDark: {
+    color: '#F3EFEF',
+    fontFamily: 'Montserrat-700',
+    fontSize: 16,
+  },
 
   container: {
     alignItems: 'center',
-    backgroundColor: CSS.Colors.TEXT_WHITE,
+    backgroundColor: '#16191C',
     flex: 1,
+    margin: 0,
+    justifyContent: 'flex-start',
   },
 
   subContainer: {
     alignItems: 'center',
   },
+  backImage: {
+    width: '100%',
+    height: 170,
+    backgroundColor: CSS.Colors.FUN_BLUE,
+  },
+  overview: {
+    flexDirection: 'row',
+    marginTop: -30,
+    paddingHorizontal: 20,
+  },
+  avatarStyle: {
+    borderWidth: 5,
+    borderRadius: 100,
+    borderColor: '#707070',
+  },
+  bio: {
+    flexDirection: 'column',
+    flex: 2,
+    marginLeft: 20,
+    paddingTop: 55,
+  },
+  configButtonDark: {
+    width: '48%',
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 6,
+    backgroundColor: CSS.Colors.TRANSPARENT,
+    borderColor: '#4285B9',
+    borderWidth: 1,
+    flexDirection: 'row',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    marginTop: 5,
+    elevation: 6,
+    shadowColor: '#4285B9',
+    shadowOffset: { height: 3, width: 0 },
+    shadowOpacity: 1, // IOS
+    shadowRadius: 6, //IOS
+  },
+  configButtonTextDark: {
+    color: '#4285B9',
+    fontFamily: 'Montserrat-600',
+    fontSize: 10,
+    paddingLeft: 7,
+  },
+  actionButtonDark: {
+    width: '100%',
+    height: 79,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#212937',
+    borderColor: '#4285B9',
+    borderBottomWidth: 1,
+    borderTopWidth: 1,
+    marginBottom: 7,
+    opacity: .7,
+  },
+  actionButtonTextDark: {
+    color: '#F3EFEF',
+    fontFamily: 'Montserrat-700',
+    fontSize: 14,
+  },
+  mainButtons: {
+    width: '100%',
+    flexDirection: 'column',
+    marginTop: 50,
+  }
 })
