@@ -12,6 +12,7 @@ import {
 import moment from 'moment'
 import Http, { AxiosRequestConfig } from 'axios'
 import Logger from 'react-native-file-log'
+import { Logger as CommonLogger } from 'shock-common'
 import { DISABLE_ENCRYPTION } from './app/config'
 
 import { Provider } from 'react-redux'
@@ -37,6 +38,22 @@ import { LNURL_SCREEN } from './app/screens/LNURL'
 Logger.setTag('ShockWallet')
 Logger.setFileLogEnabled(true)
 Logger.setConsoleLogEnabled(__DEV__)
+
+CommonLogger.setLogger({
+  debug(...msgs) {
+    Logger.log(...msgs)
+  },
+  error(...msgs) {
+    Logger.log(...msgs)
+  },
+  info(...msgs) {
+    Logger.log(...msgs)
+  },
+  log(...msgs) {
+    Logger.log(...msgs)
+  },
+})
+
 if (Platform.OS === 'android') {
   PermissionsAndroid.request(
     PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
