@@ -24,6 +24,7 @@ import * as CSS from '../res/css'
  * @prop {(boolean)=} disabled
  * @prop {(boolean)=} multiline
  * @prop {(string)=} placeholder
+ * @prop {(object)=} labelStyle
  * @prop {(import('react-native').KeyboardType)=} type
  */
 
@@ -46,6 +47,7 @@ class InputGroup extends PureComponent {
       disabled,
       multiline,
       placeholder,
+      labelStyle,
       type = 'default',
     } = this.props
     return (
@@ -57,7 +59,12 @@ class InputGroup extends PureComponent {
         ]}
       >
         {label ? (
-          <Text style={this.theme === 'dark' ? styles.labelDark : styles.label}>
+          <Text
+            style={[
+              this.theme === 'dark' ? styles.labelDark : styles.label,
+              labelStyle,
+            ]}
+          >
             {label}
           </Text>
         ) : null}
