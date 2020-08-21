@@ -16,12 +16,12 @@ import * as Cache from '../../services/cache'
 import * as CSS from '../../res/css'
 const { Colors } = CSS
 import { SEND_SCREEN } from '../Send'
+import PaymentDialog from '../../components/PaymentDialog'
 /**
  * @typedef {import('../Send').Params} SendScreenParams
  */
 
 import ChatView from './View'
-import PaymentDialog from './PaymentDialog'
 /**
  * @typedef {import('./View').PaymentStatus} PaymentStatus
  * @typedef {import('./View').SpontPaymentInTransit} SpontPaymentInTransit
