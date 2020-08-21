@@ -38,14 +38,28 @@ import ShockInput from '../../components/ShockInput'
 import IGDialogBtn from '../../components/IGDialogBtn'
 import Post from '../../components/Post'
 import { CREATE_POST } from '../../screens/CreatePost'
+import { PUBLISH_CONTENT_DARK } from '../../screens/PublishContentDark'
 
 import SetBioDialog from './SetBioDialog'
+import MetaConfigModal from './MetaConfigModal'
 
 import profileBG from '../../assets/images/profile-bg.png'
 // @ts-ignore
 import SettingIcon from '../../assets/images/profile/setting-icon.svg'
 // @ts-ignore
 import QrCode from '../../assets/images/qrcode.svg'
+// @ts-ignore
+import TapCopy from '../../assets/images/profile/tapcopy.svg'
+// @ts-ignore
+import OfferProduct from '../../assets/images/profile/offer-product.svg'
+// @ts-ignore
+import OfferService from '../../assets/images/profile/offer-service.svg'
+// @ts-ignore
+import PublishContent from '../../assets/images/profile/publish-content.svg'
+// @ts-ignore
+import CreatePost from '../../assets/images/profile/create-post.svg'
+
+import Modal from 'react-native-modal'
 
 export const MY_PROFILE = 'MY_PROFILE'
 
@@ -70,6 +84,8 @@ interface State {
   posts: Common.Schema.Post[]
   lastPageFetched: number
   loadingNextPage: boolean
+  showQrCodeModal: boolean,
+  showMetaConfigModal: boolean,
 }
 
 interface Sentinel {
@@ -109,6 +125,8 @@ export default class MyProfile extends React.Component<Props, State> {
     posts: [],
     lastPageFetched: 0,
     loadingNextPage: true,
+    showQrCodeModal: false,
+    showMetaConfigModal: false,
   }
 
   fetchNextPage = async () => {
@@ -344,6 +362,22 @@ export default class MyProfile extends React.Component<Props, State> {
       })
   }
 
+  onPressShowMyQrCodeModal = () => {
+    if (this.state.showQrCodeModal) {
+      this.setState({showQrCodeModal: false})
+    } else {
+      this.setState({showQrCodeModal: true})
+    }
+  }
+
+  onPressMetaConfigModal = () => {
+    if (this.state.showMetaConfigModal) {
+      this.setState({showMetaConfigModal: false})
+    } else {
+      this.setState({showMetaConfigModal: true})
+    }
+  }
+
   renderItem = ({ item }: ListRenderItemInfo<Item>) => {
     if (Common.Schema.isPost(item)) {
       const imageCIEntries = Object.entries(item.contentItems).filter(
@@ -442,7 +476,7 @@ export default class MyProfile extends React.Component<Props, State> {
               />
             </TouchableOpacity>
             <Pad amount={10} />
-            <Text style={styles.bodyText}>
+            <Text style={styles.bodyTextQrModal}>
               Other users can scan this QR to contact you.
             </Text>
           </React.Fragment>
@@ -484,8 +518,12 @@ export default class MyProfile extends React.Component<Props, State> {
     this.props.navigation.navigate(CREATE_POST)
   }
 
+  onPressPublish = () => {
+    this.props.navigation.navigate(PUBLISH_CONTENT_DARK)
+  }
+
   render() {
-    const { settingAvatar, settingBio, settingDisplayName, avatar, displayName, bio } = this.state
+    const { settingAvatar, settingBio, settingDisplayName, avatar, displayName, bio, authData } = this.state
 
     if (theme === 'dark') {
       return (
@@ -495,6 +533,64 @@ export default class MyProfile extends React.Component<Props, State> {
               backgroundColor="transparent"
               barStyle="light-content"
             />
+
+            <View style={{flex: 1}}>
+              <Modal isVisible={this.state.showQrCodeModal}
+                     backdropColor="#16191C"
+                     backdropOpacity={0.94}
+                     animationIn="zoomInDown"
+                     animationOut="zoomOutUp"
+                     animationInTiming={600}
+                     animationOutTiming={600}
+                     backdropTransitionInTiming={600}
+                     backdropTransitionOutTiming={600}
+                     onBackdropPress={this.onPressShowMyQrCodeModal}
+                >
+                <View style={styles.qrViewModal}>
+                  <StatusBar
+                    translucent
+                    backgroundColor="rgba(22, 25, 28, .94)"
+                    barStyle="light-content"
+                  />
+
+                  <View style={styles.subContainerDark}>
+                    <React.Fragment>
+                      <TouchableOpacity onPress={this.copyDataToClipboard}>
+                        {authData === null ? (<ActivityIndicator size="large" />)
+                          : (
+                            <QR
+                              size={180}
+                              logoToShow="shock"
+                              value={`$$__SHOCKWALLET__USER__${authData.publicKey}`}
+                            />
+                          )
+                        }
+                      </TouchableOpacity>
+                      <Pad amount={10} />
+                      <Text style={styles.bodyTextQrModal}>
+                        Other users can scan this QR to contact you.
+                      </Text>
+
+                      <TouchableOpacity
+                        style={styles.tapButtonQrModal}
+                      >
+                        <TapCopy size={30}/>
+                        <Text
+                          style={styles.tapButtonQrModalText}
+                        >
+                          Tap to copy to clipboard
+                        </Text>
+                      </TouchableOpacity>
+                      </React.Fragment>
+                  </View>
+                </View>
+              </Modal>
+            </View>
+
+            <View style={{flex: 1}}>
+              <MetaConfigModal toggleModal={this.onPressMetaConfigModal} isModalVisible={this.state.showMetaConfigModal}/>
+            </View>
+
 
             <ImageBackground
               source={profileBG}
@@ -530,6 +626,7 @@ export default class MyProfile extends React.Component<Props, State> {
 
                 <TouchableOpacity
                   style={styles.configButtonDark}
+                  onPress={this.onPressMetaConfigModal}
                 >
                   <SettingIcon/>
                   <Text
@@ -546,6 +643,7 @@ export default class MyProfile extends React.Component<Props, State> {
               <TouchableOpacity
                 style={styles.actionButtonDark}
               >
+                <OfferProduct/>
                 <Text
                   style={styles.actionButtonTextDark}
                 >
@@ -556,6 +654,7 @@ export default class MyProfile extends React.Component<Props, State> {
               <TouchableOpacity
                 style={styles.actionButtonDark}
               >
+                <OfferService/>
                 <Text
                   style={styles.actionButtonTextDark}
                 >
@@ -565,8 +664,9 @@ export default class MyProfile extends React.Component<Props, State> {
 
               <TouchableOpacity
                 style={styles.actionButtonDark}
-                onPress={this.onPressCreate}
+                onPress={this.onPressPublish}
               >
+                <PublishContent/>
                 <Text
                   style={styles.actionButtonTextDark}
                 >
@@ -578,6 +678,7 @@ export default class MyProfile extends React.Component<Props, State> {
                 style={styles.actionButtonDark}
                 onPress={this.onPressCreate}
               >
+                <CreatePost/>
                 <Text
                   style={styles.actionButtonTextDark}
                 >
@@ -588,12 +689,13 @@ export default class MyProfile extends React.Component<Props, State> {
 
             <TouchableOpacity
               style={styles.createBtn}
-              onPress={this.onPressCreate}
+              onPress={this.onPressShowMyQrCodeModal}
             >
               <View>
                 <QrCode size={25}/>
               </View>
             </TouchableOpacity>
+
           </View>
 
       )
@@ -650,6 +752,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     textAlign: 'left',
   },
+  bodyTextQrModal: {
+    color: '#5B5B5B',
+    fontFamily: 'Montserrat-600',
+    fontSize: 12,
+    textAlign: 'center',
+  },
   createBtn: {
     height: 75,
     width: 75,
@@ -687,6 +795,13 @@ const styles = StyleSheet.create({
 
   subContainer: {
     alignItems: 'center',
+  },
+  subContainerDark: {
+    alignItems: 'center',
+    backgroundColor: '#F8F8F8',
+    padding: 34,
+    borderRadius: 24,
+    marginHorizontal: 25,
   },
   backImage: {
     width: '100%',
@@ -738,22 +853,44 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 79,
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#212937',
+    justifyContent: 'flex-start',
+    backgroundColor: 'rgba(33, 41, 55, .7)',
     borderColor: '#4285B9',
     borderBottomWidth: 1,
     borderTopWidth: 1,
     marginBottom: 7,
-    opacity: .7,
+    flexDirection: 'row',
+    paddingLeft: '30%',
   },
   actionButtonTextDark: {
     color: '#F3EFEF',
     fontFamily: 'Montserrat-700',
     fontSize: 14,
+    marginLeft: 20,
   },
   mainButtons: {
     width: '100%',
     flexDirection: 'column',
     marginTop: 50,
+  },
+  qrViewModal: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tapButtonQrModal: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'transparent',
+    flexDirection: 'row',
+    marginTop: 15,
+  },
+  tapButtonQrModalText: {
+    color: '#5B5B5B',
+    fontFamily: 'Montserrat-600',
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginLeft: 10,
   }
 })

@@ -20,6 +20,9 @@ import WalletSettings, { WALLET_SETTINGS } from '../screens/WalletSettings'
 import Feed, { FEED } from '../screens/Feed'
 import AddPostToFeed, { ADD_POST_TO_FEED } from '../screens/AddPostToFeed'
 import CreatePost, { CREATE_POST } from '../screens/CreatePost'
+import PublishContentDark, {
+  PUBLISH_CONTENT_DARK,
+} from '../screens/PublishContentDark'
 
 import Login, { LOGIN } from '../screens/Login'
 
@@ -142,6 +145,12 @@ const drawerScreens = {
     screen: LNURL,
     navigationOptions: {
       title: 'LNURL utils',
+    },
+  },
+  [PUBLISH_CONTENT_DARK]: {
+    screen: PublishContentDark,
+    navigationOptions: {
+      title: 'Publish Content',
     },
   },
 }
