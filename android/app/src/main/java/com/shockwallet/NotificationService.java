@@ -63,8 +63,9 @@ public class NotificationService extends Service {
     private enum ReqTypeEnum {
         ExchangeKeys
     }
-
-    private static int SERVICE_NOTIFICATION_ID = 12345;
+    private NotificationCompat.Builder nBuilder;
+    private static final int INITIAL_SERVICE_NOTIFICATION_ID = 12345;
+    private static int SERVICE_NOTIFICATION_ID = INITIAL_SERVICE_NOTIFICATION_ID;
     private static final String GROUP_KEY_NOTIF = "GROUP_KEY_NOTIF";
     private static final String CHANNEL_ID = "shock_notif";
     private static final String TAG = "NotificationsDeb";
@@ -169,6 +170,29 @@ public class NotificationService extends Service {
             }
         }
     };
+    private Emitter.Listener onConnect = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            Log.d(TAG,"CONNECTED SOCKET");
+            nBuilder.setContentTitle("Notification service connected")
+                .setContentText("Listening...");
+            updateFixedNotification();
+        }
+    };
+    private Emitter.Listener onDisconnect = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            Log.d(TAG,"DISCONNECTED SOCKET");
+            nBuilder.setContentTitle("Notification service DISCONNECTED")
+                .setContentText("DISCONNECTED!!!");
+            updateFixedNotification();
+        }
+    };
+    private void updateFixedNotification(){
+        NotificationManagerCompat notificationManager1 = NotificationManagerCompat.from(this);
+        notificationManager1.notify(INITIAL_SERVICE_NOTIFICATION_ID, nBuilder.build());
+    }
+
     private void attemptSend() {
         String message = "{\"token\":\""+NotificationService.token+"\"}";
         try{
@@ -184,27 +208,28 @@ public class NotificationService extends Service {
         }
         //encMex.put("token", NotificationService.token.getBytes());
     }
+    private void ExchangeKeys() throws Exception{
+        Log.d(TAG,"exchanging keys");
+        createDeviceId();
+        rsa = new RSA("shocknet.tag.cc."+deviceId);
+        
+        rsa.generate(2048);
+        String rsaPub = rsa.getPublicKey();
+        //String deviceId = "7601a723-b6d4-4020-95a6-6113fb40e2f8";
+        //Log.d(TAG,rsaPub);
+        HashMap<String,String> rawData = new HashMap<String,String>();
+        rawData.put("publicKey",rsaPub);
+        rawData.put("deviceId",deviceId);
+        JSONObject postdata = new JSONObject(rawData);
+        postRequest("http://"+ip+"/api/security/exchangeKeys", postdata);
+    }
     private Runnable runnableCode = new Runnable() {
         @Override
         public void run() {
             Log.d(TAG,"yeahhhh");
             //Log.d(TAG,"Token from run "+token);
             try{
-                createDeviceId();
-                rsa = new RSA("shocknet.tag.cc."+deviceId);
-                
-                rsa.generate(2048);
-                String rsaPub = rsa.getPublicKey();
-                //String deviceId = "7601a723-b6d4-4020-95a6-6113fb40e2f8";
-                //Log.d(TAG,rsaPub);
-                HashMap<String,String> rawData = new HashMap<String,String>();
-                rawData.put("publicKey",rsaPub);
-                rawData.put("deviceId",deviceId);
-                JSONObject postdata = new JSONObject(rawData);
-                postRequest("http://"+ip+"/api/security/exchangeKeys", postdata);
-
-
-                
+                ExchangeKeys();
             } catch (Exception e) {
                 Log.d(TAG,e.toString());
             }
@@ -280,13 +305,22 @@ public class NotificationService extends Service {
             String token = (String) bundle.get("token");
             String ip = (String) bundle.get("ip");
             //Log.d(TAG, "ip: "+ip + " token: "+token);
+            //Log.d(TAG," token: "+NotificationService.token);
+            if(NotificationService.token != null && !NotificationService.token.equals(token)){
+                try{
+                    mSocket.disconnect();
+                    ExchangeKeys();
+                } catch (Exception e) {
+                    Log.d(TAG,e.toString());
+                }
+            }
             NotificationService.token = token;
             NotificationService.ip = ip;
         }
         
         int importance = NotificationManager.IMPORTANCE_DEFAULT;
-        NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "TEST4", importance);
-        channel.setDescription("CHANEL DESCRIPTION");
+        NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "ShockWalletNotificationsChannel", importance);
+        channel.setDescription("Listen on updates from ShockAPI, and push notification to the user");
         NotificationManager notificationManager = getSystemService(NotificationManager.class);
         notificationManager.createNotificationChannel(channel);
         
@@ -296,15 +330,16 @@ public class NotificationService extends Service {
                 .setSmallIcon(R.drawable.icon)
                 .setLargeIcon(BitmapFactory.decodeResource(this.getResources(),
                         R.drawable.icon))
-                .setContentTitle("Notification service connected.")
-                .setContentText("Listening...")
+                .setContentTitle("Notification service loading")
+                .setContentText("Connecting...")
                 //.setSmallIcon(R.drawable.icon)
                 .setContentIntent(contentIntent)
                 .setOngoing(true)
                 .setGroup(GROUP_KEY_NOTIF)
                 .setGroupSummary(true);
         //notificationManager.notify(SERVICE_NOTIFICATION_ID, notification.build());
-        startForeground(SERVICE_NOTIFICATION_ID, notification.build());
+        startForeground(INITIAL_SERVICE_NOTIFICATION_ID, notification.build());
+        this.nBuilder = notification;
         return START_STICKY;
     };
     private HashMap<String,String> EncryptMessage(String message) throws Exception{
@@ -396,6 +431,8 @@ public class NotificationService extends Service {
                         mSocket.on("transaction:new", newTransaction);
                         mSocket.on("invoice:new", newInvoice);
                         mSocket.on("ON_CHATS", newChat);
+                        mSocket.on("connect",onConnect);
+                        mSocket.on("disconnect",onDisconnect);
                         mSocket.connect();
                         attemptSend();
                         Log.d(TAG, "Done conn");
