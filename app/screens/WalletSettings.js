@@ -1,5 +1,12 @@
 import React from 'react'
-import { Text, View, StyleSheet, ToastAndroid } from 'react-native'
+import {
+  Text,
+  View,
+  StyleSheet,
+  ToastAndroid,
+  Switch,
+  ScrollView,
+} from 'react-native'
 import { connect } from 'react-redux'
 import Logger from 'react-native-file-log'
 import { Slider } from 'react-native-elements'
@@ -13,6 +20,10 @@ import {
   updateRoutingFeeAbsolute,
   updateRoutingFeeRelative,
 } from '../actions/FeesActions'
+import {
+  updateNotifyDisconnect,
+  updateNotifyDisconnectAfter,
+} from '../actions/SettingsActions'
 import ShockInput from '../components/ShockInput'
 import Pad from '../components/Pad'
 import ShockButton from '../components/ShockButton'
@@ -41,6 +52,8 @@ export const WALLET_SETTINGS = 'WALLET_SETTINGS'
  *  @prop {(feesLevel:import('../actions/FeesActions').feeLevel)=>void} updateSelectedFee
  *  @prop {(val:string)=>void} updateRoutingFeeAbsolute
  *  @prop {(val:string)=>void} updateRoutingFeeRelative
+ *  @prop {(val:boolean)=>void} updateNotifyDisconnect
+ *  @prop {(val:number)=>void} updateNotifyDisconnectAfter
  */
 /**
  * @typedef {ConnectedRedux & TmpProps} Props
@@ -60,6 +73,8 @@ export const WALLET_SETTINGS = 'WALLET_SETTINGS'
  * @prop {string} tmpSource
  * @prop {string} tmpAbsoluteFee
  * @prop {string} tmpRelativeFee
+ * @prop {boolean} tmpNotifyDisconnect
+ * @prop {string} tmpNotifyDisconnectAfter
  */
 
 /**
@@ -87,6 +102,8 @@ class WalletSettings extends React.Component {
     tmpSource: this.props.fees.feesSource,
     tmpAbsoluteFee: this.props.fees.absoluteFee,
     tmpRelativeFee: this.props.fees.relativeFee,
+    tmpNotifyDisconnect: this.props.settings.notifyDisconnect,
+    tmpNotifyDisconnectAfter: this.props.settings.notifyDisconnectAfterSeconds.toString(),
   }
 
   componentDidMount() {
@@ -122,6 +139,33 @@ class WalletSettings extends React.Component {
    */
   updateTmpRelativeFee = val => {
     this.setState({ tmpRelativeFee: parseFloat(val).toString() })
+  }
+
+  /**
+   * @param {boolean} val
+   */
+  updateTmpNotifyDisconnect = val => {
+    this.setState({ tmpNotifyDisconnect: val })
+  }
+
+  /**
+   *
+   * @param {string} val
+   */
+  updateTmpNotifyDisconnectAfter = val => {
+    this.setState({ tmpNotifyDisconnectAfter: val })
+  }
+
+  submitNotificationsSettings = () => {
+    const { updateNotifyDisconnect, updateNotifyDisconnectAfter } = this.props
+    const { tmpNotifyDisconnect, tmpNotifyDisconnectAfter } = this.state
+    updateNotifyDisconnect(tmpNotifyDisconnect)
+    const afterN = Number(tmpNotifyDisconnectAfter)
+    if (!afterN) {
+      this.setState({ tmpNotifyDisconnectAfter: 'NaN' })
+    } else {
+      updateNotifyDisconnectAfter(afterN)
+    }
   }
 
   submitRoutingFees = () => {
@@ -176,12 +220,14 @@ class WalletSettings extends React.Component {
   }
 
   render() {
-    const { fees } = this.props
+    const { fees, settings } = this.props
     const {
       fetchedFees,
       tmpSource,
       tmpAbsoluteFee,
       tmpRelativeFee,
+      tmpNotifyDisconnect,
+      tmpNotifyDisconnectAfter,
     } = this.state
     let level = 1
     let levelText = 'less than one hour'
@@ -208,45 +254,31 @@ class WalletSettings extends React.Component {
     }
     const disableSubmitRoutingFees =
       tmpAbsoluteFee === fees.absoluteFee && tmpRelativeFee === fees.relativeFee
+    const disableSubmitNotificationsSettings =
+      tmpNotifyDisconnect === settings.notifyDisconnect &&
+      tmpNotifyDisconnectAfter ===
+        settings.notifyDisconnectAfterSeconds.toString()
     return (
-      <View style={styles.flexCenter}>
+      <ScrollView style={styles.flexCenter}>
         <Text style={styles.bigBold}>Wallet Settings</Text>
-        {/*<ShockButton 
-                color={
-                    fees.feesLevel=== 'MAX' ?  CSS.Colors.BLUE_DARK: undefined
-                } 
-                title={`Fastest ${fetchedFees.fastestFee}`}
-                onPress={this.setMAX}
-            />
-            <ShockButton 
-                color={
-                    fees.feesLevel=== 'MID' ?  CSS.Colors.BLUE_DARK: undefined
-                } 
-                title={`Less 1h ${fetchedFees.halfHourFee}`}
-                onPress={this.setMID}
-            />
-            <ShockButton 
-                color={
-                    fees.feesLevel=== 'MIN' ?  CSS.Colors.BLUE_DARK: undefined
-                } 
-                title={`Plus 1h ${fetchedFees.hourFee}`}
-                onPress={this.setMIN}
-            />*/}
-        <Text>
-          Selected Fee: <Text style={styles.centerBold}>{levelText}</Text>
-        </Text>
-        <Text>
-          Current Value: <Text style={styles.centerBold}>{currentVal}</Text>
-        </Text>
-        <Slider
-          style={styles.w_80}
-          maximumValue={2}
-          minimumValue={0}
-          step={1}
-          onSlidingComplete={this.handleSlider}
-          value={level}
-          thumbTintColor="#333333"
-        />
+        <View>
+          <Text style={styles.midBold}>On-chain Fees</Text>
+          <Text>
+            Selected Fee: <Text style={styles.centerBold}>{levelText}</Text>
+          </Text>
+          <Text>
+            Current Value: <Text style={styles.centerBold}>{currentVal}</Text>
+          </Text>
+          <Slider
+            style={styles.w_80}
+            maximumValue={2}
+            minimumValue={0}
+            step={1}
+            onSlidingComplete={this.handleSlider}
+            value={level}
+            thumbTintColor="#333333"
+          />
+        </View>
         <View>
           <Text style={styles.midBold}>Fees Source</Text>
           <View style={styles.d_flex}>
@@ -279,6 +311,7 @@ class WalletSettings extends React.Component {
               <ShockInput
                 onChangeText={this.updateTmpAbsoluteFee}
                 value={tmpAbsoluteFee}
+                keyboardType="numeric"
               />
             </View>
           </View>
@@ -292,6 +325,7 @@ class WalletSettings extends React.Component {
               <ShockInput
                 onChangeText={this.updateTmpRelativeFee}
                 value={tmpRelativeFee}
+                keyboardType="numeric"
               />
             </View>
           </View>
@@ -302,21 +336,64 @@ class WalletSettings extends React.Component {
             disabled={disableSubmitRoutingFees}
           />
         </View>
-      </View>
+        <View style={styles.hr} />
+        <View>
+          <Text style={styles.midBold}>Notifications Settings</Text>
+          <View style={styles.d_flex}>
+            <View style={styles.w_70}>
+              <Text style={styles.smallBold}>Disconnect alert</Text>
+              <Text>Make a noise when the connection is lost</Text>
+            </View>
+            <View style={styles.w_30}>
+              <Switch
+                value={tmpNotifyDisconnect}
+                onValueChange={this.updateTmpNotifyDisconnect}
+              />
+            </View>
+          </View>
+          <Pad amount={20} />
+          <View style={styles.d_flex}>
+            <View style={styles.w_70}>
+              <Text style={styles.smallBold}>Time to reconnect</Text>
+              <Text>
+                Seconds of no connection before assuming connection is lost
+              </Text>
+            </View>
+            <View style={styles.w_30}>
+              <ShockInput
+                value={tmpNotifyDisconnectAfter}
+                onChangeText={this.updateTmpNotifyDisconnectAfter}
+                keyboardType="numeric"
+              />
+            </View>
+          </View>
+          <Pad amount={20} />
+          <ShockButton
+            onPress={this.submitNotificationsSettings}
+            title="Update Notifications"
+            disabled={disableSubmitNotificationsSettings}
+          />
+        </View>
+      </ScrollView>
     )
   }
 }
 
 /**
- * @param {{fees:import('../../reducers/FeesReducer').State}} state
+ * @param {{
+ * fees:import('../../reducers/FeesReducer').State
+ * settings:import('../../reducers/SettingsReducer').State
+ * }} state
  */
-const mapStateToProps = ({ fees }) => ({ fees })
+const mapStateToProps = ({ fees, settings }) => ({ fees, settings })
 
 const mapDispatchToProps = {
   updateSelectedFee,
   updateFeesSource,
   updateRoutingFeeAbsolute,
   updateRoutingFeeRelative,
+  updateNotifyDisconnect,
+  updateNotifyDisconnectAfter,
 }
 
 export default connect(

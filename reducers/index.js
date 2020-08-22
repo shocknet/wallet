@@ -11,6 +11,7 @@ import FeedReducer from './feed'
 import FeedWallReducer from './FeedReducer'
 import FollowsReducer from './follows'
 import SingleFeedReducer from './singleFeed'
+import SettingsReducer from './SettingsReducer'
 
 const rootReducer = {
   auth: AuthReducer,
@@ -26,6 +27,7 @@ const rootReducer = {
   feedWall: FeedWallReducer,
   follows: FollowsReducer,
   singleFeed: SingleFeedReducer,
+  settings: SettingsReducer,
 }
 
 /**
