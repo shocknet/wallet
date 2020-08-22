@@ -76,6 +76,7 @@ import * as Cache from '../../services/cache'
  * @prop {(invoice: Wallet.Invoice) => void} loadNewInvoice
  * @prop {(transaction: Wallet.Transaction) => void} loadNewTransaction
  * @prop {{feesLevel:'MIN'|'MID'|'MAX', feesSource:string}} fees
+ * @prop {{notifyDisconnect:boolean, notifyDisconnectAfterSeconds:number}} settings
  */
 
 /**
@@ -310,9 +311,15 @@ class WalletOverview extends Component {
     if (!authData || !nodeInfo) {
       Logger.log('error starting service, invalid info')
     }
+    const {
+      notifyDisconnect,
+      notifyDisconnectAfterSeconds,
+    } = this.props.settings
     notificationService.startService(
       nodeInfo,
       authData ? authData.authData.token : 'token err',
+      notifyDisconnect,
+      1000 * notifyDisconnectAfterSeconds,
     )
   }
 
@@ -427,13 +434,14 @@ class WalletOverview extends Component {
 }
 
 /**
- * @param {{ wallet: any, history: any, node: any, fees: any }} state
+ * @param {{ wallet: any, history: any, node: any, fees: any, settings:any }} state
  */
-const mapStateToProps = ({ wallet, history, node, fees }) => ({
+const mapStateToProps = ({ wallet, history, node, fees, settings }) => ({
   wallet,
   history,
   node,
   fees,
+  settings,
 })
 
 const mapDispatchToProps = {
