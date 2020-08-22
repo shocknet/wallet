@@ -49,7 +49,6 @@ export const PUBLISH_CONTENT_DARK = 'PUBLISH_CONTENT_DARK'
 
 /** @type {State} */
 const DEFAULT_STATE = {
-  shareMode: 'public',
   description: '',
   images: [],
   isPostOrTeaser: false,

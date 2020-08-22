@@ -60,6 +60,7 @@ import PublishContent from '../../assets/images/profile/publish-content.svg'
 import CreatePost from '../../assets/images/profile/create-post.svg'
 
 import Modal from 'react-native-modal'
+import { CREATE_POST_DARK } from '../CreatePostDark'
 
 export const MY_PROFILE = 'MY_PROFILE'
 
@@ -515,7 +516,11 @@ export default class MyProfile extends React.Component<Props, State> {
   }
 
   onPressCreate = () => {
-    this.props.navigation.navigate(CREATE_POST)
+    if (theme === 'dark') {
+      this.props.navigation.navigate(CREATE_POST_DARK)
+    } else {
+      this.props.navigation.navigate(CREATE_POST)
+    }
   }
 
   onPressPublish = () => {

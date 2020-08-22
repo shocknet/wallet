@@ -23,6 +23,7 @@ import CreatePost, { CREATE_POST } from '../screens/CreatePost'
 import PublishContentDark, {
   PUBLISH_CONTENT_DARK,
 } from '../screens/PublishContentDark'
+import CreatePostDark, { CREATE_POST_DARK } from '../screens/CreatePostDark'
 
 import Login, { LOGIN } from '../screens/Login'
 
@@ -149,6 +150,12 @@ const drawerScreens = {
   },
   [PUBLISH_CONTENT_DARK]: {
     screen: PublishContentDark,
+    navigationOptions: {
+      title: 'Publish Content',
+    },
+  },
+  [CREATE_POST_DARK]: {
+    screen: CreatePostDark,
     navigationOptions: {
       title: 'Publish Content',
     },
