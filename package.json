@@ -130,7 +130,7 @@
     "@types/socket.io-client": "^1.4.32",
     "babel-eslint": "^10.0.3",
     "babel-jest": "^24.9.0",
-    "babel-preset-react-native": "4.0.0",
+    "babel-preset-react-native": "4.0.1",
     "cp-cli": "^2.0.0",
     "eslint": "^6.5.1",
     "eslint-config-prettier": "^6.7.0",
