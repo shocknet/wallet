@@ -49,7 +49,7 @@ yarn build:release //to build APK
 
 #### iOS:
 
-Help Wanted
+Help Wanted: bc1q2pn0rf92mt3pznjxq9gg3wkmjv0cmuy88tmfl8
 
 <hr></hr>
 
