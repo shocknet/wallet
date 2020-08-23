@@ -27,10 +27,11 @@ Running a Shockwallet node requires the [Shock API](https://github.com/shocknet/
 - [X] Liquidity Pre-Checks
 - [X] Torrent Content Streaming
 - [X] Torrent Publishing and Seed Service
-- [X] Guest Webclient
+- [X] Guest Webclient (prototype)
 - [ ] Advanced Coin Control
 - [ ] Advanced Channel Management
 - [ ] Automatic Swaps
+- [ ] Portable LNURL-Auth Keyring
 
 
 ## [Download Android APK](https://github.com/shocknet/wallet/releases/download/pre2.2/app-release.apk)
