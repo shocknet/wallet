@@ -16,13 +16,13 @@ export const requestedTip = (
 
 export const tipWentThrough = (
   recipientsPublicKey: string,
-  payment: Schema.PaymentV2,
+  paymentV2: Schema.PaymentV2,
 ) =>
   ({
     type: 'tips/tipWentThrough',
     data: {
       recipientsPublicKey,
-      payment,
+      paymentV2,
     },
   } as const)
 
