@@ -1,5 +1,10 @@
 
 # ShockWallet Alpha
+![GitHub last commit](https://img.shields.io/github/last-commit/shocknet/wallet?style=flat-square)
+![GitHub](https://img.shields.io/github/license/shocknet/wallet?label=license&style=flat-square)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com) 
+[![Chat](https://img.shields.io/badge/chat-on%20Telegram-blue?style=flat-square)](https://t.me/Shockwallet)
+![Twitter Follow](https://img.shields.io/twitter/follow/ShockBTC?style=flat-square)
 
 Shockwallet connects to your remote Lightning node, it overlays [graph user nodes](https://github.com/amark/gun) for a decentralized social network, with commerce and Torrent content.
 
@@ -49,10 +54,10 @@ yarn build:release //to build APK
 
 #### iOS:
 
-Help Wanted: bc1q2pn0rf92mt3pznjxq9gg3wkmjv0cmuy88tmfl8
+Help Wanted: `bc1q2pn0rf92mt3pznjxq9gg3wkmjv0cmuy88tmfl8`
 
 <hr></hr>
 
 **If you find any issues with this project, or would like to suggest an enhancement, please [tell us](https://github.com/shocknet/Wizard/issues).**
 
-© 2020 [Shock Network, Inc.](http://shock.network)
+© 2020 [Shock Network, Inc.](https://shockwallet.app)
