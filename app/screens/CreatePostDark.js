@@ -73,7 +73,7 @@ class CreatePostDark extends React.Component {
   }
 
   // @ts-ignore
-  _renderPostItem = item => {
+  _renderPostItem({ item }) {
     return (
       <View style={styles.postContainer}>
         <ImageBackground
