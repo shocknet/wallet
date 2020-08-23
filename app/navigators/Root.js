@@ -28,6 +28,7 @@ import CreatePostDark, { CREATE_POST_DARK } from '../screens/CreatePostDark'
 import Login, { LOGIN } from '../screens/Login'
 
 import MyProfile, { MY_PROFILE } from '../screens/MyProfile'
+import MyFeed, { MY_FEED } from '../screens/MyFeed'
 import Loading, { LOADING } from '../screens/Loading'
 
 import WalletManager, { WALLET_MANAGER } from './WalletManager'
@@ -52,6 +53,7 @@ const BottomNav = createBottomTabNavigator(
     [WALLET_OVERVIEW]: WalletOverview,
     [CHATS_ROUTE]: Chats,
     [MY_PROFILE]: MyProfile,
+    [MY_FEED]: MyFeed,
   },
   {
     initialRouteName: WALLET_OVERVIEW,

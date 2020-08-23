@@ -6,6 +6,10 @@ import { Clipboard, StatusBar, ToastAndroid } from 'react-native'
 import zipObj from 'lodash/zipObject'
 import Logger from 'react-native-file-log'
 import { Schema } from 'shock-common'
+// @ts-ignore
+import ChatIcon from '../../assets/images/navbar-icons/chat.svg'
+// @ts-ignore
+import ChatIconFocused from '../../assets/images/navbar-icons/chat-focused.svg'
 
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation
@@ -17,7 +21,6 @@ import * as CSS from '../../res/css'
 import { CHAT_ROUTE } from './../Chat'
 
 import ChatsView from './View'
-import TabBarIcon from './TabBarIcon'
 
 export const CHATS_ROUTE = 'CHATS_ROUTE'
 /**
@@ -58,8 +61,11 @@ export default class Chats extends React.Component {
    * @type {import('react-navigation').NavigationBottomTabScreenOptions}
    */
   static navigationOptions = {
+    // tabBarIcon: ({ focused }) => {
+    //   return <TabBarIcon focused={focused} />
+    // },
     tabBarIcon: ({ focused }) => {
-      return <TabBarIcon focused={focused} />
+      return (focused ? <ChatIconFocused size={32} /> : <ChatIcon size={32} />)
     },
   }
 

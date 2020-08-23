@@ -14,7 +14,6 @@ import {
   InteractionManager,
   StatusBar,
 } from 'react-native'
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'
 import Logger from 'react-native-file-log'
 import SocketManager from '../../services/socket'
 import { connect } from 'react-redux'
@@ -26,7 +25,10 @@ import { ConnectionContext } from '../../ctx/Connection'
 import Nav from '../../components/Nav'
 import wavesBG from '../../assets/images/waves-bg.png'
 import wavesBGDark from '../../assets/images/waves-bg-dark.png'
-// import WalletIcon from '../../assets/images/navbar-icons/wallet.svg'
+//@ts-ignore
+import WalletIcon from '../../assets/images/navbar-icons/wallet.svg'
+//@ts-ignore
+import WalletIconFocused from '../../assets/images/navbar-icons/wallet-focused.svg'
 
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}, {}>} Navigation
@@ -108,15 +110,16 @@ class WalletOverview extends Component {
    */
   static navigationOptions = {
     tabBarIcon: ({ focused }) => {
-      return ((
-        <FontAwesome5
-          color={
-            focused ? CSS.Colors.BLUE_MEDIUM_DARK : CSS.Colors.GRAY_MEDIUM_LIGHT
-          }
-          name="wallet"
-          size={32}
-        />
-      ))
+      return (
+        // <FontAwesome5
+        //   color={
+        //     focused ? CSS.Colors.BLUE_MEDIUM_DARK : CSS.Colors.GRAY_MEDIUM_LIGHT
+        //   }
+        //   name="wallet"
+        //   size={32}
+        // />
+        (focused ? <WalletIconFocused size={32} /> : <WalletIcon size={32} />)
+      )
     },
   }
 

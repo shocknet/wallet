@@ -1,53 +1,40 @@
-//@ts-nocheck
 import React from 'react'
 import {
   Text,
   View,
-  SafeAreaView,
   StyleSheet,
   TouchableOpacity,
-  ScrollView,
-  ToastAndroid,
-  ActivityIndicator,
-  StatusBar,
   TouchableHighlight,
   ImageBackground,
   FlatList,
 } from 'react-native'
-import ImagePicker from 'react-native-image-crop-picker'
 import FontAwesome from 'react-native-vector-icons/FontAwesome'
-import Logger from 'react-native-file-log'
-import _ from 'lodash'
-import Http from 'axios'
-
-import TextInput from '../components/TextInput'
-import ShockButton from '../components/ShockButton'
 import * as CSS from '../res/css'
-import Modal from 'react-native-modal'
-import ArrowLeft from '../assets/images/arrow-left.svg'
 import Pad from '../components/Pad'
 import InputGroup from '../components/InputGroup'
 
+// @ts-ignore
+import ArrowLeft from '../assets/images/arrow-left.svg'
+// @ts-ignore
 import PublicIcon from '../assets/images/create-post/public.svg'
+// @ts-ignore
 import SubscribersIcon from '../assets/images/create-post/subscribers.svg'
+// @ts-ignore
 import PaywallIcon from '../assets/images/create-post/paywall.svg'
 
 import DropDownPicker from 'react-native-dropdown-picker'
 import Icon from 'react-native-vector-icons/Feather'
-import wavesBGDark from '../assets/images/waves-bg-dark.png'
-import wavesBG from '../assets/images/waves-bg.png'
-import Carousel from 'react-native-snap-carousel'
 
 export const CREATE_POST_DARK = 'CREATE_POST_DARK'
 
 /**
  * @typedef {object} Props
- * @prop
+ * @prop {any} navigation
  */
 
 /**
  * @typedef {object} State
- * @prop {boolean} isCreating
+ * @prop {string} shareMode
  * @prop {any[]} images
  * @prop {string} description
  */
@@ -57,7 +44,6 @@ const DEFAULT_STATE = {
   shareMode: 'public',
   description: '',
   images: [],
-  activePostIndex: 0,
 }
 
 /**
@@ -77,13 +63,17 @@ class CreatePostDark extends React.Component {
     this.props.navigation.goBack()
   }
 
+  /**
+   * @param {{ value: any; }} item
+   */
   onChangeShareMode = item => {
     this.setState({
       shareMode: item.value,
     })
   }
 
-  _renderPostItem({ item }) {
+  // @ts-ignore
+  _renderPostItem = item => {
     return (
       <View style={styles.postContainer}>
         <ImageBackground
@@ -99,14 +89,6 @@ class CreatePostDark extends React.Component {
         </ImageBackground>
       </View>
     )
-  }
-
-  carouselRef(ref) {
-    this.carousel = ref
-  }
-
-  onSnapToPostItem(item) {
-    // this.setState({ activePostIndex: index })
   }
 
   render() {
@@ -158,6 +140,7 @@ class CreatePostDark extends React.Component {
             </View>
             <Pad amount={32} />
             <InputGroup
+              value={this.state.description}
               label="Description"
               multiline
               inputStyle={styles.descInputDark}
@@ -198,17 +181,11 @@ class CreatePostDark extends React.Component {
           <View style={styles.horizontalLine} />
           <View style={styles.belowContainer}>
             <View style={styles.contentTypes}>
-              <TouchableOpacity
-                underlayColor="transparent"
-                style={styles.contentType1}
-              >
+              <TouchableOpacity style={styles.contentType1}>
                 <Icon name="check" color="white" size={15} />
                 <Text style={styles.contentTypeText1}>Offers</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                underlayColor="transparent"
-                style={styles.contentType2}
-              >
+              <TouchableOpacity style={styles.contentType2}>
                 <Text style={styles.contentTypeText2}>Content</Text>
               </TouchableOpacity>
             </View>
@@ -216,7 +193,6 @@ class CreatePostDark extends React.Component {
               <FlatList
                 data={testDatas}
                 renderItem={this._renderPostItem}
-                keyExtractor={this.onSnapToPostItem}
                 horizontal
               />
             </View>

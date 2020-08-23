@@ -58,6 +58,10 @@ import OfferService from '../../assets/images/profile/offer-service.svg'
 import PublishContent from '../../assets/images/profile/publish-content.svg'
 // @ts-ignore
 import CreatePost from '../../assets/images/profile/create-post.svg'
+// @ts-ignore
+import ProfileIcon from '../../assets/images/navbar-icons/profile.svg'
+// @ts-ignore
+import ProfileIconFocused from '../../assets/images/navbar-icons/profile-focused.svg'
 
 import Modal from 'react-native-modal'
 import { CREATE_POST_DARK } from '../CreatePostDark'
@@ -101,14 +105,15 @@ export default class MyProfile extends React.Component<Props, State> {
   static navigationOptions: NavigationBottomTabScreenOptions = {
     tabBarIcon: ({ focused }) => {
       return (
-        <FontAwesome5
-          color={
-            focused ? CSS.Colors.BLUE_MEDIUM_DARK : CSS.Colors.GRAY_MEDIUM_LIGHT
-          }
-          name="user-circle"
-          // reverseColor={'#CED0CE'}
-          size={32}
-        />
+        // <FontAwesome5
+        //   color={
+        //     focused ? CSS.Colors.BLUE_MEDIUM_DARK : CSS.Colors.GRAY_MEDIUM_LIGHT
+        //   }
+        //   name="user-circle"
+        //   // reverseColor={'#CED0CE'}
+        //   size={32}
+        // />
+        focused ? <ProfileIconFocused size={32} /> : <ProfileIcon size={32} />
       )
     },
   }
