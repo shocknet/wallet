@@ -1,17 +1,31 @@
 
 # ShockWallet Alpha
 
-ShockWallet connects to a remote node and leverages [GUN](https://github.com/amark/gun) for a decentralized social layer.
+Shockwallet connects to your remote Lightning node, it overlays [graph user nodes](https://github.com/amark/gun) for a decentralized social commerce network.
 
-Requires [Shock API](https://github.com/shocknet/api) backend, and [LND](https://github.com/lightningnetwork/lnd)
+Running a Shockwallet node requires the [Shock API](https://github.com/shocknet/api) backend, and [LND](https://github.com/lightningnetwork/lnd)
 
 ## Features:
 
-- Portable GUN Personas + Encrypted Messaging
-- Provider-less mobile notifications
-- LNURL Pay, Withdraw, Channel
-- Seed Caching
-- SendSide Payments
+
+- [X] Basic LND Channel and Peer Management
+- [X] Fee Control
+- [X] LNURL-Pay, Withdraw and Channel
+- [X] Social Personas
+- [X] Automatic Seed and Channel Backup
+- [X] E2EEncrypted Chat Messaging
+- [X] Online Presence Indication
+- [X] Sender-Initiated Payments
+- [X] Provider-less Notifications
+- [X] Node-Disconnected Notification Settings
+- [X] LND 10 with Keysend & Multi-Shard Payments
+- [X] Liquidity Pre-Checks
+- [X] Torrent Content Streaming
+- [X] Torrent Publishing and Seed Service
+- [X] Guest Webclient
+- [ ] Advanced Coin Control
+- [ ] Advanced Channel Management
+- [ ] Automatic Swaps
 
 
 ## [Download Android APK](https://github.com/shocknet/wallet/releases/download/pre2.2/app-release.apk)
