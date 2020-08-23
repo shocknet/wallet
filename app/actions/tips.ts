@@ -26,6 +26,16 @@ export const tipWentThrough = (
     },
   } as const)
 
+export const tipFailed = (recipientsPublicKey: string, message: string) =>
+  ({
+    type: 'tips/tipFailed',
+    data: {
+      recipientsPublicKey,
+      message,
+    },
+  } as const)
+
 export type TipsAction =
   | ReturnType<typeof requestedTip>
   | ReturnType<typeof tipWentThrough>
+  | ReturnType<typeof tipFailed>
