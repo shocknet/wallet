@@ -4,7 +4,7 @@
 ![GitHub](https://img.shields.io/github/license/shocknet/wallet?label=license&style=flat-square)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com) 
 [![Chat](https://img.shields.io/badge/chat-on%20Telegram-blue?style=flat-square)](https://t.me/Shockwallet)
-![Twitter Follow](https://img.shields.io/twitter/follow/ShockBTC?style=flat-square)
+[![Twitter Follow](https://img.shields.io/twitter/follow/ShockBTC?style=flat-square)](https://twitter.com/shockbtc)
 
 Shockwallet connects to your remote Lightning node, it overlays [graph user nodes](https://github.com/amark/gun) for a decentralized social network, with commerce and Torrent content.
 
@@ -21,7 +21,7 @@ Running a Shockwallet node requires the [Shock API](https://github.com/shocknet/
 - [X] E2EEncrypted Chat Messaging
 - [X] Online Presence Indication
 - [X] Sender-Initiated Payments
-- [X] Provider-less Notifications
+- [X] Provider-less Notificationshttp://bitcoin:bc1q2pn0rf92mt3pznjxq9gg3wkmjv0cmuy88tmfl8
 - [X] Node-Disconnected Notification Settings
 - [X] LND 10 with Keysend & Multi-Shard Payments
 - [X] Liquidity Pre-Checks
