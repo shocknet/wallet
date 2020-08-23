@@ -1,3 +1,5 @@
+import { Schema } from 'shock-common'
+
 export const requestedTip = (
   amount: number,
   recipientsPublicKey: string,
@@ -12,11 +14,15 @@ export const requestedTip = (
     },
   } as const)
 
-export const tipWentThrough = (recipientsPublicKey: string) =>
+export const tipWentThrough = (
+  recipientsPublicKey: string,
+  payment: Schema.PaymentV2,
+) =>
   ({
     type: 'tips/tipWentThrough',
     data: {
       recipientsPublicKey,
+      payment,
     },
   } as const)
 
