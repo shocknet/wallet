@@ -77,7 +77,7 @@ export class TipBtn extends React.PureComponent<Props> {
             <Text
               onPress={this.onPressLastTip}
               style={state === 'err' ? styles.lastTipErr : styles.lastTip}
-            >{`Last Tip: ${lastAmount}`}</Text>
+            >{`Last Tip: ${lastAmount} (Tap for Details)`}</Text>
           )}
         </View>
 
