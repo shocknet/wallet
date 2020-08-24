@@ -1,6 +1,7 @@
 import produce from 'immer'
 import { Reducer } from 'redux'
-import { REHYDRATE } from 'redux-persist'
+import { REHYDRATE, RehydrateAction } from 'redux-persist'
+import Logger from 'react-native-file-log'
 
 import { Action } from '../app/actions'
 
@@ -13,10 +14,37 @@ type State = Record<
   }
 >
 
-const reducer: Reducer<State, Action> = (state = {}, action) =>
+const reducer: Reducer<State, Action | RehydrateAction> = (
+  state = {},
+  action,
+) =>
   produce(state, draft => {
-    // @ts-expect-error
     if (action.type === REHYDRATE) {
+      const { err, payload } = action
+
+      if (err) {
+        Logger.log(
+          `Tips reducer, redux-persist's RehydrateAction err: ${JSON.stringify(
+            err,
+          )}`,
+        )
+        return
+      }
+
+      const p = payload as { tips: State }
+
+      if (typeof p.tips !== 'object') {
+        Logger.log(
+          `Tips reducer, redux-persist's RehydrateAction payload.tips not an object: ${JSON.stringify(
+            err,
+          )}`,
+        )
+
+        return
+      }
+
+      Object.assign(draft, p.tips)
+
       Object.entries(draft).forEach(([k, { state }]) => {
         if (state === 'processing') {
           delete draft[k]
