@@ -48,7 +48,7 @@
     "js-lnurl": "0.0.8",
     "jsonfile": "^4.0.0",
     "jsonwebtoken": "^8.4.0",
-    "lodash": "^4.17.19",
+    "lodash": "^4.17.20",
     "moment": "^2.24.0",
     "opencollective-postinstall": "^2.0.2",
     "path-browserify": "0.0.0",
