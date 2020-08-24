@@ -65,6 +65,7 @@ export const getStore = () => {
  * @prop {ReturnType<typeof reducers.users>} users
  * @prop {ReturnType<typeof reducers['follows']>} follows
  * @prop {ReturnType<typeof reducers['feed']>} feed
+ * @prop {ReturnType<typeof reducers['tips']>} tips
  * @prop {any} connection
  */
 
