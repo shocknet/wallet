@@ -1,5 +1,5 @@
 import React from 'react'
-import { View } from 'react-native'
+import { View, ToastAndroid } from 'react-native'
 import { Button, Text } from 'react-native-elements'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
@@ -49,6 +49,7 @@ export class TipBtn extends React.PureComponent<Props> {
 
   onPressLastTip = () => {
     if (this.props.state === 'err') {
+      ToastAndroid.show(this.props.lastError, ToastAndroid.LONG)
     }
   }
 
