@@ -34,7 +34,7 @@ export const tip = async (
     // cast: If status is 200 response will be PaymentV2
     return data as Schema.PaymentV2
   } catch (err) {
-    const msg = `tip() -> ${err.message}`
+    const msg = `tip() -> ${JSON.stringify(err)}`
     Logger.log(msg)
     throw new Error(msg)
   }
