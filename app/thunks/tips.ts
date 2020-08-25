@@ -11,8 +11,10 @@ export const tip = (
   recipientsPublicKey: string,
   memo: string,
 ) => (dispatch: Dispatch<Action>, getState: () => State) => {
-  const { tips } = getState()
-
+  const {
+    tips,
+    fees: { absoluteFee, relativeFee },
+  } = getState()
   const tipOrUndef = tips[recipientsPublicKey]
 
   // only one tip process at a time
@@ -22,7 +24,16 @@ export const tip = (
 
   dispatch(requestedTip(amount, recipientsPublicKey, memo))
 
-  Wallet.tip(amount, recipientsPublicKey, memo, 0)
+  const relFeeN = Number(relativeFee)
+  const absFeeN = Number(absoluteFee)
+  if (!relFeeN || !absFeeN) {
+    throw new Error('invalid fees provided')
+  }
+  const amountN = Number(amount)
+  const calculatedFeeLimit = Math.floor(amountN * relFeeN + absFeeN)
+  const feeLimit = calculatedFeeLimit > amountN ? amountN : calculatedFeeLimit
+
+  Wallet.tip(amount, recipientsPublicKey, memo, feeLimit)
     .then(paymentV2 => {
       dispatch(tipWentThrough(recipientsPublicKey, paymentV2))
     })
