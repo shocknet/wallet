@@ -7,6 +7,7 @@ import * as FeedWall from './FeedAction'
 import * as SingleFeed from './singleFeed'
 import * as Me from './me'
 import { TipsAction } from './tips'
+import { InvoicesAction } from './InvoiceActions'
 
 export type Action =
   | UsersActions.ReceivedUsersDataAction
@@ -20,6 +21,7 @@ export type Action =
   | Feed.FeedActions
   | Me.MeAction
   | TipsAction
+  | InvoicesAction
 
 export * from './tips'
 

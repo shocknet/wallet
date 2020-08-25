@@ -10,7 +10,7 @@ export const ACTIONS = {
   DECODE_PAYMENT_REQUEST: 'invoice/load',
   SET_LIQUIDITY_CHECK: 'invoice/liquidityCheck',
   INVOICE_DECODE_ERROR: 'invoice/error',
-  ADD_INVOICE: 'invoice/add',
+  ADD_INVOICE: /** @type {'invoice/add'} */ ('invoice/add'),
   RESET_INVOICE: 'invoice/reset',
 }
 
@@ -117,6 +117,12 @@ export const resetInvoice = () => dispatch => {
 }
 
 /**
+ * @typedef {object} AddInvoiceAction
+ * @prop {typeof ACTIONS.ADD_INVOICE} type
+ * @prop {string} data
+ */
+
+/**
  * Create a new invoice
  * @param {import('../services/wallet').AddInvoiceRequest} invoice
  * @returns {import('redux-thunk').ThunkAction<void, {}, {}, import('redux').AnyAction>}
@@ -146,3 +152,7 @@ export const newAddress = () => async dispatch => {
     data: address,
   })
 }
+
+/**
+ * @typedef {AddInvoiceAction} InvoicesAction
+ */
