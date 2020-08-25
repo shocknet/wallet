@@ -6,7 +6,7 @@
 [![Chat](https://img.shields.io/badge/chat-on%20Telegram-blue?style=flat-square)](https://t.me/Shockwallet)
 [![Twitter Follow](https://img.shields.io/twitter/follow/ShockBTC?style=flat-square)](https://twitter.com/shockbtc)
 
-Shockwallet connects to your remote Lightning node, it overlays [graph user nodes](https://github.com/amark/gun) for a decentralized social network, with commerce and Torrent content.
+Shockwallet connects to your remote Lightning node, it overlays [graph user nodes](https://github.com/amark/gun) for a decentralized social network.
 
 Running a Shockwallet node requires the [Shock API](https://github.com/shocknet/api) backend, and [LND](https://github.com/lightningnetwork/lnd)
 
