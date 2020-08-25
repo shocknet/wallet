@@ -1,5 +1,6 @@
 import Http from 'axios'
 import Logger from 'react-native-file-log'
+import { Schema } from 'shock-common'
 
 import * as Cache from '../cache'
 import * as Utils from '../utils'
@@ -833,7 +834,7 @@ export const payKeysend = async request => {
 
 /**
  * @typedef {object} DecodeInvoiceResponse
- * @prop {DecodedPayReq} decodedRequest
+ * @prop {Schema.InvoiceWhenDecoded} decodedRequest
  */
 
 /**
