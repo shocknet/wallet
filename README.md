@@ -1,12 +1,12 @@
 
 # ShockWallet Alpha
-![GitHub last commit](https://img.shields.io/github/last-commit/shocknet/wallet?style=flat-square)
-![GitHub](https://img.shields.io/github/license/shocknet/wallet?label=license&style=flat-square)
+[![GitHub last commit](https://img.shields.io/github/last-commit/shocknet/wallet?style=flat-square)](https://github.com/shocknet/wallet/commits/master)
+[![GitHub](https://img.shields.io/github/license/shocknet/wallet?label=license&style=flat-square)](https://github.com/shocknet/wallet/blob/master/LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com) 
 [![Chat](https://img.shields.io/badge/chat-on%20Telegram-blue?style=flat-square)](https://t.me/Shockwallet)
 [![Twitter Follow](https://img.shields.io/twitter/follow/ShockBTC?style=flat-square)](https://twitter.com/shockbtc)
 
-Shockwallet connects to your remote Lightning node, it overlays [graph user nodes](https://github.com/amark/gun) for a decentralized social network.
+Shockwallet connects to your remote Lightning node, it overlays [graph user nodes](https://gun.eco/) for a decentralized social network.
 
 Running a Shockwallet node requires the [Shock API](https://github.com/shocknet/api) backend, and [LND](https://github.com/lightningnetwork/lnd)
 
