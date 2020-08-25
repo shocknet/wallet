@@ -151,7 +151,7 @@ const drawerScreens = {
   [CREATE_POST_DARK]: {
     screen: CreatePostDark,
     navigationOptions: {
-      title: 'Publish Content',
+      title: 'Publish Content Dark',
     },
   },
 }
