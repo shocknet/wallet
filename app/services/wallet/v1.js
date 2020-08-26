@@ -1,8 +1,8 @@
 import Http from 'axios'
 import Logger from 'react-native-file-log'
 
-import * as Cache from './cache'
-import * as Utils from './utils'
+import * as Cache from '../cache'
+import * as Utils from '../utils'
 
 /**
  * @typedef {object} Bytes

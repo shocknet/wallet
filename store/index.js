@@ -6,7 +6,10 @@ import thunk from 'redux-thunk'
 import { setStore } from '../app/services/contact-api/socket'
 import SocketManager from '../app/services/socket'
 import reducers from '../reducers'
+
 import * as Common from 'shock-common'
+import createSagaMiddleware from 'redux-saga'
+const sagaMiddleware = createSagaMiddleware()
 
 /**
  * @typedef {import('../app/actions').Action} Action
@@ -20,7 +23,7 @@ const storage = createSensitiveStorage({
 const config = {
   key: 'root',
   // blacklist: ['connection'],
-  blacklist: ['follows'],
+  blacklist: ['follows', 'feed'],
   storage,
 }
 
@@ -36,13 +39,15 @@ let store
 export default () => {
   // TODO: Fix typings for createStore()
   // @ts-ignore
-  store = createStore(persistedReducers, applyMiddleware(thunk))
+  store = createStore(persistedReducers, applyMiddleware(thunk, sagaMiddleware))
   // @ts-ignore
   const persistor = persistStore(store)
   // @ts-ignore
   setStore(store)
   // @ts-ignore
   SocketManager.setStore(store)
+
+  sagaMiddleware.run(Common.Store.rootSaga)
 
   return { persistor, store }
 }
@@ -59,6 +64,8 @@ export const getStore = () => {
  * @typedef {object} State
  * @prop {ReturnType<typeof reducers.users>} users
  * @prop {ReturnType<typeof reducers['follows']>} follows
+ * @prop {ReturnType<typeof reducers['feed']>} feed
+ * @prop {ReturnType<typeof reducers['tips']>} tips
  * @prop {any} connection
  */
 
