@@ -1,17 +1,37 @@
 
 # ShockWallet Alpha
+[![GitHub last commit](https://img.shields.io/github/last-commit/shocknet/wallet?style=flat-square)](https://github.com/shocknet/wallet/commits/master)
+[![GitHub](https://img.shields.io/github/license/shocknet/wallet?label=license&style=flat-square)](https://github.com/shocknet/wallet/blob/master/LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com) 
+[![Chat](https://img.shields.io/badge/chat-on%20Telegram-blue?style=flat-square)](https://t.me/Shockwallet)
+[![Twitter Follow](https://img.shields.io/twitter/follow/ShockBTC?style=flat-square)](https://twitter.com/shockbtc)
 
-ShockWallet connects to a remote node and leverages [GUN](https://github.com/amark/gun) for a decentralized social layer.
+Shockwallet connects to your remote Lightning node, it overlays [graph user nodes](https://gun.eco/) for a decentralized social network.
 
-Requires [Shock API](https://github.com/shocknet/api) backend, and [LND](https://github.com/lightningnetwork/lnd)
+Running a Shockwallet node requires the [Shock API](https://github.com/shocknet/api) backend, and [LND](https://github.com/lightningnetwork/lnd)
 
 ## Features:
 
-- Portable GUN Personas + Encrypted Messaging
-- Provider-less mobile notifications
-- LNURL Pay, Withdraw, Channel
-- Seed Caching
-- SendSide Payments
+
+- [X] Basic LND Channel and Peer Management
+- [X] Fee Control
+- [X] LNURL-Pay, Withdraw and Channel
+- [X] Social Personas
+- [X] Automatic Seed and Channel Backup
+- [X] E2EEncrypted Chat Messaging
+- [X] Online Presence Indication
+- [X] Sender-Initiated Payments
+- [X] Provider-less Notifications
+- [X] Node-Disconnected Notification Settings
+- [X] LND 10 with Keysend & Multi-Shard Payments
+- [X] Liquidity Pre-Checks
+- [X] Torrent Content Streaming
+- [X] Torrent Publishing and Seed Service
+- [X] Guest Webclient (prototype)
+- [ ] Advanced Coin Control
+- [ ] Advanced Channel Management
+- [ ] Automatic Swaps
+- [ ] Portable LNURL-Auth Keyring
 
 
 ## [Download Android APK](https://github.com/shocknet/wallet/releases/download/pre2.2/app-release.apk)
@@ -35,11 +55,10 @@ yarn build:release //to build APK
 
 #### iOS:
 
-Help Wanted
+Help Wanted: `bc1q2pn0rf92mt3pznjxq9gg3wkmjv0cmuy88tmfl8`
 
 <hr></hr>
 
 **If you find any issues with this project, or would like to suggest an enhancement, please [tell us](https://github.com/shocknet/Wizard/issues).**
 
-[ISC License](https://opensource.org/licenses/ISC)
-© 2020 [Shock Network, Inc.](http://shock.network)
+© 2020 [Shock Network, Inc.](https://shockwallet.app)

@@ -29,6 +29,7 @@ import * as Routes from '../../routes'
 import { SafeAreaView } from 'react-navigation'
 import FollowBtn from '../../components/FollowBtn'
 import Post from '../../components/Post'
+import TipBtn from '../../components/TipBtn'
 
 type UserType = Common.Schema.User
 type Navigation = NavigationScreenProp<{}, Routes.UserParams>
@@ -241,6 +242,7 @@ class User extends React.Component<Props, State> {
           </TouchableOpacity>
         </View>
 
+        <TipBtn recipientsPublicKey={publicKey} />
         <FollowBtn publicKey={publicKey} />
       </View>
     )

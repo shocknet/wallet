@@ -267,17 +267,21 @@ class SendScreen extends Component {
 
   payLightningInvoice = async () => {
     try {
-      const { invoice, navigation } = this.props
+      const { invoice, navigation, fees } = this.props
       const { amount } = this.state
       this.setState({
         sending: true,
       })
+      const hideAmount = !!(
+        invoice.paymentRequest &&
+        invoice.amount &&
+        Big(invoice.amount).gt(0)
+      )
       const payload = {
-        amt:
-          invoice.paymentRequest && invoice.amount && Big(invoice.amount).gt(0)
-            ? undefined
-            : parseInt(amount, 10),
+        amt: hideAmount ? parseInt(invoice.amount, 10) : parseInt(amount, 10),
         payreq: invoice.paymentRequest,
+        fees,
+        hideAmount,
       }
       await Wallet.CAUTION_payInvoice(payload)
       this.setState({
@@ -299,7 +303,7 @@ class SendScreen extends Component {
 
   payKeysend = async () => {
     try {
-      const { navigation, chat } = this.props
+      const { navigation, chat, fees } = this.props
       const { selectedContact } = chat
       if (!selectedContact || selectedContact.type !== 'keysend') {
         return
@@ -312,6 +316,7 @@ class SendScreen extends Component {
       await Wallet.payKeysend({
         amt: parseInt(amount, 10),
         dest,
+        fees,
       })
       this.setState({
         sending: false,
@@ -332,17 +337,43 @@ class SendScreen extends Component {
 
   sendPayment = async () => {
     try {
-      const { chat } = this.props
+      const { navigation, chat, fees } = this.props
       const { amount, description } = this.state
       const { selectedContact } = chat
-      // @ts-ignore
-      await API.Actions.sendPayment(selectedContact.pk, amount, description)
-      return true
-    } catch (err) {
+      this.setState({
+        sending: true,
+      })
+      await API.Actions.sendPayment(
+        // @ts-ignore
+        selectedContact.pk,
+        amount,
+        description,
+        fees,
+      )
       this.setState({
         sending: false,
-        error: err,
+        paymentSuccessful: true,
       })
+      setTimeout(() => {
+        if (navigation) {
+          navigation.navigate(WALLET_OVERVIEW)
+        }
+      }, 500)
+      return true
+    } catch (err) {
+      if (err.response && err.response.data && err.response.data.errorMessage) {
+        const error = err.response.data.errorMessage
+        this.setState({
+          sending: false,
+          error,
+        })
+      } else {
+        this.setState({
+          sending: false,
+          error: err,
+        })
+      }
+
       return false
     }
   }

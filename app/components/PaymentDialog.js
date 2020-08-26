@@ -1,9 +1,9 @@
 import React from 'react'
 
-import BasicDialog from '../../components/BasicDialog'
-import ShockInput from '../../components/ShockInput'
-import Pad from '../../components/Pad'
-import ShockButton from '../../components/ShockButton'
+import BasicDialog from './BasicDialog'
+import ShockInput from './ShockInput'
+import Pad from './Pad'
+import ShockButton from './ShockButton'
 
 /**
  * @typedef {object} Props
@@ -57,7 +57,7 @@ export default class PaymentDialog extends React.Component {
   //////////////////////////////////////////////////////////////////////////////
 
   /**
-   * @type {import('../../components/ShockInput').Props['onChangeText']}
+   * @type {import('./ShockInput').Props['onChangeText']}
    */
   onChangeAmount = amount => {
     const numbers = '0123456789'.split('')
@@ -74,7 +74,7 @@ export default class PaymentDialog extends React.Component {
   }
 
   /**
-   * @type {import('../../components/ShockInput').Props['onChangeText']}
+   * @type {import('./ShockInput').Props['onChangeText']}
    */
   onChangeMemo = memo => {
     this.setState({

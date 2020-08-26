@@ -16,12 +16,12 @@ import * as Cache from '../../services/cache'
 import * as CSS from '../../res/css'
 const { Colors } = CSS
 import { SEND_SCREEN } from '../Send'
+import PaymentDialog from '../../components/PaymentDialog'
 /**
  * @typedef {import('../Send').Params} SendScreenParams
  */
 
 import ChatView from './View'
-import PaymentDialog from './PaymentDialog'
 /**
  * @typedef {import('./View').PaymentStatus} PaymentStatus
  * @typedef {import('./View').SpontPaymentInTransit} SpontPaymentInTransit
@@ -710,8 +710,12 @@ export default class Chat extends React.Component {
         },
       },
     }))
-
-    API.Actions.sendPayment(theChat.recipientPublicKey, amt, memo)
+    //TMP fix before connecting to redux
+    const fees = {
+      absoluteFee: '10',
+      relativeFee: '0.006',
+    }
+    API.Actions.sendPayment(theChat.recipientPublicKey, amt, memo, fees)
       .then(preimage => {
         this.setState(({ spontPaymentsInTransit }) => ({
           spontPaymentsInTransit: {

@@ -63,10 +63,15 @@ public class NotificationService extends Service {
     private enum ReqTypeEnum {
         ExchangeKeys
     }
-
-    private static int SERVICE_NOTIFICATION_ID = 12345;
+    private NotificationCompat.Builder nBuilder;
+    private NotificationCompat.Builder silentNBuilder;
+    private NotificationManager nManager;
+    private static final int INITIAL_SERVICE_NOTIFICATION_ID = 12345;
+    private static int SERVICE_NOTIFICATION_ID = INITIAL_SERVICE_NOTIFICATION_ID;
     private static final String GROUP_KEY_NOTIF = "GROUP_KEY_NOTIF";
-    private static final String CHANNEL_ID = "shock_notif";
+    //private static final String CHANNEL_ID = "shock_notif";
+    private static final String DEFAULT_CHANNEL_ID = "shockwallet.notifications.default";
+    private static final String LOW_CHANNEL_ID = "shockwallet.notifications.low";
     private static final String TAG = "NotificationsDeb";
     private static String ApiPubKey;
     private static String deviceId;
@@ -74,9 +79,13 @@ public class NotificationService extends Service {
     private Handler handler = new Handler();
     private static String ip;
     private static String token;
+    private static boolean notifyDisconnect;
+    private static int notifyDisconnectAfterMs;
     private Socket mSocket;
     private boolean chatInit = false;
     private RSA rsa;
+    private boolean isReconnecting = false;
+    
 
     private Emitter.Listener newTransaction = new Emitter.Listener() {
         private String lastTX = "";
@@ -169,6 +178,43 @@ public class NotificationService extends Service {
             }
         }
     };
+    private Emitter.Listener onConnect = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            Log.d(TAG,"CONNECTED SOCKET");
+            isReconnecting = false;
+            silentNBuilder.setContentTitle("Notification service connected")
+                .setContentText("Listening...");
+            updateFixedNotification(silentNBuilder);
+        }
+    };
+    private Emitter.Listener onDisconnect = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            Log.d(TAG,"DISCONNECTED SOCKET");
+            isReconnecting = true;
+            handler.postDelayed(new Runnable() {
+                public void run() {
+                    if(isReconnecting){
+                        if(NotificationService.notifyDisconnect){
+                            nBuilder.setContentTitle("Notification service reconnecting")
+                                .setContentText("reconnecting...");
+                            updateFixedNotification(nBuilder);
+                        } else {
+                            silentNBuilder.setContentTitle("Notification service reconnecting")
+                                .setContentText("reconnecting...");
+                            updateFixedNotification(silentNBuilder);
+                        }
+                        
+                    }
+                }
+            }, NotificationService.notifyDisconnectAfterMs);
+        }
+    };
+    private void updateFixedNotification(NotificationCompat.Builder builder){
+        nManager.notify(INITIAL_SERVICE_NOTIFICATION_ID, builder.build());
+    }
+
     private void attemptSend() {
         String message = "{\"token\":\""+NotificationService.token+"\"}";
         try{
@@ -184,44 +230,45 @@ public class NotificationService extends Service {
         }
         //encMex.put("token", NotificationService.token.getBytes());
     }
+    private void ExchangeKeys() throws Exception{
+        Log.d(TAG,"exchanging keys");
+        createDeviceId();
+        rsa = new RSA("shocknet.tag.cc."+deviceId);
+        
+        rsa.generate(2048);
+        String rsaPub = rsa.getPublicKey();
+        //String deviceId = "7601a723-b6d4-4020-95a6-6113fb40e2f8";
+        //Log.d(TAG,rsaPub);
+        HashMap<String,String> rawData = new HashMap<String,String>();
+        rawData.put("publicKey",rsaPub);
+        rawData.put("deviceId",deviceId);
+        JSONObject postdata = new JSONObject(rawData);
+        postRequest("http://"+ip+"/api/security/exchangeKeys", postdata);
+    }
     private Runnable runnableCode = new Runnable() {
         @Override
         public void run() {
             Log.d(TAG,"yeahhhh");
             //Log.d(TAG,"Token from run "+token);
             try{
-                createDeviceId();
-                rsa = new RSA("shocknet.tag.cc."+deviceId);
-                
-                rsa.generate(2048);
-                String rsaPub = rsa.getPublicKey();
-                //String deviceId = "7601a723-b6d4-4020-95a6-6113fb40e2f8";
-                //Log.d(TAG,rsaPub);
-                HashMap<String,String> rawData = new HashMap<String,String>();
-                rawData.put("publicKey",rsaPub);
-                rawData.put("deviceId",deviceId);
-                JSONObject postdata = new JSONObject(rawData);
-                postRequest("http://"+ip+"/api/security/exchangeKeys", postdata);
-
-
-                
+                ExchangeKeys();
             } catch (Exception e) {
                 Log.d(TAG,e.toString());
             }
         }
     };
     private void doNotification(String title,String result,int bigIcon, String icon64){
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             int importance = NotificationManager.IMPORTANCE_DEFAULT;
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "Shock_notify", importance);
             channel.setDescription("CHANEL DESCRIPTION");
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(channel);
-        }
+        }*/
         
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
-        NotificationCompat.Builder notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+        NotificationCompat.Builder notification = new NotificationCompat.Builder(this, DEFAULT_CHANNEL_ID)
                 .setSmallIcon(R.drawable.icon)
                 //.setLargeIcon(BitmapFactory.decodeResource(this.getResources(),
                 //        bigIcon))
@@ -239,8 +286,7 @@ public class NotificationService extends Service {
             notification.setLargeIcon(decodedByte);
         }
         
-        NotificationManagerCompat notificationManager1 = NotificationManagerCompat.from(this);
-        notificationManager1.notify(++SERVICE_NOTIFICATION_ID, notification.build());
+        nManager.notify(++SERVICE_NOTIFICATION_ID, notification.build());
     }
     private void createNotificationChannel() {
         // Create the NotificationChannel, but only on API 26+ because
@@ -279,32 +325,68 @@ public class NotificationService extends Service {
         if(bundle != null){
             String token = (String) bundle.get("token");
             String ip = (String) bundle.get("ip");
+            boolean notifyDisconnect = (boolean) bundle.get("notifyDisconnect");
+            int notifyDisconnectAfterMs = (int) bundle.get("notifyDisconnectAfterMs");
             //Log.d(TAG, "ip: "+ip + " token: "+token);
+            //Log.d(TAG," token: "+NotificationService.token);
+            Log.d(TAG, "notify: "+notifyDisconnect + " after: "+notifyDisconnectAfterMs);
+            if(NotificationService.token != null && !NotificationService.token.equals(token)){
+                try{
+                    mSocket.disconnect();
+                    ExchangeKeys();
+                } catch (Exception e) {
+                    Log.d(TAG,e.toString());
+                }
+            }
             NotificationService.token = token;
             NotificationService.ip = ip;
+            NotificationService.notifyDisconnect = notifyDisconnect;
+            NotificationService.notifyDisconnectAfterMs = notifyDisconnectAfterMs;
+
         }
+            
+
         
-        int importance = NotificationManager.IMPORTANCE_DEFAULT;
-        NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "TEST4", importance);
-        channel.setDescription("CHANEL DESCRIPTION");
+        int importanceDefault = NotificationManager.IMPORTANCE_DEFAULT;
+        int importanceLow = NotificationManager.IMPORTANCE_LOW;
+        //NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "ShockWalletNotificationsChannel", importance);
+        //channel.setDescription("Listen on updates from ShockAPI, and push notification to the user");
         NotificationManager notificationManager = getSystemService(NotificationManager.class);
-        notificationManager.createNotificationChannel(channel);
-        
+        NotificationChannel defaultChannel =  new NotificationChannel(DEFAULT_CHANNEL_ID, "ShockWalletNotifications", importanceDefault);
+        defaultChannel.setDescription("Listen on updates from ShockAPI, and push notification to the user");
+        NotificationChannel lowChannel =  new NotificationChannel(LOW_CHANNEL_ID, "ShockWalletSilentNotifications", importanceLow);
+        defaultChannel.setDescription("Silently update the fixed notification connection status");
+        notificationManager.createNotificationChannel(defaultChannel);
+        notificationManager.createNotificationChannel(lowChannel);
+        nManager = notificationManager;
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
-        NotificationCompat.Builder notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+        NotificationCompat.Builder notification = new NotificationCompat.Builder(this, DEFAULT_CHANNEL_ID)
                 .setSmallIcon(R.drawable.icon)
                 .setLargeIcon(BitmapFactory.decodeResource(this.getResources(),
                         R.drawable.icon))
-                .setContentTitle("Notification service connected.")
-                .setContentText("Listening...")
+                .setContentTitle("Notification service loading")
+                .setContentText("Connecting...")
+                //.setSmallIcon(R.drawable.icon)
+                .setContentIntent(contentIntent)
+                .setOngoing(true)
+                .setGroup(GROUP_KEY_NOTIF)
+                .setGroupSummary(true);
+        NotificationCompat.Builder silentNotification = new NotificationCompat.Builder(this, LOW_CHANNEL_ID)
+                .setSmallIcon(R.drawable.icon)
+                .setLargeIcon(BitmapFactory.decodeResource(this.getResources(),
+                        R.drawable.icon))
+                .setContentTitle("Notification service loading")
+                .setContentText("Connecting...")
                 //.setSmallIcon(R.drawable.icon)
                 .setContentIntent(contentIntent)
                 .setOngoing(true)
                 .setGroup(GROUP_KEY_NOTIF)
                 .setGroupSummary(true);
         //notificationManager.notify(SERVICE_NOTIFICATION_ID, notification.build());
-        startForeground(SERVICE_NOTIFICATION_ID, notification.build());
+        startForeground(INITIAL_SERVICE_NOTIFICATION_ID, silentNotification.build());
+        this.silentNBuilder = silentNotification;
+        this.nBuilder = notification;
         return START_STICKY;
     };
     private HashMap<String,String> EncryptMessage(String message) throws Exception{
@@ -396,6 +478,8 @@ public class NotificationService extends Service {
                         mSocket.on("transaction:new", newTransaction);
                         mSocket.on("invoice:new", newInvoice);
                         mSocket.on("ON_CHATS", newChat);
+                        mSocket.on("connect",onConnect);
+                        mSocket.on("disconnect",onDisconnect);
                         mSocket.connect();
                         attemptSend();
                         Log.d(TAG, "Done conn");
