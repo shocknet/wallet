@@ -117,6 +117,14 @@ export const decodeInvoice = async ({
       throw new Error(`API returned malformed data.`)
     }
 
+    getStore().dispatch({
+      type: 'invoice/load',
+      data: {
+        ...data.decodedRequest,
+        payment_request: payReq,
+      },
+    })
+
     if (inProcessToAwaiters.has(payReq)) {
       const awaiters = inProcessToAwaiters.get(payReq)!
 
