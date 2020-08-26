@@ -89,16 +89,15 @@ export const decodeInvoice = async ({
 
     // a request is already in process
     if (inProcessToAwaiters.has(payReq)) {
-      let resolver = () => {}
-      let rejector = () => {}
-      inProcessToAwaiters.get(payReq)!.push({
-        resolver,
-        rejector,
-      })
+      const awaiter = {
+        resolver: () => {},
+        rejector: () => {},
+      }
+      inProcessToAwaiters.get(payReq)!.push(awaiter)
 
       return new Promise((res, rej) => {
-        resolver = res
-        rejector = rej
+        awaiter.resolver = res
+        awaiter.rejector = rej
       })
     }
 
