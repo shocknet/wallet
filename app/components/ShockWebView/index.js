@@ -4,7 +4,16 @@ import notificationService from '../../../notificationService'
 
 export default class ShockWebView extends React.Component {
   render() {
-    const { width, height, magnet } = this.props
+    const { width, height, magnet,type } = this.props
+    const playerString = type === 'video' ?
+      `<video id="player" style="width:100%"></video>` :
+      `<img id="player" style="width:100%"></img>`
+    const fileExtension = type === 'video' ?
+      `(file.name.endsWith('.mp4') || file.name.endsWith('.webm'))` :
+      `(file.name.endsWith('.jpg') || file.name.endsWith('.png'))`
+    const domID = type === 'video' ? 
+    `video#player` :
+    `img#player`
     return (
       <WebView
         // eslint-disable-next-line
@@ -32,7 +41,7 @@ export default class ShockWebView extends React.Component {
       </head>
       <body style="margin:0;padding:0">
         
-        <video id="player" style="width:100%"></video>
+        ${playerString}
         
         <script src="https://cdn.jsdelivr.net/npm/webtorrent@latest/webtorrent.min.js"></script>
           <script type="text/javascript">
@@ -50,10 +59,10 @@ export default class ShockWebView extends React.Component {
       client.add(torrentId, function (torrent) {
         // Torrents can contain many files. Let's use the .mp4 file
         var file = torrent.files.find(function (file) {
-          return file.name.endsWith('.mp4')
+          return ${fileExtension}
         })
         //file.appendTo('body') // append the file to the DOM
-        file.renderTo('video#player')
+        file.renderTo('${domID}')
       })
            </script>
       </body>
