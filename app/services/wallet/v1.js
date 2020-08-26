@@ -831,67 +831,6 @@ export const payKeysend = async request => {
  * @prop {RouteHint[]} route_hints
  */
 
-/**
- * @typedef {object} DecodeInvoiceResponse
- * @prop {DecodedPayReq} decodedRequest
- */
-
-/**
- * https://api.lightning.community/#grpc-request-payreqstring
- * @typedef {object} DecodeInvoiceRequest
- * @prop {string} payReq AKA Invoice
- */
-
-/**
- * @param {DecodeInvoiceRequest} request
- * @returns {Promise<DecodeInvoiceResponse>}
- */
-export const decodeInvoice = async ({ payReq }) => {
-  const endpoint = `/api/lnd/decodePayReq`
-
-  if (typeof payReq !== 'string') {
-    throw new TypeError(
-      `decodeInvoice() -> payReq is not an string, instead got: ${JSON.stringify(
-        payReq,
-      )}`,
-    )
-  }
-
-  if (payReq.length < 10) {
-    throw new TypeError(
-      `decodeInvoice() -> payReq is an string but doesn't look like an invoice, got: ${JSON.stringify(
-        payReq,
-      )}`,
-    )
-  }
-
-  try {
-    const { data } = await Http.post(endpoint, { payReq })
-
-    if (data.errorMessage) {
-      throw new Error(data.errorMessage)
-    }
-
-    if (typeof data.decodedRequest !== 'object') {
-      const msg = `data.decodedRequest is not an object, data: ${JSON.stringify(
-        data,
-      )}`
-      Logger.log(msg)
-      throw new Error(msg)
-    }
-
-    return data
-  } catch (err) {
-    const { response } = err
-    throw new Error(
-      (response &&
-        response.data &&
-        (response.data.errorMessage || response.data.message)) ||
-        err.message ||
-        'Unknown error.',
-    )
-  }
-}
 /**@param {string} uri */
 export const addPeer = async uri => {
   const isComplete = uri.split('@')

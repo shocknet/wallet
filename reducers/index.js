@@ -14,6 +14,7 @@ import SingleFeedReducer from './singleFeed'
 import SettingsReducer from './SettingsReducer'
 import paymentsV2s from './paymentV2s'
 import tips from './tips'
+import decodedInvoices from './decoded-invoices'
 
 const rootReducer = {
   auth: AuthReducer,
@@ -32,6 +33,7 @@ const rootReducer = {
   settings: SettingsReducer,
   paymentsV2s,
   tips,
+  decodedInvoices,
 }
 
 /**
