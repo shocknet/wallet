@@ -2,6 +2,7 @@ import produce from 'immer'
 import { Reducer } from 'redux'
 import { REHYDRATE, RehydrateAction } from 'redux-persist'
 import Logger from 'react-native-file-log'
+import { Schema } from 'shock-common'
 
 import { Action } from '../app/actions'
 
@@ -28,6 +29,14 @@ const reducer: Reducer<State, Action | RehydrateAction> = (
             err,
           )}`,
         )
+        return
+      }
+
+      if (!Schema.isObj(payload)) {
+        Logger.log(
+          `Tips reducer, redux-persist's RehydrateAction err: payload not an object instead got: ${typeof payload}`,
+        )
+
         return
       }
 
