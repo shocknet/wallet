@@ -109,13 +109,21 @@ export const decodeInvoice = async ({
       throw new Error(data.errorMessage)
     }
 
-    if (typeof data.decodedRequest !== 'object') {
-      const msg = `data.decodedRequest is not an object, data: ${JSON.stringify(
+    if (!Schema.isInvoiceWhenDecoded(data.decodedRequest)) {
+      const msg = `data.decodedRequest is not a a decoded invoice, data: ${JSON.stringify(
         data,
       )}`
       Logger.log(msg)
-      throw new Error(msg)
+      throw new Error(`API returned malformed data.`)
     }
+
+    getStore().dispatch({
+      type: 'invoice/load',
+      data: {
+        ...data.decodedRequest,
+        payment_request: payReq,
+      },
+    })
 
     if (inProcessToAwaiters.has(payReq)) {
       const awaiters = inProcessToAwaiters.get(payReq)!
