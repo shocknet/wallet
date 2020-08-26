@@ -12,7 +12,7 @@ import {
 import moment from 'moment'
 import Http, { AxiosRequestConfig } from 'axios'
 import Logger from 'react-native-file-log'
-import { Logger as CommonLogger } from 'shock-common'
+import { Logger as CommonLogger, Store } from 'shock-common'
 import { DISABLE_ENCRYPTION } from './app/config'
 
 import { Provider } from 'react-redux'
@@ -34,6 +34,7 @@ import { ConnectionProvider } from './app/ctx/Connection'
 import RootStack from './app/navigators/Root'
 
 import { LNURL_SCREEN } from './app/screens/LNURL'
+import { feedPage } from './app/services/feed'
 
 Logger.setTag('ShockWallet')
 Logger.setFileLogEnabled(true)
@@ -109,6 +110,8 @@ const nonEncryptedRoutes = [
 // )
 
 AppRegistry.registerComponent('shockwallet', () => ShockWallet)
+
+Store.setFeedPage(feedPage)
 
 /**
  * @typedef {object} State

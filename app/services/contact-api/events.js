@@ -5,7 +5,10 @@ import debounce from 'lodash/debounce'
 import Http from 'axios'
 import Logger from 'react-native-file-log'
 import { isEqual } from 'lodash'
-import { Constants, Schema } from 'shock-common'
+import { Constants, Schema, Store as CommonStore } from 'shock-common'
+const {
+  Actions: { getMoreFeed },
+} = CommonStore
 
 import * as Cache from '../cache'
 import { SET_LAST_SEEN_APP_INTERVAL } from '../../services/utils'
@@ -679,6 +682,8 @@ export const onSeedBackup = listener => {
   }
 }
 
+let feedRequested = false
+
 /**
  * @param {import('./socket').SimpleSocket} theSocket
  */
@@ -773,6 +778,13 @@ export const setupEvents = async theSocket => {
   store.dispatch(Actions.RequestActions.subscribeReceivedRequests())
   // @ts-ignore
   store.dispatch(Actions.RequestActions.subscribeSentRequests())
+
+  // Ensure only one request is ever done, independently of the socket
+  // reconnecting (which calls setupEvents() on every reconnection)
+  if (!feedRequested) {
+    store.dispatch(getMoreFeed())
+    feedRequested = true
+  }
 
   const ad = await Cache.getStoredAuthData()
 

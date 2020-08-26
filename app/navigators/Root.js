@@ -16,8 +16,7 @@ import Advanced, { ADVANCED_SCREEN } from '../screens/Advanced'
 import WalletOverview, { WALLET_OVERVIEW } from '../screens/WalletOverview'
 import SeedBackup, { SEED_BACKUP } from '../screens/SeedBackup'
 import WalletSettings, { WALLET_SETTINGS } from '../screens/WalletSettings'
-// import Feed, { FEED } from '../screens/Feed_POC'
-import Feed, { FEED } from '../screens/Feed'
+import Feed from '../screens/Feed'
 import AddPostToFeed, { ADD_POST_TO_FEED } from '../screens/AddPostToFeed'
 import CreatePost, { CREATE_POST } from '../screens/CreatePost'
 
@@ -48,6 +47,7 @@ const BottomNav = createBottomTabNavigator(
     [WALLET_OVERVIEW]: WalletOverview,
     [CHATS_ROUTE]: Chats,
     [MY_PROFILE]: MyProfile,
+    [Routes.FEED]: Feed,
   },
   {
     initialRouteName: WALLET_OVERVIEW,
@@ -117,12 +117,6 @@ const drawerScreens = {
     screen: WalletSettings,
     navigationOptions: {
       title: 'Wallet Settings',
-    },
-  },
-  [FEED]: {
-    screen: Feed,
-    navigationOptions: {
-      title: 'Feed POC',
     },
   },
   [ADD_POST_TO_FEED]: {
