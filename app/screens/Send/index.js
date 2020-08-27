@@ -453,12 +453,9 @@ class SendScreen extends Component {
       return null
     }
 
-    // @ts-ignore Typescript is being crazy here
     if (error.message) {
-      // @ts-ignore
       return error.message
     }
-
     if (
       // @ts-ignore
       error.response &&

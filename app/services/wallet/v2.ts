@@ -1,6 +1,7 @@
 import Http from 'axios'
 import Logger from 'react-native-file-log'
 import { Schema } from 'shock-common'
+import { ToastAndroid } from 'react-native'
 
 import { getStore } from '../../../store'
 
@@ -31,6 +32,8 @@ export const tip = async (
     if (status !== 200) {
       throw new Error(JSON.stringify(data))
     }
+
+    ToastAndroid.show('Tip sent!', ToastAndroid.LONG)
 
     // cast: If status is 200 response will be PaymentV2
     return data as Schema.PaymentV2
@@ -109,13 +112,21 @@ export const decodeInvoice = async ({
       throw new Error(data.errorMessage)
     }
 
-    if (typeof data.decodedRequest !== 'object') {
-      const msg = `data.decodedRequest is not an object, data: ${JSON.stringify(
+    if (!Schema.isInvoiceWhenDecoded(data.decodedRequest)) {
+      const msg = `data.decodedRequest is not a a decoded invoice, data: ${JSON.stringify(
         data,
       )}`
       Logger.log(msg)
-      throw new Error(msg)
+      throw new Error(`API returned malformed data.`)
     }
+
+    getStore().dispatch({
+      type: 'invoice/load',
+      data: {
+        ...data.decodedRequest,
+        payment_request: payReq,
+      },
+    })
 
     if (inProcessToAwaiters.has(payReq)) {
       const awaiters = inProcessToAwaiters.get(payReq)!
