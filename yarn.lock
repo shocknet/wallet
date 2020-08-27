@@ -8014,15 +8014,16 @@ shellwords@^0.1.1:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/shellwords/-/shellwords-0.1.1.tgz#d6b9181c1a48d397324c84871efbcfc73fc0654b"
 
-shock-common@5.3.1:
-  version "5.3.1"
-  resolved "https://registry.yarnpkg.com/shock-common/-/shock-common-5.3.1.tgz#31ac3959ec78eb42e2ad6ee2d849c980eab257aa"
-  integrity sha512-GpxSSVYk3Lth0iN4guxiVIsuvDYRXHd3aeJy3v3e0jyTVqe5WHjc/I2kUhyhTx0l7OOHUa/7EFRKRXZdedbThQ==
+shock-common@6.0.0:
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/shock-common/-/shock-common-6.0.0.tgz#77701dabb344830046b85ece0103de21775197b9"
+  integrity sha512-kbSkLTtWTK8qVcbW6uViWtar3otW2S5oJIMO/1twPs6Iuv9ATF0QviDtUiU1YN/Y4bX/SXAMm/jRZ3OJ3PLyUA==
   dependencies:
     immer "^6.0.6"
     lodash "^4.17.19"
     normalizr "^3.6.0"
     redux "^4.0.5"
+    redux-saga "^1.1.3"
     redux-thunk "^2.3.0"
     uuid "3.x.x"
 
