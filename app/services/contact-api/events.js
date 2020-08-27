@@ -764,7 +764,7 @@ export const setupEvents = async theSocket => {
   onDisplayName(displayName => {
     store.dispatch(Actions.Me.receivedMeData({ displayName }))
   })
-  onHandshakeAddr(() => {})()
+
   onChats(() => {})()
   onSentRequests(() => {})()
   onReceivedRequests(() => {})()
