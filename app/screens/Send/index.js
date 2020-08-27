@@ -458,10 +458,13 @@ class SendScreen extends Component {
       // @ts-ignore
       return error.message
     }
-    // @ts-ignore
+
     if (
+      // @ts-ignore
       error.response &&
+      // @ts-ignore
       error.response.data &&
+      // @ts-ignore
       error.response.data.errorMessage
     ) {
       // @ts-ignore

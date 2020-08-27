@@ -505,8 +505,11 @@ Http.interceptors.response.use(
           return Promise.resolve(response)
         }
       }
-
-      return Promise.reject({ ...error, response: decryptedResponse })
+      const errorData = { ...error, response: decryptedResponse }
+      if (decryptedResponse.data.errorMessage) {
+        errorData.message = decryptedResponse.data.errorMessage
+      }
+      return Promise.reject(errorData)
     }
 
     return Promise.reject(error)
