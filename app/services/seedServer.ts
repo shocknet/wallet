@@ -5,7 +5,6 @@ import {
   FilePickerError,
   FilePickerFile
 } from 'react-native-file-picker'
-import notificationService from '../../notificationService';
 
 export const enrollToken = async (
   serviceUrl:string,
@@ -24,7 +23,6 @@ export const enrollToken = async (
     body: JSON.stringify(data) 
   })
   if(res.ok){
-    notificationService.Log("TESTING",token)
     return token
   }
   throw new Error ("enroll token res NOT ok")
@@ -58,18 +56,17 @@ interface TorrentFileRes {
     torrent:TorrentFile
   }
 }
-
+/*WARNING FilePickerFile does not provide a field "name" but it must be provided to putFile,
+  make sure to add it before passing the object file.name = file.fileName*/
 export const putFile = async (
   serviceUrl: string,
   token : string,
-  file : FilePickerFile
+  file : FilePickerFile 
 ) : Promise<TorrentFile> =>  {
-  file.name = file.fileName
   const formData = new FormData()
   formData.append("files",file)
   formData.append("info","")
   formData.append("comment","")
-  notificationService.Log("TESTING","SENDING...")
   const res = await fetch(`${serviceUrl}/api/put_file`,{
     method: 'POST', 
     headers:{
@@ -81,9 +78,6 @@ export const putFile = async (
     const torrent = await res.json() as TorrentFileRes
     return torrent.data.torrent as TorrentFile
   }
-  const text = res.text()
-  notificationService.Log("TESTING",JSON.stringify(res))
-  notificationService.Log("TESTING",JSON.stringify(text))
   throw new Error ("put file res NOT ok")
 }
 

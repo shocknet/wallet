@@ -30,7 +30,6 @@ import { SafeAreaView } from 'react-navigation'
 import FollowBtn from '../../components/FollowBtn'
 import Post from '../../components/Post'
 import TipBtn from '../../components/TipBtn'
-import notificationService from '../../../notificationService'
 
 type UserType = Common.Schema.User
 type Navigation = NavigationScreenProp<{}, Routes.UserParams>
@@ -98,7 +97,6 @@ class User extends React.Component<Props, State> {
       if (res.status !== 200) {
         throw new Error(`Not 200`)
       }
-      notificationService.Log("TESTING",JSON.stringify(res.data))
       this.setState(({ posts, lastPageFetched }) => {
         const { posts: postsRecord } = res.data
         const fetchedPosts: Common.Schema.Post[] = Object.values(postsRecord)
@@ -192,15 +190,15 @@ class User extends React.Component<Props, State> {
       const images = imageCIEntries.map(([key, imageCI]) => ({
         id: key,
         data: imageCI.magnetURI,
-        width:imageCI.width,
-        height:imageCI.height
+        width:Number(imageCI.width),
+        height:Number(imageCI.height)
       }))
       
       const videos = videoCIEntries.map(([key, videoCI]) => ({
         id: key,
         data: videoCI.magnetURI,
-        width:videoCI.width,
-        height:videoCI.height
+        width:Number(videoCI.width),
+        height:Number(videoCI.height)
       }))
 
       const paragraphhs = paragraphCIEntries.map(([key, paragraphCI]) => ({
@@ -215,7 +213,6 @@ class User extends React.Component<Props, State> {
           images={images}
           videos={videos}
           paragraphs={paragraphhs}
-          // @ts-expect-error
           parentScrollViewRef={undefined}
         />
       )

@@ -1,5 +1,5 @@
 import React from 'react'
-import { View, Text, StyleSheet, Dimensions } from 'react-native'
+import { View, Text, StyleSheet } from 'react-native'
 // @ts-ignore
 import Carousel from 'react-native-smart-carousel'
 import * as Common from 'shock-common'
@@ -12,8 +12,6 @@ import * as CSS from '../../res/css'
 import UserInfo from './UserInfo'
 import ShockWebView from '../ShockWebView'
 
-const { width } = Dimensions.get('window')
-
 /**
  * @typedef {object} Props
  * @prop {Common.Schema.User} author
@@ -21,7 +19,7 @@ const { width } = Dimensions.get('window')
  * @prop {{ id: string , text: string}[]} paragraphs
  * @prop {{id: string , data: string,width:number,height:number }[]} images
  * @prop {{id: string , data: string,width:number,height:number }[]} videos
- * @prop {ScrollView} parentScrollViewRef
+ * @prop {ScrollView=} parentScrollViewRef
  */
 
 /**
@@ -33,13 +31,13 @@ const Post = ({
   paragraphs = [],
   images = [],
   videos = [],
-  parentScrollViewRef,
+  //parentScrollViewRef,
 }) => {
-  const carouselWidth = Math.round(width) - 20
+  /*const carouselWidth = Math.round(width) - 20
   const dataCarousel = images.map(image => ({
     id: image.id,
     imagePath: image.data,
-  }))
+  }))*/
 
   return ((
     <View style={styles.postContainer}>
@@ -49,18 +47,22 @@ const Post = ({
           {paragraph.text}
         </Text>
       ))}
-      {videos.length > 0 && <ShockWebView 
-        type='video'
-        width={videos[0].width}
-        height={videos[0].height}
-        magnet={videos[0].data}
-      />}
-      {videos.length === 0 && images.length > 0 && <ShockWebView 
-      type='image'
-        width={images[0].width}
-        height={images[0].height}
-        magnet={images[0].data}
-      />}
+      {videos.length > 0 && (
+        <ShockWebView
+          type="video"
+          width={videos[0].width}
+          height={videos[0].height}
+          magnet={videos[0].data}
+        />
+      )}
+      {videos.length === 0 && images.length > 0 && (
+        <ShockWebView
+          type="image"
+          width={images[0].width}
+          height={images[0].height}
+          magnet={images[0].data}
+        />
+      )}
     </View>
   ))
 }
