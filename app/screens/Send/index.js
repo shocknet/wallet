@@ -260,7 +260,7 @@ class SendScreen extends Component {
       Logger.log(e)
       this.setState({
         sending: false,
-        error: e.message,
+        error: e,
       })
     }
   }
@@ -361,18 +361,10 @@ class SendScreen extends Component {
       }, 500)
       return true
     } catch (err) {
-      if (err.response && err.response.data && err.response.data.errorMessage) {
-        const error = err.response.data.errorMessage
-        this.setState({
-          sending: false,
-          error,
-        })
-      } else {
-        this.setState({
-          sending: false,
-          error: err,
-        })
-      }
+      this.setState({
+        sending: false,
+        error: err,
+      })
 
       return false
     }
@@ -465,6 +457,15 @@ class SendScreen extends Component {
     if (error.message) {
       // @ts-ignore
       return error.message
+    }
+    // @ts-ignore
+    if (
+      error.response &&
+      error.response.data &&
+      error.response.data.errorMessage
+    ) {
+      // @ts-ignore
+      return error.response.data.errorMessage
     }
 
     return error
