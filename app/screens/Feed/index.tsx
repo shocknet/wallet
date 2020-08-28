@@ -206,7 +206,6 @@ class Feed extends React.Component<Props, State> {
 
   render() {
     const { posts } = this.props
-    const { awaitingMoreFeed } = this.state
 
     return (
       <SafeAreaView style={styles.container}>
@@ -216,13 +215,7 @@ class Feed extends React.Component<Props, State> {
           renderItem={this.renderItem}
           data={posts}
           keyExtractor={keyExtractor}
-          ListEmptyComponent={
-            <View style={xStyles.emptyMessageTextContainer}>
-              <Text style={styles.emptyMessageText}>
-                Follow people to see their posts
-              </Text>
-            </View>
-          }
+          ListEmptyComponent={listEmptyElement}
           onEndReached={this.onEndReached}
           onEndReachedThreshold={0.5}
           refreshControl={
@@ -231,9 +224,7 @@ class Feed extends React.Component<Props, State> {
               onRefresh={this.onRefresh}
             />
           }
-          ListFooterComponent={() =>
-            posts.length && awaitingMoreFeed ? <ActivityIndicator /> : null
-          }
+          ListFooterComponent={listFooterElement}
           onViewableItemsChanged={this.onViewableItemsChanged}
           viewabilityConfig={VIEWABILITY_CONFIG}
         />
@@ -241,6 +232,8 @@ class Feed extends React.Component<Props, State> {
     )
   }
 }
+
+const listFooterElement = <ActivityIndicator />
 
 const VIEWABILITY_CONFIG: FlatListProps<
   Common.Schema.Post
@@ -305,3 +298,11 @@ const styles = StyleSheet.create({
 const xStyles = {
   emptyMessageTextContainer: [CSS.styles.flex, CSS.styles.deadCenter],
 }
+
+const listEmptyElement = (
+  <View style={xStyles.emptyMessageTextContainer}>
+    <Text style={styles.emptyMessageText}>
+      Follow people to see their posts
+    </Text>
+  </View>
+)
