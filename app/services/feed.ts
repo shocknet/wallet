@@ -12,9 +12,6 @@ export const feedPage: typeof commonFeedPage = async ({ before, page }) => {
   if (page) {
     const res = await Http.get(`api/gun/feed?page=${page}`)
 
-    console.log('xcx')
-    console.log(res.data)
-
     return res.data
   }
 

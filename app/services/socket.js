@@ -84,9 +84,9 @@ class Socket {
         return
       }
 
-      Logger.log('Encrypting socket...', eventName, data)
+      // Logger.log('Encrypting socket...', eventName, data)
       const encryptedData = await this.encryptSocketData(data)
-      Logger.log('Encrypted Socket Data:', encryptedData)
+      // Logger.log('Encrypted Socket Data:', encryptedData)
       socket.emit(eventName, encryptedData)
       // @ts-ignore
       return this.encryptSocketInstance(socket)
