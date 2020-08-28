@@ -1,4 +1,3 @@
-//@ts-nocheck
 import React from 'react'
 import {
   Text,
@@ -9,8 +8,12 @@ import {
   ScrollView,
   ToastAndroid,
   ActivityIndicator,
+  Image,
+  Dimensions,
+  PixelRatio,
 } from 'react-native'
-import ImagePicker from 'react-native-image-crop-picker'
+
+import Video from 'react-native-video'
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'
 import Logger from 'react-native-file-log'
 import _ from 'lodash'
@@ -20,11 +23,31 @@ import TextInput from '../components/TextInput'
 import ShockButton from '../components/ShockButton'
 import * as CSS from '../res/css'
 
-export const CREATE_POST = 'CREATE_POST'
+import {
+  enrollToken,
+  pickFile,
+  putFile,
+  getMediaType,
+} from '../services/seedServer'
+import { Schema } from 'shock-common'
 
+export const CREATE_POST = 'CREATE_POST'
+/**
+ * @typedef {import('react-navigation').NavigationScreenProp<{}, {}>} Navigation
+ */
 /**
  * @typedef {object} Props
  * @prop {((paragraphs: string[], images: string[]) => void)=} onPressCreate
+ * @prop {Navigation} navigation
+ */
+
+/**
+ * @typedef {object} SelectedFile
+ * @prop {string} fileName
+ * @prop {string} type
+ * @prop {string} path
+ * @prop {string} uri
+ * @prop {string=} name
  */
 
 /**
@@ -32,6 +55,15 @@ export const CREATE_POST = 'CREATE_POST'
  * @prop {boolean} isCreating
  * @prop {any[]} images
  * @prop {string} description
+ * @prop {string} serviceUrl
+ * @prop {string} serviceToken
+ * @prop {SelectedFile|null} selectedFile
+ * @prop {number} selectedWidth
+ * @prop {number} selectedHeight
+ * @prop {boolean} selectedVideo
+ * @prop {boolean} selectedImage
+ * @prop {string|null} error
+ * @prop {string|null} loadingStatus
  */
 
 /** @type {State} */
@@ -39,6 +71,16 @@ const DEFAULT_STATE = {
   isCreating: false,
   description: '',
   images: [],
+  error: null,
+  loadingStatus: null,
+  serviceUrl: 'https://webtorrent.shock.network',
+  serviceToken: 'jibberish',
+
+  selectedVideo: false,
+  selectedImage: false,
+  selectedFile: null,
+  selectedWidth: 0,
+  selectedHeight: 0,
 }
 
 const style = StyleSheet.create({
@@ -65,6 +107,24 @@ const style = StyleSheet.create({
     maxHeight: 350,
   },
 })
+/**
+ *
+ * @param {{w:number,h:number}} param0
+ */
+const getMediaStyle = ({ w, h }) => {
+  const screenR = PixelRatio.get()
+  const rW = PixelRatio.roundToNearestPixel(w / screenR)
+  const rH = PixelRatio.roundToNearestPixel(h / screenR)
+  const windowWidth = Dimensions.get('window').width
+  const factor = rW > windowWidth ? 1 : rW / windowWidth
+  const s = StyleSheet.create({
+    video: {
+      width: rW > windowWidth ? '100%' : rW,
+      height: (rH / rW) * windowWidth * factor,
+    },
+  })
+  return s.video
+}
 
 /**
  * @augments React.Component<Props, State, never>
@@ -80,8 +140,12 @@ class CreatePost extends React.Component {
   /** @type {State} */
   state = DEFAULT_STATE
 
+  /**
+   *
+   * @param {string} e
+   */
   onChangeText = e => this.setState({ description: e })
-
+  /*
   onPressPicker = () => {
     const SIZE = 480
     ImagePicker.openPicker({
@@ -118,35 +182,100 @@ class CreatePost extends React.Component {
         ToastAndroid.show(`Error inside image picker: ${e.message}`, 800)
         Logger.log(e.message)
       })
+  }*/
+
+  onPressPicker = async () => {
+    try {
+      /**
+       * @type {SelectedFile}
+       */
+      const file = await pickFile()
+      file.name = file.fileName
+      if (file.type.startsWith('image/')) {
+        const size = await new Promise((res, rej) => {
+          Image.getSize(file.uri, (w, h) => res({ w, h }), err => rej(err))
+        })
+        this.setState({
+          selectedFile: file,
+          selectedImage: true,
+          selectedHeight: size.h,
+          selectedWidth: size.w,
+        })
+      } else if (file.type.startsWith('video/')) {
+        this.setState({
+          selectedFile: file,
+          selectedVideo: true,
+        })
+      } else {
+        this.setState({ error: 'unknown file type selected' })
+      }
+    } catch (e) {
+      this.setState({ error: e })
+    }
   }
 
   onPressCreate = async () => {
     this.setState({
       isCreating: true,
+      loadingStatus: 'enrolling token',
     })
-    const { description, images } = this.state
-    const dataToSendToService = {
-      paragraphs: description.split('\n'),
-      images: images.map(image => image.data),
-    }
-    // eslint-disable-next-line no-console
-    console.log('onPressCreate dataToSendToService', dataToSendToService)
 
     try {
+      const { serviceToken, serviceUrl, selectedFile } = this.state
+      /**
+       * @type {Schema.EmbeddedImage | Schema.EmbeddedVideo | null} mediaContent
+       */
+      let mediaContent = null
+      if (selectedFile) {
+        const token = await enrollToken(serviceUrl, serviceToken)
+        this.setState({
+          loadingStatus: 'uploading file',
+        })
+        /**
+         * @type {{magnet:string}} torrent
+         */
+        const torrent = await putFile(serviceUrl, token, selectedFile)
+        this.setState({
+          loadingStatus: 'uploading metadata',
+        })
+        const { selectedWidth, selectedHeight } = this.state
+        mediaContent = {
+          type: getMediaType(selectedFile.type),
+          magnetURI: torrent.magnet,
+          width: selectedWidth.toString(),
+          height: selectedHeight.toString(),
+        }
+      }
+
+      const { description } = this.state
+      const dataToSendToService = {
+        paragraphs: description.split('\n'),
+        //images: images.map(image => image.data),
+      }
+      /**
+       * @type {(Schema.EmbeddedVideo|Schema.EmbeddedImage|Schema.Paragraph)[]}
+       */
+      const contentItems = [
+        ...dataToSendToService.paragraphs.map(p => {
+          /**
+           * @type {Schema.Paragraph} paragraph
+           */
+          const paragraph = {
+            type: 'text/paragraph',
+            text: p,
+          }
+          return paragraph
+        }),
+      ]
+      if (mediaContent) {
+        contentItems.push(mediaContent)
+      }
+      // eslint-disable-next-line no-console
+      console.log('onPressCreate dataToSendToService', dataToSendToService)
       const res = await Http.post(`/api/gun/wall`, {
         tags: [],
         title: 'Post',
-        contentItems: [
-          ...dataToSendToService.paragraphs.map(p => ({
-            type: 'text/paragraph',
-            text: p,
-          })),
-          ...dataToSendToService.images.map(i => ({
-            type: 'image/embedded',
-            magnetURI: i,
-            width: 480,
-          })),
-        ],
+        contentItems,
       })
 
       if (res.status !== 200) {
@@ -157,28 +286,77 @@ class CreatePost extends React.Component {
     } catch (e) {
       const msg = `Error: ${e.message ||
         e.data.errorMessage ||
+        e.response.data.errorMessage ||
         'Unknown error'}`
       ToastAndroid.show(msg, 800)
       Logger.log(msg)
     } finally {
       this.setState({
         isCreating: false,
+        loadingStatus: null,
       })
     }
   }
+  /**
+   *
+   * @typedef {object} NaturalSize
+   * @prop {number} height
+   * @prop {number} width
+   */
+
+  /**
+   * @param {{naturalSize:NaturalSize}} e
+   */
+  onVideoLoad = e => {
+    this.setState({
+      selectedHeight: e.naturalSize.height,
+      selectedWidth: e.naturalSize.width,
+    })
+  }
 
   render() {
-    const { images } = this.state
+    const {
+      error,
+      images,
+      selectedFile,
+      selectedHeight,
+      selectedWidth,
+      selectedVideo,
+      selectedImage,
+      loadingStatus,
+    } = this.state
     const imageListFileNames = images.map(image =>
       _.last(image.path.split('/')),
     )
+    const source = {
+      uri: selectedFile ? selectedFile.uri : '',
+    }
     return (
       <SafeAreaView style={style.createPostContainer}>
         <ScrollView>
+          {selectedImage && (
+            <Image
+              style={getMediaStyle({ w: selectedWidth, h: selectedHeight })}
+              source={source}
+            />
+          )}
+          {selectedVideo && (
+            <Video
+              // eslint-disable-next-line
+              ref={ref => {
+                this.player = ref
+              }}
+              style={getMediaStyle({ w: selectedWidth, h: selectedHeight })}
+              controls
+              onLoad={this.onVideoLoad}
+              source={source}
+            />
+          )}
           <TextInput
             onChangeText={this.onChangeText}
             multiline
             numberOfLines={4}
+            //@ts-ignore
             maxLine={8}
             style={style.textInputStyle}
             placeholder="Say Something"
@@ -200,8 +378,12 @@ class CreatePost extends React.Component {
             </Text>
           ))}
           {imageListFileNames.length > 0 && <View style={style.space} />}
+          <Text>{error}</Text>
           {this.state.isCreating ? (
-            <ActivityIndicator />
+            <View>
+              <ActivityIndicator />
+              {loadingStatus && <Text>Status: {loadingStatus}</Text>}
+            </View>
           ) : (
             <ShockButton onPress={this.onPressCreate} title="Submit Listing" />
           )}
