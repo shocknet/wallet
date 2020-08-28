@@ -55,7 +55,7 @@ class Socket {
          * @param {any} data
          */
         async data => {
-          Logger.log('Listening to Event:', eventName)
+          // Logger.log('Listening to Event:', eventName)
 
           if (Encryption.isNonEncrypted(eventName)) {
             cb(data)
