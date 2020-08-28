@@ -103,7 +103,7 @@ export const encryptSocketData = async data => {
  */
 export const decryptSocketData = async data => {
   if (data && data.encryptedKey) {
-    const decryptionTime = Date.now()
+    // const decryptionTime = Date.now()
     // Logger.log('[SOCKET] Decrypting Data...', data)
     const { sessionId } = store.getState().connection
     const decryptedKey = await Encryption.decryptKey(
