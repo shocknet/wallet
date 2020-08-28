@@ -737,7 +737,7 @@ export const setupEvents = async theSocket => {
   // notify auth listeners that the token expired.
   Object.values(Action).forEach(a => {
     theSocket.on(a, res => {
-      Logger.log(`res for action: ${a}: ${JSON.stringify(res)}`)
+      // Logger.log(`res for action: ${a}: ${JSON.stringify(res)}`)
       if (
         res.msg === 'Token expired.' ||
         res.msg === 'NOT_AUTH' ||

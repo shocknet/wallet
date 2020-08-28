@@ -130,7 +130,7 @@ class CreatePost extends React.Component {
       images: images.map(image => image.data),
     }
     // eslint-disable-next-line no-console
-    console.log('onPressCreate dataToSendToService', dataToSendToService)
+    // console.log('onPressCreate dataToSendToService', dataToSendToService)
 
     try {
       const res = await Http.post(`/api/gun/wall`, {
