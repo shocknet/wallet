@@ -25,6 +25,7 @@ const DEFAULT_USER_IMAGE =
  * @prop {(() => void)=} onPress
  * @prop {number|null} lastSeenApp
  * @prop {boolean=} disableOnlineRing
+ * @prop {object=} avatarStyle
  */
 
 /**
@@ -54,7 +55,17 @@ export default class ShockAvatar extends React.PureComponent {
       lastSeenApp,
       onPress,
       disableOnlineRing,
+      avatarStyle,
     } = this.props
+
+    let avatarStyleToApply = avatarStyle
+    if (!avatarStyle) {
+      if (lastSeenApp && isOnline(lastSeenApp) && !disableOnlineRing) {
+        avatarStyleToApply = styles.avatar
+      } else {
+        avatarStyleToApply = CSS.styles.empty
+      }
+    }
     return (
       <Avatar
         height={height}
@@ -69,12 +80,7 @@ export default class ShockAvatar extends React.PureComponent {
               }
         }
         onPress={onPress}
-        avatarStyle={
-          // @ts-expect-error
-          isOnline(lastSeenApp) && !disableOnlineRing
-            ? styles.avatar
-            : CSS.styles.empty
-        }
+        avatarStyle={avatarStyleToApply}
       />
     )
   }

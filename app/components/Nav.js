@@ -30,6 +30,8 @@ const Nav = ({ title, style, backButton, showAvatar, navigation }) => {
     return null
   }
 
+  const theme = 'dark'
+
   return ((
     <SafeAreaView style={[navStyles.container, style]}>
       {backButton ? (
@@ -46,20 +48,22 @@ const Nav = ({ title, style, backButton, showAvatar, navigation }) => {
           style={typeof showAvatar === 'undefined' ? navStyles.hidden : null}
         >
           <ShockAvatar
-            height={48}
+            height={40}
             image={showAvatar || null}
             lastSeenApp={null}
           />
         </View>
       )}
-      <Text style={navStyles.navTitle}>
-        {title ? title.toUpperCase() : 'WALLET'}
+      <Text
+        style={theme === 'dark' ? navStyles.navTitleDark : navStyles.navTitle}
+      >
+        {title ? title.toUpperCase() : ''}
       </Text>
       {!backButton ? (
         <Ionicons
           name="md-menu"
           color={Colors.TEXT_WHITE}
-          size={40}
+          size={30}
           style={navStyles.navMenu}
           onPress={toggleDrawer}
         />
@@ -82,6 +86,11 @@ const navStyles = StyleSheet.create({
   },
   navTitle: {
     fontSize: 13,
+    fontFamily: 'Montserrat-700',
+    color: Colors.TEXT_WHITE,
+  },
+  navTitleDark: {
+    fontSize: 20,
     fontFamily: 'Montserrat-700',
     color: Colors.TEXT_WHITE,
   },

@@ -19,10 +19,15 @@ import WalletSettings, { WALLET_SETTINGS } from '../screens/WalletSettings'
 import Feed from '../screens/Feed'
 import AddPostToFeed, { ADD_POST_TO_FEED } from '../screens/AddPostToFeed'
 import CreatePost, { CREATE_POST } from '../screens/CreatePost'
+import PublishContentDark, {
+  PUBLISH_CONTENT_DARK,
+} from '../screens/PublishContentDark'
+import CreatePostDark, { CREATE_POST_DARK } from '../screens/CreatePostDark'
 
 import Login, { LOGIN } from '../screens/Login'
 
 import MyProfile, { MY_PROFILE } from '../screens/MyProfile'
+import MyFeed, { MY_FEED } from '../screens/MyFeed'
 import Loading, { LOADING } from '../screens/Loading'
 
 import WalletManager, { WALLET_MANAGER } from './WalletManager'
@@ -56,7 +61,8 @@ const BottomNav = createBottomTabNavigator(
       showLabel: false,
       style: {
         borderTopWidth: 0,
-        backgroundColor: CSS.Colors.BACKGROUND_WHITE,
+        // backgroundColor: CSS.Colors.BACKGROUND_WHITE,
+        backgroundColor: CSS.Colors.BACKGROUND_BLACK,
         height: CSS.BOTTOM_BAR_HEIGHT,
         shadowColor: '#000',
         shadowOffset: {
@@ -137,6 +143,18 @@ const drawerScreens = {
       title: 'LNURL utils',
     },
   },
+  [PUBLISH_CONTENT_DARK]: {
+    screen: PublishContentDark,
+    navigationOptions: {
+      title: 'Publish Content',
+    },
+  },
+  [CREATE_POST_DARK]: {
+    screen: CreatePostDark,
+    navigationOptions: {
+      title: 'Publish Content Dark',
+    },
+  },
 }
 
 if (__DEV__) {
@@ -152,6 +170,11 @@ const MainDrawer = createDrawerNavigator(drawerScreens, {
   initialRouteName: WALLET_NAV,
   drawerPosition: 'right',
   contentComponent: CustomDrawer,
+  contentOptions: {
+    labelStyle: {
+      textAlign: 'right',
+    },
+  },
 })
 
 MainDrawer.navigationOptions = {
