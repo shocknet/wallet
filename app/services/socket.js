@@ -145,13 +145,13 @@ class Socket {
         key: decryptedKey,
         iv: data.iv,
       })
-      Logger.log(
-        `[LND SOCKET] Decryption took: ${Date.now() - decryptionTime}ms`,
-      )
+      // Logger.log(
+      //   `[LND SOCKET] Decryption took: ${Date.now() - decryptionTime}ms`,
+      // )
       return JSON.parse(decryptedData)
     }
 
-    Logger.log('[LND SOCKET] Data is non-encrypted', data)
+    // Logger.log('[LND SOCKET] Data is non-encrypted', data)
 
     return data
   }

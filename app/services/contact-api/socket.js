@@ -115,11 +115,11 @@ export const decryptSocketData = async data => {
       key: decryptedKey,
       iv: data.iv,
     })
-    Logger.log(`[SOCKET] Decryption took: ${Date.now() - decryptionTime}ms`)
+    // Logger.log(`[SOCKET] Decryption took: ${Date.now() - decryptionTime}ms`)
     return JSON.parse(decryptedData)
   }
 
-  Logger.log('[SOCKET] Data is non-encrypted', data)
+  // Logger.log('[SOCKET] Data is non-encrypted', data)
 
   return data
 }
@@ -151,7 +151,7 @@ export const encryptSocketInstance = socket => ({
        * @param {any} data
        */
       async data => {
-        Logger.log('Listening to Event:', eventName)
+        // Logger.log('Listening to Event:', eventName)
 
         if (Encryption.isNonEncrypted(eventName)) {
           cb(data)
