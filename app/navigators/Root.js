@@ -18,7 +18,11 @@ import SeedBackup, { SEED_BACKUP } from '../screens/SeedBackup'
 import WalletSettings, { WALLET_SETTINGS } from '../screens/WalletSettings'
 import Feed from '../screens/Feed'
 import AddPostToFeed, { ADD_POST_TO_FEED } from '../screens/AddPostToFeed'
-import CreatePost, {
+import PublishContentDark, {
+  PUBLISH_CONTENT_DARK,
+} from '../screens/PublishContentDark'
+import {
+  default as CreatePost,
   CREATE_POST_DARK as CREATE_POST,
 } from '../screens/CreatePostDark'
 
@@ -58,7 +62,8 @@ const BottomNav = createBottomTabNavigator(
       showLabel: false,
       style: {
         borderTopWidth: 0,
-        backgroundColor: CSS.Colors.BACKGROUND_WHITE,
+        // backgroundColor: CSS.Colors.BACKGROUND_WHITE,
+        backgroundColor: CSS.Colors.BACKGROUND_BLACK,
         height: CSS.BOTTOM_BAR_HEIGHT,
         shadowColor: '#000',
         shadowOffset: {
@@ -139,6 +144,12 @@ const drawerScreens = {
       title: 'LNURL utils',
     },
   },
+  [PUBLISH_CONTENT_DARK]: {
+    screen: PublishContentDark,
+    navigationOptions: {
+      title: 'Publish Content',
+    },
+  },
 }
 
 if (__DEV__) {
@@ -154,6 +165,11 @@ const MainDrawer = createDrawerNavigator(drawerScreens, {
   initialRouteName: WALLET_NAV,
   drawerPosition: 'right',
   contentComponent: CustomDrawer,
+  contentOptions: {
+    labelStyle: {
+      textAlign: 'right',
+    },
+  },
 })
 
 MainDrawer.navigationOptions = {
