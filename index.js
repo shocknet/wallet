@@ -234,7 +234,7 @@ Http.interceptors.request.use(async config => {
       Logger.log(JSON.stringify(err))
     }
 
-    Logger.log('Device ID:', connection.deviceId)
+    // Logger.log('Device ID:', connection.deviceId)
     if (!config.headers['X-ShockWallet-Device-ID'] && connection.deviceId) {
       // eslint-disable-next-line require-atomic-updates
       config.headers.common['X-ShockWallet-Device-ID'] = connection.deviceId
@@ -300,29 +300,29 @@ Http.interceptors.request.use(async config => {
     }
 
     // Logging for Network requests
-    try {
-      if (config) {
-        const method = config.method ? config.method.toUpperCase() : 'common'
-        Logger.log('Config:', config)
-        Logger.log(`---> ${method} ${config.url}`)
-        Logger.log(
-          'Headers:',
-          config.headers
-            ? JSON.stringify({
-                ...config.headers.common,
-                ...config.headers[method],
-              })
-            : 'N/A',
-        )
-        Logger.log(
-          'Params:',
-          config.params ? JSON.stringify(config.params) : 'N/A',
-        )
-        Logger.log('Body:', config.data ? JSON.stringify(config.data) : 'N/A')
-      }
-    } catch (err) {
-      Logger.log(err)
-    }
+    // try {
+    //   if (config) {
+    //     const method = config.method ? config.method.toUpperCase() : 'common'
+    //     Logger.log('Config:', config)
+    //     Logger.log(`---> ${method} ${config.url}`)
+    //     Logger.log(
+    //       'Headers:',
+    //       config.headers
+    //         ? JSON.stringify({
+    //             ...config.headers.common,
+    //             ...config.headers[method],
+    //           })
+    //         : 'N/A',
+    //     )
+    //     Logger.log(
+    //       'Params:',
+    //       config.params ? JSON.stringify(config.params) : 'N/A',
+    //     )
+    //     Logger.log('Body:', config.data ? JSON.stringify(config.data) : 'N/A')
+    //   }
+    // } catch (err) {
+    //   Logger.log(err)
+    // }
 
     return config
   } catch (err) {
@@ -340,7 +340,7 @@ const decryptResponse = async response => {
     const decryptionTime = Date.now()
     const { connection } = store.getState()
     const path = url.parse(response?.config.url).pathname
-    Logger.log('[ENCRYPTION] Decrypting Path:', path)
+    // Logger.log('[ENCRYPTION] Decrypting Path:', path)
 
     // if (response.status === 304) {
     //   Logger.log('Using cached response for: ', path)
@@ -418,32 +418,32 @@ Http.interceptors.response.use(
     const decryptedResponse = await decryptResponse(response)
 
     try {
-      if (
-        decryptedResponse &&
-        decryptedResponse.status !== undefined &&
-        decryptedResponse.status !== 304
-      ) {
-        const method = decryptedResponse.config.method
-          ? decryptedResponse.config.method
-          : 'common'
-        Logger.log(
-          `<--- ${method.toUpperCase()} ${decryptedResponse.config.url} (${
-            decryptedResponse.status
-          })`,
-        )
-        Logger.log(
-          'Server Headers:',
-          decryptedResponse.headers
-            ? JSON.stringify(decryptedResponse.headers)
-            : null,
-        )
-        Logger.log(
-          'Response:',
-          decryptedResponse.data
-            ? JSON.stringify(decryptedResponse.data)
-            : null,
-        )
-      }
+      // if (
+      //   decryptedResponse &&
+      //   decryptedResponse.status !== undefined &&
+      //   decryptedResponse.status !== 304
+      // ) {
+      // const method = decryptedResponse.config.method
+      //   ? decryptedResponse.config.method
+      //   : 'common'
+      // Logger.log(
+      //   `<--- ${method.toUpperCase()} ${decryptedResponse.config.url} (${
+      //     decryptedResponse.status
+      //   })`,
+      // )
+      // Logger.log(
+      //   'Server Headers:',
+      //   decryptedResponse.headers
+      //     ? JSON.stringify(decryptedResponse.headers)
+      //     : null,
+      // )
+      // Logger.log(
+      //   'Response:',
+      //   decryptedResponse.data
+      //     ? JSON.stringify(decryptedResponse.data)
+      //     : null,
+      // )
+      // }
       return decryptedResponse
     } catch (err) {
       Logger.log(err)

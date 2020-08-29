@@ -8,7 +8,7 @@ import {
   View,
   FlatList,
   ListRenderItemInfo,
-  RefreshControl,
+  // RefreshControl,
 } from 'react-native'
 import moment from 'moment'
 import { connect } from 'react-redux'
@@ -276,12 +276,12 @@ class User extends React.Component<Props, State> {
           data={this.getData()}
           keyExtractor={this.keyExtractor}
           onEndReached={this.fetchNextPage}
-          refreshControl={
-            <RefreshControl
-              refreshing={this.state.loadingNextPage}
-              onRefresh={this.fetchNextPage}
-            />
-          }
+          // refreshControl={
+          //   <RefreshControl
+          //     refreshing={this.state.loadingNextPage}
+          //     onRefresh={this.fetchNextPage}
+          //   />
+          // }
         />
       </SafeAreaView>
     )

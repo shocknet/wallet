@@ -55,7 +55,7 @@ class Socket {
          * @param {any} data
          */
         async data => {
-          Logger.log('Listening to Event:', eventName)
+          // Logger.log('Listening to Event:', eventName)
 
           if (Encryption.isNonEncrypted(eventName)) {
             cb(data)
@@ -84,9 +84,9 @@ class Socket {
         return
       }
 
-      Logger.log('Encrypting socket...', eventName, data)
+      // Logger.log('Encrypting socket...', eventName, data)
       const encryptedData = await this.encryptSocketData(data)
-      Logger.log('Encrypted Socket Data:', encryptedData)
+      // Logger.log('Encrypted Socket Data:', encryptedData)
       socket.emit(eventName, encryptedData)
       // @ts-ignore
       return this.encryptSocketInstance(socket)
@@ -133,7 +133,7 @@ class Socket {
    */
   decryptSocketData = async data => {
     if (data && data.encryptedKey && this.store) {
-      const decryptionTime = Date.now()
+      // const decryptionTime = Date.now()
       Logger.log('[LND SOCKET] Decrypting Daobjectta...', data)
       const { sessionId } = this.store.getState().connection
       const decryptedKey = await Encryption.decryptKey(
@@ -145,13 +145,13 @@ class Socket {
         key: decryptedKey,
         iv: data.iv,
       })
-      Logger.log(
-        `[LND SOCKET] Decryption took: ${Date.now() - decryptionTime}ms`,
-      )
+      // Logger.log(
+      //   `[LND SOCKET] Decryption took: ${Date.now() - decryptionTime}ms`,
+      // )
       return JSON.parse(decryptedData)
     }
 
-    Logger.log('[LND SOCKET] Data is non-encrypted', data)
+    // Logger.log('[LND SOCKET] Data is non-encrypted', data)
 
     return data
   }

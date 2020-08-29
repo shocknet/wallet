@@ -72,8 +72,6 @@ export const subscribeOnChats = callback => dispatch =>
           {},
         )
 
-        Logger.log('Subscribed to ON_CHATS!', contacts)
-
         dispatch({
           type: ACTIONS.LOAD_CONTACTS,
           data: contacts,
