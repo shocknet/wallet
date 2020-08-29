@@ -108,7 +108,6 @@ class OnboardingInput extends React.Component {
     const SVG_EDGE = 25
     const UNIT = SVG_EDGE / 5
     const ZERO = UNIT * 0
-    const TWO = UNIT * 2
     const THREE = UNIT * 3
     const FOUR = UNIT * 4
     const FIVE = UNIT * 5
