@@ -1,5 +1,5 @@
 import React from 'react'
-import { View, Text, StyleSheet, Dimensions, ScrollView } from 'react-native'
+import { View, Text, StyleSheet, ScrollView } from 'react-native'
 // @ts-ignore
 import Carousel from 'react-native-smart-carousel'
 import * as Common from 'shock-common'
@@ -7,15 +7,15 @@ import * as Common from 'shock-common'
 import * as CSS from '../../res/css'
 
 import UserInfo from './UserInfo'
-
-const { width } = Dimensions.get('window')
+import ShockWebView from '../ShockWebView'
 
 interface Props {
   author: Common.Schema.User
   date: number
   paragraphs: { id: string; text: string }[]
-  images: { id: string; data: string }[]
-  parentScrollViewRef: ScrollView
+  images: { id: string; data: string; width: number; height: number }[]
+  videos: { id: string; data: string; width: number; height: number }[]
+  parentScrollViewRef: ScrollView | undefined
 }
 
 export default class Post extends React.Component<Props> {
@@ -26,17 +26,19 @@ export default class Post extends React.Component<Props> {
   render() {
     const {
       author,
+
       date,
       paragraphs = [],
       images = [],
-      parentScrollViewRef,
+      videos = [],
+      //parentScrollViewRef,
     } = this.props
 
-    const carouselWidth = Math.round(width) - 20
+    /*const carouselWidth = Math.round(width) - 20
     const dataCarousel = images.map(image => ({
       id: image.id,
       imagePath: image.data,
-    }))
+    }))*/
 
     return (
       <View style={styles.postContainer}>
@@ -46,14 +48,20 @@ export default class Post extends React.Component<Props> {
             {paragraph.text}
           </Text>
         ))}
-        {dataCarousel.length > 0 && (
-          <Carousel
-            width={carouselWidth}
-            data={dataCarousel}
-            navigationType="dots"
-            navigationColor={CSS.Colors.BUTTON_BLUE}
-            navigation
-            parentScrollViewRef={parentScrollViewRef}
+        {videos.length > 0 && (
+          <ShockWebView
+            type="video"
+            width={videos[0].width}
+            height={videos[0].height}
+            magnet={videos[0].data}
+          />
+        )}
+        {videos.length === 0 && images.length > 0 && (
+          <ShockWebView
+            type="image"
+            width={images[0].width}
+            height={images[0].height}
+            magnet={images[0].data}
           />
         )}
       </View>

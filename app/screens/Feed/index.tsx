@@ -117,14 +117,27 @@ class Feed extends React.Component<Props, State> {
       ([_, ci]) => ci.type === 'image/embedded',
     ) as [string, Common.Schema.EmbeddedImage][]
 
+    const videoCIEntries = Object.entries(item.contentItems).filter(
+      ([_, ci]) => ci.type === 'video/embedded',
+    ) as [string, Common.Schema.EmbeddedVideo][]
+
     const paragraphCIEntries = Object.entries(item.contentItems).filter(
       ([_, ci]) => ci.type === 'text/paragraph',
     ) as [string, Common.Schema.Paragraph][]
 
     const images = imageCIEntries.map(([key, imageCI]) => ({
-      id: key,
-      data: imageCI.magnetURI,
-    }))
+        id: key,
+        data: imageCI.magnetURI,
+        width:Number(imageCI.width),
+        height:Number(imageCI.height)
+      }))
+
+      const videos = videoCIEntries.map(([key, videoCI]) => ({
+        id: key,
+        data: videoCI.magnetURI,
+        width:Number(videoCI.width),
+        height:Number(videoCI.height)
+      }))
 
     const paragraphs = paragraphCIEntries.map(([key, paragraphCI]) => ({
       id: key,
@@ -136,8 +149,8 @@ class Feed extends React.Component<Props, State> {
         author={item.author}
         date={item.date}
         images={images}
+        videos={videos}
         paragraphs={paragraphs}
-        // @ts-expect-error
         parentScrollViewRef={undefined}
       />
     )
