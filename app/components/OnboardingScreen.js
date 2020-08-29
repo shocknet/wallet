@@ -32,6 +32,8 @@ import FlexCenter from './FlexCenter'
  * arrow will be shown.
  */
 
+const theme = 'dark'
+
 export default /** @type {React.FC<Props>} */ (React.memo(
   ({ centerContent, children, loading, onPressBack }) => (
     <>
@@ -44,22 +46,30 @@ export default /** @type {React.FC<Props>} */ (React.memo(
       <ImageBackground
         resizeMode="cover"
         resizeMethod="scale"
-        source={RES.shockBG}
+        source={theme === 'dark' ? RES.shockBGDark : RES.shockBG}
         style={styles.container}
       >
         <View style={CSS.styles.width100}>
           <Pad amount={48} />
           {/* ensure the logo always appears on the same place regardless of content */}
 
-          <View style={xStyles.logo}>
-            <View style={styles.shockLogoContainer}>
-              <Image style={styles.shockLogo} source={RES.newLogo} />
+          {theme === 'dark' ? (
+            <View style={xStyles.logo}>
+              <View style={styles.shockLogoContainerDark}>
+                <Image style={styles.shockLogoDark} source={RES.newLogoDark} />
+              </View>
+              <Pad amount={12} />
             </View>
-
-            <Pad amount={12} />
-            {/* S H O C K W A L L E T*/}
-            <Text style={xStyles.logoText}>SHOCKWALLET</Text>
-          </View>
+          ) : (
+            <View style={xStyles.logo}>
+              <View style={styles.shockLogoContainer}>
+                <Image style={styles.shockLogo} source={RES.newLogo} />
+              </View>
+              <Pad amount={12} />
+              {/* S H O C K W A L L E T*/}
+              <Text style={xStyles.logoText}>SHOCKWALLET</Text>)
+            </View>
+          )}
         </View>
 
         {centerContent ? (
@@ -134,12 +144,19 @@ const styles = StyleSheet.create({
   },
 
   shockLogo: { height: IMG_SIZE, width: IMG_SIZE },
+  shockLogoDark: { height: IMG_SIZE * 3, width: IMG_SIZE * 3 },
 
   shockLogoContainer: {
     borderRadius: IMG_SIZE / 2,
     elevation: 24,
     height: IMG_SIZE,
     width: IMG_SIZE,
+  },
+  shockLogoContainerDark: {
+    borderRadius: IMG_SIZE / 2,
+
+    height: IMG_SIZE * 3,
+    width: IMG_SIZE * 3,
   },
 
   contentBase: {
