@@ -93,12 +93,12 @@ interface State {
   showQrCodeModal: boolean,
   showMetaConfigModal: boolean,
 }
-
+/*
 interface Sentinel {
   type: '@@Sentinel'
 }
-
-type Item = Sentinel | Common.Schema.Post
+*/
+type Item = Common.Schema.Post
 
 const theme = 'dark'
 
@@ -229,6 +229,7 @@ export default class MyProfile extends React.Component<Props, State> {
     this.setState({
       authData: authData.authData,
     })
+    this.fetchNextPage()
   }
 
   componentWillUnmount() {
@@ -528,11 +529,11 @@ export default class MyProfile extends React.Component<Props, State> {
   }
 
   getData = (): Item[] => {
-    return [{ type: '@@Sentinel' }, ...this.state.posts]
+    return [ ...this.state.posts]
   }
 
   keyExtractor = (item: Item) => {
-    return (item as Common.Schema.Post).id || (item as Sentinel).type
+    return (item as Common.Schema.Post).id
   }
 
   onPressCreate = () => {
@@ -710,6 +711,21 @@ export default class MyProfile extends React.Component<Props, State> {
                   Create a Post
                 </Text>
               </TouchableOpacity>
+              {this.state.loadingNextPage && <ActivityIndicator />}
+
+
+              <FlatList
+                renderItem={this.renderItem}
+                data={this.getData()}
+                keyExtractor={this.keyExtractor}
+                onEndReached={this.fetchNextPage}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={this.state.loadingNextPage}
+                    onRefresh={this.fetchNextPage}
+                  />
+                }
+              />
             </ScrollView>
 
             <TouchableOpacity
