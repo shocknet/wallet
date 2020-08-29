@@ -18,7 +18,9 @@ import SeedBackup, { SEED_BACKUP } from '../screens/SeedBackup'
 import WalletSettings, { WALLET_SETTINGS } from '../screens/WalletSettings'
 import Feed from '../screens/Feed'
 import AddPostToFeed, { ADD_POST_TO_FEED } from '../screens/AddPostToFeed'
-import CreatePost, { CREATE_POST } from '../screens/CreatePost'
+import CreatePost, {
+  CREATE_POST_DARK as CREATE_POST,
+} from '../screens/CreatePostDark'
 
 import Login, { LOGIN } from '../screens/Login'
 

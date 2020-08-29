@@ -35,7 +35,7 @@ import BasicDialog from '../../components/BasicDialog'
 import ShockInput from '../../components/ShockInput'
 import IGDialogBtn from '../../components/IGDialogBtn'
 import Post from '../../components/Post'
-import { CREATE_POST } from '../../screens/CreatePost'
+import { CREATE_POST_DARK as CREATE_POST } from '../../screens/CreatePostDark'
 
 import SetBioDialog from './SetBioDialog'
 
