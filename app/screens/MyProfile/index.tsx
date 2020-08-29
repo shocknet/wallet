@@ -406,9 +406,9 @@ export default class MyProfile extends React.Component<Props, State> {
         <Post
           author={item.author}
           date={item.date}
+          // @ts-expect-error
           images={images}
           paragraphs={paragraphhs}
-          // @ts-expect-error
           parentScrollViewRef={undefined}
         />
       )
