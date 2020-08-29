@@ -64,6 +64,7 @@ import ProfileIcon from '../../assets/images/navbar-icons/profile.svg'
 import ProfileIconFocused from '../../assets/images/navbar-icons/profile-focused.svg'
 
 import Modal from 'react-native-modal'
+//@ts-ignore
 import { CREATE_POST_DARK } from '../CreatePostDark'
 
 export const MY_PROFILE = 'MY_PROFILE'
@@ -136,10 +137,11 @@ export default class MyProfile extends React.Component<Props, State> {
   }
 
   fetchNextPage = async () => {
+
     this.setState({
       loadingNextPage: true,
     })
-
+    
     try {
       const res = await Http.get(
         `/api/gun/wall?page=${this.state.lastPageFetched - 1}`,
@@ -647,7 +649,7 @@ export default class MyProfile extends React.Component<Props, State> {
                   <Text style={styles.bodyTextDark}>{bio || 'Loading...'}</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity
+                {/*<TouchableOpacity
                   style={styles.configButtonDark}
                   onPress={this.onPressMetaConfigModal}
                 >
@@ -657,13 +659,13 @@ export default class MyProfile extends React.Component<Props, State> {
                   >
                     Config
                   </Text>
-                </TouchableOpacity>
+                </TouchableOpacity>*/}
 
               </View>
             </View>
 
             <ScrollView style={styles.mainButtons}>
-              <TouchableOpacity
+              {/*<TouchableOpacity
                 style={styles.actionButtonDark}
               >
                 <OfferProduct/>
@@ -695,7 +697,7 @@ export default class MyProfile extends React.Component<Props, State> {
                 >
                   Publish Content
                 </Text>
-              </TouchableOpacity>
+              </TouchableOpacity>*/}
 
               <TouchableOpacity
                 style={styles.actionButtonDark}
