@@ -10,7 +10,7 @@ import {
   StatusBar,
   FlatList,
   ListRenderItemInfo,
-  RefreshControl,
+  // RefreshControl,
 } from 'react-native'
 import ImagePicker from 'react-native-image-crop-picker'
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'
@@ -479,12 +479,12 @@ export default class MyProfile extends React.Component<Props, State> {
             data={this.getData()}
             keyExtractor={this.keyExtractor}
             onEndReached={this.fetchNextPage}
-            refreshControl={
-              <RefreshControl
-                refreshing={this.state.loadingNextPage}
-                onRefresh={this.fetchNextPage}
-              />
-            }
+            // refreshControl={
+            //   <RefreshControl
+            //     refreshing={this.state.loadingNextPage}
+            //     onRefresh={this.fetchNextPage}
+            //   />
+            // }
           />
 
           <TouchableOpacity
