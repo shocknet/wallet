@@ -60,6 +60,8 @@ class OnboardingInput extends React.Component {
     tooltipOpen: false,
   }
 
+  theme = 'dark'
+
   closeTooltip = () => {
     this.setState({
       tooltipOpen: false,
@@ -141,7 +143,14 @@ class OnboardingInput extends React.Component {
           </>
         )}
 
-        <View onLayout={this.onLayout} style={styles.textInputFieldContainer}>
+        <View
+          onLayout={this.onLayout}
+          style={
+            this.theme === 'dark'
+              ? styles.textInputFieldContainerDark
+              : styles.textInputFieldContainer
+          }
+        >
           <TextInput
             editable={!disable}
             autoCapitalize={autoCapitalize}
@@ -150,10 +159,17 @@ class OnboardingInput extends React.Component {
             onChangeText={onChangeText}
             onSubmitEditing={onSubmitEditing}
             placeholder={placeholder}
+            placeholderTextColor={
+              this.theme === 'dark' ? CSS.Colors.TEXT_WHITE : ''
+            }
             returnKeyType={returnKeyType}
             ref={innerRef}
             secureTextEntry={secureTextEntry}
-            style={styles.textInputField}
+            style={
+              this.theme === 'dark'
+                ? styles.textInputFieldDark
+                : styles.textInputField
+            }
             textContentType={textContentType}
             value={value}
           />
@@ -177,7 +193,11 @@ class OnboardingInput extends React.Component {
 
           {tooltip && (
             <TouchableOpacity
-              style={styles.tooltipBtn}
+              style={
+                this.theme === 'dark'
+                  ? styles.tooltipBtnDark
+                  : styles.tooltipBtn
+              }
               onPress={this.openTooltip}
             >
               <Entypo name="help" size={20} color={CSS.Colors.TEXT_WHITE} />
@@ -231,12 +251,27 @@ const styles = StyleSheet.create({
     fontFamily: 'Montserrat-600',
     flex: 1,
   },
+  textInputFieldDark: {
+    fontSize: 14,
+    fontFamily: 'Montserrat-600',
+    flex: 1,
+    color: CSS.Colors.TEXT_WHITE,
+  },
 
   textInputFieldContainer: {
     height: 64,
     backgroundColor: CSS.Colors.TEXT_WHITE,
     borderRadius: 100,
     elevation: 3,
+    paddingLeft: 25,
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+  textInputFieldContainerDark: {
+    height: 64,
+    backgroundColor: '#212937',
+    borderWidth: 1,
+    borderColor: '#4285B9',
     paddingLeft: 25,
     alignItems: 'center',
     flexDirection: 'row',
@@ -261,13 +296,24 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
 
+  tooltipBtnDark: {
+    width: 35,
+    height: 35,
+    flexShrink: 0,
+    backgroundColor: '#4285B9',
+    borderRadius: 100,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+  },
+
   tooltipBubble: {
     backgroundColor: 'grey',
     paddingLeft: TOOLTIP_H_PAD,
     paddingRight: TOOLTIP_H_PAD,
     paddingBottom: TOOLTIP_V_PAD,
     paddingTop: TOOLTIP_V_PAD,
-    borderRadius: 8,
+    borderRadius: 20,
   },
 
   arrow: {
