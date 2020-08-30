@@ -62,6 +62,8 @@ import CreatePost from '../../assets/images/profile/create-post.svg'
 import ProfileIcon from '../../assets/images/navbar-icons/profile.svg'
 // @ts-ignore
 import ProfileIconFocused from '../../assets/images/navbar-icons/profile-focused.svg'
+// @ts-ignore
+import IconDrawerProfile from '../../assets/images/drawer-icons/icon-drawer-profile.svg'
 
 import Modal from 'react-native-modal'
 import { CREATE_POST_DARK } from '../CreatePostDark'
@@ -115,6 +117,10 @@ export default class MyProfile extends React.Component<Props, State> {
         // />
         focused ? <ProfileIconFocused size={32} /> : <ProfileIcon size={32} />
       )
+    },
+    //@ts-ignore
+    drawerIcon: ({ focused }) => {
+      return (<IconDrawerProfile/>)
     },
   }
 

@@ -42,6 +42,21 @@ import * as Routes from '../routes'
 import LNURL, { LNURL_SCREEN } from '../screens/LNURL'
 
 import CustomDrawer from '../components/CustomDrawer'
+//@ts-ignore
+import IconDrawerProfile from '../assets/images/drawer-icons/icon-drawer-profile.svg'
+//@ts-ignore
+import IconDrawerWalletSettings from '../assets/images/drawer-icons/icon-drawer-wallet.svg'
+//@ts-ignore
+import IconDrawerSpendingRules from '../assets/images/drawer-icons/icon-drawer-spending-rule.svg'
+//@ts-ignore
+import IconDrawerAdvancedLightning from '../assets/images/drawer-icons/icon-drawer-advanced-lightning.svg'
+//@ts-ignore
+import IconDrawerHelp from '../assets/images/drawer-icons/icon-drawer-help.svg'
+//@ts-ignore
+import IconDrawerScan from '../assets/images/drawer-icons/icon-drawer-scan.svg'
+//@ts-ignore
+import IconDrawerPower from '../assets/images/drawer-icons/icon-drawer-power.svg'
+// import IconDrawerHome from '../assets/images/drawer-icons/icon-drawer-help.svg'
 
 export const APP = 'APP'
 export const BOTTOM_NAV = 'BOTTOM_NAV'
@@ -96,16 +111,33 @@ const WalletNav = createStackNavigator(
 
 BottomNav.navigationOptions = {
   header: null,
+  // drawerIcon: () => {
+  //   return <IconDrawerHome />
+  // },
 }
 
 const MAIN_DRAWER = 'MAIN_DRAWER'
+const theme = 'dark'
 
 /** @type {import('react-navigation').NavigationRouteConfigMap} */
+
 const drawerScreens = {
   [WALLET_NAV]: {
     screen: WalletNav,
     navigationOptions: {
       title: 'Home',
+    },
+  },
+  [MY_PROFILE]: {
+    screen: MyProfile,
+    navigationOptions: {
+      title: 'Profile',
+    },
+  },
+  [WALLET_SETTINGS]: {
+    screen: WalletSettings,
+    navigationOptions: {
+      title: 'Wallet Settings',
     },
   },
   [ADVANCED_SCREEN]: {
@@ -118,12 +150,6 @@ const drawerScreens = {
     screen: SeedBackup,
     navigationOptions: {
       title: 'Seed Backup',
-    },
-  },
-  [WALLET_SETTINGS]: {
-    screen: WalletSettings,
-    navigationOptions: {
-      title: 'Wallet Settings',
     },
   },
   [FEED]: {
@@ -163,6 +189,79 @@ const drawerScreens = {
     },
   },
 }
+
+if (theme === 'dark') {
+  delete drawerScreens[SEED_BACKUP]
+  delete drawerScreens[FEED]
+  delete drawerScreens[ADD_POST_TO_FEED]
+  delete drawerScreens[CREATE_POST]
+  delete drawerScreens[CREATE_POST_DARK]
+  delete drawerScreens[LNURL_SCREEN]
+  delete drawerScreens[PUBLISH_CONTENT_DARK]
+}
+//
+// const drawerScreens = {
+//   [WALLET_NAV]: {
+//     screen: WalletNav,
+//     navigationOptions: {
+//       title: 'Home',
+//     },
+//   },
+//   [ADVANCED_SCREEN]: {
+//     screen: Advanced,
+//     navigationOptions: {
+//       title: 'Advanced Lightning',
+//     },
+//   },
+//   [SEED_BACKUP]: {
+//     screen: SeedBackup,
+//     navigationOptions: {
+//       title: 'Seed Backup',
+//     },
+//   },
+//   [WALLET_SETTINGS]: {
+//     screen: WalletSettings,
+//     navigationOptions: {
+//       title: 'Wallet Settings',
+//     },
+//   },
+//   [FEED]: {
+//     screen: Feed,
+//     navigationOptions: {
+//       title: 'Feed POC',
+//     },
+//   },
+//   [ADD_POST_TO_FEED]: {
+//     screen: AddPostToFeed,
+//     navigationOptions: {
+//       title: 'Add Post to Feed',
+//     },
+//   },
+//   [CREATE_POST]: {
+//     screen: CreatePost,
+//     navigationOptions: {
+//       title: 'Add Post to Feed',
+//     },
+//   },
+//   [LNURL_SCREEN]: {
+//     screen: LNURL,
+//     navigationOptions: {
+//       title: 'LNURL utils',
+//     },
+//   },
+//   [PUBLISH_CONTENT_DARK]: {
+//     screen: PublishContentDark,
+//     navigationOptions: {
+//       title: 'Publish Content',
+//     },
+//   },
+//   [CREATE_POST_DARK]: {
+//     screen: CreatePostDark,
+//     navigationOptions: {
+//       title: 'Publish Content Dark',
+//     },
+//   },
+// }
 
 if (__DEV__) {
   drawerScreens[DEBUG] = {

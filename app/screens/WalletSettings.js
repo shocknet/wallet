@@ -4,6 +4,8 @@ import { connect } from 'react-redux'
 import Logger from 'react-native-file-log'
 import { Slider, CheckBox } from 'react-native-elements'
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'
+// @ts-ignore
+import IconDrawerWalletSettings from '../assets/images/drawer-icons/icon-drawer-wallet.svg'
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}, Params>} Navigation
  */
@@ -11,6 +13,7 @@ import { updateSelectedFee, updateFeesSource } from '../actions/FeesActions'
 import ShockInput from '../components/ShockInput'
 import Nav from '../components/Nav'
 import InputGroup from '../components/InputGroup'
+
 /** @type {number} */
 // @ts-ignore
 const shockBG = require('../assets/images/shock-bg.png')
@@ -67,6 +70,9 @@ class WalletSettings extends React.Component {
    */
   static navigationOptions = {
     header: null,
+    drawerIcon: () => {
+      return (<IconDrawerWalletSettings />)
+    },
   }
 
   /** @type {State} */

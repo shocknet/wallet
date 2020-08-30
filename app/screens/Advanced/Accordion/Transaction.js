@@ -34,11 +34,16 @@ const copyTxHash = url => () => {
   return true
 }
 
+const theme = 'dark'
 /**
  * @type {React.FC<Props>}
  */
 const _Transaction = ({ data }) => ((
-  <View style={styles.transactionItem}>
+  <View
+    style={
+      theme === 'dark' ? styles.transactionItemDark : styles.transactionItem
+    }
+  >
     <View style={styles.transactionDetails}>
       <Image
         style={styles.transactionIcon}
@@ -49,7 +54,11 @@ const _Transaction = ({ data }) => ((
         <Text
           ellipsizeMode="tail"
           numberOfLines={1}
-          style={styles.transactionHashText}
+          style={
+            theme === 'dark'
+              ? styles.transactionHashTextDark
+              : styles.transactionHashText
+          }
           onPress={copyTxHash(data.tx_hash)}
         >
           {data.tx_hash}
@@ -63,7 +72,15 @@ const _Transaction = ({ data }) => ((
       </View>
     </View>
     <View>
-      <Text style={styles.transactionValueText}>{data.amount}</Text>
+      <Text
+        style={
+          theme === 'dark'
+            ? styles.transactionValueTextDark
+            : styles.transactionValueText
+        }
+      >
+        {data.amount}
+      </Text>
       <Text style={styles.transactionTime}>
         {Moment.utc(parseInt(data.time_stamp, 10) * 1000).fromNow()}
       </Text>
@@ -85,6 +102,15 @@ const styles = StyleSheet.create({
     borderStyle: 'solid',
     borderColor: CSS.Colors.BORDER_NEAR_WHITE,
   },
+  transactionItemDark: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    borderBottomWidth: 1,
+    borderStyle: 'solid',
+    borderColor: CSS.Colors.TEXT_WHITE,
+  },
   transactionDetails: {
     flexDirection: 'row',
     width: '50%',
@@ -99,10 +125,21 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: CSS.Colors.TEXT_LIGHTEST,
   },
+  transactionHashTextDark: {
+    fontSize: 12,
+    color: '#EBEBEB',
+    fontFamily: 'Montserrat-700',
+  },
   transactionValueText: {
     fontSize: 20,
     fontWeight: 'bold',
     color: CSS.Colors.TEXT_LIGHT,
+  },
+  transactionValueTextDark: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#EBEBEB',
+    fontFamily: 'Montserrat-600',
   },
   transactionTime: {
     textAlign: 'right',

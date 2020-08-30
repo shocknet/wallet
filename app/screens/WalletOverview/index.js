@@ -29,6 +29,8 @@ import wavesBGDark from '../../assets/images/waves-bg-dark.png'
 import WalletIcon from '../../assets/images/navbar-icons/wallet.svg'
 //@ts-ignore
 import WalletIconFocused from '../../assets/images/navbar-icons/wallet-focused.svg'
+// @ts-ignore
+import IconDrawerHome from '../../assets/images/drawer-icons/icon-drawer-help.svg'
 
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}, {}>} Navigation
@@ -60,6 +62,7 @@ import { RECEIVE_SCREEN } from '../Receive'
 
 import notificationService from '../../../notificationService'
 import * as Cache from '../../services/cache'
+// import IconDrawerWalletSettings from '../../assets/images/drawer-icons/icon-drawer-wallet.svg'
 
 /**
  * @typedef {ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps} ConnectedRedux
@@ -120,6 +123,10 @@ class WalletOverview extends Component {
         // />
         (focused ? <WalletIconFocused size={32} /> : <WalletIcon size={32} />)
       )
+    },
+    // @ts-ignore
+    drawerIcon: ({ focused }) => {
+      return (<WalletIconFocused />)
     },
   }
 
