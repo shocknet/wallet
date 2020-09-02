@@ -34,8 +34,6 @@ import ShockAvatar from '../../components/ShockAvatar'
 import QR from '../WalletOverview/QR'
 import Pad from '../../components/Pad'
 import BasicDialog from '../../components/BasicDialog'
-import ShockInput from '../../components/ShockInput'
-import IGDialogBtn from '../../components/IGDialogBtn'
 import Post from '../../components/Post'
 import { PUBLISH_CONTENT_DARK } from '../../screens/PublishContentDark'
 
@@ -92,11 +90,8 @@ interface State {
   showMetaConfigModal: boolean
 }
 
-interface Sentinel {
-  type: '@@Sentinel'
-}
 
-type Item = Sentinel | Common.Schema.Post
+type Item =  Common.Schema.Post
 
 const theme = 'dark'
 
@@ -225,6 +220,7 @@ export default class MyProfile extends React.Component<Props, State> {
     this.setState({
       authData: authData.authData,
     })
+    this.fetchNextPage()
   }
 
   componentWillUnmount() {
@@ -388,6 +384,10 @@ export default class MyProfile extends React.Component<Props, State> {
         ([_, ci]) => ci.type === 'image/embedded',
       ) as [string, Common.Schema.EmbeddedImage][]
 
+      const videoCIEntries = Object.entries(item.contentItems).filter(
+        ([_, ci]) => ci.type === 'video/embedded',
+      ) as [string, Common.Schema.EmbeddedVideo][]
+
       const paragraphCIEntries = Object.entries(item.contentItems).filter(
         ([_, ci]) => ci.type === 'text/paragraph',
       ) as [string, Common.Schema.Paragraph][]
@@ -395,6 +395,15 @@ export default class MyProfile extends React.Component<Props, State> {
       const images = imageCIEntries.map(([key, imageCI]) => ({
         id: key,
         data: imageCI.magnetURI,
+        width:Number(imageCI.width),
+        height:Number(imageCI.height)
+      }))
+
+      const videos = videoCIEntries.map(([key, videoCI]) => ({
+        id: key,
+        data: videoCI.magnetURI,
+        width:Number(videoCI.width),
+        height:Number(videoCI.height)
       }))
 
       const paragraphhs = paragraphCIEntries.map(([key, paragraphCI]) => ({
@@ -406,14 +415,15 @@ export default class MyProfile extends React.Component<Props, State> {
         <Post
           author={item.author}
           date={item.date}
-          // @ts-expect-error
           images={images}
+          videos={videos}
           paragraphs={paragraphhs}
           parentScrollViewRef={undefined}
         />
       )
     }
-
+    return <></>
+    /* User data are already showed no need to show them again
     const {
       displayName,
       authData,
@@ -452,7 +462,7 @@ export default class MyProfile extends React.Component<Props, State> {
             </Text>
           </TouchableOpacity>
 
-          {/* <Pad amount={6} />
+          { <Pad amount={6} />
 
             <TouchableOpacity>
               <AirbnbRating
@@ -461,7 +471,7 @@ export default class MyProfile extends React.Component<Props, State> {
                 showRating={false}
                 size={10}
               />
-            </TouchableOpacity> */}
+            </TouchableOpacity> }
 
           <Pad amount={8} />
 
@@ -507,15 +517,15 @@ export default class MyProfile extends React.Component<Props, State> {
 
         <SetBioDialog ref={this.setBioDialog} onSubmit={this.onSubmitBio} />
       </>
-    )
+    )*/
   }
 
   getData = (): Item[] => {
-    return [{ type: '@@Sentinel' }, ...this.state.posts]
+    return  this.state.posts
   }
 
   keyExtractor = (item: Item) => {
-    return (item as Common.Schema.Post).id || (item as Sentinel).type
+    return (item as Common.Schema.Post).id
   }
 
   onPressCreate = () => {
@@ -671,6 +681,22 @@ export default class MyProfile extends React.Component<Props, State> {
               <CreatePost />
               <Text style={styles.actionButtonTextDark}>Create a Post</Text>
             </TouchableOpacity>
+
+            {this.state.loadingNextPage && <ActivityIndicator />}
+
+
+              <FlatList
+                renderItem={this.renderItem}
+                data={this.getData()}
+                keyExtractor={this.keyExtractor}
+                onEndReached={this.fetchNextPage}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={this.state.loadingNextPage}
+                    onRefresh={this.fetchNextPage}
+                  />
+                }
+              />
           </ScrollView>
 
           <TouchableOpacity
