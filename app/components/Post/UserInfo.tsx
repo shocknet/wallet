@@ -46,10 +46,12 @@ const style = StyleSheet.create({
     ...styles.textBold,
     ...styles.fontMontserratBold,
     ...styles.fontSize20,
+    color: '#F3EFEF',
   },
   dateStyle: {
     ...styles.fontMontserrat,
     ...styles.fontSize14,
     fontStyle: 'italic',
+    color: '#F3EFEF',
   },
 })
