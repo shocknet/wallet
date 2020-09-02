@@ -59,6 +59,8 @@ import CreatePost from '../../assets/images/profile/create-post.svg'
 import ProfileIcon from '../../assets/images/navbar-icons/profile.svg'
 // @ts-ignore
 import ProfileIconFocused from '../../assets/images/navbar-icons/profile-focused.svg'
+// @ts-ignore
+import IconDrawerProfile from '../../assets/images/drawer-icons/icon-drawer-profile.svg'
 
 import Modal from 'react-native-modal'
 import { CREATE_POST_DARK as CREATE_POST } from '../CreatePostDark'
@@ -95,6 +97,7 @@ type Item =  Common.Schema.Post
 
 const theme = 'dark'
 
+
 export default class MyProfile extends React.Component<Props, State> {
   static navigationOptions: NavigationBottomTabScreenOptions = {
     tabBarIcon: ({ focused }) => {
@@ -109,6 +112,10 @@ export default class MyProfile extends React.Component<Props, State> {
         // />
         focused ? <ProfileIconFocused size={32} /> : <ProfileIcon size={32} />
       )
+    },
+    //@ts-ignore
+    drawerIcon: ({ focused }) => {
+      return (<IconDrawerProfile/>)
     },
   }
 
@@ -535,6 +542,7 @@ export default class MyProfile extends React.Component<Props, State> {
   onPressPublish = () => {
     this.props.navigation.navigate(PUBLISH_CONTENT_DARK)
   }
+
 
   render() {
     const {

@@ -34,7 +34,7 @@ export const CHATS_ROUTE = 'CHATS_ROUTE'
 
 const LIST_STYLE = [
   Styles.traslucentStatusBarPadding,
-  Styles.backgroundWhite,
+  Styles.backgroundWhiteDark,
   Styles.flex,
 ]
 
@@ -48,13 +48,21 @@ const byTimestampFromOldestToNewest = (a, b) => a.timestamp - b.timestamp
 /**
  * @type {React.FC}
  */
-const _NoChatsOrRequests = () => ((
-  <View style={styles.noChats}>
-    <Text>NO CHATS OR REQUESTS</Text>
+// const _NoChatsOrRequests = () => ((
+//   <View style={styles.noChats}>
+//     <Text>NO CHATS OR REQUESTS</Text>
+//   </View>
+// ))
+//
+// const NoChatsOrRequests = React.memo(_NoChatsOrRequests)
+
+const _NoChatsOrRequestsDark = () => ((
+  <View style={styles.noChatsDark}>
+    <Text style={styles.noChatsTextDark}>NO CHATS OR REQUESTS</Text>
   </View>
 ))
 
-const NoChatsOrRequests = React.memo(_NoChatsOrRequests)
+const NoChatsOrRequestsDark = React.memo(_NoChatsOrRequestsDark)
 
 /**
  * @param {Schema.Chat | Schema.SimpleReceivedRequest | Schema.SimpleSentRequest} item
@@ -123,6 +131,7 @@ export default class ChatsView extends React.Component {
     this.props.onPressRequest(requestID)
   }
 
+  theme = 'dark'
   ////////////////////////////////////////////////////////////////////////////////
 
   addDialogChoiceToHandler = {
@@ -328,10 +337,10 @@ export default class ChatsView extends React.Component {
   }
 
   header = () => (
-    <View style={styles.header}>
+    <View style={this.theme === 'dark' ? styles.headerDark : styles.header}>
       <Ionicons
         name="ios-add"
-        color={Colors.BLUE_LIGHT}
+        color={this.theme === 'dark' ? Colors.TEXT_WHITE : Colors.BLUE_LIGHT}
         size={48}
         onPress={this.onPressAdd}
       />
@@ -417,7 +426,7 @@ export default class ChatsView extends React.Component {
         <FlatList
           ListHeaderComponent={this.header}
           ItemSeparatorComponent={Divider}
-          ListEmptyComponent={NoChatsOrRequests}
+          ListEmptyComponent={NoChatsOrRequestsDark}
           data={items}
           keyExtractor={keyExtractor}
           renderItem={this.itemRenderer}
@@ -466,6 +475,15 @@ const styles = StyleSheet.create({
     paddingTop: 12,
   },
 
+  headerDark: {
+    backgroundColor: '#1A2028',
+    justifyContent: 'flex-end',
+    flexDirection: 'row',
+    paddingLeft: SCREEN_PADDING,
+    paddingRight: SCREEN_PADDING,
+    paddingTop: 12,
+  },
+
   itemContainer: {
     alignItems: 'center',
     flexDirection: 'row',
@@ -476,13 +494,21 @@ const styles = StyleSheet.create({
     paddingTop: ITEM_CONTAINER_VERTICAL_PADDING,
   },
 
-  noChats: {
+  // noChats: {
+  //   alignItems: 'center',
+  //   backgroundColor: Colors.BACKGROUND_WHITE,
+  //   flex: 1,
+  //   justifyContent: 'center',
+  // },
+  noChatsDark: {
     alignItems: 'center',
-    backgroundColor: Colors.BACKGROUND_WHITE,
+    backgroundColor: '#1A2028',
     flex: 1,
     justifyContent: 'center',
   },
-
+  noChatsTextDark: {
+    color: 'white',
+  },
   userDetailContainer: {
     flex: 1,
     marginRight: 20,
