@@ -184,20 +184,19 @@ const drawerScreens = {
       title: 'Publish Content',
     },
   },
-  [CREATE_POST]: {
+  /*[CREATE_POST]: { already declared
     screen: CreatePost,
     navigationOptions: {
       title: 'Publish Content Dark',
     },
-  },
+  },*/
 }
 
 if (theme === 'dark') {
-  delete drawerScreens[SEED_BACKUP]
+  //delete drawerScreens[SEED_BACKUP]
   //delete drawerScreens[FEED]
   delete drawerScreens[ADD_POST_TO_FEED]
-  delete drawerScreens[CREATE_POST]
-  delete drawerScreens[CREATE_POST]
+  //delete drawerScreens[CREATE_POST]
   delete drawerScreens[LNURL_SCREEN]
   delete drawerScreens[PUBLISH_CONTENT_DARK]
 }
