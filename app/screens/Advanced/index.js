@@ -17,7 +17,8 @@ import Http from 'axios'
 import Big from 'big.js'
 import { connect } from 'react-redux'
 import Logger from 'react-native-file-log'
-import wavesBG from '../../assets/images/waves-bg.png'
+// import wavesBG from '../../assets/images/waves-bg.png'
+import wavesBGDark from '../../assets/images/waves-bg-dark.png'
 
 import * as CSS from '../../res/css'
 import Pad from '../../components/Pad'
@@ -48,6 +49,10 @@ import CloseChannelModal from './Modals/CloseChannel'
 import ShockDialog from '../../components/ShockDialog'
 import InfoPeerModal from './Modals/infoPeer'
 import { disconnectPeer } from '../../services/wallet'
+// @ts-ignore
+import IconDrawerAdvancedLightning from '../../assets/images/drawer-icons/icon-drawer-advanced-lightning.svg'
+import * as ContactAPI from '../../services/contact-api'
+
 export const ADVANCED_SCREEN = 'ADVANCED_SCREEN'
 /**
  * @typedef {import('../../services/wallet').Channel} Channel
@@ -92,6 +97,7 @@ export const ADVANCED_SCREEN = 'ADVANCED_SCREEN'
  * @prop {string} confirmCloseChannelText
  * @prop {boolean} refreshingChannels
  * @prop {boolean} refreshingTransactions
+ * @prop {string | null} avatar
  */
 
 /**
@@ -124,6 +130,13 @@ export const ADVANCED_SCREEN = 'ADVANCED_SCREEN'
  * @augments React.Component<Props, State, never>
  */
 class AdvancedScreen extends Component {
+  static navigationOptions = {
+    header: null,
+    drawerIcon: () => {
+      return <IconDrawerAdvancedLightning />
+    },
+  }
+
   /** @type {State} */
   state = {
     accordions: {
@@ -161,6 +174,7 @@ class AdvancedScreen extends Component {
     confirmCloseChannelText: '',
     refreshingChannels: false,
     refreshingTransactions: false,
+    avatar: ContactAPI.Events.getAvatar(),
   }
 
   addChannelModal = React.createRef()
@@ -715,10 +729,13 @@ class AdvancedScreen extends Component {
       confirmCloseChannelText,
       refreshingChannels,
       refreshingTransactions,
+      avatar,
     } = this.state
+
     //Logger.log(history.channels)
     Logger.log(channelPublicKey)
     const { confirmedBalanceUSD, channelBalanceUSD } = this.convertBTCToUSD()
+    const theme = 'dark'
     return (
       <>
         <View style={styles.container}>
@@ -733,27 +750,48 @@ class AdvancedScreen extends Component {
             barStyle="light-content"
           />
           <ImageBackground
-            source={wavesBG}
+            source={theme === 'dark' ? wavesBGDark : wavesBGDark}
             resizeMode="cover"
             style={styles.statsHeader}
           >
-            <Nav title="Advanced" style={styles.nav} />
+            <Nav title="Advanced" style={styles.nav} showAvatar={avatar} />
             <View style={styles.statsContainer}>
               <View style={xStyles.channelBalanceContainer}>
                 <View style={styles.statIcon}>
-                  <EntypoIcons name="flash" color="#F5A623" size={20} />
+                  {theme === 'dark' ? (
+                    <EntypoIcons
+                      name="flash"
+                      color="#4285B9"
+                      size={20}
+                      style={{ transform: [{ rotate: '-45deg' }] }}
+                    />
+                  ) : (
+                    <EntypoIcons name="flash" color="#F5A623" size={20} />
+                  )}
                 </View>
                 <View>
-                  <Text style={styles.statTextPrimary}>
+                  <Text
+                    style={
+                      theme === 'dark'
+                        ? styles.statTextPrimaryDark
+                        : styles.statTextPrimary
+                    }
+                  >
                     {wallet.USDRate
                       ? wallet.channelBalance.replace(
                           /(\d)(?=(\d{3})+$)/g,
                           '$1,',
                         )
                       : 'Loading...'}{' '}
-                    sats
+                    {theme === 'dark' ? '' : 'sats'}
                   </Text>
-                  <Text style={styles.statTextSecondary}>
+                  <Text
+                    style={
+                      theme === 'dark'
+                        ? styles.statTextSecondaryDark
+                        : styles.statTextSecondary
+                    }
+                  >
                     {wallet.USDRate
                       ? channelBalanceUSD.replace(/\d(?=(\d{3})+\.)/g, '$&,')
                       : 'Loading...'}{' '}
@@ -763,19 +801,35 @@ class AdvancedScreen extends Component {
               </View>
               <View style={styles.stat}>
                 <View style={styles.statIcon}>
-                  <EntypoIcons name="link" color="#F5A623" size={20} />
+                  {theme === 'dark' ? (
+                    <EntypoIcons name="link" color="#4285B9" size={20} />
+                  ) : (
+                    <EntypoIcons name="link" color="#F5A623" size={20} />
+                  )}
                 </View>
                 <View>
-                  <Text style={styles.statTextPrimary}>
+                  <Text
+                    style={
+                      theme === 'dark'
+                        ? styles.statTextPrimaryDark
+                        : styles.statTextPrimary
+                    }
+                  >
                     {wallet.USDRate
                       ? wallet.confirmedBalance.replace(
                           /(\d)(?=(\d{3})+$)/g,
                           '$1,',
                         )
                       : 'Loading...'}{' '}
-                    sats
+                    {theme === 'dark' ? '' : 'sats'}
                   </Text>
-                  <Text style={styles.statTextSecondary}>
+                  <Text
+                    style={
+                      theme === 'dark'
+                        ? styles.statTextSecondaryDark
+                        : styles.statTextSecondary
+                    }
+                  >
                     {wallet.USDRate
                       ? confirmedBalanceUSD.replace(/\d(?=(\d{3})+\.)/g, '$&,')
                       : 'Loading...'}{' '}
@@ -859,7 +913,7 @@ class AdvancedScreen extends Component {
               toggleAccordion={this.toggleAccordion('peers')}
               keyExtractor={peerKeyExtractor}
             />
-            {/* 
+            {/*
               <AccordionItem
                 fetchNextPage={() => this.fetchNextPage('invoices', 'invoices')}
                 data={history.invoices}
@@ -868,7 +922,7 @@ class AdvancedScreen extends Component {
                 open={accordions['invoices']}
                 toggleAccordion={() => this.toggleAccordion('invoices')}
                 keyExtractor={inv => inv.r_hash.data.join('-')}
-              /> 
+              />
             */}
           </View>
         </View>
@@ -1016,9 +1070,21 @@ const styles = StyleSheet.create({
     fontSize: 25,
     fontWeight: '900',
   },
+  statTextPrimaryDark: {
+    color: CSS.Colors.TEXT_WHITE,
+    fontSize: 26,
+    fontWeight: '900',
+    fontFamily: 'Montserrat-700',
+  },
   statTextSecondary: {
     color: CSS.Colors.ORANGE,
     fontSize: 14,
+    fontFamily: 'Montserrat-700',
+  },
+  statTextSecondaryDark: {
+    color: '#4285B9',
+    fontSize: 12,
+    fontFamily: 'Montserrat-600',
   },
   accordionsContainer: {
     width: '100%',

@@ -127,7 +127,7 @@ export default class Accordion extends Component {
           <TouchableWithoutFeedback onPress={this.toggleMenuOpen}>
             <Animated.View
               style={[
-                styles.accordionMenuBtn,
+                styles.accordionMenuBtnDark,
                 {
                   transform: [
                     {
@@ -179,6 +179,8 @@ export default class Accordion extends Component {
       onRefresh,
       refreshing,
     } = this.props
+    const theme = 'dark'
+
     return (
       <View
         style={open ? xStyles.accordionItemOpen : xStyles.accordionItemClosed}
@@ -187,18 +189,37 @@ export default class Accordion extends Component {
           onPress={toggleAccordion}
           style={styles.accordionItem}
         >
-          <LinearGradient
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            colors={open ? ['#F5A623', '#F5A623'] : ['#194B93', '#4285B9']}
-            style={[
-              styles.accordionHeader,
-              !open && !hideBottomBorder && styles.accordionHeaderBottomBorder,
-              styles.accordionHeaderTopBorder,
-            ]}
-          >
-            <Text style={styles.accordionHeaderText}>{title}</Text>
-          </LinearGradient>
+          {theme === 'dark' ? (
+            <LinearGradient
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              colors={open ? ['#4285B9', '#4285B9'] : ['#001220', '#001220']}
+              style={[
+                styles.accordionHeader,
+                !open &&
+                  !hideBottomBorder &&
+                  styles.accordionHeaderBottomBorder,
+                styles.accordionHeaderTopBorder,
+              ]}
+            >
+              <Text style={styles.accordionHeaderTextDark}>{title}</Text>
+            </LinearGradient>
+          ) : (
+            <LinearGradient
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              colors={open ? ['#F5A623', '#F5A623'] : ['#194B93', '#4285B9']}
+              style={[
+                styles.accordionHeader,
+                !open &&
+                  !hideBottomBorder &&
+                  styles.accordionHeaderBottomBorder,
+                styles.accordionHeaderTopBorder,
+              ]}
+            >
+              <Text style={styles.accordionHeaderText}>{title}</Text>
+            </LinearGradient>
+          )}
         </TouchableOpacity>
 
         {!Array.isArray(data) ? (
@@ -263,6 +284,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: CSS.Colors.TEXT_WHITE,
   },
+  accordionHeaderTextDark: {
+    fontSize: 15,
+    color: CSS.Colors.TEXT_WHITE,
+    fontFamily: 'Montserrat-600',
+  },
   accordionMenu: {
     position: 'absolute',
     bottom: 0,
@@ -291,10 +317,21 @@ const styles = StyleSheet.create({
     color: CSS.Colors.BLUE_DARK,
     fontWeight: 'bold',
   },
-  accordionMenuBtn: {
+  // accordionMenuBtn: {
+  //   width: 45,
+  //   height: 45,
+  //   borderRadius: 100,
+  //   backgroundColor: CSS.Colors.ORANGE,
+  //   alignItems: 'center',
+  //   justifyContent: 'center',
+  //   elevation: 3,
+  // },
+  accordionMenuBtnDark: {
     width: 45,
     height: 45,
     borderRadius: 100,
+    borderWidth: 1,
+    borderColor: 'white',
     backgroundColor: CSS.Colors.ORANGE,
     alignItems: 'center',
     justifyContent: 'center',

@@ -72,10 +72,11 @@ export default class Post extends React.Component<Props> {
 const styles = StyleSheet.create({
   postContainer: {
     width: '100%',
-    backgroundColor: CSS.Colors.BACKGROUND_NEAR_WHITE,
+    backgroundColor: '#16191C',
   },
   paragraphBase: {
     margin: 10,
+    color: '#F3EFEF',
   },
 })
 

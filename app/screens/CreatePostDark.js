@@ -37,6 +37,7 @@ import {
   getMediaType,
   putFile,
   enrollToken,
+  //@ts-ignore
 } from '../services/seedServer'
 import { Schema } from 'shock-common'
 import Video from 'react-native-video'

@@ -108,6 +108,7 @@ class OnboardingInput extends React.Component {
     const SVG_EDGE = 25
     const UNIT = SVG_EDGE / 5
     const ZERO = UNIT * 0
+    const TWO = UNIT * 2
     const THREE = UNIT * 3
     const FOUR = UNIT * 4
     const FIVE = UNIT * 5
@@ -132,7 +133,7 @@ class OnboardingInput extends React.Component {
 
               <Svg height={SVG_EDGE} width={SVG_EDGE} style={styles.arrow}>
                 <Polygon
-                  points={`${ZERO},${THREE} ${FOUR},${ZERO} ${FIVE},${FIVE}`}
+                  points={`${ZERO},${THREE} ${FOUR},${ZERO} ${TWO},${FIVE} `}
                   fill="grey"
                   strokeWidth="0"
                 />

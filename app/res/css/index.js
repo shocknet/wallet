@@ -24,6 +24,7 @@ export const styles = StyleSheet.create({
   backgroundGreen: { backgroundColor: Colors.SUCCESS_GREEN },
   backgroundOrange: { backgroundColor: Colors.ORANGE },
   backgroundWhite: { backgroundColor: Colors.BACKGROUND_WHITE },
+  backgroundWhiteDark: { backgroundColor: '#1A2028' },
   textBold: { fontWeight: 'bold' },
   flex: { flex: 1 },
   flexBasisZero: { flexBasis: 0 },

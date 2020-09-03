@@ -13,6 +13,8 @@ import { connect } from 'react-redux'
 import Logger from 'react-native-file-log'
 import { Slider } from 'react-native-elements'
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'
+// @ts-ignore
+import IconDrawerWalletSettings from '../assets/images/drawer-icons/icon-drawer-wallet.svg'
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}, Params>} Navigation
  */
@@ -26,6 +28,7 @@ import {
 import {
   updateNotifyDisconnect,
   updateNotifyDisconnectAfter,
+  //@ts-ignore
 } from '../actions/SettingsActions'
 import ShockInput from '../components/ShockInput'
 import Pad from '../components/Pad'
@@ -97,6 +100,9 @@ class WalletSettings extends React.Component {
    */
   static navigationOptions = {
     header: null,
+    drawerIcon: () => {
+      return (<IconDrawerWalletSettings />)
+    },
   }
 
   fadeAnim = new Animated.Value(-75)
@@ -666,4 +672,113 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  /*feePreferenceText: {
+    fontFamily: 'Montserrat-600',
+    fontSize: 15,
+    color: '#EBEBEB',
+  },
+  balanceSettingTitle: {
+    fontFamily: 'Montserrat-600',
+    fontSize: 15,
+    color: '#EBEBEB',
+  },
+  feePreferenceOption: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1,
+  },
+  feePreferenceContainer: {
+    flexDirection: 'row',
+    marginTop: 25,
+  },
+  feePreferenceOptionTitle: {
+    color: '#4285B9',
+    fontFamily: 'Montserrat-600',
+    fontSize: 15,
+    textAlign: 'center',
+  },
+  feePreferenceOptionInfo: {
+    fontFamily: 'Montserrat-600',
+    fontSize: 12,
+    color: 'white',
+    textAlign: 'center',
+    paddingTop: 5,
+  },
+  mainContainer: {
+    padding: 38,
+    paddingTop: 10,
+    alignItems: 'flex-start',
+    justifyContent: 'flex-start',
+    flex: 1,
+    width: '100%',
+  },
+  feeSlider: {
+    width: '80%',
+    flex: 1,
+  },
+  feeSliderContainer: {
+    flexDirection: 'row',
+    marginTop: 18,
+    marginBottom: 18,
+  },
+  feeSliderThumb: {
+    borderWidth: 1,
+    borderColor: 'white',
+    width: 22,
+    height: 22,
+  },
+  feeSourceContainer: {
+    flexDirection: 'row',
+    width: '100%',
+    marginBottom: 25,
+  },
+  feeSourceLabel: {
+    fontFamily: 'Montserrat-600',
+    fontSize: 15,
+    color: '#EBEBEB',
+  },
+  balanceSettingContainer: {
+    width: '100%',
+  },
+  balanceSetting: {
+    flexDirection: 'row',
+    marginTop: 20,
+  },
+  balanceSettingCheckBoxContainer: {
+    alignItems: 'flex-end',
+    justifyContent: 'flex-start',
+    // marginTop: -15,
+  },
+  balanceSettingContent: {
+    flex: 1,
+  },
+  balanceSettingContentTitle: {
+    fontFamily: 'Montserrat-700',
+    fontSize: 14,
+    color: '#4285B9',
+  },
+  balanceSettingContentDescription: {
+    color: '#EBEBEB',
+    fontFamily: 'Montserrat-600',
+    fontSize: 11,
+    marginTop: 5,
+  },
+  feeSourceContainerInputGroup: {
+    marginBottom: 0,
+  },
+  submitFeeSource: {
+    alignItems: 'flex-end',
+    justifyContent: 'flex-end',
+    marginBottom: 20,
+    width: '12%',
+  },
+  feeSourceInputGroupContainer: {
+    flexDirection: 'row',
+    width: '85%',
+  },
+  balanceSettingCheckBoxView: {
+    backgroundColor: 'transparent',
+    borderWidth: 0,
+  },*/
 })
