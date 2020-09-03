@@ -45,7 +45,7 @@ export const styles = StyleSheet.create({
   fontSize22: { fontSize: 22 },
   fontSize24: { fontSize: 24 },
   height0: { height: '0%' },
-  height100: { height: '100%', backgroundColor: '#16191C' },
+  height100: { height: '100%' },
   justifyCenter: { justifyContent: 'center' },
   justifyEnd: { justifyContent: 'flex-end' },
   justifySpaceBetween: { justifyContent: 'space-between' },

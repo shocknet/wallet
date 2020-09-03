@@ -202,7 +202,6 @@ configurations.all {
 }
 
 dependencies {
-    implementation project(':react-native-svg')
     implementation project(':react-native-webview')
     implementation project(':react-native-rsa-native')
     implementation fileTree(dir: "libs", include: ["*.jar"])
