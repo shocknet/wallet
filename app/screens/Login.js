@@ -24,6 +24,8 @@ import { WALLET_MANAGER } from '../navigators/WalletManager'
 import Pad from '../components/Pad'
 import OnboardingInput from '../components/OnboardingInput'
 import OnboardingBtn from '../components/OnboardingBtn'
+import * as Navigation from '../services/navigation'
+import { CONNECT_TO_NODE } from '../screens/ConnectToNode'
 
 export const LOGIN = 'LOGIN'
 
@@ -45,6 +47,7 @@ const shockBG = require('../assets/images/shock-bg.png')
  * @prop {string} err
  * @prop {string} pass
  * @prop {Wallet.WalletStatus|null} walletStatus Null when fetching.
+ * @prop {boolean} deletingNodeIP
  */
 
 /**
@@ -67,6 +70,7 @@ export default class Login extends React.Component {
     err: '',
     pass: '',
     walletStatus: null,
+    deletingNodeIP: false,
   }
 
   /** @type {React.RefObject<TextInput>} */
@@ -95,6 +99,7 @@ export default class Login extends React.Component {
     this.setState({
       cachedAlias: null,
       fetchingCachedAlias: true,
+      deletingNodeIP: false,
     })
 
     const walletStatus = await Wallet.walletStatus()
@@ -230,6 +235,12 @@ export default class Login extends React.Component {
     )
   }
 
+  onPressChangeNode = async () => {
+    this.setState({ deletingNodeIP: true })
+    await Cache.writeNodeURLOrIP(null)
+    Navigation.navigate(CONNECT_TO_NODE)
+  }
+
   render() {
     const {
       alias,
@@ -239,8 +250,13 @@ export default class Login extends React.Component {
       fetchingCachedAlias,
       pass,
       walletStatus,
+      deletingNodeIP,
     } = this.state
-    const loading = awaitingRes || fetchingCachedAlias || walletStatus === null
+    const loading =
+      awaitingRes ||
+      fetchingCachedAlias ||
+      walletStatus === null ||
+      deletingNodeIP
     const enableUnlockBtn =
       !loading && (alias.length > 0 || cachedAlias !== null) && pass.length > 0
 
@@ -292,6 +308,10 @@ export default class Login extends React.Component {
           <Pad amount={ITEM_SPACING} />
           <Text onPress={this.onPressCreateNewAlias} style={linkTextStyle}>
             Create new alias
+          </Text>
+          <Pad amount={ITEM_SPACING / 2} />
+          <Text onPress={this.onPressChangeNode} style={linkTextStyle}>
+            Use another node
           </Text>
         </OnboardingScreen>
 
