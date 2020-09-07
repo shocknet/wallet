@@ -514,7 +514,7 @@ class SendScreen extends Component {
         return (
           <SwipeVerify
             width="100%"
-            buttonSize={83}
+            buttonSize={84}
             height={59}
             style={styles.swipeBtnDark}
             buttonColor="#212937"
@@ -758,6 +758,8 @@ class SendScreen extends Component {
                   baseColor={
                     this.theme === 'dark' ? '#4285B9' : 'rgba(0,0,0, .38)'
                   }
+                  style={styles.dropdownLabelStyle}
+                  itemTextStyle={styles.dropdownLabelStyle}
                 />
               </View>
               {chat.selectedContact?.type === 'btc' ? (
@@ -1078,6 +1080,9 @@ const styles = StyleSheet.create({
   },
   swipeBtnDark: {
     marginBottom: 10,
+    borderWidth: 1,
+    borderRadius: 60,
+    borderColor: '#4285B9',
   },
   btcIcon: {
     height: 30,
@@ -1109,5 +1114,9 @@ const styles = StyleSheet.create({
     color: CSS.Colors.TEXT_WHITE,
     fontFamily: 'Montserrat-600',
     marginBottom: 11,
+  },
+  dropdownLabelStyle: {
+    fontFamily: 'Montserrat-600',
+    fontSize: 20,
   },
 })
