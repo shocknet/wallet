@@ -5,7 +5,7 @@ import { Reducer } from 'redux'
 
 import { Action } from '../app/actions'
 
-type State = Record<string, Schema.User | undefined> & {
+type State = Record<string, Schema.User> & {
   // TODO get this out of here
   myPublicKey: string
 }
@@ -127,6 +127,22 @@ const reducer: Reducer<State, Action> = (
         }
 
         Object.assign(draft[publicKey], action.data)
+      })
+
+    case 'receivedBackfeed':
+    case 'receivedFeed':
+      return produce(state, draft => {
+        const { posts } = action.data
+        const authors = posts.map(p => p.author)
+        const users = uniqBy(authors, a => a.publicKey)
+
+        users.forEach(u => {
+          draft[u.publicKey] = {
+            ...createEmptyUser(u.publicKey),
+            ...(draft[u.publicKey] || {}),
+            ...u,
+          }
+        })
       })
 
     default:

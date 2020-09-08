@@ -94,6 +94,22 @@ const reducer = (state = INITIAL_STATE, action) => {
         }
         Object.values(action.data.follows).forEach(followHandler)
       })
+
+    case 'receivedFeed':
+    case 'receivedBackfeed':
+      return produce(state, draft => {
+        const { posts } = action.data
+
+        const publicKeys = posts.map(p => p.author.publicKey)
+
+        publicKeys.forEach(pk => {
+          draft[pk] = {
+            ...createEmptyFollow(pk),
+            ...(draft[pk] || {}),
+            status: 'ok',
+          }
+        })
+      })
     default:
       return state
   }

@@ -8,7 +8,7 @@ import {
   View,
   FlatList,
   ListRenderItemInfo,
-  RefreshControl,
+  // RefreshControl,
 } from 'react-native'
 import moment from 'moment'
 import { connect } from 'react-redux'
@@ -29,6 +29,7 @@ import * as Routes from '../../routes'
 import { SafeAreaView } from 'react-navigation'
 import FollowBtn from '../../components/FollowBtn'
 import Post from '../../components/Post'
+import TipBtn from '../../components/TipBtn'
 
 type UserType = Common.Schema.User
 type Navigation = NavigationScreenProp<{}, Routes.UserParams>
@@ -96,7 +97,6 @@ class User extends React.Component<Props, State> {
       if (res.status !== 200) {
         throw new Error(`Not 200`)
       }
-
       this.setState(({ posts, lastPageFetched }) => {
         const { posts: postsRecord } = res.data
         const fetchedPosts: Common.Schema.Post[] = Object.values(postsRecord)
@@ -179,6 +179,10 @@ class User extends React.Component<Props, State> {
         ([_, ci]) => ci.type === 'image/embedded',
       ) as [string, Common.Schema.EmbeddedImage][]
 
+      const videoCIEntries = Object.entries(item.contentItems).filter(
+        ([_, ci]) => ci.type === 'video/embedded',
+      ) as [string, Common.Schema.EmbeddedVideo][]
+
       const paragraphCIEntries = Object.entries(item.contentItems).filter(
         ([_, ci]) => ci.type === 'text/paragraph',
       ) as [string, Common.Schema.Paragraph][]
@@ -186,6 +190,15 @@ class User extends React.Component<Props, State> {
       const images = imageCIEntries.map(([key, imageCI]) => ({
         id: key,
         data: imageCI.magnetURI,
+        width:Number(imageCI.width),
+        height:Number(imageCI.height)
+      }))
+      
+      const videos = videoCIEntries.map(([key, videoCI]) => ({
+        id: key,
+        data: videoCI.magnetURI,
+        width:Number(videoCI.width),
+        height:Number(videoCI.height)
       }))
 
       const paragraphhs = paragraphCIEntries.map(([key, paragraphCI]) => ({
@@ -198,8 +211,8 @@ class User extends React.Component<Props, State> {
           author={item.author}
           date={item.date}
           images={images}
+          videos={videos}
           paragraphs={paragraphhs}
-          // @ts-expect-error
           parentScrollViewRef={undefined}
         />
       )
@@ -241,6 +254,7 @@ class User extends React.Component<Props, State> {
           </TouchableOpacity>
         </View>
 
+        <TipBtn recipientsPublicKey={publicKey} />
         <FollowBtn publicKey={publicKey} />
       </View>
     )
@@ -262,12 +276,12 @@ class User extends React.Component<Props, State> {
           data={this.getData()}
           keyExtractor={this.keyExtractor}
           onEndReached={this.fetchNextPage}
-          refreshControl={
-            <RefreshControl
-              refreshing={this.state.loadingNextPage}
-              onRefresh={this.fetchNextPage}
-            />
-          }
+          // refreshControl={
+          //   <RefreshControl
+          //     refreshing={this.state.loadingNextPage}
+          //     onRefresh={this.fetchNextPage}
+          //   />
+          // }
         />
       </SafeAreaView>
     )

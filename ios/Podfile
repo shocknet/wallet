@@ -34,7 +34,6 @@ target 'shockwallet' do
 
   pod 'react-native-webview', :path => '../node_modules/react-native-webview'
 
-  pod 'RNSVG', :path => '../node_modules/react-native-svg'
 
   target 'shockwalletTests' do
     inherit! :search_paths

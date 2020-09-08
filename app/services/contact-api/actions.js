@@ -2,7 +2,6 @@
  * @format
  */
 
-import once from 'lodash/once'
 import Logger from 'react-native-file-log'
 import { Constants, Schema } from 'shock-common'
 import Http from 'axios'
@@ -158,65 +157,38 @@ export const sendReqWithInitialMsg = async (recipientPublicKey, initialMsg) => {
  * @param {string} recipientPub
  * @param {number|string} amount
  * @param {string} memo
+ * @param {{absoluteFee:string,relativeFee:string}} fees
  * @throws {Error} Forwards an error if any from the API.
  * @returns {Promise<string>} The payment's preimage.
  */
-export const sendPayment = async (recipientPub, amount, memo) => {
-  const token = await getToken()
-  if (!socket || !(socket && socket.connected)) {
-    throw new Error('NOT_CONNECTED')
+export const sendPayment = async (recipientPub, amount, memo, fees) => {
+  const { absoluteFee, relativeFee } = fees
+  const relFeeN = Number(relativeFee)
+  const absFeeN = Number(absoluteFee)
+  if (!relFeeN || !absFeeN) {
+    throw new Error('invalid fees provided')
   }
+  const amountN = Number(amount)
+  const calculatedFeeLimit = Math.floor(amountN * relFeeN + absFeeN)
+  const feeLimit = calculatedFeeLimit > amountN ? amountN : calculatedFeeLimit
 
-  const uuid = Date.now().toString()
+  const sessionUuid = Date.now().toString()
+  const endpoint = `/api/gun/sendpayment`
+  const { data } = await Http.post(
+    endpoint,
+    {
+      recipientPub,
+      amount: amountN,
+      memo,
+      feeLimit,
+      sessionUuid,
+    },
+    { timeout: 30 * 1000 },
+  )
+  const { preimage } = data
+  Logger.log(`res in sendPayment: ${JSON.stringify(data)}`)
 
-  socket.emit(Action.SEND_PAYMENT, {
-    token,
-    recipientPub,
-    amount,
-    memo,
-    uuid,
-  })
-
-  let timeoutid = -1
-
-  /**
-   * @type {import('./socket').Emission}
-   */
-  const res = await Promise.race([
-    new Promise(resolve => {
-      socket &&
-        socket.on(
-          Action.SEND_PAYMENT,
-          once(res => {
-            if (res.origBody.uuid === uuid) {
-              clearTimeout(timeoutid)
-              resolve(res)
-            }
-          }),
-        )
-    }),
-    new Promise((_, rej) => {
-      timeoutid = setTimeout(() => {
-        rej(
-          new Error(
-            'Did not receive a response from the node in less than 30 seconds',
-          ),
-        )
-      }, 30000)
-    }),
-  ])
-
-  Logger.log(`res in sendPayment: ${JSON.stringify(res)}`)
-
-  if (!res.ok) {
-    throw new Error(res.msg || 'Unknown Error')
-  }
-
-  if (typeof res.msg !== 'string') {
-    throw new Error('Did not get pregimage from node')
-  }
-
-  return res.msg
+  return preimage
 }
 
 /**
@@ -307,25 +279,6 @@ export const unfollow = async publicKey => {
         'Unknown Error (Did not receive msg from server)'}`,
     )
   }
-}
-
-/**
- * @param {number} page
- * @returns {Promise<{data:Map<string,Schema.Post>}>}
- */
-export const loadFeed = page => {
-  //eslint-disable-next-line
-  console.log(page)
-  //return Http.post('/api/gun/loadfeed', { page })
-  return Http.get('/api/gun/feedpoc')
-}
-/**
- * @param {number} page
- * @param {string} publicKey
- * @returns {Promise<{data:Map<string,Schema.Post>}>}
- */
-export const loadSingleFeed = (page, publicKey) => {
-  return Http.post('/api/gun/loadfeed', { page, publicKey })
 }
 
 /**

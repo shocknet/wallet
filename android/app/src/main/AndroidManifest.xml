@@ -35,13 +35,13 @@
         android:screenOrientation="portrait"
         android:exported="true">
 
-        <intent-filter android:label="bitcoin_filter">
+        <intent-filter android:label="ShockWallet">
             <action android:name="android.intent.action.VIEW" />
             <category android:name="android.intent.category.DEFAULT" />
             <category android:name="android.intent.category.BROWSABLE" />
             <data android:scheme="bitcoin" />
         </intent-filter>
-        <intent-filter android:label="lightning_filter">
+        <intent-filter android:label="ShockWallet">
             <action android:name="android.intent.action.VIEW" />
             <category android:name="android.intent.category.DEFAULT" />
             <category android:name="android.intent.category.BROWSABLE" />

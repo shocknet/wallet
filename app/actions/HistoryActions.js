@@ -1,6 +1,8 @@
-import * as Wallet from '../services/wallet'
 import { ToastAndroid } from 'react-native'
 import Logger from 'react-native-file-log'
+
+import * as Wallet from '../services/wallet'
+import * as Cache from '../services/cache'
 
 export const ACTIONS = {
   LOAD_CHANNELS: 'channels/load',
@@ -212,6 +214,13 @@ export const fetchRecentInvoices = () => async dispatch => {
  */
 export const fetchRecentPayments = () => async dispatch => {
   try {
+    try {
+      await Cache.getToken()
+      // eslint-disable-next-line no-empty
+    } catch (_) {
+      return
+    }
+
     const payments = await Wallet.listPayments({
       include_incomplete: false,
       itemsPerPage: 100,

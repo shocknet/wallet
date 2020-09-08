@@ -15,20 +15,22 @@ import Chats, { CHATS_ROUTE } from '../screens/Chats'
 import Advanced, { ADVANCED_SCREEN } from '../screens/Advanced'
 import WalletOverview, { WALLET_OVERVIEW } from '../screens/WalletOverview'
 import SeedBackup, { SEED_BACKUP } from '../screens/SeedBackup'
+//@ts-ignore
 import WalletSettings, { WALLET_SETTINGS } from '../screens/WalletSettings'
-// import Feed, { FEED } from '../screens/Feed_POC'
-import Feed, { FEED } from '../screens/Feed'
+import Feed from '../screens/Feed'
 import AddPostToFeed, { ADD_POST_TO_FEED } from '../screens/AddPostToFeed'
-import CreatePost, { CREATE_POST } from '../screens/CreatePost'
 import PublishContentDark, {
   PUBLISH_CONTENT_DARK,
 } from '../screens/PublishContentDark'
-import CreatePostDark, { CREATE_POST_DARK } from '../screens/CreatePostDark'
+import {
+  default as CreatePost,
+  CREATE_POST_DARK as CREATE_POST,
+} from '../screens/CreatePostDark'
 
 import Login, { LOGIN } from '../screens/Login'
 
 import MyProfile, { MY_PROFILE } from '../screens/MyProfile'
-import MyFeed, { MY_FEED } from '../screens/MyFeed'
+//import MyFeed, { MY_FEED } from '../screens/MyFeed'
 import Loading, { LOADING } from '../screens/Loading'
 
 import WalletManager, { WALLET_MANAGER } from './WalletManager'
@@ -68,7 +70,7 @@ const BottomNav = createBottomTabNavigator(
     [WALLET_OVERVIEW]: WalletOverview,
     [CHATS_ROUTE]: Chats,
     [MY_PROFILE]: MyProfile,
-    [MY_FEED]: MyFeed,
+    [Routes.FEED]: Feed,
   },
   {
     initialRouteName: WALLET_OVERVIEW,
@@ -152,12 +154,12 @@ const drawerScreens = {
       title: 'Seed Backup',
     },
   },
-  [FEED]: {
+  /*[FEED]: {
     screen: Feed,
     navigationOptions: {
       title: 'Feed POC',
     },
-  },
+  },*/
   [ADD_POST_TO_FEED]: {
     screen: AddPostToFeed,
     navigationOptions: {
@@ -182,21 +184,20 @@ const drawerScreens = {
       title: 'Publish Content',
     },
   },
-  [CREATE_POST_DARK]: {
-    screen: CreatePostDark,
+  /*[CREATE_POST]: { already declared
+    screen: CreatePost,
     navigationOptions: {
       title: 'Publish Content Dark',
     },
-  },
+  },*/
 }
 
 if (theme === 'dark') {
-  delete drawerScreens[SEED_BACKUP]
-  delete drawerScreens[FEED]
+  //delete drawerScreens[SEED_BACKUP]
+  //delete drawerScreens[FEED]
   delete drawerScreens[ADD_POST_TO_FEED]
-  delete drawerScreens[CREATE_POST]
-  delete drawerScreens[CREATE_POST_DARK]
-  delete drawerScreens[LNURL_SCREEN]
+  //delete drawerScreens[CREATE_POST]
+  //delete drawerScreens[LNURL_SCREEN]
   delete drawerScreens[PUBLISH_CONTENT_DARK]
 }
 //

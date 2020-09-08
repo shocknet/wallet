@@ -1,8 +1,8 @@
 import Http from 'axios'
 import Logger from 'react-native-file-log'
 
-import * as Cache from './cache'
-import * as Utils from './utils'
+import * as Cache from '../cache'
+import * as Utils from '../utils'
 
 /**
  * @typedef {object} Bytes
@@ -693,9 +693,11 @@ export const sendCoins = async params => {
 /**
  * https://api.lightning.community/#grpc-request-sendrequest
  * @typedef {object} PartialSendRequest
- * @prop {number=} amt CAUTION: Might override the invoice's amount if provided.
+ * @prop {number} amt CAUTION: Might override the invoice's amount if provided.
  * Should only be asked for when the invoice has no amount embedded in it.
  * @prop {string} payreq AKA invoice.
+ * @prop {boolean} hideAmount amt is needed to calculate the fee, but is not send
+ * if invoice amt != 0
  */
 
 /**
@@ -729,31 +731,33 @@ export const sendCoins = async params => {
  * @prop {Route} payment_route
  * @prop {Bytes} payment_hash
  */
-
+/**
+ * @typedef {object} RoutingFees
+ * @prop {{absoluteFee:string,relativeFee:string}} fees
+ */
 /**
  * Read PartialSendRequest.amt for warning.
- * @param {PartialSendRequest} request
+ * @param {PartialSendRequest & RoutingFees} request
  * @returns {Promise<SendResponse>}
  */
-export const CAUTION_payInvoice = async ({ amt, payreq }) => {
-  const token = await Cache.getToken()
-
-  if (typeof token !== 'string') {
-    throw new TypeError(NO_CACHED_TOKEN)
+export const CAUTION_payInvoice = async request => {
+  const { amt, payreq, fees, hideAmount } = request
+  const { absoluteFee, relativeFee } = fees
+  const relFeeN = Number(relativeFee)
+  const absFeeN = Number(absoluteFee)
+  if (!relFeeN || !absFeeN) {
+    throw new Error('invalid fees provided')
   }
-
+  const calculatedFeeLimit = Math.floor(amt * relFeeN + absFeeN)
+  const feeLimit = calculatedFeeLimit > amt ? amt : calculatedFeeLimit
   const endpoint = `/api/lnd/sendpayment`
-
+  Logger.log('Sending payment with a fee limit of ', feeLimit)
   try {
-    const { data } = await Http.post(
-      endpoint,
-      { amt, payreq },
-      {
-        headers: {
-          Authorization: token,
-        },
-      },
-    )
+    const { data } = await Http.post(endpoint, {
+      amt: hideAmount ? undefined : amt,
+      payreq,
+      feeLimit,
+    })
 
     return data
   } catch (err) {
@@ -776,12 +780,27 @@ export const CAUTION_payInvoice = async ({ amt, payreq }) => {
  */
 /**
  *
- * @param {KeysendRequest} request
+ * @param {KeysendRequest & RoutingFees} request
  */
-export const payKeysend = async ({ amt, dest }) => {
+export const payKeysend = async request => {
+  const { amt, dest, fees } = request
+  const { absoluteFee, relativeFee } = fees
+  const relFeeN = Number(relativeFee)
+  const absFeeN = Number(absoluteFee)
+  if (!relFeeN || !absFeeN) {
+    throw new Error('invalid fees provided')
+  }
+  const calculatedFeeLimit = Math.floor(amt * relFeeN + absFeeN)
+  const feeLimit = calculatedFeeLimit > amt ? amt : calculatedFeeLimit
   const endpoint = `/api/lnd/sendpayment`
+  Logger.log('Sending keysend payment with a fee limit of ', feeLimit)
   try {
-    const { data } = await Http.post(endpoint, { amt, dest, keysend: true })
+    const { data } = await Http.post(endpoint, {
+      amt,
+      dest,
+      keysend: true,
+      feeLimit,
+    })
 
     return data
   } catch (err) {
@@ -812,67 +831,6 @@ export const payKeysend = async ({ amt, dest }) => {
  * @prop {RouteHint[]} route_hints
  */
 
-/**
- * @typedef {object} DecodeInvoiceResponse
- * @prop {DecodedPayReq} decodedRequest
- */
-
-/**
- * https://api.lightning.community/#grpc-request-payreqstring
- * @typedef {object} DecodeInvoiceRequest
- * @prop {string} payReq AKA Invoice
- */
-
-/**
- * @param {DecodeInvoiceRequest} request
- * @returns {Promise<DecodeInvoiceResponse>}
- */
-export const decodeInvoice = async ({ payReq }) => {
-  const endpoint = `/api/lnd/decodePayReq`
-
-  if (typeof payReq !== 'string') {
-    throw new TypeError(
-      `decodeInvoice() -> payReq is not an string, instead got: ${JSON.stringify(
-        payReq,
-      )}`,
-    )
-  }
-
-  if (payReq.length < 10) {
-    throw new TypeError(
-      `decodeInvoice() -> payReq is an string but doesn't look like an invoice, got: ${JSON.stringify(
-        payReq,
-      )}`,
-    )
-  }
-
-  try {
-    const { data } = await Http.post(endpoint, { payReq })
-
-    if (data.errorMessage) {
-      throw new Error(data.errorMessage)
-    }
-
-    if (typeof data.decodedRequest !== 'object') {
-      const msg = `data.decodedRequest is not an object, data: ${JSON.stringify(
-        data,
-      )}`
-      Logger.log(msg)
-      throw new Error(msg)
-    }
-
-    return data
-  } catch (err) {
-    const { response } = err
-    throw new Error(
-      (response &&
-        response.data &&
-        (response.data.errorMessage || response.data.message)) ||
-        err.message ||
-        'Unknown error.',
-    )
-  }
-}
 /**@param {string} uri */
 export const addPeer = async uri => {
   const isComplete = uri.split('@')

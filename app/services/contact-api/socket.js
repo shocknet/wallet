@@ -103,8 +103,8 @@ export const encryptSocketData = async data => {
  */
 export const decryptSocketData = async data => {
   if (data && data.encryptedKey) {
-    const decryptionTime = Date.now()
-    Logger.log('[SOCKET] Decrypting Data...', data)
+    // const decryptionTime = Date.now()
+    // Logger.log('[SOCKET] Decrypting Data...', data)
     const { sessionId } = store.getState().connection
     const decryptedKey = await Encryption.decryptKey(
       data.encryptedKey,
@@ -115,11 +115,11 @@ export const decryptSocketData = async data => {
       key: decryptedKey,
       iv: data.iv,
     })
-    Logger.log(`[SOCKET] Decryption took: ${Date.now() - decryptionTime}ms`)
+    // Logger.log(`[SOCKET] Decryption took: ${Date.now() - decryptionTime}ms`)
     return JSON.parse(decryptedData)
   }
 
-  Logger.log('[SOCKET] Data is non-encrypted', data)
+  // Logger.log('[SOCKET] Data is non-encrypted', data)
 
   return data
 }
@@ -151,7 +151,7 @@ export const encryptSocketInstance = socket => ({
        * @param {any} data
        */
       async data => {
-        Logger.log('Listening to Event:', eventName)
+        // Logger.log('Listening to Event:', eventName)
 
         if (Encryption.isNonEncrypted(eventName)) {
           cb(data)
@@ -178,9 +178,9 @@ export const encryptSocketInstance = socket => ({
       return
     }
 
-    Logger.log('Encrypting socket...', eventName, data)
+    // Logger.log('Encrypting socket...', eventName, data)
     const encryptedData = await encryptSocketData(data)
-    Logger.log('Encrypted Socket Data:', encryptedData)
+    // Logger.log('Encrypted Socket Data:', encryptedData)
     socket.emit(eventName, encryptedData)
   },
 })

@@ -29,12 +29,14 @@ public class NotificationModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void startService(String ip,String token) {
+    public void startService(String ip,String token,boolean notifyDisconnect,int notifyDisconnectAfterMs) {
         Intent service = new Intent(this.reactContext, NotificationService.class);
         Bundle bundle = new Bundle();
 
         bundle.putString("ip", ip);
         bundle.putString("token", token);
+        bundle.putBoolean("notifyDisconnect",notifyDisconnect);
+        bundle.putInt("notifyDisconnectAfterMs",notifyDisconnectAfterMs);
         service.putExtras(bundle);
         this.reactContext.startService(service);
     }

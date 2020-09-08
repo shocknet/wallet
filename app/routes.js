@@ -13,3 +13,5 @@ export const USER = 'USER'
  * @typedef {object} UserParams
  * @prop {string} publicKey
  */
+
+export const FEED = 'FEED'

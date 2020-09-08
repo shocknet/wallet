@@ -1,19 +1,39 @@
 import React from 'react'
-import { Text, View, StyleSheet, StatusBar } from 'react-native'
+import {
+  Text,
+  View,
+  StyleSheet,
+  ToastAndroid,
+  Switch,
+  ScrollView,
+  StatusBar,
+  Animated,
+} from 'react-native'
 import { connect } from 'react-redux'
 import Logger from 'react-native-file-log'
-import { Slider, CheckBox } from 'react-native-elements'
+import { Slider } from 'react-native-elements'
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'
 // @ts-ignore
 import IconDrawerWalletSettings from '../assets/images/drawer-icons/icon-drawer-wallet.svg'
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}, Params>} Navigation
  */
-import { updateSelectedFee, updateFeesSource } from '../actions/FeesActions'
+import * as CSS from '../res/css'
+import {
+  updateSelectedFee,
+  updateFeesSource,
+  updateRoutingFeeAbsolute,
+  updateRoutingFeeRelative,
+} from '../actions/FeesActions'
+import {
+  updateNotifyDisconnect,
+  updateNotifyDisconnectAfter,
+  //@ts-ignore
+} from '../actions/SettingsActions'
 import ShockInput from '../components/ShockInput'
+import Pad from '../components/Pad'
 import Nav from '../components/Nav'
 import InputGroup from '../components/InputGroup'
-
 /** @type {number} */
 // @ts-ignore
 const shockBG = require('../assets/images/shock-bg.png')
@@ -37,6 +57,10 @@ export const WALLET_SETTINGS = 'WALLET_SETTINGS'
  * @typedef {object} TmpProps
  *  @prop {(feeSource:string)=>void} updateFeesSource
  *  @prop {(feesLevel:import('../actions/FeesActions').feeLevel)=>void} updateSelectedFee
+ *  @prop {(val:string)=>void} updateRoutingFeeAbsolute
+ *  @prop {(val:string)=>void} updateRoutingFeeRelative
+ *  @prop {(val:boolean)=>void} updateNotifyDisconnect
+ *  @prop {(val:number)=>void} updateNotifyDisconnectAfter
  *  @prop {Navigation} navigation
  */
 /**
@@ -55,7 +79,13 @@ export const WALLET_SETTINGS = 'WALLET_SETTINGS'
  * @typedef {object} State
  * @prop {feesVal} fetchedFees
  * @prop {string} tmpSource
+ * @prop {string} tmpAbsoluteFee
+ * @prop {string} tmpRelativeFee
+ * @prop {boolean} tmpNotifyDisconnect
+ * @prop {string} tmpNotifyDisconnectAfter
  */
+
+import notificationService from '../../notificationService'
 
 /**
  * @extends Component<Props, State, never>
@@ -75,6 +105,8 @@ class WalletSettings extends React.Component {
     },
   }
 
+  fadeAnim = new Animated.Value(-75)
+
   /** @type {State} */
   state = {
     fetchedFees: {
@@ -83,6 +115,10 @@ class WalletSettings extends React.Component {
       hourFee: 0,
     },
     tmpSource: this.props.fees.feesSource,
+    tmpAbsoluteFee: this.props.fees.absoluteFee,
+    tmpRelativeFee: this.props.fees.relativeFee,
+    tmpNotifyDisconnect: this.props.settings.notifyDisconnect,
+    tmpNotifyDisconnectAfter: this.props.settings.notifyDisconnectAfterSeconds.toString(),
   }
 
   componentDidMount() {
@@ -104,6 +140,60 @@ class WalletSettings extends React.Component {
    */
   updateTmpSource = s => {
     this.setState({ tmpSource: s })
+    this.somethingChanged()
+  }
+
+  /**
+   * @param {string} val
+   */
+  updateTmpAbsoluteFee = val => {
+    this.setState({ tmpAbsoluteFee: parseInt(val, 10).toString() })
+    this.somethingChanged()
+  }
+
+  /**
+   * @param {string} val
+   */
+  updateTmpRelativeFee = val => {
+    this.setState({ tmpRelativeFee: parseFloat(val).toString() })
+    this.somethingChanged()
+  }
+
+  /**
+   * @param {boolean} val
+   */
+  updateTmpNotifyDisconnect = val => {
+    this.setState({ tmpNotifyDisconnect: val })
+    this.somethingChanged()
+  }
+
+  /**
+   *
+   * @param {string} val
+   */
+  updateTmpNotifyDisconnectAfter = val => {
+    this.setState({ tmpNotifyDisconnectAfter: val })
+    this.somethingChanged()
+  }
+
+  submitNotificationsSettings = () => {
+    const { updateNotifyDisconnect, updateNotifyDisconnectAfter } = this.props
+    const { tmpNotifyDisconnect, tmpNotifyDisconnectAfter } = this.state
+    updateNotifyDisconnect(tmpNotifyDisconnect)
+    const afterN = Number(tmpNotifyDisconnectAfter)
+    if (!afterN) {
+      this.setState({ tmpNotifyDisconnectAfter: 'NaN' })
+    } else {
+      updateNotifyDisconnectAfter(afterN)
+    }
+  }
+
+  submitRoutingFees = () => {
+    const { updateRoutingFeeAbsolute, updateRoutingFeeRelative } = this.props
+    const { tmpAbsoluteFee, tmpRelativeFee } = this.state
+    updateRoutingFeeAbsolute(tmpAbsoluteFee)
+    updateRoutingFeeRelative(tmpRelativeFee)
+    ToastAndroid.show('Updating routing fee limit', 800)
   }
 
   submitSourceToStore = () => {
@@ -149,116 +239,122 @@ class WalletSettings extends React.Component {
     this.props.updateSelectedFee(level)
   }
 
+  somethingChanged = () => {
+    notificationService.Log('TESTING', 'DOIIDSF')
+    Animated.timing(this.fadeAnim, { toValue: 20, duration: 500 }).start()
+  }
+
   render() {
     const { fees, navigation } = this.props
-    const { fetchedFees, tmpSource } = this.state
+    const {
+      fetchedFees,
+      tmpSource,
+      tmpAbsoluteFee,
+      tmpRelativeFee,
+      tmpNotifyDisconnect,
+      tmpNotifyDisconnectAfter,
+    } = this.state
     let level = 1
-    let levelText = 'less than one hour'
-    let currentVal = fetchedFees.halfHourFee
     switch (fees.feesLevel) {
       case 'MIN': {
         level = 0
-        levelText = 'more than one hour'
-        currentVal = fetchedFees.hourFee
         break
       }
       case 'MID': {
         level = 1
-        levelText = 'less than one hour'
-        currentVal = fetchedFees.halfHourFee
         break
       }
       case 'MAX': {
         level = 2
-        levelText = 'fastest'
-        currentVal = fetchedFees.fastestFee
         break
       }
     }
-
-    const theme = 'dark'
+    //const theme = 'dark'
     const feePreferenceOption = [
       {
         title: '> 1 Hour',
-        info: '10 sats/byte',
+        info: fetchedFees.hourFee,
       },
       {
         title: '< 1 Hour',
-        info: '30 sats/byte',
+        info: fetchedFees.halfHourFee,
       },
       {
         title: 'ASAP',
-        info: '60 sats/byte',
+        info: fetchedFees.fastestFee,
       },
     ]
 
-    if (theme === 'dark') {
-      return (
-        <View style={styles.flexCenterDark}>
-          <StatusBar hidden />
-          <Nav backButton title="Wallet Settings" navigation={navigation} />
-          <View style={styles.mainContainer}>
-            <Text style={styles.feePreferenceText}>Fee preference</Text>
-            <View style={styles.feePreferenceContainer}>
-              <View style={styles.feePreferenceOption}>
-                <Text style={styles.feePreferenceOptionTitle}>
-                  {feePreferenceOption[0].title}
-                </Text>
-                <Text style={styles.feePreferenceOptionInfo}>
-                  {feePreferenceOption[0].info}
-                </Text>
+    //if (theme === 'dark') {
+    return (
+      <View>
+        <ScrollView>
+          <View style={styles.flexCenterDark}>
+            <StatusBar hidden />
+            <Nav backButton title="Wallet Settings" navigation={navigation} />
+            <View style={styles.mainContainer}>
+              <Text style={styles.feePreferenceText}>Fee preference</Text>
+              <View style={styles.feePreferenceContainer}>
+                <View style={styles.feePreferenceOption}>
+                  <Text style={styles.feePreferenceOptionTitle}>
+                    {feePreferenceOption[0].title}
+                  </Text>
+                  <Text style={styles.feePreferenceOptionInfo}>
+                    {feePreferenceOption[0].info}
+                  </Text>
+                </View>
+                <View style={styles.feePreferenceOption}>
+                  <Text style={styles.feePreferenceOptionTitle}>
+                    {feePreferenceOption[1].title}
+                  </Text>
+                  <Text style={styles.feePreferenceOptionInfo}>
+                    {feePreferenceOption[1].info}
+                  </Text>
+                </View>
+                <View style={styles.feePreferenceOption}>
+                  <Text style={styles.feePreferenceOptionTitle}>
+                    {feePreferenceOption[2].title}
+                  </Text>
+                  <Text style={styles.feePreferenceOptionInfo}>
+                    {feePreferenceOption[2].info}
+                  </Text>
+                </View>
               </View>
-              <View style={styles.feePreferenceOption}>
-                <Text style={styles.feePreferenceOptionTitle}>
-                  {feePreferenceOption[1].title}
-                </Text>
-                <Text style={styles.feePreferenceOptionInfo}>
-                  {feePreferenceOption[1].info}
-                </Text>
-              </View>
-              <View style={styles.feePreferenceOption}>
-                <Text style={styles.feePreferenceOptionTitle}>
-                  {feePreferenceOption[2].title}
-                </Text>
-                <Text style={styles.feePreferenceOptionInfo}>
-                  {feePreferenceOption[2].info}
-                </Text>
-              </View>
-            </View>
-            <View style={styles.feeSliderContainer}>
-              <Slider
-                style={styles.feeSlider}
-                thumbStyle={styles.feeSliderThumb}
-                maximumValue={2}
-                minimumValue={0}
-                step={1}
-                onSlidingComplete={this.handleSlider}
-                value={level}
-                thumbTintColor="#F5A623"
-                minimumTrackTintColor="#707070"
-                maximumTrackTintColor="#707070"
-              />
-            </View>
-            <View style={styles.feeSourceContainer}>
-              <View style={styles.feeSourceInputGroupContainer}>
-                <InputGroup
-                  label="Fee Source"
-                  labelStyle={styles.feeSourceLabel}
-                  value={tmpSource}
-                  style={styles.feeSourceContainerInputGroup}
-                  onChange={this.updateTmpSource}
+              <View style={styles.feeSliderContainer}>
+                <Slider
+                  style={styles.feeSlider}
+                  thumbStyle={styles.feeSliderThumb}
+                  maximumValue={2}
+                  minimumValue={0}
+                  step={1}
+                  onSlidingComplete={this.handleSlider}
+                  value={level}
+                  thumbTintColor="#F5A623"
+                  minimumTrackTintColor="#707070"
+                  maximumTrackTintColor="#707070"
                 />
               </View>
-              <View style={styles.submitFeeSource}>
-                <FontAwesome5
-                  name="exchange-alt"
-                  size={20}
-                  color="white"
-                  onPress={this.submitSourceToStore}
-                />
+              <View style={styles.feeSourceContainer}>
+                <View style={styles.feeSourceInputGroupContainer}>
+                  <InputGroup
+                    label="Fee Source"
+                    //@ts-ignore
+                    labelStyle={styles.feeSourceLabel}
+                    value={tmpSource}
+                    style={styles.feeSourceContainerInputGroup}
+                    onChange={this.updateTmpSource}
+                  />
+                </View>
+                <View style={styles.submitFeeSource}>
+                  <FontAwesome5
+                    name="exchange-alt"
+                    size={20}
+                    color="white"
+                    onPress={this.submitSourceToStore}
+                  />
+                </View>
               </View>
-            </View>
-            <View style={styles.balanceSettingContainer}>
+              {/*<View style={styles.balanceSettingContainer}>
               <Text style={styles.balanceSettingTitle}>Balance Management</Text>
               <View style={styles.balanceSetting}>
                 <View style={styles.balanceSettingContent}>
@@ -326,81 +422,121 @@ class WalletSettings extends React.Component {
                   />
                 </View>
               </View>
+            </View>*/}
+              <View style={styles.balanceSettingContainer}>
+                <Text style={styles.balanceSettingTitle}>
+                  Lightning Routing Fees Limit
+                </Text>
+                <View style={styles.balanceSetting}>
+                  <View style={styles.balanceSettingContent}>
+                    <Text style={styles.balanceSettingContentTitle}>
+                      Absolute Fee
+                    </Text>
+                    <Text style={styles.balanceSettingContentDescription}>
+                      Fix rate, doesn't depend on amount
+                    </Text>
+                  </View>
+                  <View style={styles.balanceSettingCheckBoxContainer}>
+                    <ShockInput
+                      onChangeText={this.updateTmpAbsoluteFee}
+                      value={tmpAbsoluteFee}
+                      keyboardType="numeric"
+                    />
+                  </View>
+                </View>
+                <Pad amount={20} />
+                <View style={styles.balanceSetting}>
+                  <View style={styles.balanceSettingContent}>
+                    <Text style={styles.balanceSettingContentTitle}>
+                      Relative Fee
+                    </Text>
+                    <Text style={styles.balanceSettingContentDescription}>
+                      % based on the payment amount
+                    </Text>
+                  </View>
+                  <View style={styles.balanceSettingCheckBoxContainer}>
+                    <ShockInput
+                      onChangeText={this.updateTmpRelativeFee}
+                      value={tmpRelativeFee}
+                      keyboardType="numeric"
+                    />
+                  </View>
+                </View>
+              </View>
+              <View style={styles.balanceSettingContainer}>
+                <Text style={styles.balanceSettingTitle}>
+                  Notifications Settings
+                </Text>
+                <View style={styles.balanceSetting}>
+                  <View style={styles.balanceSettingContent}>
+                    <Text style={styles.balanceSettingContentTitle}>
+                      Disconnect alert
+                    </Text>
+                    <Text style={styles.balanceSettingContentDescription}>
+                      Make a noise when the connection is lost
+                    </Text>
+                  </View>
+                  <View style={styles.balanceSettingCheckBoxContainer}>
+                    <Switch
+                      value={tmpNotifyDisconnect}
+                      onValueChange={this.updateTmpNotifyDisconnect}
+                    />
+                  </View>
+                </View>
+                <Pad amount={20} />
+                <View style={styles.balanceSetting}>
+                  <View style={styles.balanceSettingContent}>
+                    <Text style={styles.balanceSettingContentTitle}>
+                      Time to reconnect
+                    </Text>
+                    <Text style={styles.balanceSettingContentDescription}>
+                      Seconds of no connection before assuming connection is
+                      lost
+                    </Text>
+                  </View>
+                  <View style={styles.balanceSettingCheckBoxContainer}>
+                    <ShockInput
+                      value={tmpNotifyDisconnectAfter}
+                      onChangeText={this.updateTmpNotifyDisconnectAfter}
+                      keyboardType="numeric"
+                    />
+                  </View>
+                </View>
+              </View>
             </View>
           </View>
-        </View>
-      )
-    }
-    return (
-      <View style={styles.flexCenter}>
-        <Text style={styles.bigBold}>Wallet Settings</Text>
-        {/*<ShockButton
-                color={
-                    fees.feesLevel=== 'MAX' ?  CSS.Colors.BLUE_DARK: undefined
-                }
-                title={`Fastest ${fetchedFees.fastestFee}`}
-                onPress={this.setMAX}
-            />
-            <ShockButton
-                color={
-                    fees.feesLevel=== 'MID' ?  CSS.Colors.BLUE_DARK: undefined
-                }
-                title={`Less 1h ${fetchedFees.halfHourFee}`}
-                onPress={this.setMID}
-            />
-            <ShockButton
-                color={
-                    fees.feesLevel=== 'MIN' ?  CSS.Colors.BLUE_DARK: undefined
-                }
-                title={`Plus 1h ${fetchedFees.hourFee}`}
-                onPress={this.setMIN}
-            />*/}
-        <Text>
-          Selected Fee: <Text style={styles.centerBold}>{levelText}</Text>
-        </Text>
-        <Text>
-          Current Value: <Text style={styles.centerBold}>{currentVal}</Text>
-        </Text>
-        <Slider
-          style={styles.w_80}
-          maximumValue={2}
-          minimumValue={0}
-          step={1}
-          onSlidingComplete={this.handleSlider}
-          value={level}
-          thumbTintColor="#333333"
-        />
-        <View style={styles.bottom}>
-          <Text style={styles.midBold}>Fees Source</Text>
-          <View style={styles.d_flex}>
-            <View style={styles.w_80}>
-              <ShockInput
-                onChangeText={this.updateTmpSource}
-                value={tmpSource}
-              />
-            </View>
-            <View style={styles.w_20}>
-              <FontAwesome5
-                name="exchange-alt"
-                size={38}
-                onPress={this.submitSourceToStore}
-              />
-            </View>
-          </View>
-        </View>
+        </ScrollView>
+        <Animated.View // Special animatable View
+          style={{ ...styles.createBtn, bottom: this.fadeAnim }}
+        >
+          <FontAwesome5
+            name="save"
+            size={45}
+            color="black"
+            onPress={this.submitSourceToStore}
+          />
+        </Animated.View>
       </View>
     )
+    //}
   }
 }
 
 /**
- * @param {{fees:import('../../reducers/FeesReducer').State}} state
+ * @param {{
+ * fees:import('../../reducers/FeesReducer').State
+ * settings:import('../../reducers/SettingsReducer').State
+ * }} state
  */
-const mapStateToProps = ({ fees }) => ({ fees })
+const mapStateToProps = ({ fees, settings }) => ({ fees, settings })
 
 const mapDispatchToProps = {
   updateSelectedFee,
   updateFeesSource,
+  updateRoutingFeeAbsolute,
+  updateRoutingFeeRelative,
+  updateNotifyDisconnect,
+  updateNotifyDisconnectAfter,
 }
 
 export default connect(
@@ -409,20 +545,6 @@ export default connect(
 )(WalletSettings)
 
 const styles = StyleSheet.create({
-  bigBold: {
-    marginTop: 25,
-    fontWeight: 'bold',
-    fontSize: 24,
-  },
-  midBold: {
-    fontWeight: 'bold',
-    fontSize: 20,
-  },
-  flexCenter: {
-    height: '100%',
-    display: 'flex',
-    alignItems: 'center',
-  },
   flexCenterDark: {
     height: '100%',
     display: 'flex',
@@ -430,26 +552,127 @@ const styles = StyleSheet.create({
     backgroundColor: '#16191C',
     paddingTop: 20,
   },
-  centerBold: {
-    alignSelf: 'center',
-    fontWeight: 'bold',
-  },
-  w_80: {
-    width: '80%',
-  },
-  w_20: {
-    alignItems: 'center',
-    width: '20%',
-  },
-  d_flex: {
-    display: 'flex',
-    flexDirection: 'row',
-  },
-  bottom: {
-    position: 'absolute',
-    bottom: 50,
-  },
   feePreferenceText: {
+    fontFamily: 'Montserrat-600',
+    fontSize: 15,
+    color: '#EBEBEB',
+  },
+  balanceSettingTitle: {
+    fontFamily: 'Montserrat-600',
+    fontSize: 15,
+    color: '#EBEBEB',
+  },
+  feePreferenceOption: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1,
+  },
+  feePreferenceContainer: {
+    flexDirection: 'row',
+    marginTop: 25,
+  },
+  feePreferenceOptionTitle: {
+    color: '#4285B9',
+    fontFamily: 'Montserrat-600',
+    fontSize: 15,
+    textAlign: 'center',
+  },
+  feePreferenceOptionInfo: {
+    fontFamily: 'Montserrat-600',
+    fontSize: 12,
+    color: 'white',
+    textAlign: 'center',
+    paddingTop: 5,
+  },
+  mainContainer: {
+    padding: 38,
+    paddingTop: 10,
+    alignItems: 'flex-start',
+    justifyContent: 'flex-start',
+    flex: 1,
+    width: '100%',
+  },
+  feeSlider: {
+    width: '80%',
+    flex: 1,
+  },
+  feeSliderContainer: {
+    flexDirection: 'row',
+    marginTop: 18,
+    marginBottom: 18,
+  },
+  feeSliderThumb: {
+    borderWidth: 1,
+    borderColor: 'white',
+    width: 22,
+    height: 22,
+  },
+  feeSourceContainer: {
+    flexDirection: 'row',
+    width: '100%',
+    marginBottom: 25,
+  },
+  feeSourceLabel: {
+    fontFamily: 'Montserrat-600',
+    fontSize: 15,
+    color: '#EBEBEB',
+  },
+  balanceSettingContainer: {
+    width: '100%',
+    marginBottom: 25,
+  },
+  balanceSetting: {
+    flexDirection: 'row',
+    marginTop: 20,
+  },
+  balanceSettingCheckBoxContainer: {
+    alignItems: 'flex-end',
+    justifyContent: 'flex-start',
+    // marginTop: -15,
+  },
+  balanceSettingContent: {
+    flex: 1,
+  },
+  balanceSettingContentTitle: {
+    fontFamily: 'Montserrat-700',
+    fontSize: 14,
+    color: '#4285B9',
+  },
+  balanceSettingContentDescription: {
+    color: '#EBEBEB',
+    fontFamily: 'Montserrat-600',
+    fontSize: 11,
+    marginTop: 5,
+  },
+  feeSourceContainerInputGroup: {
+    marginBottom: 0,
+  },
+  submitFeeSource: {
+    alignItems: 'flex-end',
+    justifyContent: 'flex-end',
+    marginBottom: 20,
+    width: '12%',
+  },
+  feeSourceInputGroupContainer: {
+    flexDirection: 'row',
+    width: '85%',
+  },
+  /*balanceSettingCheckBoxView: {
+    backgroundColor: 'transparent',
+    borderWidth: 0,
+  },*/
+  createBtn: {
+    height: 75,
+    width: 75,
+    borderRadius: 38,
+    backgroundColor: CSS.Colors.CAUTION_YELLOW,
+    position: 'absolute',
+    right: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  /*feePreferenceText: {
     fontFamily: 'Montserrat-600',
     fontSize: 15,
     color: '#EBEBEB',
@@ -557,5 +780,5 @@ const styles = StyleSheet.create({
   balanceSettingCheckBoxView: {
     backgroundColor: 'transparent',
     borderWidth: 0,
-  },
+  },*/
 })

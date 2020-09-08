@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import { DrawerItems } from 'react-navigation'
 import { View, StyleSheet, TouchableOpacity, ScrollView } from 'react-native'
 import { LNURL_SCREEN } from '../screens/LNURL'
+// import ShockAvatar from './ShockAvatar'
 
 //@ts-ignore
 import IconDrawerScan from '../assets/images/drawer-icons/icon-drawer-scan.svg'
