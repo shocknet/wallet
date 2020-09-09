@@ -554,6 +554,9 @@ const styles = StyleSheet.create({
   },
   swipeBtn: {
     marginVertical: 15,
+    borderColor: '#4285B9',
+    borderWidth: 1,
+    borderRadius: 60,
   },
   swipeBtnText: {
     fontSize: 12,
