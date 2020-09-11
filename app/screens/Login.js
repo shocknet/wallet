@@ -103,11 +103,10 @@ export default class Login extends React.Component {
       this.props.navigation.navigate(WALLET_MANAGER)
     }
 
-    const sad = await Cache.getStoredAuthData()
-
-    if (sad !== null && sad.authData !== null) {
+    const alias = await Cache.getCachedAlias()
+    if (alias) {
       this.setState({
-        cachedAlias: sad.authData.alias,
+        cachedAlias: alias,
       })
     }
 
