@@ -13,7 +13,6 @@ import {
   ImageBackground,
   InteractionManager,
   StatusBar,
-  ToastAndroid,
 } from 'react-native'
 import Logger from 'react-native-file-log'
 import SocketManager from '../../services/socket'
@@ -325,7 +324,7 @@ class WalletOverview extends Component {
     const authData = await Cache.getStoredAuthData()
     const nodeInfo = await Cache.getNodeURL()
     if (!authData || !nodeInfo || !authData.authData.token) {
-      ToastAndroid.show('error starting service, invalid info', 800)
+      Logger.log('error starting notifications service, invalid info')
       return
     }
     const {
