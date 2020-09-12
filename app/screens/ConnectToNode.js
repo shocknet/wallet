@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * @prettier
  */
@@ -13,7 +14,6 @@ import InAppBrowser from 'react-native-inappbrowser-reborn'
 import * as CSS from '../res/css'
 import * as Cache from '../services/cache'
 import * as Conn from '../services/connection'
-import { isValidURL as isValidIP } from '../services/utils'
 import Pad from '../components/Pad'
 import QRScanner from './QRScanner'
 import { WALLET_MANAGER } from '../navigators/WalletManager'
@@ -22,9 +22,9 @@ import OnboardingScreen, {
   titleTextStyle,
   linkTextStyle,
 } from '../components/OnboardingScreen'
-import OnboardingInput from '../components/OnboardingInput'
-import OnboardingBtn from '../components/OnboardingBtn'
 import { throttledExchangeKeyPair } from '../actions/ConnectionActions'
+import InvitationLogin from '../components/InvitationLogin'
+
 /** @type {number} */
 // @ts-ignore
 const shockBG = require('../assets/images/shock-bg.png')
@@ -56,6 +56,8 @@ export const CONNECT_TO_NODE = 'CONNECT_TO_NODE'
  * @prop {boolean} pinging
  * @prop {boolean} wasBadPing
  * @prop {boolean} scanningQR
+ * @prop {boolean} isUsingInvitation
+ * @prop {string} invitationCode
  */
 
 /** @type {State} */
@@ -66,6 +68,8 @@ const DEFAULT_STATE = {
   pinging: false,
   wasBadPing: false,
   scanningQR: false,
+  isUsingInvitation: false,
+  invitationCode: '',
 }
 
 /**
@@ -127,16 +131,6 @@ class ConnectToNode extends React.Component {
         checkingCacheForNodeURL: false,
       })
     }
-  }
-
-  /**
-   * @private
-   * @param {string} nodeURL
-   */
-  onChangeNodeURL = nodeURL => {
-    this.setState({
-      nodeURL,
-    })
   }
 
   connectURL = async (url = '') => {
@@ -245,7 +239,6 @@ class ConnectToNode extends React.Component {
   render() {
     const {
       checkingCacheForNodeURL,
-      nodeURL,
       wasBadPing,
       pinging,
       scanningQR,
@@ -267,39 +260,16 @@ class ConnectToNode extends React.Component {
 
     return (
       <OnboardingScreen loading={checkingCacheForNodeURL || pinging}>
-        <Text style={titleTextStyle}>Node Address</Text>
+        <Text style={titleTextStyle}>
+          {this.state.isUsingInvitation ? 'Invitation Code' : 'Node Address'}
+        </Text>
 
         <Pad amount={ITEM_SPACING} />
 
-        <OnboardingInput
-          autoCapitalize="none"
-          autoCorrect={false}
-          disable={pinging || wasBadPing || !!err}
-          onChangeText={this.onChangeNodeURL}
-          onPressQRBtn={this.toggleQRScreen}
-          placeholder="Enter your node IP"
-          value={nodeURL}
+        <InvitationLogin
+          navigation={this.props.navigation}
+          mounted={this.mounted}
         />
-
-        <Pad amount={ITEM_SPACING} />
-
-        {!(wasBadPing || !!err) && (
-          <>
-            <OnboardingBtn
-              disabled={!isValidIP(nodeURL) || pinging}
-              onPress={
-                wasBadPing || err ? this.onPressTryAgain : this.onPressConnect
-              }
-              title={wasBadPing || err ? 'Continue' : 'Connect'}
-            />
-
-            <Pad amount={ITEM_SPACING} />
-
-            <Text style={linkTextStyle} onPress={this.openDocsLink}>
-              Don't have a node?
-            </Text>
-          </>
-        )}
 
         {wasBadPing && (
           <Text style={titleTextStyle}>

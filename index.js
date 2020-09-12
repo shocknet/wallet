@@ -505,6 +505,13 @@ Http.interceptors.response.use(
           return Promise.resolve(response)
         }
       }
+
+      if (decryptedResponse.data.field === 'lnd_locked') {
+        //notificationService.Log("TESTING","LND FOUND LOCKED")
+      }
+      if (decryptedResponse.data.field === 'lnd_dead') {
+        //notificationService.Log("TESTING","LND FOUND DEAD")
+      }
       const errorData = { ...error, response: decryptedResponse }
       if (decryptedResponse.data.errorMessage) {
         errorData.message = decryptedResponse.data.errorMessage
