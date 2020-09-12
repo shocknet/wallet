@@ -54,6 +54,7 @@ export default class Post extends React.Component<Props> {
             width={videos[0].width}
             height={videos[0].height}
             magnet={videos[0].data}
+            id={videos[0].id}
           />
         )}
         {videos.length === 0 && images.length > 0 && (
@@ -62,6 +63,7 @@ export default class Post extends React.Component<Props> {
             width={images[0].width}
             height={images[0].height}
             magnet={images[0].data}
+            id={images[0].id}
           />
         )}
       </View>
