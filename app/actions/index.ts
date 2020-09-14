@@ -8,6 +8,7 @@ import * as SingleFeed from './singleFeed'
 import * as Me from './me'
 import { TipsAction } from './tips'
 import { InvoicesAction } from './InvoiceActions'
+import { ConnectionAction } from './ConnectionActions'
 
 import * as Common from 'shock-common'
 
@@ -24,6 +25,7 @@ export type Action =
   | FeedWall.FeedActions
   | TipsAction
   | InvoicesAction
+  | ConnectionAction
 
 export const receivedBackfeed = Common.Store.Actions.receivedBackfeed
 export const receivedFeed = Common.Store.Actions.receivedFeed

@@ -2,8 +2,10 @@ import Http from 'axios'
 import { RSAKeychain } from 'react-native-rsa-native'
 import Logger from 'react-native-file-log'
 
+import { KEYS_LOADED, keysLoaded } from './v2'
+
 export const ACTIONS = {
-  LOAD_NEW_KEYS: 'encryption/loadKeys',
+  LOAD_NEW_KEYS: KEYS_LOADED,
   SOCKET_DID_CONNECT: 'socket/socketDidConnect',
   SOCKET_DID_DISCONNECT: 'socket/socketDidDisconnect',
 }
@@ -122,10 +124,7 @@ export const exchangeKeyPair = ({
       success: true,
     }
 
-    dispatch({
-      type: ACTIONS.LOAD_NEW_KEYS,
-      data,
-    })
+    dispatch(keysLoaded(data))
 
     return data
   } catch (err) {
