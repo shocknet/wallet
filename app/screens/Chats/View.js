@@ -667,10 +667,11 @@ const styles = StyleSheet.create({
   },
   containerDark: {
     flex: 1,
-    backgroundColor: '#1A2028',
+    backgroundColor: '#16191C',
     marginTop: 20,
   },
   chatListContainer: {
+    backgroundColor: '#16191C',
     flex: 1,
   },
   flatListContentContainerStyle: {
