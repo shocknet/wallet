@@ -2,7 +2,13 @@
  * @prettier
  */
 import React from 'react'
-import { Clipboard, StatusBar, ToastAndroid } from 'react-native'
+import {
+  Clipboard,
+  StatusBar,
+  StyleSheet,
+  ToastAndroid,
+  View,
+} from 'react-native'
 import zipObj from 'lodash/zipObject'
 import Logger from 'react-native-file-log'
 import { Schema } from 'shock-common'
@@ -99,8 +105,9 @@ export default class Chats extends React.Component {
       this.setState({ lastReadMsgs })
     })
     this.didFocus = this.props.navigation.addListener('didFocus', () => {
-      StatusBar.setBackgroundColor(CSS.Colors.BACKGROUND_WHITE)
-      StatusBar.setBarStyle('dark-content')
+      StatusBar.setBackgroundColor(CSS.Colors.TRANSPARENT)
+      StatusBar.setBarStyle('light-content')
+      StatusBar.setTranslucent(true)
     })
     this.chatsUnsubscribe = API.Events.onChats(chats => {
       this.setState({
@@ -372,6 +379,41 @@ export default class Chats extends React.Component {
       return !chatEstablishedWithRequestor
     })
 
+    const theme = 'dark'
+
+    if (theme === 'dark') {
+      return (
+        <View style={theme === 'dark' ? styles.containerDark : {}}>
+          <StatusBar
+            translucent
+            backgroundColor="transparent"
+            barStyle="light-content"
+          />
+          <View style={theme === 'dark' ? styles.chatsViewContainer : {}}>
+            <ChatsView
+              sentRequests={filteredSentRequests}
+              chats={chats}
+              onPressChat={this.onPressChat}
+              acceptingRequest={!!acceptingRequest}
+              receivedRequests={filteredReceivedRequests}
+              onPressRequest={this.onPressReceivedRequest}
+              onPressAcceptRequest={this.acceptRequest}
+              onRequestCloseRequestDialog={this.cancelAcceptingRequest}
+              onPressRejectRequest={this.onPressRejectRequest}
+              onPressAdd={this.toggleAddDialog}
+              showingAddDialog={showingAddDialog}
+              onRequestCloseAddDialog={this.toggleAddDialog}
+              userChosePasteFromClipboard={this.sendHRToUserFromClipboard}
+              userChoseQRScan={this.toggleContactQRScanner}
+              showingQRScanner={scanningUserQR}
+              onQRRead={this.onQRRead}
+              onRequestCloseQRScanner={this.toggleContactQRScanner}
+              readChatIDs={readChatIDs}
+            />
+          </View>
+        </View>
+      )
+    }
     return (
       <ChatsView
         sentRequests={filteredSentRequests}
@@ -396,3 +438,19 @@ export default class Chats extends React.Component {
     )
   }
 }
+
+const styles = StyleSheet.create({
+  containerDark: {
+    backgroundColor: '#16191C',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    margin: 0,
+    marginHorizontal: 0,
+    paddingHorizontal: 0,
+    flexDirection: 'row',
+    flex: 1,
+  },
+  chatsViewContainer: {
+    flex: 1,
+  },
+})
