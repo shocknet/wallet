@@ -25,7 +25,7 @@ interface State {
   connected: boolean
 }
 
-export default class WithConnWarning extends React.Component<Props, State> {
+export default class WithConnWarning extends React.PureComponent<Props, State> {
   state: State = {
     connected: true,
   }
