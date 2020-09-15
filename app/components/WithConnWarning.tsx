@@ -11,6 +11,7 @@ interface StateProps {
 }
 
 interface OwnProps {
+  children: React.ReactNode
   disable?: boolean
 }
 
