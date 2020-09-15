@@ -4,32 +4,34 @@ import { StyleSheet, Text, View } from 'react-native'
 import { Colors } from '../res/css'
 import * as ContactAPI from '../services/contact-api'
 
+interface DispatchProps {}
+
+interface StateProps {
+  connected: boolean
+}
+
+interface OwnProps {
+  disable?: boolean
+}
+
+type Props = DispatchProps & StateProps & OwnProps
+
 /**
  * @typedef {object} Props
  * @prop {boolean=} disable
  */
 
-/**
- * @typedef {object} State
- * @prop {boolean} connected
- */
+interface State {
+  connected: boolean
+}
 
-export {} // stop JSDoc comments from merging
-
-/**
- * @augments React.Component<Props, State, never>
- */
-export default class WithConnWarning extends React.Component {
-  /**
-   * @type {State}
-   */
-  state = {
+export default class WithConnWarning extends React.Component<Props, State> {
+  state: State = {
     connected: true,
   }
 
   /**
    * @private
-   * @returns {void}
    */
   connUnsub = () => {}
 
@@ -43,10 +45,8 @@ export default class WithConnWarning extends React.Component {
 
   /**
    * @private
-   * @param {boolean} connected
-   * @returns {void}
    */
-  onConn = connected => {
+  onConn = (connected: boolean) => {
     this.setState({
       connected,
     })
