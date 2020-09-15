@@ -86,10 +86,7 @@ export default class UserDetail extends React.Component {
               </View>
 
               {typeof lowerText === 'string' ? (
-                <Text
-                  numberOfLines={2}
-                  style={lowerTextStyle && lowerTextStyle}
-                >
+                <Text numberOfLines={2} style={lowerTextStyle}>
                   {lowerText}
                 </Text>
               ) : (

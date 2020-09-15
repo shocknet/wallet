@@ -215,7 +215,7 @@ export default class ChatsView extends React.Component {
 
                 return lastMsg.body
               })()}
-              lowerTextStyle={unread ? styles.boldFontDark : undefined}
+              lowerTextStyle={unread ? styles.boldFontDark : styles.boldFont}
               name={
                 chat.recipientDisplayName === null
                   ? chat.recipientPublicKey
