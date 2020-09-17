@@ -3,6 +3,7 @@
  */
 import React from 'react'
 import { StyleSheet, Text, TextInput, View, ToastAndroid } from 'react-native'
+import { connect } from 'react-redux'
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation
  */
@@ -35,7 +36,7 @@ const shockBG = require('../assets/images/shock-bg.png')
 /**
  * @typedef {object} Props
  * @prop {Navigation} navigation
- * @prop {(action: Record<string, unknown>) => void} dispatch
+ * @prop {import('redux').Dispatch} dispatch
  */
 
 /**
@@ -52,7 +53,7 @@ const shockBG = require('../assets/images/shock-bg.png')
 /**
  * @augments React.Component<Props, State>
  */
-export default class Login extends React.Component {
+export class Login extends React.Component {
   /**
    * @type {import('react-navigation').NavigationScreenOptions}
    */
@@ -322,3 +323,5 @@ const xStyles = {
   createAliasText: [styles.textInputFieldLabel, CSS.styles.textAlignCenter],
   changeText: [CSS.styles.textUnderlined, styles.textInputFieldLabel],
 }
+
+export default connect()(Login)
