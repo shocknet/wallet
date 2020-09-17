@@ -24,6 +24,7 @@ import { WALLET_MANAGER } from '../navigators/WalletManager'
 import Pad from '../components/Pad'
 import OnboardingInput from '../components/OnboardingInput'
 import OnboardingBtn from '../components/OnboardingBtn'
+import { Follows } from '../actions'
 
 export const LOGIN = 'LOGIN'
 
@@ -34,6 +35,7 @@ const shockBG = require('../assets/images/shock-bg.png')
 /**
  * @typedef {object} Props
  * @prop {Navigation} navigation
+ * @prop {(action: Record<string, unknown>) => void} dispatch
  */
 
 /**
@@ -207,6 +209,8 @@ export default class Login extends React.Component {
               publicKey: res.publicKey,
               token: res.token,
             })
+
+            this.props.dispatch(Follows.receivedFollows(res.follows))
 
             return API.Socket.connect()
           })

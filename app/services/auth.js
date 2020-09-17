@@ -1,5 +1,6 @@
 import Http from 'axios'
 import Logger from 'react-native-file-log'
+import { Schema } from 'shock-common'
 
 import * as Cache from './cache'
 import * as Wallet from './wallet'
@@ -23,6 +24,7 @@ export const isGunAuthed = async () => {
  * @typedef {object} AuthResponse
  * @prop {string} publicKey
  * @prop {string} token
+ * @prop {Record<string, Schema.Follow>} follows
  */
 
 /**
@@ -55,6 +57,7 @@ export const unlockWallet = async (alias, password) => {
     return {
       publicKey: data.user.publicKey,
       token: data.authorization,
+      follows: data.follows,
     }
   } catch (err) {
     throw new Error(
@@ -91,6 +94,7 @@ export const createWallet = async (alias, password) => {
       return {
         publicKey: data.user.publicKey,
         token: data.authorization,
+        follows: {},
       }
     }
   } catch (err) {
@@ -128,6 +132,7 @@ export const newGUNAlias = async (alias, pass) => {
     return {
       publicKey: body.user.publicKey,
       token: body.authorization,
+      follows: {},
     }
   } catch (err) {
     const body = err.response.data
