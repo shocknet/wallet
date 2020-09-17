@@ -9,7 +9,7 @@ import {
   View,
   ActivityIndicator,
   StatusBar,
-  FlatListProps,
+  FlatListProps
 } from 'react-native'
 import { connect } from 'react-redux'
 import { NavigationScreenProp, NavigationScreenOptions } from 'react-navigation'
@@ -21,6 +21,11 @@ import * as Reducers from '../../../reducers'
 import Post from '../../components/Post'
 import * as Routes from '../../routes'
 import * as CSS from '../../res/css'
+//import ShockAvatar from '../../components/ShockAvatar'
+import * as API from '../../services/contact-api'
+
+//@ts-ignore
+import AddonIcon from '../../assets/images/feed/addon.svg'
 
 type Navigation = NavigationScreenProp<{}, Routes.UserParams>
 type Item = Common.Schema.Post
@@ -42,6 +47,8 @@ interface OwnProps {
 interface State {
   awaitingBackfeed: boolean
   awaitingMoreFeed: boolean
+  avatar: string | null
+  selectedTab:'all' | 'saved' | 'videos'
 }
 
 type Props = StateProps & DispatchProps & OwnProps
@@ -68,6 +75,8 @@ class Feed extends React.Component<Props, State> {
   state: State = {
     awaitingBackfeed: false,
     awaitingMoreFeed: false,
+    avatar: API.Events.getAvatar(),
+    selectedTab:'all',
   }
 
   onEndReached = () => {
@@ -156,6 +165,19 @@ class Feed extends React.Component<Props, State> {
     )
   }
 
+  /*_renderUserItem({ item }) {
+    return (
+      <View style={styles.otherUserContainer}>
+        <Image
+          source={item.avatar}
+          resizeMode="cover"
+          style={styles.otherUserAvatar}
+        />
+        <Text style={styles.otherUserName}>{item.name}</Text>
+      </View>
+    )
+  }*/
+
   _onViewableItemsChanged: FlatListProps<
     Common.Schema.Post
   >['onViewableItemsChanged'] = ({ viewableItems }) => {
@@ -216,13 +238,130 @@ class Feed extends React.Component<Props, State> {
       })
     }
   }
+  onPressAvatar = ()=>{}
+
+  onPressAllFeeds = () => {
+    this.setState({ selectedTab: 'all' })
+  }
+
+  onPressSavedFeeds = () => {
+    this.setState({ selectedTab: 'saved' })
+  }
+
+  onPressVideoFeeds = () => {
+    this.setState({ selectedTab: 'videos' })
+  }
 
   render() {
     const { posts } = this.props
-
+    //const {avatar,selectedTab} = this.state
+    /*const testUsers = [
+      {
+        avatar: {
+          uri:
+            'https://dukeofyorksquare.com/wp-content/uploads/2017/02/Pancakes-2.jpg',
+        },
+        name: 'David',
+      },
+      {
+        avatar: {
+          uri:
+            'https://www.flatironsquare.co.uk/content/_mobile/Food_Hero_Image.jpg',
+        },
+        name: 'James',
+      },
+      {
+        avatar: {
+          uri:
+            'https://dukeofyorksquare.com/wp-content/uploads/2017/02/Pancakes-2.jpg',
+        },
+        name: 'Karem',
+      },
+      {
+        avatar: {
+          uri:
+            'https://mariettasquaremarket.com/wp-content/uploads/2018/12/Pita-Mediterranean-5.jpg',
+        },
+        name: 'Jhon',
+      },
+      {
+        avatar: {
+          uri:
+            'https://www.pietrzaka030.macombserver.net/itwp1000/webproject4/images/basil.jpg',
+        },
+        name: 'Fabio',
+      },
+    ]*/
     return (
       <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="light-content" />
+        <StatusBar
+          translucent
+          backgroundColor="transparent"
+          barStyle="light-content"
+        />
+        {/*<View style={styles.usersContainer}>
+          <TouchableOpacity style={styles.avatarContainer}>
+            <ShockAvatar
+              height={63}
+              image={avatar}
+              onPress={this.onPressAvatar}
+              lastSeenApp={Date.now()}
+              avatarStyle={styles.avatarStyle}
+              disableOnlineRing
+            />
+            <AddonIcon size={25} style={styles.avatarAddon}/>
+          </TouchableOpacity>
+
+          <FlatList
+            data={testUsers}
+            renderItem={this._renderUserItem}
+            horizontal
+          />
+        </View>*/}
+        {/*<View style={styles.tabsContainer}>
+          <TouchableOpacity
+            style={styles.tabButton}
+            onPress={this.onPressAllFeeds}
+          >
+            <Text
+              style={
+                selectedTab === 'all'
+                  ? styles.tabButtonTextSelected
+                  : styles.tabButtonText
+              }
+            >
+              Feed
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.tabButton}
+            onPress={this.onPressSavedFeeds}
+          >
+            <Text
+              style={
+                selectedTab === 'saved'
+                  ? styles.tabButtonTextSelected
+                  : styles.tabButtonText
+              }
+            >
+              Saved
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.tabButton}
+            onPress={this.onPressVideoFeeds}
+          >
+            <Text
+              style={
+                selectedTab === 'videos'
+                  ? styles.tabButtonTextSelected
+                  : styles.tabButtonText
+              }
+            >
+              Videos
+            </Text>
+          </TouchableOpacity>
+        </View>*/}
         <FlatList
           style={CSS.styles.flex}
           renderItem={this.renderItem}
@@ -272,6 +411,7 @@ const mapStateToProps = (state: Reducers.State): StateProps => {
   const noRepeats = _.uniq(postsIDs)
 
   const posts = Common.Schema.denormalizePosts(noRepeats, state)
+  
 
   return {
     posts,
@@ -296,15 +436,84 @@ export default ConnectedFeed
 
 const styles = StyleSheet.create({
   container: {
+    alignItems: 'center',
+    backgroundColor: '#16191C',
+    margin: 0,
     flex: 1,
     width: '100%',
-    backgroundColor: CSS.Colors.BACKGROUND_NEAR_WHITE,
     paddingTop: StatusBar.currentHeight,
   },
   emptyMessageText: {
     color: CSS.Colors.TEXT_GRAY,
     fontFamily: 'Montserrat-700',
     fontSize: 16,
+  },
+  usersContainer: {
+    flexDirection: 'row',
+    marginTop: 30,
+    paddingTop: 19,
+    paddingBottom: 0,
+    paddingLeft: 15,
+    paddingRight: 6,
+    borderColor: '#707070',
+    borderBottomWidth: 1,
+    borderTopWidth: 1,
+    height: 115,
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
+    backgroundColor: '#212937',
+  },
+  avatarContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    marginRight: 17,
+  },
+  avatarAddon: {
+    marginLeft: -25,
+    marginTop: -15,
+  },
+  avatarStyle: {
+    borderRadius: 32,
+    borderColor: '#707070',
+  },
+  otherUserName: {
+    color: '#F3EFEF',
+    fontFamily: 'Montserrat-600',
+    fontSize: 12,
+    textAlign: 'center',
+    marginTop: 9,
+  },
+  otherUserContainer: {
+    marginRight: 17,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  otherUserAvatar: {
+    width: 53,
+    height: 53,
+    borderRadius: 27,
+  },
+  tabsContainer: {
+    width: '100%',
+    borderBottomWidth: 1,
+    borderColor: '#707070',
+    height: 37,
+    flexDirection: 'row',
+  },
+  tabButton: {
+    width: '30%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tabButtonText: {
+    fontFamily: 'Montserrat-700',
+    fontSize: 15,
+    color: '#F3EFEF',
+  },
+  tabButtonTextSelected: {
+    fontFamily: 'Montserrat-700',
+    fontSize: 15,
+    color: '#4285B9',
   },
 })
 
