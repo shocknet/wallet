@@ -1,5 +1,5 @@
 import React from 'react'
-import { StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, Text, View, SafeAreaView } from 'react-native'
 import { connect } from 'react-redux'
 
 import { Colors } from '../res/css'
@@ -64,13 +64,13 @@ export class WithConnWarning extends React.PureComponent<Props, State> {
     }
 
     return (
-      <View style={styles.flex}>
+      <SafeAreaView style={styles.flex}>
         <View style={styles.flex}>{children}</View>
 
         <View style={styles.banner}>
           <Text style={styles.text}>Disconnected from server</Text>
         </View>
-      </View>
+      </SafeAreaView>
     )
   }
 }
