@@ -14,9 +14,12 @@ export const tokenDidInvalidate = () =>
     type: 'tokenDidInvalidate',
   } as const)
 
-export const hostWasSet = () =>
+export const hostWasSet = (host: string) =>
   ({
     type: 'hostWasSet',
+    data: {
+      host,
+    },
   } as const)
 
 export type AuthAction =
