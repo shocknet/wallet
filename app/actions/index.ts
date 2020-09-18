@@ -35,6 +35,7 @@ export const getMoreFeed = Common.Store.Actions.getMoreFeed
 export const viewportChanged = Common.Store.Actions.viewportChanged
 
 export * from './tips'
+export * from './ConnectionActions'
 
 export {
   ChatActions,
