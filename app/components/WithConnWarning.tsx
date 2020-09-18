@@ -1,35 +1,40 @@
 import React from 'react'
-import { StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, Text, View, SafeAreaView } from 'react-native'
+import { connect } from 'react-redux'
 
 import { Colors } from '../res/css'
 import * as ContactAPI from '../services/contact-api'
+import { isOnline, State as StoreState } from '../../store'
+
+interface DispatchProps {}
+
+interface StateProps {
+  connected: boolean
+}
+
+interface OwnProps {
+  children: React.ReactNode
+  disable?: boolean
+}
+
+type Props = DispatchProps & StateProps & OwnProps
 
 /**
  * @typedef {object} Props
  * @prop {boolean=} disable
  */
 
-/**
- * @typedef {object} State
- * @prop {boolean} connected
- */
+interface State {
+  connected: boolean
+}
 
-export {} // stop JSDoc comments from merging
-
-/**
- * @augments React.Component<Props, State, never>
- */
-export default class WithConnWarning extends React.Component {
-  /**
-   * @type {State}
-   */
-  state = {
+export class WithConnWarning extends React.PureComponent<Props, State> {
+  state: State = {
     connected: true,
   }
 
   /**
    * @private
-   * @returns {void}
    */
   connUnsub = () => {}
 
@@ -43,10 +48,8 @@ export default class WithConnWarning extends React.Component {
 
   /**
    * @private
-   * @param {boolean} connected
-   * @returns {void}
    */
-  onConn = connected => {
+  onConn = (connected: boolean) => {
     this.setState({
       connected,
     })
@@ -61,13 +64,13 @@ export default class WithConnWarning extends React.Component {
     }
 
     return (
-      <View style={styles.flex}>
+      <SafeAreaView style={styles.flex}>
         <View style={styles.flex}>{children}</View>
 
         <View style={styles.banner}>
           <Text style={styles.text}>Disconnected from server</Text>
         </View>
-      </View>
+      </SafeAreaView>
     )
   }
 }
@@ -90,3 +93,11 @@ const styles = StyleSheet.create({
     color: Colors.TEXT_WHITE,
   },
 })
+
+const mapState = (state: StoreState): StateProps => ({
+  connected: isOnline(state),
+})
+
+const ConnectedWithConnWarning = connect(mapState)(WithConnWarning)
+
+export default ConnectedWithConnWarning

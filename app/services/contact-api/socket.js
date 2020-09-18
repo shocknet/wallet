@@ -9,7 +9,6 @@ import { Constants } from 'shock-common'
 import { DISABLE_ENCRYPTION } from '../../config'
 
 import * as Cache from '../../services/cache'
-import { ACTIONS as ConnectionAction } from '../../actions/ConnectionActions'
 
 import * as Events from './events'
 import * as Encryption from '../encryption'
@@ -228,8 +227,6 @@ export const disconnect = () => {
     // @ts-ignore
     socket.off()
 
-    store.dispatch({ type: ConnectionAction.SOCKET_DID_DISCONNECT })
-
     // @ts-ignore
     socket.disconnect()
 
@@ -279,14 +276,7 @@ export const connect = debounce(async () => {
 
   socket.on('disconnect', reason => {
     Logger.log(`reason for disconnect: ${reason}`)
-    store.dispatch({ type: ConnectionAction.SOCKET_DID_DISCONNECT })
   })
-
-  socket.on('connect', () => {
-    store.dispatch({ type: ConnectionAction.SOCKET_DID_CONNECT })
-  })
-
-  store.dispatch({ type: ConnectionAction.SOCKET_DID_CONNECT })
 
   lastConnCheck = Date.now()
 

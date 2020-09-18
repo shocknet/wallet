@@ -1,5 +1,6 @@
 // @ts-ignore
 import uuid from 'uuid/v4'
+import { Action } from '../app/actions'
 import { ACTIONS } from '../app/actions/ConnectionActions'
 
 /**
@@ -9,14 +10,10 @@ import { ACTIONS } from '../app/actions/ConnectionActions'
  * @prop {string?} sessionId
  * @prop {string} deviceId
  * @prop {boolean} socketConnected
+ * @prop {number} lastPing
  */
 
 // TO DO: typings for data
-/**
- * @typedef {object} Action
- * @prop {string} type
- * @prop {any} data TODO
- */
 
 /** @type {State} */
 const INITIAL_STATE = {
@@ -25,6 +22,7 @@ const INITIAL_STATE = {
   sessionId: null,
   deviceId: uuid(),
   socketConnected: false,
+  lastPing: 0,
 }
 
 /**
@@ -34,14 +32,11 @@ const INITIAL_STATE = {
  */
 const connection = (state = INITIAL_STATE, action) => {
   switch (action.type) {
-    case ACTIONS.LOAD_NEW_KEYS: {
-      if (!action.data) {
-        return state
-      }
+    case 'encryption/loadKeys': {
       const { devicePublicKey, APIPublicKey, sessionId } = action.data
       return {
         ...state,
-        devicePublicKey,
+        devicePublicKey: devicePublicKey || null,
         sessionId,
         APIPublicKey,
       }
@@ -56,6 +51,12 @@ const connection = (state = INITIAL_STATE, action) => {
       return {
         ...state,
         socketConnected: false,
+      }
+    }
+    case 'socket/ping': {
+      return {
+        ...state,
+        lastPing: action.data.timestamp,
       }
     }
     default:
