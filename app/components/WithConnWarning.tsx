@@ -1,8 +1,10 @@
 import React from 'react'
 import { StyleSheet, Text, View } from 'react-native'
+import { connect } from 'react-redux'
 
 import { Colors } from '../res/css'
 import * as ContactAPI from '../services/contact-api'
+import { isOnline, State as StoreState } from '../../store'
 
 interface DispatchProps {}
 
@@ -26,7 +28,7 @@ interface State {
   connected: boolean
 }
 
-export default class WithConnWarning extends React.PureComponent<Props, State> {
+export class WithConnWarning extends React.PureComponent<Props, State> {
   state: State = {
     connected: true,
   }
@@ -91,3 +93,11 @@ const styles = StyleSheet.create({
     color: Colors.TEXT_WHITE,
   },
 })
+
+const mapState = (state: StoreState): StateProps => ({
+  connected: isOnline(state),
+})
+
+const ConnectedWithConnWarning = connect(mapState)(WithConnWarning)
+
+export default ConnectedWithConnWarning
