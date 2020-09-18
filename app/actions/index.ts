@@ -9,6 +9,7 @@ import * as Me from './me'
 import { TipsAction } from './tips'
 import { InvoicesAction } from './InvoiceActions'
 import { ConnectionAction } from './ConnectionActions'
+import { AuthAction } from './auth'
 
 import * as Common from 'shock-common'
 
@@ -26,6 +27,7 @@ export type Action =
   | TipsAction
   | InvoicesAction
   | ConnectionAction
+  | AuthAction
 
 export const receivedBackfeed = Common.Store.Actions.receivedBackfeed
 export const receivedFeed = Common.Store.Actions.receivedFeed
@@ -36,6 +38,7 @@ export const viewportChanged = Common.Store.Actions.viewportChanged
 
 export * from './tips'
 export * from './ConnectionActions'
+export * from './auth'
 
 export {
   ChatActions,
