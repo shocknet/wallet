@@ -2,12 +2,17 @@ import Http from 'axios'
 import { RSAKeychain } from 'react-native-rsa-native'
 import Logger from 'react-native-file-log'
 
-import { KEYS_LOADED, keysLoaded } from './v2'
+import {
+  KEYS_LOADED,
+  keysLoaded,
+  SOCKET_DID_CONNECT,
+  SOCKET_DID_DISCONNECT,
+} from './v2'
 
 export const ACTIONS = {
   LOAD_NEW_KEYS: KEYS_LOADED,
-  SOCKET_DID_CONNECT: 'socket/socketDidConnect',
-  SOCKET_DID_DISCONNECT: 'socket/socketDidDisconnect',
+  SOCKET_DID_CONNECT,
+  SOCKET_DID_DISCONNECT,
 }
 
 /** @type {Promise<ExchangedKeyPair>?} */
