@@ -5,7 +5,7 @@ import { State } from '../store'
 const isSocketConnectedSelector = (state: State) =>
   state.connection.socketConnected
 const lastPingWasLessThan10SecondsAgoSelector = (state: State) =>
-  Date.now() - state.connection.lastPing < 10000
+  Date.now() - state.connection.lastPing < 6000
 
 export const isOnline = createSelector(
   isSocketConnectedSelector,
