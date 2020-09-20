@@ -160,7 +160,3 @@ export const newAddress = () => async dispatch => {
     data: address,
   })
 }
-
-/**
- * @typedef {AddInvoiceAction|InvoiceDecodedAction} InvoicesAction
- */
