@@ -3,7 +3,6 @@ import { StyleSheet, Text, View, SafeAreaView } from 'react-native'
 import { connect } from 'react-redux'
 
 import { Colors } from '../res/css'
-import * as ContactAPI from '../services/contact-api'
 import { isOnline, State as StoreState } from '../../store'
 
 interface DispatchProps {}
@@ -19,57 +18,24 @@ interface OwnProps {
 
 type Props = DispatchProps & StateProps & OwnProps
 
-/**
- * @typedef {object} Props
- * @prop {boolean=} disable
- */
-
-interface State {
-  connected: boolean
-}
-
-export class WithConnWarning extends React.PureComponent<Props, State> {
-  state: State = {
-    connected: true,
-  }
-
-  /**
-   * @private
-   */
-  connUnsub = () => {}
-
-  componentDidMount() {
-    this.connUnsub = ContactAPI.Events.onConnection(this.onConn)
-  }
-
-  componentWillUnmount() {
-    this.connUnsub()
-  }
-
-  /**
-   * @private
-   */
-  onConn = (connected: boolean) => {
-    this.setState({
-      connected,
-    })
-  }
-
+export class WithConnWarning extends React.PureComponent<Props> {
   render() {
-    const { children, disable } = this.props
-    const { connected } = this.state
+    // Special care must be had inside <WithConnWarning />: don't remount
+    // children. It causes problems if any of those is a navigation stack or
+    // some other special-type component
+    const { connected, children, disable } = this.props
 
-    if (!!disable || connected) {
-      return children
-    }
+    const showBanner = !disable && !connected
 
     return (
       <SafeAreaView style={styles.flex}>
         <View style={styles.flex}>{children}</View>
 
-        <View style={styles.banner}>
-          <Text style={styles.text}>Disconnected from server</Text>
-        </View>
+        {showBanner && (
+          <View style={styles.banner}>
+            <Text style={styles.text}>Disconnected from server</Text>
+          </View>
+        )}
       </SafeAreaView>
     )
   }
