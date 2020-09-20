@@ -79,9 +79,6 @@ const styles = StyleSheet.create({
   banner: {
     backgroundColor: Colors.FAILURE_RED,
     height: 24,
-    left: 0,
-    position: 'absolute',
-    top: 0,
     width: '100%',
   },
 
