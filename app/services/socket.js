@@ -179,6 +179,10 @@ class Socket {
         store.dispatch(Actions.socketDidDisconnect())
       })
 
+      socket.on('shockping', () => {
+        store.dispatch(Actions.ping(Date.now()))
+      })
+
       this.socketInstance = this.encryptSocketInstance(socket)
 
       Logger.log('[LND SOCKET] New socket instance created successfully')
