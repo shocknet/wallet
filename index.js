@@ -190,6 +190,8 @@ export default class ShockWallet extends React.Component {
     let rootNode = null
 
     if (__DEV__) {
+      // Special care must be had inside <WithConnWarning />: don't remount the
+      // RootStack
       rootNode = (
         <WithConnWarning>
           <RootStack ref={NavigationService.setTopLevelNavigator} />
