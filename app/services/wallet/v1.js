@@ -1,5 +1,6 @@
 import Http from 'axios'
 import Logger from 'react-native-file-log'
+import { Schema } from 'shock-common'
 
 import * as Cache from '../cache'
 import * as Utils from '../utils'
@@ -208,8 +209,8 @@ import * as Utils from '../utils'
 /**
  * Not supported in API as of commit ed93a9e5c3915e1ccf6f76f0244466e999dbc939 .
  * @typedef {object} ListInvoiceResponse
- * @prop {Invoice[]} invoices A list of invoices from the time slice of the time
- * series specified in the request.
+ * @prop {Schema.InvoiceWhenListed[]} invoices A list of invoices from the time
+ * slice of the time series specified in the request.
  * @prop {number} last_index_offset The index of the last item in the set of
  * returned invoices.This can be used to seek further, pagination style.
  * @prop {number} first_index_offset The index of the last item in the set of
