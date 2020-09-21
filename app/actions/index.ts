@@ -6,6 +6,7 @@ import * as Feed from './feed'
 import * as FeedWall from './FeedAction'
 import * as SingleFeed from './singleFeed'
 import * as Me from './me'
+import * as MediaLib from './mediaLib'
 import { TipsAction } from './tips'
 import { InvoicesAction } from './InvoiceActions'
 
@@ -22,6 +23,7 @@ export type Action =
   | Common.Store.Actions.PostsAction
   | Feed.FeedActions
   | FeedWall.FeedActions
+  | MediaLib.MediaLibAction
   | TipsAction
   | InvoicesAction
 

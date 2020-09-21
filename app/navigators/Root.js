@@ -198,7 +198,7 @@ if (theme === 'dark') {
   delete drawerScreens[ADD_POST_TO_FEED]
   //delete drawerScreens[CREATE_POST]
   //delete drawerScreens[LNURL_SCREEN]
-  delete drawerScreens[PUBLISH_CONTENT_DARK]
+  //delete drawerScreens[PUBLISH_CONTENT_DARK]
 }
 //
 // const drawerScreens = {
