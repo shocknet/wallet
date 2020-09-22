@@ -273,7 +273,7 @@ import * as Utils from '../utils'
 export const NO_CACHED_TOKEN = 'NO_CACHED_TOKEN'
 
 /**
- * @param {Invoice|Payment|Transaction} item
+ * @param {unknown} item
  * @returns {item is Invoice}
  */
 export const isInvoice = item => {
@@ -295,7 +295,7 @@ export const isInvoice = item => {
 }
 
 /**
- * @param {Invoice|Payment|Transaction} item
+ * @param {unknown} item
  * @returns {item is Payment}
  */
 export const isPayment = item => {
@@ -305,7 +305,7 @@ export const isPayment = item => {
 }
 
 /**
- * @param {Invoice|Payment|Transaction} item
+ * @param {unknown} item
  * @returns {item is Transaction}
  */
 export const isTransaction = item => {
