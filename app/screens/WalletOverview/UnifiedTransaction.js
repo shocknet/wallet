@@ -24,9 +24,9 @@ const OUTBOUND_INDICATOR_RADIUS = 20
 
 /**
  * "Component" suffix in name to avoid collision with Transaction interface.
- * @augments React.Component<Props, {}, never>
+ * @augments React.PureComponent<Props, {}, never>
  */
-export default class UnifiedTransaction extends React.Component {
+export default class UnifiedTransaction extends React.PureComponent {
   state = {}
 
   onPress = () => {
