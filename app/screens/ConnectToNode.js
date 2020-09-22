@@ -30,6 +30,7 @@ import { throttledExchangeKeyPair } from '../actions/ConnectionActions'
 const shockBG = require('../assets/images/shock-bg.png')
 
 export const CONNECT_TO_NODE = 'CONNECT_TO_NODE'
+const HOSTING_SERVER = '167.88.11.204:8080'
 
 /**
  * @typedef {object} Params
@@ -56,6 +57,8 @@ export const CONNECT_TO_NODE = 'CONNECT_TO_NODE'
  * @prop {boolean} pinging
  * @prop {boolean} wasBadPing
  * @prop {boolean} scanningQR
+ * @prop {boolean} isUsingInvitation
+ * @prop {string} invitationCode
  */
 
 /** @type {State} */
@@ -66,6 +69,8 @@ const DEFAULT_STATE = {
   pinging: false,
   wasBadPing: false,
   scanningQR: false,
+  isUsingInvitation: false,
+  invitationCode: '',
 }
 
 /**
@@ -127,6 +132,63 @@ class ConnectToNode extends React.Component {
         checkingCacheForNodeURL: false,
       })
     }
+  }
+
+  /**
+   * @private
+   * @param {string} invitationCode
+   */
+  onChangeInvitationCode = invitationCode => {
+    this.setState({
+      invitationCode,
+    })
+  }
+
+  /** @private */
+  onPressConnectViaInvite = async () => {
+    const { invitationCode, externalURL } = this.state
+    try {
+      Logger.log('requesting with', invitationCode)
+      const resp = await fetch(`http://${HOSTING_SERVER}/mainnet`, {
+        headers: {
+          Accept: 'application/json',
+          Authorization: invitationCode,
+        },
+      })
+      Logger.log(resp)
+      this.setState({ nodeURL: (await resp.json()).data.address })
+    } catch (error) {
+      Logger.log(error)
+    }
+
+    setTimeout(() => {
+      this.mounted &&
+        this.setState(
+          {
+            pinging: true,
+          },
+          async () => {
+            try {
+              Logger.log('received response', this.state.nodeURL)
+              await this.connectURL(this.state.nodeURL)
+            } catch (err) {
+              try {
+                Logger.log(
+                  'CONNECTURL FAILED, TRYING ONCE MORE TIME, ERR: ' +
+                    err.message,
+                )
+                await this.connectURL(externalURL)
+              } catch (err) {
+                this.mounted &&
+                  this.setState({
+                    pinging: false,
+                    wasBadPing: true,
+                  })
+              }
+            }
+          },
+        )
+    }, 5000)
   }
 
   /**
@@ -242,6 +304,12 @@ class ConnectToNode extends React.Component {
     }
   }
 
+  toggleInvitation = () => {
+    this.setState(({ isUsingInvitation }) => ({
+      isUsingInvitation: !isUsingInvitation,
+    }))
+  }
+
   render() {
     const {
       checkingCacheForNodeURL,
@@ -249,6 +317,7 @@ class ConnectToNode extends React.Component {
       wasBadPing,
       pinging,
       scanningQR,
+      isUsingInvitation,
     } = this.state
 
     const err = this.props.navigation.getParam('err')
@@ -267,37 +336,71 @@ class ConnectToNode extends React.Component {
 
     return (
       <OnboardingScreen loading={checkingCacheForNodeURL || pinging}>
-        <Text style={titleTextStyle}>Node Address</Text>
+        <Text style={titleTextStyle}>
+          {isUsingInvitation ? 'Invitation Code' : 'Node Address'}
+        </Text>
 
         <Pad amount={ITEM_SPACING} />
 
-        <OnboardingInput
-          autoCapitalize="none"
-          autoCorrect={false}
-          disable={pinging || wasBadPing || !!err}
-          onChangeText={this.onChangeNodeURL}
-          onPressQRBtn={this.toggleQRScreen}
-          placeholder="Enter your node IP"
-          value={nodeURL}
-        />
+        {isUsingInvitation ? (
+          <OnboardingInput
+            autoCapitalize="none"
+            autoCorrect={false}
+            disable={pinging || wasBadPing || !!err}
+            onChangeText={this.onChangeInvitationCode}
+            placeholder="Enter your invitation code"
+            value={this.state.invitationCode}
+          />
+        ) : (
+          <OnboardingInput
+            autoCapitalize="none"
+            autoCorrect={false}
+            disable={pinging || wasBadPing || !!err}
+            onChangeText={this.onChangeNodeURL}
+            onPressQRBtn={this.toggleQRScreen}
+            placeholder="Enter your node IP"
+            value={nodeURL}
+          />
+        )}
 
         <Pad amount={ITEM_SPACING} />
 
         {!(wasBadPing || !!err) && (
           <>
-            <OnboardingBtn
-              disabled={!isValidIP(nodeURL) || pinging}
-              onPress={
-                wasBadPing || err ? this.onPressTryAgain : this.onPressConnect
-              }
-              title={wasBadPing || err ? 'Continue' : 'Connect'}
-            />
+            {isUsingInvitation ? (
+              <OnboardingBtn
+                onPress={this.onPressConnectViaInvite}
+                title={wasBadPing || err ? 'Continue' : 'Create and Connect'}
+              />
+            ) : (
+              <OnboardingBtn
+                disabled={!isValidIP(nodeURL) || pinging}
+                onPress={
+                  wasBadPing || err ? this.onPressTryAgain : this.onPressConnect
+                }
+                title={wasBadPing || err ? 'Continue' : 'Connect'}
+              />
+            )}
 
             <Pad amount={ITEM_SPACING} />
 
-            <Text style={linkTextStyle} onPress={this.openDocsLink}>
-              Don't have a node?
-            </Text>
+            {isUsingInvitation ? (
+              <Text style={linkTextStyle} onPress={this.toggleInvitation}>
+                Use Node Address
+              </Text>
+            ) : (
+              <>
+                <Text style={linkTextStyle} onPress={this.openDocsLink}>
+                  Don't have a node?
+                </Text>
+
+                <Pad amount={ITEM_SPACING} />
+
+                <Text style={linkTextStyle} onPress={this.toggleInvitation}>
+                  Use Invitation Code
+                </Text>
+              </>
+            )}
           </>
         )}
 
