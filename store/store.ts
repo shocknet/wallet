@@ -8,14 +8,13 @@ import thunk from 'redux-thunk'
 
 import { setStore } from '../app/services/contact-api/socket'
 import SocketManager from '../app/services/socket'
-import reducers, { State as _State } from '../reducers'
+import reducers, { State } from '../reducers'
 import { Action as _Action } from '../app/actions'
 
 const sagaMiddleware = createSagaMiddleware()
 
-export type State = _State
 export type Action = _Action
-export type Store = ReduxStore<_State, _Action>
+export type Store = ReduxStore<State, _Action>
 
 const storage = createSensitiveStorage({
   keychainService: 'ShockWalletKeychain',
