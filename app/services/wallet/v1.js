@@ -567,23 +567,8 @@ export const newAddress = async useOlderFormat => {
  */
 
 /**
- * https://api.lightning.community/?javascript#grpc-response-addinvoiceresponse
- * @typedef {object} AddInvoiceResponse
- * @prop {string} r_hash
- * @prop {string} payment_request A bare-bones invoice for a payment within the
- * Lightning Network. With the details of the invoice, the sender has all the
- * data necessary to send a payment to the recipient.
- * @prop {number} add_index The "add" index of this invoice. Each newly created
- * invoice will increment this index making it monotonically increasing.
- * Callers to the SubscribeInvoices call can use this to instantly get notified
- * of all added invoices with an add_index greater than this one.
- * @prop {boolean} liquidityCheck check the remote balance of the largest channel
- */
-
-/**
- * https://api.lightning.community/?javascript#grpc-response-addinvoiceresponse
  * @param {AddInvoiceRequest} request
- * @returns {Promise<AddInvoiceResponse>}
+ * @returns {Promise<Schema.InvoiceWhenAdded>}
  */
 export const addInvoice = async request => {
   const token = await Cache.getToken()
