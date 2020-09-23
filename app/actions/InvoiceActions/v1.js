@@ -128,6 +128,7 @@ export const resetInvoice = () => dispatch => {
  * @typedef {object} AddInvoiceAction
  * @prop {typeof ACTIONS.ADD_INVOICE} type
  * @prop {string} data
+ * @prop {Schema.InvoiceWhenAdded} invoice
  */
 
 /**
@@ -137,10 +138,13 @@ export const resetInvoice = () => dispatch => {
  */
 export const addInvoice = invoice => async dispatch => {
   const newInvoice = await Wallet.addInvoice(invoice)
-  dispatch({
+  /** @type {AddInvoiceAction} */
+  const addInvoiceAction = {
     type: ACTIONS.ADD_INVOICE,
     data: newInvoice.payment_request,
-  })
+    invoice: newInvoice,
+  }
+  dispatch(addInvoiceAction)
   if (newInvoice.liquidityCheck !== undefined) {
     dispatch({
       type: ACTIONS.SET_LIQUIDITY_CHECK,
