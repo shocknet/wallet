@@ -1,34 +1,58 @@
+/**
+ * This component for now will only render on-chain transactions, outbound
+ * payments and settled invoices, basically actual money movements and not
+ * drafts, orders or unsettled invoices.
+ *
+ * Decoded invoices do not contain settlement information so we ignore them for
+ * now.
+ *
+ * Added invoices are outbound but could be settled, most likely recently so
+ * we'll rely on its listed counterpart and ignore the added one.
+ *
+ * In the future we might need to use decoded invoices for orders.
+ */
 import React from 'react'
 
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 import moment from 'moment'
+import { Schema } from 'shock-common'
+import { connect } from 'react-redux'
 
 import * as Wallet from '../../services/wallet'
 import * as CSS from '../../res/css'
 import btcConvert from '../../services/convertBitcoin'
 import Pad from '../../components/Pad'
+import * as Store from '../../../store'
 
 const OUTBOUND_INDICATOR_RADIUS = 20
 
-/**
- * @typedef {Wallet.Invoice|Wallet.Payment|Wallet.Transaction} IUnifiedTransaction
- */
+export type IUnifiedTransaction =
+  | Wallet.Invoice
+  | Wallet.Payment
+  | Wallet.Transaction
+  | Schema.InvoiceWhenAdded
+  | Schema.InvoiceWhenListed
+  | Schema.InvoiceWhenDecoded
 
-/**
- * @typedef {object} Props
- * @prop {IUnifiedTransaction} unifiedTransaction
- * @prop {((payReqOrPaymentHashOrTxHash: string) => void)=} onPress
- * @prop {number} USDRate
- */
+interface DispatchProps {}
 
-/**
- * "Component" suffix in name to avoid collision with Transaction interface.
- * @augments React.PureComponent<Props, {}, never>
- */
-export default class UnifiedTransaction extends React.PureComponent {
-  state = {}
+interface StateProps {
+  unifiedTransaction: IUnifiedTransaction
+  onPress?: (payReqOrPaymentHashOrTxHashOrPaymentRequest: string) => void
+  USDRate: number
+}
 
+export interface OwnProps {
+  unifiedTransaction: IUnifiedTransaction
+  onPress?: (payReqOrPaymentHashOrTxHashOrPaymentRequest: string) => void
+  USDRate: number
+  payReq?: string
+}
+
+type Props = DispatchProps & StateProps & OwnProps
+
+export class UnifiedTransaction extends React.PureComponent<Props> {
   onPress = () => {
     const { onPress, unifiedTransaction } = this.props
 
@@ -36,16 +60,25 @@ export default class UnifiedTransaction extends React.PureComponent {
       return
     }
 
+    if (Schema.isInvoiceWhenListed(unifiedTransaction)) {
+      onPress(unifiedTransaction.payment_request)
+      return // avoid a duplicate duck typing
+    }
+
     if (Wallet.isInvoice(unifiedTransaction)) {
       onPress(unifiedTransaction.payment_request)
+      return // avoid a duplicate duck typing
     }
 
     if (Wallet.isPayment(unifiedTransaction)) {
       onPress(unifiedTransaction.payment_hash)
+      return // avoid a duplicate duck typing
     }
 
     if (Wallet.isTransaction(unifiedTransaction)) {
       onPress(unifiedTransaction.tx_hash)
+      // eslint-disable-next-line no-useless-return
+      return // avoid a duplicate duck typing
     }
   }
 
@@ -58,7 +91,21 @@ export default class UnifiedTransaction extends React.PureComponent {
     let outbound = false
     let description = ''
 
-    if (Wallet.isInvoice(unifiedTransaction)) {
+    if (Schema.isInvoiceWhenListed(unifiedTransaction)) {
+      if (!unifiedTransaction.settled) {
+        return null
+      }
+      hash = unifiedTransaction.payment_request
+      description = unifiedTransaction.memo
+      // eslint-disable-next-line prefer-destructuring
+      value = unifiedTransaction.value
+      timestamp =
+        unifiedTransaction.settle_date === '0'
+          ? Number(unifiedTransaction.creation_date)
+          : Number(unifiedTransaction.settle_date)
+
+      outbound = false
+    } else if (Wallet.isInvoice(unifiedTransaction)) {
       hash = unifiedTransaction.payment_request
       description = unifiedTransaction.memo
       // eslint-disable-next-line prefer-destructuring
@@ -138,6 +185,45 @@ export default class UnifiedTransaction extends React.PureComponent {
     )
   }
 }
+
+const makeMapStateToProps = () => {
+  const getInvoice = Store.makeGetInvoice()
+
+  const mapStateToProps = (state: Store.State, props: OwnProps): StateProps => {
+    if (props.payReq) {
+      return {
+        USDRate: props.USDRate,
+
+        unifiedTransaction: getInvoice(
+          state,
+          // still not sure if passing in props as opposed to an string argument
+          // will correctly memoize
+          props as Required<OwnProps> /* we already checked for props.payReq */,
+        )! /* Dangerous non-null assertion but we don't expect null for now
+              since the list itself will be fetched from the store */,
+
+        onPress: props.onPress,
+      }
+    }
+
+    return {
+      USDRate: props.USDRate,
+      unifiedTransaction: props.unifiedTransaction,
+      onPress: props.onPress,
+    }
+  }
+
+  return mapStateToProps
+}
+
+const ConnectedUnifiedTransaction = connect<
+  StateProps,
+  DispatchProps,
+  OwnProps,
+  Store.State
+>(makeMapStateToProps)(UnifiedTransaction)
+
+export default ConnectedUnifiedTransaction
 
 const styles = StyleSheet.create({
   item: {
