@@ -63,7 +63,7 @@ const keyExtractor = (unifiedTransaction: IUnifiedTransaction): string => {
   )
 }
 
-class UnifiedTransactions extends React.Component<Props> {
+class UnifiedTransactions extends React.PureComponent<Props> {
   renderItem: ListRenderItem<IUnifiedTransaction> = ({ item }) => {
     const { USDRate } = this.props.wallet
     return (
