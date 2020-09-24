@@ -11,6 +11,8 @@ import SocketManager from '../app/services/socket'
 import reducers, { State } from '../reducers'
 import { Action as _Action } from '../app/actions'
 
+import rootSaga from './sagas'
+
 const sagaMiddleware = createSagaMiddleware()
 
 export type Action = _Action
@@ -45,7 +47,7 @@ export default () => {
   // @ts-ignore
   SocketManager.setStore(store)
 
-  sagaMiddleware.run(Common.Store.rootSaga)
+  sagaMiddleware.run(rootSaga)
 
   return { persistor, store }
 }
