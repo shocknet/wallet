@@ -9,28 +9,20 @@ import {
   StyleSheet,
   Text,
   View,
+  ListRenderItem,
 } from 'react-native'
 import { connect } from 'react-redux'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 
 import * as Wallet from '../../services/wallet'
 import * as CSS from '../../res/css'
+import * as Store from '../../../store'
 
-import UnifiedTransaction from './UnifiedTransaction'
+import UnifiedTransaction, { IUnifiedTransaction } from './UnifiedTransaction'
 
-/**
- * @typedef {import('./UnifiedTransaction').IUnifiedTransaction} IUnifiedTransaction
- */
-
-/**
- * @typedef {ReturnType<typeof mapStateToProps>} ConnectedRedux
- */
-
-/** @type {React.FC} */
 const Separator = () => <View style={styles.separator} />
 
-/** @type {React.FC} */
-const Empty = () => ((
+const Empty = () => (
   <View style={styles.emptyContainer}>
     <Ionicons
       name="ios-alert"
@@ -40,22 +32,20 @@ const Empty = () => ((
     />
     <Text style={styles.emptyText}>No recent transactions</Text>
   </View>
-))
+)
 
-/**
- * @typedef {object} Props
- * @prop {((payReqOrPaymentHashOrTxHash: string) => void)=} onPressItem
- * (Optional)
- * @prop {IUnifiedTransaction[]|null} unifiedTrx Null when loading. When loading
- * a loading indicator will be shown.
- * @prop {{ USDRate: number }} wallet
- */
+interface Props {
+  onPressItem?: (payReqOrPaymentHashOrTxHash: string) => void
 
-/**
- * @param {IUnifiedTransaction} unifiedTransaction
- * @returns {string}
- */
-const keyExtractor = unifiedTransaction => {
+  /**
+   *  Null when loading. When loading a loading indicator will be shown.
+   */
+  unifiedTrx: IUnifiedTransaction[] | null
+
+  wallet: { USDRate: number }
+}
+
+const keyExtractor = (unifiedTransaction: IUnifiedTransaction): string => {
   if (Wallet.isInvoice(unifiedTransaction)) {
     return unifiedTransaction.payment_request
   }
@@ -73,23 +63,16 @@ const keyExtractor = unifiedTransaction => {
   )
 }
 
-/**
- * @augments React.Component<Props, {}, never>
- */
-class UnifiedTransactions extends React.Component {
-  /**
-   * @type {import('react-native').ListRenderItem<IUnifiedTransaction>}
-   */
-
-  renderItem = ({ item }) => {
+class UnifiedTransactions extends React.Component<Props> {
+  renderItem: ListRenderItem<IUnifiedTransaction> = ({ item }) => {
     const { USDRate } = this.props.wallet
-    return ((
+    return (
       <UnifiedTransaction
         unifiedTransaction={item}
         // onPress={this.props.onPressItem}
         USDRate={USDRate}
       />
-    ))
+    )
   }
 
   render() {
@@ -121,10 +104,7 @@ class UnifiedTransactions extends React.Component {
   }
 }
 
-/**
- * @param {typeof import('../../../reducers/index').default} state
- */
-const mapStateToProps = ({ wallet }) => ({
+const mapStateToProps = ({ wallet }: Store.State) => ({
   wallet,
 })
 
