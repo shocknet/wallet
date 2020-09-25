@@ -126,8 +126,10 @@ class CreatePostDark extends React.Component<Props,State> {
         }),
       ]
       if (mediaContent) {
-        //@ts-ignore need to fix SCHEMA
-        contentItems.push(mediaContent)
+        mediaContent.forEach(e => {
+          //@ts-ignore
+          contentItems.push(e)
+        })
       }
       // eslint-disable-next-line no-console
       console.log('onPressCreate dataToSendToService', dataToSendToService)
