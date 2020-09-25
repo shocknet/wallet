@@ -1,5 +1,5 @@
 import React from 'react'
-import { Text } from 'react-native'
+import { StyleSheet, Text } from 'react-native'
 import size from 'lodash/size'
 
 /**
@@ -75,9 +75,21 @@ export default class ChangingText extends React.Component {
     const { children, ...restProps } = this.props
 
     if (Array.isArray(children)) {
-      return <Text {...restProps}>{children[this.state.i]}</Text>
+      return (
+        <Text style={styles.textBold} {...restProps}>
+          {children[this.state.i]}
+        </Text>
+      )
     }
 
     return <Text {...this.props} />
   }
 }
+
+const styles = StyleSheet.create({
+  textBold: {
+    color: '#EBEBEB',
+    fontFamily: 'Montserrat-600',
+    fontSize: 11,
+  },
+})

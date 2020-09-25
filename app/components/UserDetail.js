@@ -47,6 +47,57 @@ export default class UserDetail extends React.Component {
       title,
     } = this.props
 
+    const theme = 'dark'
+
+    if (theme === 'dark') {
+      return (
+        <TouchableOpacity onPress={this.onPress}>
+          <View style={styles.container}>
+            <View style={xStyles.avatarSubContainer}>
+              <ConnectedShockAvatar
+                height={50}
+                publicKey={this.props.publicKey}
+              />
+            </View>
+
+            <View style={xStyles.nameContainer}>
+              {title && (
+                <Text
+                  style={theme === 'dark' ? styles.titleDark : styles.title}
+                >
+                  {title}
+                </Text>
+              )}
+
+              <View style={styles.nameAndTimeStampBar}>
+                <Text style={nameBold ? styles.nameBoldDark : styles.nameDark}>
+                  {name}
+                </Text>
+
+                <Text
+                  style={
+                    alternateTextBold
+                      ? styles.alternateTextBoldDark
+                      : styles.alternateTextDark
+                  }
+                >
+                  {alternateText && ` ${alternateText}`}
+                </Text>
+              </View>
+
+              {typeof lowerText === 'string' ? (
+                <Text numberOfLines={2} style={lowerTextStyle}>
+                  {lowerText}
+                </Text>
+              ) : (
+                lowerText
+              )}
+            </View>
+          </View>
+        </TouchableOpacity>
+      )
+    }
+
     return (
       <TouchableOpacity onPress={this.onPress}>
         <View style={styles.container}>
@@ -108,11 +159,35 @@ const alternateTextStyle = {
 const styles = StyleSheet.create({
   alternateText: {
     ...alternateTextStyle,
+    color: '#EBEBEB',
+    flex: 1,
+    textAlign: 'right',
   },
 
   alternateTextBold: {
     ...alternateTextStyle,
     fontWeight: 'bold',
+    color: '#EBEBEB',
+    flex: 1,
+    textAlign: 'right',
+  },
+
+  alternateTextDark: {
+    ...alternateTextStyle,
+    color: '#EBEBEB',
+    flex: 1,
+    textAlign: 'right',
+    fontFamily: 'Montserrat-600',
+    fontSize: 9,
+  },
+
+  alternateTextBoldDark: {
+    ...alternateTextStyle,
+    color: '#EBEBEB',
+    flex: 1,
+    textAlign: 'right',
+    fontFamily: 'Montserrat-600',
+    fontSize: 9,
   },
 
   avatarContainer: {
@@ -126,12 +201,31 @@ const styles = StyleSheet.create({
 
   name: {
     ...nameTextStyle,
+    color: '#EBEBEB',
+    flex: 1,
+  },
+
+  nameDark: {
+    ...nameTextStyle,
+    color: '#EBEBEB',
+    flex: 1,
+    fontFamily: 'Montserrat-600',
+    fontSize: 14,
   },
 
   nameBold: {
     ...nameTextStyle,
-    color: CSS.Colors.TEXT_STANDARD,
+    color: '#EBEBEB',
     fontWeight: 'bold',
+    flex: 1,
+  },
+
+  nameBoldDark: {
+    ...nameTextStyle,
+    color: '#EBEBEB',
+    flex: 1,
+    fontFamily: 'Montserrat-600',
+    fontSize: 14,
   },
 
   subContainer: {
@@ -149,6 +243,14 @@ const styles = StyleSheet.create({
     color: CSS.Colors.TEXT_LIGHT,
     fontWeight: '500',
   },
+
+  titleDark: {
+    color: '#EBEBEB',
+    fontFamily: 'Montserrat-600',
+    fontSize: 14,
+  },
+
+  nameAndTimeStampBar: { flexDirection: 'row', flex: 1 },
 })
 
 const xStyles = {

@@ -24,6 +24,8 @@ import QRCodeScanner from '../../components/QRScanner'
 import UserDetail from '../../components/UserDetail'
 import { Colors, SCREEN_PADDING, styles as Styles } from '../../res/css'
 import ShockDialog from '../../components/ShockDialog'
+import Nav from '../../components/Nav'
+import * as ContactAPI from '../../services/contact-api'
 
 const ACCEPT_REQUEST_DIALOG_TEXT =
   'By accepting this request, this user will be able to send you messages. You can block the user from sending further messages down the line if you wish so.'
@@ -99,6 +101,15 @@ const keyExtractor = item => item.id
  */
 
 /**
+ * @typedef {{ displayName: string|null , avatar: string|null, pk: string }} ShockUser
+ */
+
+/**
+ * @typedef {object} State
+ * @prop {string | null} avatar
+ */
+
+/**
  * @augments React.Component<Props>
  */
 export default class ChatsView extends React.Component {
@@ -144,6 +155,10 @@ export default class ChatsView extends React.Component {
     },
   }
 
+  state = {
+    avatar: ContactAPI.Events.getAvatar(),
+  }
+
   ////////////////////////////////////////////////////////////////////////////////
 
   /**
@@ -166,6 +181,8 @@ export default class ChatsView extends React.Component {
 
     const unread = !readChatIDs.includes(chat.recipientPublicKey)
 
+    const theme = 'dark'
+
     return (
       <TouchableOpacity
         // eslint-disable-next-line react/jsx-no-bind
@@ -173,7 +190,11 @@ export default class ChatsView extends React.Component {
           this.onPressChat(chat.id)
         }}
       >
-        <View style={styles.itemContainer}>
+        <View
+          style={
+            theme === 'dark' ? styles.itemContainerDark : styles.itemContainer
+          }
+        >
           <View style={styles.userDetailContainer}>
             <UserDetail
               alternateText={`(${moment(lastMsgTimestamp).fromNow()})`}
@@ -194,7 +215,7 @@ export default class ChatsView extends React.Component {
 
                 return lastMsg.body
               })()}
-              lowerTextStyle={unread ? styles.boldFont : undefined}
+              lowerTextStyle={unread ? styles.boldFontDark : styles.boldFont}
               name={
                 chat.recipientDisplayName === null
                   ? chat.recipientPublicKey
@@ -206,12 +227,14 @@ export default class ChatsView extends React.Component {
               publicKey={chat.recipientPublicKey}
             />
           </View>
-          <Icon
-            color={Colors.ORANGE}
-            name="chevron-right"
-            size={28}
-            type="font-awesome"
-          />
+          {theme !== 'dark' && (
+            <Icon
+              color={Colors.ORANGE}
+              name="chevron-right"
+              size={28}
+              type="font-awesome"
+            />
+          )}
         </View>
       </TouchableOpacity>
     )
@@ -222,8 +245,13 @@ export default class ChatsView extends React.Component {
    * @returns {React.ReactElement<any>}
    */
   receivedRequestRenderer = receivedRequest => {
+    const theme = 'dark'
     return (
-      <View style={styles.itemContainer}>
+      <View
+        style={
+          theme === 'dark' ? styles.itemContainerDark : styles.itemContainer
+        }
+      >
         <View style={styles.userDetailContainer}>
           <UserDetail
             alternateText={`(${moment(receivedRequest.timestamp).fromNow()})`}
@@ -242,12 +270,14 @@ export default class ChatsView extends React.Component {
             publicKey={receivedRequest.requestorPK}
           />
         </View>
-        <Icon
-          color={Colors.ORANGE}
-          name="chevron-right"
-          size={28}
-          type="font-awesome"
-        />
+        {theme !== 'dark' && (
+          <Icon
+            color={Colors.ORANGE}
+            name="chevron-right"
+            size={28}
+            type="font-awesome"
+          />
+        )}
       </View>
     )
   }
@@ -263,8 +293,14 @@ export default class ChatsView extends React.Component {
       // @ts-ignore
       typeof sentRequest.state === 'string' && sentRequest.state !== 'sending'
 
+    const theme = 'dark'
+
     return (
-      <View style={styles.itemContainer}>
+      <View
+        style={
+          theme === 'dark' ? styles.itemContainerDark : styles.itemContainer
+        }
+      >
         <View style={styles.userDetailContainer}>
           <UserDetail
             alternateText={`(${moment(sentRequest.timestamp).fromNow()})`}
@@ -299,12 +335,12 @@ export default class ChatsView extends React.Component {
             publicKey={sentRequest.recipientPublicKey}
           />
         </View>
-        <Icon
-          color={Colors.ORANGE}
-          name="chevron-right"
-          size={28}
-          type="font-awesome"
-        />
+        {/*<Icon*/}
+        {/*  color={Colors.ORANGE}*/}
+        {/*  name="chevron-right"*/}
+        {/*  size={28}*/}
+        {/*  type="font-awesome"*/}
+        {/*/>*/}
       </View>
     )
   }
@@ -327,6 +363,13 @@ export default class ChatsView extends React.Component {
       return this.receivedRequestRenderer(item)
     }
 
+    // if (item.type === 'chat') {
+    //   return this.chatRenderer(item)
+    // } else if (item.type === 'send') {
+    //   return this.sentRequestRenderer(item)
+    // } else if (item.type === 'receive') {
+    //   return this.receivedRequestRenderer(item)
+    // }
     Logger.log(`unknown kind of item found: ${JSON.stringify(item)}`)
 
     return null
@@ -363,6 +406,8 @@ export default class ChatsView extends React.Component {
 
       onRequestCloseQRScanner,
     } = this.props
+
+    const { avatar } = this.state
 
     if (showingQRScanner) {
       return (
@@ -421,16 +466,99 @@ export default class ChatsView extends React.Component {
       return bt - at
     })
 
+    // const testdatas = [
+    //   {
+    //     timestamp: 1600093106,
+    //     id: 1,
+    //     didDisconnect: 1,
+    //     body: 'hello',
+    //     recipientDisplayName: 'Tomas',
+    //     recipientPublicKey: 'recipientPublicKey1',
+    //     lastSeenApp: 1,
+    //     type: 'chat',
+    //     messages: [
+    //       {
+    //         timestamp: 1600093106,
+    //         body: 'hello',
+    //       },
+    //       {
+    //         timestamp: 1600093106,
+    //         body: 'hello',
+    //       },
+    //     ],
+    //   },
+    //   {
+    //     timestamp: 1600090000,
+    //     id: 2,
+    //     didDisconnect: 1,
+    //     body: 'hello',
+    //     recipientDisplayName: 'Tomas2',
+    //     recipientPublicKey: 'recipientPublicKey1',
+    //     lastSeenApp: 1,
+    //     type: 'chat',
+    //     messages: [
+    //       {
+    //         timestamp: 1600093106,
+    //         body: 'hello',
+    //       },
+    //       {
+    //         timestamp: 1600093106,
+    //         body: 'hello',
+    //       },
+    //     ],
+    //   },
+    //   {
+    //     timestamp: 1600093100,
+    //     id: 3,
+    //     recipientChangedRequestAddress: 'recipientChangedRequestAddress3',
+    //     recipientPublicKey: 'recipientPublicKey3',
+    //     recipientDisplayName: 'recipientDisplayName3',
+    //     state: 'sending',
+    //     type: 'send',
+    //   },
+    //   {
+    //     timestamp: 1600033558,
+    //     id: 30,
+    //     recipientChangedRequestAddress: 'recipientChangedRequestAddress30',
+    //     recipientPublicKey: 'recipientPublicKey30',
+    //     recipientDisplayName: 'recipientDisplayName30',
+    //     lastSeenApp: 1,
+    //     type: 'send',
+    //   },
+    //   {
+    //     timestamp: 1600033106,
+    //     id: 20,
+    //     requestorDisplayName: 'Tomas20',
+    //     requestorPK: 'recipientPublicKey20',
+    //     type: 'receive',
+    //   },
+    //   {
+    //     timestamp: 1600035578,
+    //     id: 10,
+    //     requestorDisplayName: 'Tomas10',
+    //     requestorPK: 'recipientPublicKey10',
+    //     type: 'receive',
+    //   },
+    // ]
+
+    const theme = 'dark'
+
     return (
-      <>
+      <View style={theme === 'dark' ? styles.containerDark : {}}>
+        <Nav title="Messages" showAvatar={avatar} style={styles.navBar} />
         <FlatList
           ListHeaderComponent={this.header}
-          ItemSeparatorComponent={Divider}
+          ItemSeparatorComponent={theme === 'dark' ? null : Divider}
           ListEmptyComponent={NoChatsOrRequestsDark}
           data={items}
           keyExtractor={keyExtractor}
           renderItem={this.itemRenderer}
-          style={LIST_STYLE}
+          style={
+            theme === 'dark'
+              ? [LIST_STYLE, styles.chatListContainer]
+              : LIST_STYLE
+          }
+          contentContainerStyle={styles.flatListContentContainerStyle}
         />
 
         <ShockDialog
@@ -446,7 +574,7 @@ export default class ChatsView extends React.Component {
           onRequestClose={onRequestCloseAddDialog}
           visible={showingAddDialog}
         />
-      </>
+      </View>
     )
   }
 }
@@ -458,6 +586,14 @@ const styles = StyleSheet.create({
   boldFont: {
     // @ts-ignore
     fontWeight: 'bold',
+    color: '#EBEBEB',
+  },
+
+  boldFontDark: {
+    // @ts-ignore
+    color: '#EBEBEB',
+    fontFamily: 'Montserrat-600',
+    fontSize: 11,
   },
 
   redBoldFont: {
@@ -494,6 +630,22 @@ const styles = StyleSheet.create({
     paddingTop: ITEM_CONTAINER_VERTICAL_PADDING,
   },
 
+  itemContainerDark: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingBottom: ITEM_CONTAINER_VERTICAL_PADDING,
+    paddingLeft: ITEM_CONTAINER_HORIZONTAL_PADDING,
+    paddingRight: ITEM_CONTAINER_HORIZONTAL_PADDING,
+    paddingTop: ITEM_CONTAINER_VERTICAL_PADDING,
+    borderBottomWidth: 1,
+    borderBottomColor: '#4285B9',
+    borderTopWidth: 1,
+    borderTopColor: '#4285B9',
+    backgroundColor: '#212937',
+    marginBottom: 5,
+  },
+
   // noChats: {
   //   alignItems: 'center',
   //   backgroundColor: Colors.BACKGROUND_WHITE,
@@ -512,5 +664,26 @@ const styles = StyleSheet.create({
   userDetailContainer: {
     flex: 1,
     marginRight: 20,
+  },
+  containerDark: {
+    flex: 1,
+    backgroundColor: '#16191C',
+    marginTop: 20,
+  },
+  chatListContainer: {
+    backgroundColor: '#16191C',
+    flex: 1,
+  },
+  flatListContentContainerStyle: {
+    paddingBottom: 50,
+    backgroundColor: '#16191C',
+  },
+  navBar: {
+    paddingBottom: 30,
+    borderBottomColor: '#707070',
+    borderBottomWidth: 1,
+    backgroundColor: '#212937',
+    paddingTop: 30,
+    marginBottom: 16,
   },
 })
