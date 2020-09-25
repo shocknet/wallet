@@ -44,7 +44,7 @@ export const pickFile = () : Promise<FilePickerFile> =>{
   })
   
 }
-interface TorrentFile {
+export interface TorrentFile {
   name:string
   web_seed:string
   hash:string
@@ -61,12 +61,16 @@ interface TorrentFileRes {
 export const putFile = async (
   serviceUrl: string,
   token : string,
-  file : FilePickerFile 
+  file : FilePickerFile, 
+  extraInfo: string = '',
+  comment:string = ''
 ) : Promise<TorrentFile> =>  {
+  //@ts-ignore
+  file.name = file.fileName
   const formData = new FormData()
   formData.append("files",file)
-  formData.append("info","")
-  formData.append("comment","")
+  formData.append("info",extraInfo)
+  formData.append("comment",comment)
   const res = await fetch(`${serviceUrl}/api/put_file`,{
     method: 'POST', 
     headers:{

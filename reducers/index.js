@@ -15,6 +15,7 @@ import SettingsReducer from './SettingsReducer'
 import paymentsV2s from './paymentV2s'
 import tips from './tips'
 import decodedInvoices from './decoded-invoices'
+import mediaLib from './mediaLib'
 import auth from './auth'
 
 const rootReducer = {
@@ -36,6 +37,7 @@ const rootReducer = {
   paymentsV2s,
   tips,
   decodedInvoices,
+  mediaLib,
 }
 
 /**
