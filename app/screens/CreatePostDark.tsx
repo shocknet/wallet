@@ -5,15 +5,12 @@ import {
   StyleSheet,
   TouchableOpacity,
   TouchableHighlight,
-  ImageBackground,
-  //FlatList,
-  PixelRatio,
-  Dimensions,
-  Image,
+  FlatList,
   ToastAndroid,
   ActivityIndicator,
   ScrollView,
 } from 'react-native'
+import { connect } from 'react-redux'
 import Http from 'axios'
 import Logger from 'react-native-file-log'
 import FontAwesome from 'react-native-vector-icons/FontAwesome'
@@ -30,25 +27,18 @@ import SubscribersIcon from '../assets/images/create-post/subscribers.svg'
 // @ts-ignore
 import PaywallIcon from '../assets/images/create-post/paywall.svg'
 
-//import DropDownPicker from 'react-native-dropdown-picker'
+import DropDownPicker from 'react-native-dropdown-picker'
 //import Icon from 'react-native-vector-icons/Feather'
-import {
-  pickFile,
-  getMediaType,
-  putFile,
-  enrollToken,
-  //@ts-ignore
-} from '../services/seedServer'
-import { Schema } from 'shock-common'
-import Video from 'react-native-video'
-import notificationService from '../../notificationService'
+import ShockWebView from '../components/ShockWebView'
+import { CompleteAnyMedia } from '../services/mediaLib'
 
 export const CREATE_POST_DARK = 'CREATE_POST_DARK'
 
-/**
- * @typedef {object} Props
- * @prop {any} navigation
- */
+
+type Props = {
+  navigation:import('react-navigation').NavigationScreenProp<{}, {}>
+  mediaLib:import('../../reducers/mediaLib').State
+}
 
 /**
  * @typedef {object} SelectedFile
@@ -59,64 +49,27 @@ export const CREATE_POST_DARK = 'CREATE_POST_DARK'
  * @prop {string=} name
  */
 
-/**
- * @typedef {object} State
- * @prop {boolean} isCreating
- * @prop {string} shareMode
- * @prop {any[]} images
- * @prop {string} description
- * @prop {string} serviceUrl
- * @prop {string} serviceToken
- * @prop {SelectedFile|null} selectedFile
- * @prop {number} selectedWidth
- * @prop {number} selectedHeight
- * @prop {boolean} selectedVideo
- * @prop {boolean} selectedImage
- * @prop {string|null} error
- * @prop {string|null} loadingStatus
- */
+type State = {
+  isCreating:boolean
+  shareMode:'public'|'paywall'|'subscribers'
+  description:string
+  error:string|null
+  loadingStatus:string|null
+  selectedContentID:string|null
+}
 
-/** @type {State} */
-const DEFAULT_STATE = {
+const DEFAULT_STATE:State = {
   isCreating: false,
   shareMode: 'public',
   description: '',
-  images: [],
   error: null,
   loadingStatus: null,
-  serviceUrl: 'https://webtorrent.shock.network',
-  serviceToken: 'jibberish',
-
-  selectedVideo: false,
-  selectedImage: false,
-  selectedFile: null,
-  selectedWidth: 0,
-  selectedHeight: 0,
+  selectedContentID:null
 }
 
-/**
- *
- * @param {{w:number,h:number}} param0
- */
-const getMediaStyle = ({ w, h }) => {
-  const screenR = PixelRatio.get()
-  const rW = PixelRatio.roundToNearestPixel(w / screenR)
-  const rH = PixelRatio.roundToNearestPixel(h / screenR)
-  const windowWidth = Dimensions.get('window').width
-  const factor = rW > windowWidth ? 1 : rW / windowWidth
-  const s = StyleSheet.create({
-    video: {
-      width: rW > windowWidth ? '100%' : rW,
-      height: (rH / rW) * windowWidth * factor,
-    },
-  })
-  return s.video
-}
 
-/**
- * @augments React.Component<Props, State, never>
- */
-class CreatePostDark extends React.Component {
+class CreatePostDark extends React.Component<Props,State> {
+
   /**
    * @type {import('react-navigation').NavigationScreenOptions}
    */
@@ -130,87 +83,28 @@ class CreatePostDark extends React.Component {
     this.props.navigation.goBack()
   }
 
-  /**
-   *
-   * @param {string} e
-   */
-  onChangeText = e => this.setState({ description: e })
+  onChangeText = (e:string) => this.setState({ description: e })
 
-  /*
-   * @param {{ value: any; }} item
-   */
-  /*onChangeShareMode = item => {
+  onChangeShareMode = (item:{value:any}) => {
     this.setState({
       shareMode: item.value,
     })
-  }*/
-
-  onPressPicker = async () => {
-    try {
-      /**
-       * @type {SelectedFile}
-       */
-      const file = await pickFile()
-      file.name = file.fileName
-      if (file.type.startsWith('image/')) {
-        const size = await new Promise((res, rej) => {
-          Image.getSize(file.uri, (w, h) => res({ w, h }), err => rej(err))
-        })
-        this.setState({
-          selectedFile: file,
-          selectedImage: true,
-          selectedHeight: size.h,
-          selectedWidth: size.w,
-        })
-      } else if (file.type.startsWith('video/')) {
-        this.setState({
-          selectedFile: file,
-          selectedVideo: true,
-        })
-      } else {
-        this.setState({ error: 'unknown file type selected' })
-      }
-    } catch (e) {
-      this.setState({ error: e })
-    }
   }
 
   onPressCreate = async () => {
     this.setState({
       isCreating: true,
-      loadingStatus: 'enrolling token',
+      loadingStatus: 'sending...',
     })
 
     try {
-      const { serviceToken, serviceUrl, selectedFile } = this.state
-      /**
-       * @type {Schema.EmbeddedImage | Schema.EmbeddedVideo | null} mediaContent
-       */
-      let mediaContent = null
-      if (selectedFile) {
-        const token = await enrollToken(serviceUrl, serviceToken)
-        this.setState({
-          loadingStatus: 'uploading file',
-        })
-        /**
-         * @type {{magnet:string}} torrent
-         */
-        const torrent = await putFile(serviceUrl, token, selectedFile)
-        this.setState({
-          loadingStatus: 'uploading metadata',
-        })
-        const { selectedWidth, selectedHeight } = this.state
-        mediaContent = {
-          //@ts-ignore
-          type: getMediaType(selectedFile.type),
-          magnetURI: torrent.magnet,
-          //@ts-ignore
-          width: selectedWidth,
-          //@ts-ignore
-          height: selectedHeight,
-        }
+      //mediaContent=
+      const {medias} = this.props.mediaLib
+      const {selectedContentID} = this.state
+      if(!selectedContentID){
+        return
       }
-
+      const mediaContent=medias[selectedContentID]
       const { description } = this.state
       const dataToSendToService = {
         paragraphs: description.split('\n'),
@@ -232,6 +126,7 @@ class CreatePostDark extends React.Component {
         }),
       ]
       if (mediaContent) {
+        //@ts-ignore need to fix SCHEMA
         contentItems.push(mediaContent)
       }
       // eslint-disable-next-line no-console
@@ -241,7 +136,6 @@ class CreatePostDark extends React.Component {
         title: 'Post',
         contentItems,
       })
-
       if (res.status !== 200) {
         throw new Error(`Status not OK`)
       } else {
@@ -252,7 +146,6 @@ class CreatePostDark extends React.Component {
         e.data.errorMessage ||
         e.response.data.errorMessage ||
         'Unknown error'}`
-      notificationService.Log('TESTING', msg)
       ToastAndroid.show(msg, 800)
       Logger.log(msg)
     } finally {
@@ -263,28 +156,59 @@ class CreatePostDark extends React.Component {
     }
   }
 
-  /**
-   *
-   * @typedef {object} NaturalSize
-   * @prop {number} height
-   * @prop {number} width
-   */
 
-  /**
-   * @param {{naturalSize:NaturalSize}} e
-   */
-  onVideoLoad = e => {
-    this.setState({
-      selectedHeight: e.naturalSize.height,
-      selectedWidth: e.naturalSize.width,
-    })
+  selectMedia = (contentID:string) => () => {
+    this.setState({selectedContentID:contentID})
   }
 
-  // @ts-ignore
-  _renderPostItem({ item }) {
+  prepareMediaItems = ():[()=>void,CompleteAnyMedia[]][] => {
+    const {medias} = this.props.mediaLib
+    const {shareMode} = this.state
+    const mediaReady:[()=>void,CompleteAnyMedia[]][] = []
+    for(let contentID in medias){
+      const media:CompleteAnyMedia[] = medias[contentID]
+      const mainMedia = media[0].isPreview ? media[1] : media[0]
+      if(shareMode === 'public'){
+        if(!mainMedia.isPrivate){
+          mediaReady.push([
+            this.selectMedia(contentID),
+            media
+          ])
+        }
+      }
+      if(shareMode === 'paywall' || shareMode === 'subscribers'){
+        if(mainMedia.isPrivate){
+          mediaReady.push([
+            this.selectMedia(contentID),
+            media
+          ])
+        }
+      }
+    }
+    return mediaReady
+
+  }
+
+  renderPostItem({ item }:{item:[()=>void,CompleteAnyMedia[]]}) {
+    //const localSelect = this.selectMedia.bind(this)
+    const [selectThis,content] = item
+    const preview = content[0].isPreview ? content[0] : content[1]
     return (
       <View style={styles.postContainer}>
-        <ImageBackground
+        {preview.type === 'image/embedded' && <ShockWebView
+          type="image"
+          width={preview.width}
+          height={preview.height}
+          magnet={preview.magnetURI}
+        />}
+        {preview.type === 'video/embedded' && <ShockWebView
+          type="video"
+          width={preview.width}
+          height={preview.height}
+          magnet={preview.magnetURI}
+        />}
+        <FontAwesome name="plus" size={20} color="white" onPress={selectThis}/>
+        {/*<ImageBackground
           source={item.image}
           resizeMode="cover"
           style={styles.postImageBackground}
@@ -294,7 +218,7 @@ class CreatePostDark extends React.Component {
               <FontAwesome name="check-circle" size={36} color="white" />
             </View>
           )}
-        </ImageBackground>
+        </ImageBackground>*/}
       </View>
     )
   }
@@ -302,16 +226,57 @@ class CreatePostDark extends React.Component {
   render() {
     const {
       error,
-      //images,
-      selectedFile,
-      selectedHeight,
-      selectedWidth,
-      selectedVideo,
-      selectedImage,
       loadingStatus,
+      selectedContentID,
     } = this.state
-    const source = {
-      uri: selectedFile ? selectedFile.uri : '',
+    const {medias}=this.props.mediaLib
+    let preview = null
+    let media = null
+    let availableDropdownItems = [
+      {
+        label: 'Public',
+        value: 'public',
+        icon: () => <PublicIcon />,
+      },
+      {
+        label: 'Subscribers',
+        value: 'subscribers',
+        icon: () => <SubscribersIcon />,
+      },
+      {
+        label: 'Paywall',
+        value: 'paywall',
+        icon: () => <PaywallIcon />,
+      },
+    ]
+    if(selectedContentID){
+      if(medias[selectedContentID][0].isPreview){
+        [preview,media] = medias[selectedContentID]
+      } else {
+        [media] = medias[selectedContentID]
+      }
+      if(media.isPrivate){
+        availableDropdownItems = [
+          {
+            label: 'Subscribers',
+            value: 'subscribers',
+            icon: () => <SubscribersIcon />,
+          },
+          {
+            label: 'Paywall',
+            value: 'paywall',
+            icon: () => <PaywallIcon />,
+          },
+        ]
+      } else {
+        availableDropdownItems = [
+          {
+            label: 'Public',
+            value: 'public',
+            icon: () => <PublicIcon />,
+          },
+        ]
+      }
     }
     return (
       <ScrollView style={styles.mainContainer}>
@@ -337,25 +302,9 @@ class CreatePostDark extends React.Component {
               onChange={this.onChangeText}
               placeholder="Order our famouse souce and dry rubs"
             />
-            {/*<View style={styles.dropdownContainerView}>
+            <View style={styles.dropdownContainerView}>
               <DropDownPicker
-                items={[
-                  {
-                    label: 'Public',
-                    value: 'public',
-                    icon: () => <PublicIcon />,
-                  },
-                  {
-                    label: 'Subscribers',
-                    value: 'subscribers',
-                    icon: () => <SubscribersIcon />,
-                  },
-                  {
-                    label: 'Paywall',
-                    value: 'paywall',
-                    icon: () => <PaywallIcon />,
-                  },
-                ]}
+                items={availableDropdownItems}
                 defaultValue={this.state.shareMode}
                 containerStyle={styles.dropdownContainer}
                 style={styles.dropdown}
@@ -365,7 +314,7 @@ class CreatePostDark extends React.Component {
                 labelStyle={styles.dropdownLabel}
                 arrowColor="#B2B2B2"
               />
-            </View>*/}
+            </View>
           </View>
           <View style={styles.horizontalLine} />
           <View style={styles.belowContainer}>
@@ -376,37 +325,38 @@ class CreatePostDark extends React.Component {
               </TouchableOpacity>*/}
               <TouchableOpacity
                 style={styles.contentType2}
-                onPress={this.onPressPicker}
               >
                 <Text style={styles.contentTypeText2}>Content</Text>
               </TouchableOpacity>
             </View>
-            {/*<View style={styles.postsCarousel}>
+            {selectedContentID && <View>
+                <Text style={{color:'white'}}>Content</Text>
+                {preview && <View style={{height:200}}>
+                  <Text style={{color:'white'}}>Selected Preview</Text>
+                  <ShockWebView 
+                  magnet={preview.magnetURI} 
+                  width={preview.width} 
+                  hight={preview.height} 
+                  type={preview.type === 'image/embedded'?'image':'video'}/>
+                </View>
+                }
+                {media && <View style={{height:200}}>
+                  <Text style={{color:'white'}}>Selected Media</Text>
+                  <ShockWebView 
+                  magnet={media.magnetURI} 
+                  width={media.width} 
+                  hight={media.height} 
+                  type={media.type === 'image/embedded'?'image':'video'}/>
+                  </View>
+                }
+            </View>}
+            {!selectedContentID && <View style={styles.postsCarousel}>
               <FlatList
-                data={testDatas}
-                renderItem={this._renderPostItem}
+                data={this.prepareMediaItems()}
+                renderItem={this.renderPostItem}
                 horizontal
               />
-            </View>*/}
-
-            {selectedImage && (
-              <Image
-                style={getMediaStyle({ w: selectedWidth, h: selectedHeight })}
-                source={source}
-              />
-            )}
-            {selectedVideo && (
-              <Video
-                // eslint-disable-next-line
-                ref={ref => {
-                  this.player = ref
-                }}
-                style={getMediaStyle({ w: selectedWidth, h: selectedHeight })}
-                controls
-                onLoad={this.onVideoLoad}
-                source={source}
-              />
-            )}
+            </View>}
 
             <Pad amount={10} />
             {this.state.isCreating ? (
@@ -440,7 +390,17 @@ class CreatePostDark extends React.Component {
   }
 }
 
-export default CreatePostDark
+
+const mapStateToProps = ({ mediaLib }:import('../../reducers').State) => ({
+  mediaLib
+})
+
+const mapDispatchToProps = {}
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(CreatePostDark)
 
 const styles = StyleSheet.create({
   mainContainer: {
@@ -512,15 +472,15 @@ const styles = StyleSheet.create({
   descContainer: {
     marginBottom: 0,
   },
-  /*dropdownContainerView: {
+  dropdownContainerView: {
     alignItems: 'flex-end',
     marginRight: -4,
-  },*/
-  /*dropdownContainer: {
+  },
+  dropdownContainer: {
     height: 33,
     width: '40%',
-  },*/
-  /*dropdown: {
+  },
+  dropdown: {
     backgroundColor: '#001220',
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0,
@@ -528,11 +488,11 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 0,
     borderColor: '#4285B9',
     borderWidth: 1,
-  },*/
-  /*dropdownItem: {
+  },
+  dropdownItem: {
     justifyContent: 'flex-start',
-  },*/
-  /*dropdownDropdown: {
+  },
+  dropdownDropdown: {
     backgroundColor: '#001220',
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0,
@@ -541,13 +501,13 @@ const styles = StyleSheet.create({
     marginTop: -34,
     borderColor: '#4285B9',
     borderWidth: 1,
-  },*/
-  /*dropdownLabel: {
+  },
+  dropdownLabel: {
     color: '#BBB8B8',
     fontFamily: 'Montserrat-600',
     textAlignVertical: 'center',
     fontSize: 12,
-  },*/
+  },
   horizontalLine: {
     width: '100%',
     borderColor: '#4285B9',
@@ -563,7 +523,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 25,
     marginBottom: 12,
   },
-  /*contentType1: {
+  contentType1: {
     width: '48%',
     height: 31,
     alignItems: 'center',
@@ -573,7 +533,7 @@ const styles = StyleSheet.create({
     borderColor: '#4285B9',
     borderWidth: 1,
     flexDirection: 'row',
-  },*/
+  },
   contentType2: {
     width: '48%',
     height: 31,
@@ -585,12 +545,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     flexDirection: 'row',
   },
-  /*contentTypeText1: {
+  contentTypeText1: {
     color: CSS.Colors.TEXT_WHITE,
     fontFamily: 'Montserrat-700',
     fontSize: 12,
     marginLeft: 10,
-  },*/
+  },
   contentTypeText2: {
     color: CSS.Colors.TEXT_WHITE,
     fontFamily: 'Montserrat-700',
@@ -602,9 +562,9 @@ const styles = StyleSheet.create({
   belowContainer: {
     paddingHorizontal: 20,
   },
-  /*postsCarousel: {
+  postsCarousel: {
     paddingVertical: 40,
-  },*/
+  },
   offerPost: {
     flex: 1,
     backgroundColor: 'rgba(255, 255, 255, .57)',
