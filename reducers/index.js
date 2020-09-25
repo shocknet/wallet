@@ -1,6 +1,5 @@
 import * as Common from 'shock-common'
 
-import AuthReducer from './AuthReducer'
 import HistoryReducer from './HistoryReducer'
 import WalletReducer from './WalletReducer'
 import NodeReducer from './NodeReducer'
@@ -17,9 +16,10 @@ import paymentsV2s from './paymentV2s'
 import tips from './tips'
 import decodedInvoices from './decoded-invoices'
 import mediaLib from './mediaLib'
+import auth from './auth'
 
 const rootReducer = {
-  auth: AuthReducer,
+  auth,
   history: HistoryReducer,
   wallet: WalletReducer,
   node: NodeReducer,

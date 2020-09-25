@@ -1,19 +1,21 @@
-import { createStore, applyMiddleware } from 'redux'
+import { createStore, applyMiddleware, Store as ReduxStore } from 'redux'
 import { persistStore, persistCombineReducers } from 'redux-persist'
+import * as Common from 'shock-common'
+import createSagaMiddleware from 'redux-saga'
 // @ts-ignore
 import createSensitiveStorage from 'redux-persist-sensitive-storage'
 import thunk from 'redux-thunk'
+
 import { setStore } from '../app/services/contact-api/socket'
 import SocketManager from '../app/services/socket'
-import reducers from '../reducers'
+import reducers, { State as _State } from '../reducers'
+import { Action as _Action } from '../app/actions'
 
-import * as Common from 'shock-common'
-import createSagaMiddleware from 'redux-saga'
 const sagaMiddleware = createSagaMiddleware()
 
-/**
- * @typedef {import('../app/actions').Action} Action
- */
+export type State = _State
+export type Action = _Action
+export type Store = ReduxStore<_State, _Action>
 
 const storage = createSensitiveStorage({
   keychainService: 'ShockWalletKeychain',
@@ -30,11 +32,8 @@ const config = {
 // @ts-ignore TODO
 const persistedReducers = persistCombineReducers(config, reducers)
 
-/**
- * @type {import('redux').Store<State, Action>}
- */
 // eslint-disable-next-line init-declarations
-let store
+let store: Store
 
 export default () => {
   // TODO: Fix typings for createStore()
@@ -60,18 +59,9 @@ export const getStore = () => {
   return store
 }
 
-/**
- * @typedef {import('../reducers').State} State
- */
-
 export const Selectors = {
   Follows: {
-    /**
-     * @param {State} state
-     * @param {string} publicKey
-     * @returns {Common.Schema.Follow | null}
-     */
-    getFollow(state, publicKey) {
+    getFollow(state: State, publicKey: string): Common.Schema.Follow | null {
       return state.follows[publicKey] || null
     },
   },

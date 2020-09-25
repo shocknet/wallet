@@ -1,13 +1,15 @@
 import SocketIO from 'socket.io-client'
 import isEmpty from 'lodash/isEmpty'
 import Logger from 'react-native-file-log'
+
 import { DISABLE_ENCRYPTION } from '../config'
+import * as Actions from '../actions'
 
 import * as Cache from './cache'
 import * as Encryption from './encryption'
 
 /**
- * @typedef {import('redux').Store<{ connection: import('../../reducers/ConnectionReducer').State } & import('redux-persist/es/persistReducer').PersistPartial, import('redux').Action<any>> & { dispatch: any; }} ReduxStore
+ * @typedef {import('../../store').Store} ReduxStore
  */
 
 class Socket {
@@ -157,8 +159,9 @@ class Socket {
   }
 
   connectSocket = async () => {
-    if (this.store) {
-      const { connection } = this.store.getState()
+    const { store } = this
+    if (store) {
+      const { connection } = store.getState()
       const nodeURL = await Cache.getNodeURL()
 
       const socket = SocketIO(`http://${nodeURL}`, {
@@ -166,6 +169,18 @@ class Socket {
           'x-shockwallet-device-id': connection.deviceId,
           IS_LND_SOCKET: true,
         },
+      })
+
+      socket.on('connect', () => {
+        store.dispatch(Actions.socketDidConnect())
+      })
+
+      socket.on('disconnect', () => {
+        store.dispatch(Actions.socketDidDisconnect())
+      })
+
+      socket.on('shockping', () => {
+        store.dispatch(Actions.ping(Date.now()))
       })
 
       this.socketInstance = this.encryptSocketInstance(socket)

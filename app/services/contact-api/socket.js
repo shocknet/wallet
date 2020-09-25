@@ -5,16 +5,11 @@ import SocketIO from 'socket.io-client'
 import isEmpty from 'lodash/isEmpty'
 import debounce from 'lodash/debounce'
 import Logger from 'react-native-file-log'
-import { Constants } from 'shock-common'
 import { DISABLE_ENCRYPTION } from '../../config'
 
 import * as Cache from '../../services/cache'
-import { ACTIONS as ConnectionAction } from '../../actions/ConnectionActions'
 
-import * as Events from './events'
 import * as Encryption from '../encryption'
-
-const { Action } = Constants
 
 // TO DO: move to common repo
 /**
@@ -47,7 +42,7 @@ const { Action } = Constants
  * @type {SimpleSocket|null}
  */
 // eslint-disable-next-line init-declarations
-export let socket = null
+export const socket = null
 
 /**
  * @type {ReduxStore}
@@ -209,100 +204,9 @@ export const createSocket = async () => {
   return encryptSocketInstance(socket)
 }
 
-/**
- * ID for an interval that manually keeps track of the real socket connection
- * status.
- */
-let connectionCheckIntervalID = -1
-
-/**
- * The last timestamp for which the socket received some data.
- */
-let lastConnCheck = 0
-
-export const disconnect = () => {
-  if (socket) {
-    clearInterval(connectionCheckIntervalID)
-    connectionCheckIntervalID = -1
-
-    // @ts-ignore
-    socket.off()
-
-    store.dispatch({ type: ConnectionAction.SOCKET_DID_DISCONNECT })
-
-    // @ts-ignore
-    socket.disconnect()
-
-    // @ts-ignore
-    socket = null
-  } else {
-    throw new Error(
-      'socket.js -> called disconnect() without calling connect() first',
-    )
-  }
-}
+export const disconnect = () => {}
 
 /**
  * @returns {Promise<void>}
  */
-export const connect = debounce(async () => {
-  if (socket) {
-    disconnect()
-    Logger.log(
-      'Tried to connect a new socket without disconnecting the old one first',
-    )
-  }
-  const newSocket = await createSocket()
-  // not a problem unless you call this function too quickly
-  // eslint-disable-next-line require-atomic-updates
-  socket = newSocket
-  socket.on('connect_error', e => {
-    // @ts-ignore
-    Logger.log('connect_error: ' + e.message || e || 'Unknown')
-  })
-
-  socket.on('connect_error', error => {
-    Logger.log(`connect_error: ${error}`)
-  })
-
-  socket.on('connect_timeout', timeout => {
-    Logger.log(`connect_timeout: ${timeout}`)
-  })
-
-  socket.on('error', error => {
-    Logger.log(`Socket.socket.on:error: ${error}`)
-  })
-
-  socket.on('reconnect_attempt', attemptNumber => {
-    Logger.log(`Socket.socket.on:reconnect_attempt: ${attemptNumber}`)
-  })
-
-  socket.on('disconnect', reason => {
-    Logger.log(`reason for disconnect: ${reason}`)
-    store.dispatch({ type: ConnectionAction.SOCKET_DID_DISCONNECT })
-  })
-
-  socket.on('connect', () => {
-    store.dispatch({ type: ConnectionAction.SOCKET_DID_CONNECT })
-  })
-
-  store.dispatch({ type: ConnectionAction.SOCKET_DID_CONNECT })
-
-  lastConnCheck = Date.now()
-
-  connectionCheckIntervalID = setInterval(() => {
-    if (Date.now() - lastConnCheck > 10000) {
-      Logger.log(
-        'Socket detected as disconnected, will create a new one and set up events again',
-      )
-      disconnect()
-      connect()
-    }
-  }, 10000)
-
-  socket.on(Action.SET_LAST_SEEN_APP, () => {
-    lastConnCheck = Date.now()
-  })
-
-  await Events.setupEvents(socket)
-}, 1000)
+export const connect = debounce(async () => {}, 1000)

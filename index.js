@@ -35,6 +35,7 @@ import RootStack from './app/navigators/Root'
 
 import { LNURL_SCREEN } from './app/screens/LNURL'
 import { feedPage } from './app/services/feed'
+import WithConnWarning from './app/components/WithConnWarning'
 
 Logger.setTag('ShockWallet')
 Logger.setFileLogEnabled(true)
@@ -186,12 +187,24 @@ export default class ShockWallet extends React.Component {
       return null
     }
 
+    let rootNode = null
+
+    if (__DEV__) {
+      // Special care must be had inside <WithConnWarning />: don't remount the
+      // RootStack
+      rootNode = (
+        <WithConnWarning>
+          <RootStack ref={NavigationService.setTopLevelNavigator} />
+        </WithConnWarning>
+      )
+    } else {
+      rootNode = <RootStack ref={NavigationService.setTopLevelNavigator} />
+    }
+
     return (
       <Provider store={store}>
         <PersistGate loading={<Loading />} persistor={persistor}>
-          <ConnectionProvider>
-            <RootStack ref={NavigationService.setTopLevelNavigator} />
-          </ConnectionProvider>
+          <ConnectionProvider>{rootNode}</ConnectionProvider>
         </PersistGate>
       </Provider>
     )
