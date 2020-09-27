@@ -47,3 +47,18 @@ export const makeGetInvoice = () =>
       return null
     },
   )
+
+export const getLatestSettledInvoicesIds = (state: State) =>
+  state.invoicesListed.ids
+
+export const getLatestSettledInvoices = createSelector<
+  State,
+  string[],
+  ReturnType<typeof getInvoicesListed>,
+  Schema.InvoiceWhenListed[]
+>(
+  getLatestSettledInvoicesIds,
+  getInvoicesListed,
+  (ids, invoicesListed) =>
+    ids.map(id => invoicesListed.byId[id]).filter(i => i.settled),
+)
