@@ -26,7 +26,8 @@ const storage = createSensitiveStorage({
 const config = {
   key: 'root',
   // blacklist: ['connection'],
-  blacklist: ['follows', 'feed'],
+  // Easily handle different gun / ligtning identities
+  blacklist: ['follows', 'feed', 'invoicesListed'],
   storage,
 }
 
