@@ -59,7 +59,7 @@ export const unlockWallet = async (alias, password) => {
       publicKey: data.user.publicKey,
       token: data.authorization,
       follows: data.follows,
-      invoices: data.invoices,
+      invoices: data.data.invoices,
     }
   } catch (err) {
     throw new Error(
