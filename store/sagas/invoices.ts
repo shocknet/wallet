@@ -7,12 +7,13 @@ import {
   ListInvoiceResponse as ListInvoicesResponse,
   ListInvoiceRequest as ListInvoicesRequest,
 } from '../../app/services'
+import { isOnline } from '../selectors'
 
 let oldIsOnline = false
 
 function* fetchLatestInvoices() {
   try {
-    const newIsOnline = yield select(state => state.auth)
+    const newIsOnline = isOnline(yield select())
     const wentOnline = !oldIsOnline && newIsOnline
 
     oldIsOnline = newIsOnline
