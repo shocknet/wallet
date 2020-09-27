@@ -56,6 +56,7 @@ function* fetchLatestInvoices() {
   } catch (err) {
     Logger.log(`Error inside fetchLatestInvoices* ()`)
     Logger.log(err)
+    Logger.log(err.message)
   }
 }
 
