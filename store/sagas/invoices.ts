@@ -7,13 +7,23 @@ import {
   ListInvoiceResponse as ListInvoicesResponse,
   ListInvoiceRequest as ListInvoicesRequest,
 } from '../../app/services'
-import { isOnline } from '../selectors'
+import { isOnline, getStateRoot } from '../selectors'
 
 let oldIsOnline = false
 
 function* fetchLatestInvoices() {
   try {
-    const newIsOnline = isOnline(yield select())
+    const state = getStateRoot(yield select())
+
+    if (!state.auth.token) {
+      // If user was unauthenticated let's reset oldIsOnline to false, to avoid
+      // wentOnline from being a false negative (and thus not fetching data).
+      // Some false positives will occur but this is ok.
+      oldIsOnline = false
+      return
+    }
+
+    const newIsOnline = isOnline(state)
     const wentOnline = !oldIsOnline && newIsOnline
 
     oldIsOnline = newIsOnline
