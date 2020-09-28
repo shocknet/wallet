@@ -49,7 +49,7 @@ export const makeGetInvoice = () =>
   )
 
 export const getLatestSettledInvoicesIds = (state: State) =>
-  state.invoicesListed.ids
+  state.invoicesListed.latestSettled
 
 export const getLatestSettledInvoices = createSelector<
   State,
