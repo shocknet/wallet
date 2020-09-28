@@ -1,7 +1,6 @@
 import produce from 'immer'
 import { Reducer } from 'redux'
-import { REHYDRATE, RehydrateAction } from 'redux-persist'
-import Logger from 'react-native-file-log'
+import { RehydrateAction } from 'redux-persist'
 import { Schema } from 'shock-common'
 
 // https://medium.com/@dcousineau/advanced-redux-entity-normalization-f5f1fe2aefc5
