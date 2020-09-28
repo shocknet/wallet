@@ -30,9 +30,7 @@ class UnifiedTrx extends React.PureComponent<Props> {
 
     return (
       <>
-        <Text style={styles.listTitleDark}>
-          Recent Activity{unifiedTrx.length}
-        </Text>
+        <Text style={styles.listTitleDark}>Recent Activity</Text>
         <FlatList
           data={unifiedTrx}
           keyExtractor={keyExtractor}
