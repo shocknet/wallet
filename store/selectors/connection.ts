@@ -1,6 +1,6 @@
 import { createSelector } from 'reselect'
 
-import { State } from '../store'
+import { State } from '../../reducers'
 
 const isSocketConnectedSelector = (state: State) =>
   state.connection.socketConnected

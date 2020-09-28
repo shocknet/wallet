@@ -1,6 +1,6 @@
 import { Schema } from 'shock-common'
 
-import * as Wallet from '../services/wallet'
+import * as Wallet from '../../services/wallet'
 
 export const ACTIONS = {
   SET_AMOUNT: 'invoice/amount',
@@ -128,19 +128,23 @@ export const resetInvoice = () => dispatch => {
  * @typedef {object} AddInvoiceAction
  * @prop {typeof ACTIONS.ADD_INVOICE} type
  * @prop {string} data
+ * @prop {Schema.InvoiceWhenAdded} invoice
  */
 
 /**
  * Create a new invoice
- * @param {import('../services/wallet').AddInvoiceRequest} invoice
+ * @param {import('../../services/wallet').AddInvoiceRequest} invoice
  * @returns {import('redux-thunk').ThunkAction<void, {}, {}, import('redux').AnyAction>}
  */
 export const addInvoice = invoice => async dispatch => {
   const newInvoice = await Wallet.addInvoice(invoice)
-  dispatch({
+  /** @type {AddInvoiceAction} */
+  const addInvoiceAction = {
     type: ACTIONS.ADD_INVOICE,
     data: newInvoice.payment_request,
-  })
+    invoice: newInvoice,
+  }
+  dispatch(addInvoiceAction)
   if (newInvoice.liquidityCheck !== undefined) {
     dispatch({
       type: ACTIONS.SET_LIQUIDITY_CHECK,
@@ -160,7 +164,3 @@ export const newAddress = () => async dispatch => {
     data: address,
   })
 }
-
-/**
- * @typedef {AddInvoiceAction|InvoiceDecodedAction} InvoicesAction
- */

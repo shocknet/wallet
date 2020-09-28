@@ -8,13 +8,11 @@ interface State {
   host: string
   token: string
   gunPublicKey: string
-  lightningPublicKey: string
 }
 
 const INITIAL_STATE: State = {
   alias: '',
   host: '',
-  lightningPublicKey: '',
   gunPublicKey: '',
   token: '',
 }

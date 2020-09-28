@@ -25,7 +25,7 @@ import { WALLET_MANAGER } from '../navigators/WalletManager'
 import Pad from '../components/Pad'
 import OnboardingInput from '../components/OnboardingInput'
 import OnboardingBtn from '../components/OnboardingBtn'
-import { Follows } from '../actions'
+import * as Actions from '../actions'
 
 export const LOGIN = 'LOGIN'
 
@@ -211,7 +211,18 @@ export class Login extends React.Component {
               token: res.token,
             })
 
-            this.props.dispatch(Follows.receivedFollows(res.follows))
+            this.props.dispatch(Actions.Follows.receivedFollows(res.follows))
+            this.props.dispatch(
+              Actions.authed({
+                alias: aliasToUse,
+                data: {
+                  follows: res.follows,
+                  invoices: res.invoices,
+                },
+                gunPublicKey: res.publicKey,
+                token: res.token,
+              }),
+            )
 
             return API.Socket.connect()
           })
