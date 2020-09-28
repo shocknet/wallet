@@ -51,6 +51,7 @@ import {
   loadNewTransaction,
 } from '../../actions/HistoryActions'
 import { subscribeOnChats } from '../../actions/ChatActions'
+import { invoicesRefreshForced } from '../../actions'
 
 import UnifiedTrx from './UnifiedTrx'
 //import {findlnurl} from 'js-lnurl'
@@ -85,6 +86,7 @@ import * as Cache from '../../services/cache'
  * @prop {(transaction: Wallet.Transaction) => void} loadNewTransaction
  * @prop {{feesLevel:'MIN'|'MID'|'MAX', feesSource:string}} fees
  * @prop {{notifyDisconnect:boolean, notifyDisconnectAfterSeconds:number}} settings
+ * @prop {() => void} forceInvoicesRefresh
  */
 
 /**
@@ -157,16 +159,26 @@ class WalletOverview extends Component {
 
   theme = 'dark'
 
+  /**
+   * @param {Schema.InvoiceWhenListed} invoice
+   */
+  loadNewInvoice = invoice => {
+    // @ts-ignore
+    this.props.loadNewInvoice(invoice)
+  }
+
   componentDidMount = async () => {
     const {
       fetchNodeInfo,
       subscribeOnChats,
       fetchRecentTransactions,
       fetchRecentInvoices,
-      loadNewInvoice,
       loadNewTransaction,
       navigation,
+      forceInvoicesRefresh,
     } = this.props
+
+    forceInvoicesRefresh()
 
     this.didFocus = navigation.addListener('didFocus', () => {
       StatusBar.setBackgroundColor(CSS.Colors.TRANSPARENT)
@@ -217,11 +229,11 @@ class WalletOverview extends Component {
     SocketManager.socket.on(
       'invoice:new',
       /**
-       * @param {Wallet.Invoice} data
+       * @param {Schema.InvoiceWhenListed} data
        */
       data => {
         Logger.log('[SOCKET] New Invoice!', data)
-        loadNewInvoice(data)
+        this.loadNewInvoice(data)
       },
     )
 
@@ -516,6 +528,7 @@ const mapDispatchToProps = {
   subscribeOnChats,
   loadNewInvoice,
   loadNewTransaction,
+  forceInvoicesRefresh: invoicesRefreshForced,
 }
 
 export default connect(
