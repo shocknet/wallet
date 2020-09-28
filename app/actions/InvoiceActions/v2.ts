@@ -14,3 +14,12 @@ export const receivedOwnInvoices = (data: {
   } as const)
 
 export type ReceivedOwnInvoicesAction = ReturnType<typeof receivedOwnInvoices>
+
+export const invoicesRefreshForced = () =>
+  ({
+    type: 'invoicesRefreshForced',
+  } as const)
+
+export type InvoicesRefreshForcedAction = ReturnType<
+  typeof invoicesRefreshForced
+>
