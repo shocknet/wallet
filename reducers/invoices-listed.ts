@@ -18,11 +18,14 @@ interface State {
    * Most recent to least recent.
    */
   ids: string[]
+
+  latestSettled: string[]
 }
 
 const INITIAL_STATE: State = {
   byId: {},
   ids: [],
+  latestSettled: [],
 }
 
 const reducer: Reducer<State, Action | RehydrateAction> = (
@@ -30,33 +33,6 @@ const reducer: Reducer<State, Action | RehydrateAction> = (
   action,
 ) =>
   produce(state, draft => {
-    if (action.type === REHYDRATE) {
-      const { err, payload } = action
-
-      if (err) {
-        Logger.log(
-          `InvoicesListed reducer, redux-persist's RehydrateAction err: ${JSON.stringify(
-            err,
-          )}`,
-        )
-        return
-      }
-
-      if (!Schema.isObj(payload)) {
-        Logger.log(
-          `InvoicesListed reducer, redux-persist's RehydrateAction err: payload not an object instead got: ${typeof payload}`,
-        )
-
-        return
-      }
-
-      const p = payload as { invoicesListed: State }
-
-      Object.assign(draft, p.invoicesListed)
-
-      draft.ids = []
-    }
-
     if (action.type === 'invoices/receivedOwn') {
       const { invoices, originRequest } = action.data
 
@@ -74,11 +50,21 @@ const reducer: Reducer<State, Action | RehydrateAction> = (
         // draft.ids._
       }
 
+      const fromBeginning =
+        typeof originRequest.index_offset === 'undefined' ||
+        originRequest.index_offset === 0
+
       const isLatestInvoices =
-        !!originRequest.reversed && Object.keys(originRequest).length === 1
+        !!originRequest.reversed &&
+        fromBeginning &&
+        typeof originRequest.pending_only === 'undefined'
 
       if (isLatestInvoices) {
         draft.ids = mostRecentToLeast.map(i => i.payment_request)
+
+        draft.latestSettled = mostRecentToLeast
+          .filter(i => i.settled)
+          .map(i => i.payment_request)
       }
     }
 
@@ -103,6 +89,9 @@ const reducer: Reducer<State, Action | RehydrateAction> = (
       }
 
       draft.ids = mostRecentToLeast.map(i => i.payment_request)
+      draft.latestSettled = mostRecentToLeast
+        .filter(i => i.settled)
+        .map(i => i.payment_request)
     }
   })
 
