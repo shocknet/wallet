@@ -88,7 +88,7 @@ export class UnifiedTransaction extends React.PureComponent<Props> {
             numberOfLines={1}
             ellipsizeMode="middle"
           >
-            {'hash'}
+            Lightning Invoice
           </Text>
           <Text style={styles.memoText}>{description}</Text>
         </View>
