@@ -1,7 +1,3 @@
-/**
- * @format
- */
-
 import {
   AppRegistry,
   Platform,
@@ -120,29 +116,6 @@ export default class ShockWallet extends React.Component {
   handleUrl = e => {
     ToastAndroid.show('Protocol link detected', 1500)
     NavigationService.navigate(LNURL_SCREEN, { protocol_link: e.url })
-    /*try {
-      ToastAndroid.show('LNURL detected, decoding...', 1500)
-      const authData = await Cache.getStoredAuthData()
-      const walletStatus = await Wallet.walletStatus()
-      const nodeURL = await Cache.getNodeURL()
-      if (nodeURL === null) {
-        throw new Error(
-          'You tried to open a protocol link before authenticating',
-        )
-      }
-      const isGunAuth = await Auth.isGunAuthed()
-
-      if (walletStatus === 'unlocked') {
-        if (authData !== null && isGunAuth) {
-          NavigationService.navigate(WALLET_OVERVIEW, { protocol_link: e.url })
-          return
-        }
-      }
-      throw new Error('You tried to open a protocol link before authenticating')
-    } catch (e) {
-      Logger.log(e.message)
-      ToastAndroid.show(e.message, 1500)
-    }*/
   }
 
   async componentDidMount() {
