@@ -1,7 +1,3 @@
-/**
- * @format
- */
-//import 'core-js'
 import React, { Component } from 'react'
 import {
   ActivityIndicator,
@@ -18,10 +14,10 @@ import Logger from 'react-native-file-log'
 import SocketManager from '../../services/socket'
 import { connect } from 'react-redux'
 import { Schema } from 'shock-common'
+//@ts-ignore
+import bech32 from 'bech32'
 
-//import { compose } from 'redux'
 import * as Navigation from '../../services/navigation'
-import { ConnectionContext } from '../../ctx/Connection'
 import Nav from '../../components/Nav'
 import wavesBG from '../../assets/images/waves-bg.png'
 import wavesBGDark from '../../assets/images/waves-bg-dark.png'
@@ -31,16 +27,10 @@ import WalletIcon from '../../assets/images/navbar-icons/wallet.svg'
 import WalletIconFocused from '../../assets/images/navbar-icons/wallet-focused.svg'
 // @ts-ignore
 import IconDrawerHome from '../../assets/images/drawer-icons/icon-drawer-help.svg'
-
-/**
- * @typedef {import('react-navigation').NavigationScreenProp<{}, {}>} Navigation
- */
-
 import btcConvert from '../../services/convertBitcoin'
 import * as ContactAPI from '../../services/contact-api'
 import * as CSS from '../../res/css'
 import * as Wallet from '../../services/wallet'
-
 import { getUSDRate, getWalletBalance } from '../../actions/WalletActions'
 import { fetchNodeInfo } from '../../actions/NodeActions'
 import {
@@ -52,18 +42,16 @@ import {
 } from '../../actions/HistoryActions'
 import { subscribeOnChats } from '../../actions/ChatActions'
 import { invoicesRefreshForced } from '../../actions'
-
-import UnifiedTrx from './UnifiedTrx'
-//import {findlnurl} from 'js-lnurl'
-//@ts-ignore
-import bech32 from 'bech32'
-//import { Buffer } from 'safe-buffer'
 import { SEND_SCREEN } from '../Send'
 import { RECEIVE_SCREEN } from '../Receive'
-
 import notificationService from '../../../notificationService'
 import * as Cache from '../../services/cache'
-// import IconDrawerWalletSettings from '../../assets/images/drawer-icons/icon-drawer-wallet.svg'
+import * as Store from '../../../store'
+/**
+ * @typedef {import('react-navigation').NavigationScreenProp<{}, {}>} Navigation
+ */
+
+import UnifiedTrx from './UnifiedTrx'
 
 /**
  * @typedef {ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps} ConnectedRedux
@@ -87,6 +75,7 @@ import * as Cache from '../../services/cache'
  * @prop {{feesLevel:'MIN'|'MID'|'MAX', feesSource:string}} fees
  * @prop {{notifyDisconnect:boolean, notifyDisconnectAfterSeconds:number}} settings
  * @prop {() => void} forceInvoicesRefresh
+ * @prop {boolean} isOnline
  */
 
 /**
@@ -116,29 +105,17 @@ class WalletOverview extends Component {
    */
   static navigationOptions = {
     tabBarIcon: ({ focused }) => {
-      return (
-        // <FontAwesome5
-        //   color={
-        //     focused ? CSS.Colors.BLUE_MEDIUM_DARK : CSS.Colors.GRAY_MEDIUM_LIGHT
-        //   }
-        //   name="wallet"
-        //   size={32}
-        // />
-        (focused ? <WalletIconFocused size={32} /> : <WalletIcon size={32} />)
-      )
+      return (focused ? (
+        <WalletIconFocused size={32} />
+      ) : (
+        <WalletIcon size={32} />
+      ))
     },
     // @ts-ignore
     drawerIcon: ({ focused }) => {
       return (<WalletIconFocused />)
     },
   }
-
-  static contextType = ConnectionContext
-
-  /**
-   * @type {React.ContextType<typeof ConnectionContext>}
-   */
-  context = true
 
   /**
    * @type {State}
@@ -312,10 +289,6 @@ class WalletOverview extends Component {
     }
 
     Navigation.navigate(RECEIVE_SCREEN)
-
-    // this.setState({
-    //   displayingReceiveDialog: true,
-    // })
   }
 
   onPressSend = () => {
@@ -326,10 +299,6 @@ class WalletOverview extends Component {
     }
 
     Navigation.navigate(SEND_SCREEN)
-
-    // this.setState({
-    //   displayingSendDialog: true,
-    // })
   }
 
   startNotificationService = async () => {
@@ -358,7 +327,7 @@ class WalletOverview extends Component {
   renderBalance = () => {
     const { USDRate, totalBalance } = this.props.wallet
     /** @type {boolean} */
-    const isConnected = this.context
+    const isConnected = this.props.isOnline
     const convertedBalance = (
       Math.round(
         btcConvert(totalBalance || '0', 'Satoshi', 'BTC') * USDRate * 100,
@@ -506,15 +475,21 @@ class WalletOverview extends Component {
 }
 
 /**
- * @param {{ wallet: any, history: any, node: any, fees: any, settings:any }} state
+ * @param {Store.State} state
  */
-const mapStateToProps = ({ wallet, history, node, fees, settings }) => ({
-  wallet,
-  history,
-  node,
-  fees,
-  settings,
-})
+const mapStateToProps = state => {
+  const { wallet, history, node, fees, settings } = state
+  const isOnline = Store.isOnline(state)
+
+  return {
+    wallet,
+    history,
+    node,
+    fees,
+    settings,
+    isOnline,
+  }
+}
 
 const mapDispatchToProps = {
   getUSDRate,
@@ -532,6 +507,7 @@ const mapDispatchToProps = {
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
+  // @ts-ignore
 )(WalletOverview)
 
 const styles = StyleSheet.create({

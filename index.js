@@ -26,7 +26,6 @@ import * as Encryption from './app/services/encryption'
 import configureStore from './store'
 import { PersistGate } from 'redux-persist/integration/react'
 
-import { ConnectionProvider } from './app/ctx/Connection'
 import RootStack from './app/navigators/Root'
 
 import { LNURL_SCREEN } from './app/screens/LNURL'
@@ -160,7 +159,7 @@ export default class ShockWallet extends React.Component {
     return (
       <Provider store={store}>
         <PersistGate loading={<Loading />} persistor={persistor}>
-          <ConnectionProvider>{rootNode}</ConnectionProvider>
+          {rootNode}
         </PersistGate>
       </Provider>
     )
