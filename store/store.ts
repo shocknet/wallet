@@ -6,7 +6,6 @@ import createSagaMiddleware from 'redux-saga'
 import createSensitiveStorage from 'redux-persist-sensitive-storage'
 import thunk from 'redux-thunk'
 
-import { setStore } from '../app/services/contact-api/socket'
 import SocketManager from '../app/services/socket'
 import reducers, { State } from '../reducers'
 import { Action as _Action } from '../app/actions'
@@ -39,13 +38,11 @@ let store: Store
 
 export default () => {
   // TODO: Fix typings for createStore()
-  // @ts-ignore
+
   store = createStore(persistedReducers, applyMiddleware(thunk, sagaMiddleware))
-  // @ts-ignore
+
   const persistor = persistStore(store)
-  // @ts-ignore
-  setStore(store)
-  // @ts-ignore
+
   SocketManager.setStore(store)
 
   sagaMiddleware.run(rootSaga)

@@ -1,15 +1,13 @@
 import React from 'react'
 import { Clipboard, View, Button, Text, ToastAndroid } from 'react-native'
 import { connect } from 'react-redux'
-import { Constants } from 'shock-common'
 
 import * as CSS from '../res/css'
 import * as Cache from '../services/cache'
-import { Actions, Events, Socket } from '../services/contact-api'
-import QR from './WalletOverview/QR'
+import { Actions, Events } from '../services/contact-api'
+import * as Store from '../../store'
 
-const { Action } = Constants
-const { SET_LAST_SEEN_APP } = Action
+import QR from './WalletOverview/QR'
 
 export const DEBUG = 'DEBUG'
 
@@ -41,9 +39,16 @@ class Debug extends React.Component {
   }
 
   setupSub = () => {
-    if (Socket.socket) {
-      Socket.socket.on(SET_LAST_SEEN_APP, this.onSocketRes)
-    }
+    this.subs.push(
+      Store.getStore().subscribe(() => {
+        this.mounted &&
+          this.setState({
+            lastPing: Store.getStore().getState().connection.lastPing,
+            socketConnected: Store.getStore().getState().connection
+              .socketConnected,
+          })
+      }),
+    )
   }
 
   componentDidMount() {
@@ -56,23 +61,6 @@ class Debug extends React.Component {
       Events.onChats(chats => this.setState({ chats })),
       Events.onSentRequests(sreqs => this.setState({ sreqs })),
       Events.onReceivedRequests(rreqs => this.setState({ rreqs })),
-
-      (() => {
-        const intervalID = setInterval(() => {
-          this.mounted &&
-            this.setState({
-              socketConnected: Socket.socket && Socket.socket.connected,
-            })
-        }, 1000)
-
-        return () => {
-          clearInterval(intervalID)
-        }
-      })(),
-
-      () => {
-        Socket.socket && Socket.socket.off(SET_LAST_SEEN_APP, this.onSocketRes)
-      },
     )
 
     Cache.getToken().then(token => {
@@ -106,15 +94,14 @@ class Debug extends React.Component {
     ToastAndroid.show('Copied', 800)
   }
 
-  sendSentReqsEvent = async () => {
-    Socket.socket &&
-      Socket.socket.emit('ON_SENT_REQUESTS', {
-        token: await Cache.getToken(),
-      })
+  sendSentReqsEvent = () => {
+    // eslint-disable-next-line no-console
+    console.warn('deprecated')
   }
 
   connectSocket = () => {
-    Socket.connect().then(this.setupSub)
+    // eslint-disable-next-line no-console
+    console.warn('deprecated')
   }
 
   clearAuthData = () => {
@@ -156,7 +143,7 @@ class Debug extends React.Component {
         <Text>{this.state.token}</Text>
 
         <Button title="Connect Socket" onPress={this.connectSocket} />
-        <Button title="Disconnect Socket" onPress={Socket.disconnect} />
+        <Button title="Disconnect Socket" onPress={this.connectSocket} />
         <Button title="Clear AUTH Data" onPress={this.clearAuthData} />
 
         <Button
