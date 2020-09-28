@@ -93,23 +93,6 @@ const nonEncryptedRoutes = [
   '/api/gun/auth',
 ]
 
-// Http.interceptors.response.use(
-//   res => res,
-//   async err => {
-//     // catch reference/Cache errors
-//     try {
-//       if (err.response.status === 401) {
-//         Socket.disconnect()
-//         await Cache.writeStoredAuthData(null)
-//       }
-//     } catch (e) {
-//       Logger.log(`Error inside response interceptor: ${e.message}`)
-//     }
-
-//     return Promise.reject(err)
-//   },
-// )
-
 AppRegistry.registerComponent('shockwallet', () => ShockWallet)
 
 Store.setFeedPage(feedPage)
