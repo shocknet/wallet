@@ -1,7 +1,3 @@
-/**
- * @format
- */
-
 import {
   AppRegistry,
   Platform,
@@ -30,7 +26,6 @@ import * as Encryption from './app/services/encryption'
 import configureStore from './store'
 import { PersistGate } from 'redux-persist/integration/react'
 
-import { ConnectionProvider } from './app/ctx/Connection'
 import RootStack from './app/navigators/Root'
 
 import { LNURL_SCREEN } from './app/screens/LNURL'
@@ -93,23 +88,6 @@ const nonEncryptedRoutes = [
   '/api/gun/auth',
 ]
 
-// Http.interceptors.response.use(
-//   res => res,
-//   async err => {
-//     // catch reference/Cache errors
-//     try {
-//       if (err.response.status === 401) {
-//         Socket.disconnect()
-//         await Cache.writeStoredAuthData(null)
-//       }
-//     } catch (e) {
-//       Logger.log(`Error inside response interceptor: ${e.message}`)
-//     }
-
-//     return Promise.reject(err)
-//   },
-// )
-
 AppRegistry.registerComponent('shockwallet', () => ShockWallet)
 
 Store.setFeedPage(feedPage)
@@ -137,29 +115,6 @@ export default class ShockWallet extends React.Component {
   handleUrl = e => {
     ToastAndroid.show('Protocol link detected', 1500)
     NavigationService.navigate(LNURL_SCREEN, { protocol_link: e.url })
-    /*try {
-      ToastAndroid.show('LNURL detected, decoding...', 1500)
-      const authData = await Cache.getStoredAuthData()
-      const walletStatus = await Wallet.walletStatus()
-      const nodeURL = await Cache.getNodeURL()
-      if (nodeURL === null) {
-        throw new Error(
-          'You tried to open a protocol link before authenticating',
-        )
-      }
-      const isGunAuth = await Auth.isGunAuthed()
-
-      if (walletStatus === 'unlocked') {
-        if (authData !== null && isGunAuth) {
-          NavigationService.navigate(WALLET_OVERVIEW, { protocol_link: e.url })
-          return
-        }
-      }
-      throw new Error('You tried to open a protocol link before authenticating')
-    } catch (e) {
-      Logger.log(e.message)
-      ToastAndroid.show(e.message, 1500)
-    }*/
   }
 
   async componentDidMount() {
@@ -204,7 +159,7 @@ export default class ShockWallet extends React.Component {
     return (
       <Provider store={store}>
         <PersistGate loading={<Loading />} persistor={persistor}>
-          <ConnectionProvider>{rootNode}</ConnectionProvider>
+          {rootNode}
         </PersistGate>
       </Provider>
     )

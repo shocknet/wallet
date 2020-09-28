@@ -5,7 +5,6 @@ import Logger from 'react-native-file-log'
  * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation
  */
 
-import * as API from '../../services/contact-api'
 import * as Auth from '../../services/auth'
 import * as Wallet from '../../services/wallet'
 
@@ -70,10 +69,7 @@ export default class CreateWallet extends React.Component {
 
       if (walletStatus === 'unlocked') {
         if (authData !== null && isGunAuth) {
-          Logger.log(
-            'NOW CONNECTING SOCKET, GUN IS AUTHED AND AUTH DATA IS CACHED',
-          )
-          await API.Socket.connect()
+          Logger.log('GUN IS AUTHED AND AUTH DATA IS CACHED')
           Logger.log('NAVIGATING TO APP')
           this.props.navigation.navigate(APP)
         } else {

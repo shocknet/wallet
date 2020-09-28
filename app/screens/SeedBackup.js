@@ -8,11 +8,11 @@ import {
   ToastAndroid,
 } from 'react-native'
 import Http from 'axios'
-import { onSeedBackup, currentSeedBackup } from '../services/contact-api/events'
+import Ionicons from 'react-native-vector-icons/Ionicons'
+
 import { nodeInfo } from '../services/wallet'
 import * as CSS from '../res/css'
 import Pad from '../components/Pad'
-import Ionicons from 'react-native-vector-icons/Ionicons'
 /**
  * @typedef {import('../services/wallet').NodeInfo} NodeInfo
  */
@@ -27,13 +27,13 @@ export const SEED_BACKUP = 'SEED_BACKUP'
  */
 
 /**
- * @augments React.Component<{}, State>
+ * @augments React.PureComponent<{}, State>
  */
-export default class SeedBackup extends React.Component {
+export default class SeedBackup extends React.PureComponent {
   /** @type {State} */
   state = {
     nodeInfo: null,
-    seedBackup: currentSeedBackup,
+    seedBackup: '',
     chansBackup: null,
   }
 
@@ -70,14 +70,10 @@ export default class SeedBackup extends React.Component {
     nodeInfo().then(nodeInfo => {
       this.mounted && this.setState({ nodeInfo })
     })
-    this.unsub = onSeedBackup(
-      seedBackup => this.mounted && this.setState({ seedBackup }),
-    )
   }
 
   componentWillUnmount() {
     this.mounted = false
-    this.unsub && this.unsub()
   }
 
   render() {

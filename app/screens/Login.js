@@ -8,7 +8,6 @@ import { connect } from 'react-redux'
  * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation
  */
 
-import * as API from '../services/contact-api'
 import * as Cache from '../services/cache'
 import * as Auth from '../services/auth'
 import * as CSS from '../res/css'
@@ -223,8 +222,6 @@ export class Login extends React.Component {
                 token: res.token,
               }),
             )
-
-            return API.Socket.connect()
           })
           .then(() => {
             this.setState({

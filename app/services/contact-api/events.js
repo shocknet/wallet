@@ -11,14 +11,11 @@ const {
 } = CommonStore
 
 import * as Cache from '../cache'
-import { SET_LAST_SEEN_APP_INTERVAL } from '../../services/utils'
 import * as Store from '../../../store'
 import * as Actions from '../../actions'
 
-import * as Socket from './socket'
 // eslint-disable-next-line no-unused-vars
 
-const { Action } = Constants
 const { Event } = Constants
 
 const POLL_INTERVAL = 3500
@@ -49,36 +46,6 @@ const isAuth = async () => {
  * Cache.onAuth() undefined.
  */
 let cleanSubbed = false
-
-/** @typedef {(connected: boolean) => void} ConnectionListener  */
-
-/**
- * @type {ConnectionListener[]}
- */
-const connectionListeners = []
-
-/**
- * @param {ConnectionListener} listener
- */
-export const onConnection = listener => {
-  if (connectionListeners.indexOf(listener) > -1) {
-    throw new Error('tried to subscribe twice')
-  }
-
-  connectionListeners.push(listener)
-
-  listener(!!Socket.socket && Socket.socket.connected)
-
-  return () => {
-    const idx = connectionListeners.indexOf(listener)
-
-    if (idx < 0) {
-      throw new Error('tried to unsubscribe twice')
-    }
-
-    connectionListeners.splice(idx, 1)
-  }
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // DATA EVENTS /////////////////////////////////////////////////////////////////
@@ -643,119 +610,10 @@ export const onChats = listener => {
   }
 }
 
-/** @typedef {(seedBackup: string|null) => void} SeedBackupListener  */
-
-/** @type {string|null} */
-export let currentSeedBackup = null
-
-/**
- * @type {SeedBackupListener[]}
- */
-const seedBackupListeners = []
-
-const notifySeedBackupListeners = debounce(() => {
-  seedBackupListeners.forEach(l => l(currentSeedBackup))
-}, 500)
-
-/**
- * @param {SeedBackupListener} listener
- */
-export const onSeedBackup = listener => {
-  if (seedBackupListeners.indexOf(listener) > -1) {
-    throw new Error('tried to subscribe twice')
-  }
-
-  seedBackupListeners.push(listener)
-
-  setImmediate(() => {
-    notifySeedBackupListeners()
-  })
-
-  return () => {
-    const idx = seedBackupListeners.indexOf(listener)
-
-    if (idx < 0) {
-      throw new Error('tried to unsubscribe twice')
-    }
-
-    seedBackupListeners.splice(idx, 1)
-  }
-}
-
 let feedRequested = false
 
-/**
- * @param {import('./socket').SimpleSocket} theSocket
- */
-export const setupEvents = async theSocket => {
-  if (!theSocket) {
-    Logger.log('Called setupEvents() before creating the socket')
-    return
-  }
-
-  theSocket.on('connect', () => {
-    connectionListeners.forEach(l => {
-      l(true)
-    })
-  })
-
-  theSocket.on('disconnect', reason => {
-    Logger.log('socket disconnected')
-    connectionListeners.forEach(l => {
-      l(false)
-    })
-
-    // @ts-ignore
-    if (reason === 'io server disconnect') {
-      // https://socket.io/docs/client-api/#Event-%E2%80%98disconnect%E2%80%99
-    }
-  })
-
-  theSocket.on(Event.ON_SEED_BACKUP, res => {
-    if (res.ok) {
-      currentSeedBackup = res.msg
-      notifySeedBackupListeners()
-    }
-  })
-
-  // If when receiving a token expired response on response to any data event
-  // notify auth listeners that the token expired.
-  Object.values(Event).forEach(e => {
-    theSocket.on(e, res => {
-      Logger.log(`res for event: ${e}: ${JSON.stringify(res)}`)
-      if (
-        res.msg === 'Token expired.' ||
-        res.msg === 'NOT_AUTH' ||
-        res.msg === 'secret or public key must be provided'
-      ) {
-        Cache.writeStoredAuthData(null)
-      }
-    })
-  })
-
-  // If when receiving a token expired response on response to any action event
-  // notify auth listeners that the token expired.
-  Object.values(Action).forEach(a => {
-    theSocket.on(a, res => {
-      // Logger.log(`res for action: ${a}: ${JSON.stringify(res)}`)
-      if (
-        res.msg === 'Token expired.' ||
-        res.msg === 'NOT_AUTH' ||
-        res.msg === 'secret or public key must be provided'
-      ) {
-        Cache.writeStoredAuthData(null)
-      }
-    })
-  })
-
-  theSocket.on('IS_GUN_AUTH', res => {
-    Logger.log(`res for IS_GUN_AUTH: ${JSON.stringify(res)}`)
-  })
-
-  connectionListeners.forEach(l => {
-    l(theSocket.connected)
-  })
-
+export const setupEvents = async () => {
+  // TODO: Setup or replace seed backup event
   const store = Store.getStore()
 
   onAvatar(avatar => {
@@ -795,18 +653,4 @@ export const setupEvents = async theSocket => {
       }),
     )
   }
-
-  Cache.getToken().then(token => {
-    pollIntervalIDs.push(
-      setInterval(() => {
-        theSocket.emit(Action.SET_LAST_SEEN_APP, {
-          token,
-        })
-      }, SET_LAST_SEEN_APP_INTERVAL),
-    )
-
-    theSocket.emit(Event.ON_SEED_BACKUP, {
-      token,
-    })
-  })
 }
