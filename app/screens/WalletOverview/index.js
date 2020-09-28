@@ -412,8 +412,6 @@ class WalletOverview extends Component {
   render() {
     const { nodeInfo } = this.props.node
 
-    const { unifiedTransactions } = this.props.history
-
     const { avatar } = this.state
 
     return (
@@ -500,7 +498,7 @@ class WalletOverview extends Component {
               : styles.trxContainer
           }
         >
-          <UnifiedTrx unifiedTrx={unifiedTransactions} />
+          <UnifiedTrx />
         </View>
       </View>
     )

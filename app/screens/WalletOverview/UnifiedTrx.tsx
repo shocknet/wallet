@@ -1,112 +1,71 @@
 import React from 'react'
 
-import {
-  ActivityIndicator,
-  FlatList,
-  StyleSheet,
-  Text,
-  View,
-  ListRenderItem,
-} from 'react-native'
+import { FlatList, StyleSheet, Text, View, ListRenderItem } from 'react-native'
 import { connect } from 'react-redux'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 
-import * as Wallet from '../../services/wallet'
 import * as CSS from '../../res/css'
 import * as Store from '../../../store'
 
-import UnifiedTransaction, { IUnifiedTransaction } from './UnifiedTransaction'
+import UnifiedTransaction from './UnifiedTransaction'
 
-const Separator = () => <View style={styles.separator} />
+type Item = { type: 'invoice'; id: string }
 
-const Empty = () => (
-  <View style={styles.emptyContainer}>
-    <Ionicons
-      name="ios-alert"
-      size={60}
-      color={CSS.Colors.TEXT_GRAY_LIGHTEST}
-      style={styles.emptyIcon}
-    />
-    <Text style={styles.emptyText}>No recent transactions</Text>
-  </View>
-)
+interface DispatchProps {}
 
-interface Props {
-  onPressItem?: (payReqOrPaymentHashOrTxHash: string) => void
-
+interface StateProps {
   /**
    *  Null when loading. When loading a loading indicator will be shown.
    */
-  unifiedTrx: IUnifiedTransaction[] | null
-
-  wallet: { USDRate: number }
+  unifiedTrx: Item[]
 }
 
-const keyExtractor = (unifiedTransaction: IUnifiedTransaction): string => {
-  if (Wallet.isInvoice(unifiedTransaction)) {
-    return unifiedTransaction.payment_request
-  }
+export interface OwnProps {}
 
-  if (Wallet.isPayment(unifiedTransaction)) {
-    return unifiedTransaction.payment_hash
-  }
+type Props = DispatchProps & StateProps & OwnProps
 
-  if (Wallet.isTransaction(unifiedTransaction)) {
-    return unifiedTransaction.tx_hash
-  }
-
-  throw new TypeError(
-    'UnifiedTrx.prototype.keyExtractor: unknown item type found',
-  )
-}
-
-class UnifiedTransactions extends React.PureComponent<Props> {
-  renderItem: ListRenderItem<IUnifiedTransaction> = ({ item }) => {
-    const { USDRate } = this.props.wallet
-    return (
-      <UnifiedTransaction
-        unifiedTransaction={item}
-        // onPress={this.props.onPressItem}
-        USDRate={USDRate}
-      />
-    )
-  }
-
+class UnifiedTrx extends React.PureComponent<Props> {
   render() {
     const { unifiedTrx } = this.props
 
-    if (unifiedTrx === null) {
-      return (
-        <>
-          <Text style={styles.listTitleDark}>Recent Activity</Text>
-          <ActivityIndicator size="large" color={CSS.Colors.ORANGE} />
-        </>
-      )
-    }
-
     return (
       <>
-        {unifiedTrx ? (
-          <Text style={styles.listTitleDark}>Recent Activity</Text>
-        ) : null}
+        <Text style={styles.listTitleDark}>
+          Recent Activity{unifiedTrx.length}
+        </Text>
         <FlatList
           data={unifiedTrx}
           keyExtractor={keyExtractor}
           ItemSeparatorComponent={Separator}
-          ListEmptyComponent={Empty}
-          renderItem={this.renderItem}
+          ListEmptyComponent={empty}
+          renderItem={RenderItem}
         />
       </>
     )
   }
 }
 
-const mapStateToProps = ({ wallet }: Store.State) => ({
-  wallet,
+const mapStateToProps = (state: Store.State): StateProps => ({
+  unifiedTrx: Store.getLatestSettledInvoicesIds(state).map(id => ({
+    type: 'invoice',
+    id,
+  })),
 })
 
-// @ts-ignore TODO TODO
-export default connect(mapStateToProps)(UnifiedTransactions)
+const ConnectedUnifiedTrx = connect(
+  mapStateToProps,
+  null,
+  null,
+  {
+    areStatesEqual(next, prev) {
+      // TODO: this will be handled by a selector later when dealing with
+      // several types of tx
+      return next.invoicesListed.ids === prev.invoicesListed.ids
+    },
+  },
+)(UnifiedTrx)
+
+export default ConnectedUnifiedTrx
 
 const styles = StyleSheet.create({
   emptyContainer: {
@@ -129,12 +88,6 @@ const styles = StyleSheet.create({
     height: 0,
     width: '100%',
   },
-  // listTitle: {
-  //   textAlign: 'right',
-  //   fontFamily: 'Montserrat-600',
-  //   width: '100%',
-  //   marginBottom: 20,
-  // },
   listTitleDark: {
     textAlign: 'left',
     fontFamily: 'Montserrat-600',
@@ -144,3 +97,23 @@ const styles = StyleSheet.create({
     color: CSS.Colors.TEXT_WHITE,
   },
 })
+
+const keyExtractor = (item: Item) => item.id
+
+const Separator = () => <View style={styles.separator} />
+
+const empty = (
+  <View style={styles.emptyContainer}>
+    <Ionicons
+      name="ios-alert"
+      size={60}
+      color={CSS.Colors.TEXT_GRAY_LIGHTEST}
+      style={styles.emptyIcon}
+    />
+    <Text style={styles.emptyText}>No recent transactions</Text>
+  </View>
+)
+
+const RenderItem: ListRenderItem<Item> = ({ item }) => (
+  <UnifiedTransaction payReq={item.id} />
+)

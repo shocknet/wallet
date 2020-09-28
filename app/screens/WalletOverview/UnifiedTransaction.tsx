@@ -19,7 +19,6 @@ import moment from 'moment'
 import { Schema } from 'shock-common'
 import { connect } from 'react-redux'
 
-import * as Wallet from '../../services/wallet'
 import * as CSS from '../../res/css'
 import btcConvert from '../../services/convertBitcoin'
 import Pad from '../../components/Pad'
@@ -27,125 +26,44 @@ import * as Store from '../../../store'
 
 const OUTBOUND_INDICATOR_RADIUS = 20
 
-export type IUnifiedTransaction =
-  | Wallet.Invoice
-  | Wallet.Payment
-  | Wallet.Transaction
-  | Schema.InvoiceWhenAdded
-  | Schema.InvoiceWhenListed
-  | Schema.InvoiceWhenDecoded
+export type IUnifiedTransaction = Schema.InvoiceWhenListed
 
 interface DispatchProps {}
 
 interface StateProps {
-  unifiedTransaction: IUnifiedTransaction
-  onPress?: (payReqOrPaymentHashOrTxHashOrPaymentRequest: string) => void
+  value: number
+  timestamp: number
+  outbound: boolean
+  description: string
+
   USDRate: number
+
+  err?: string
 }
 
 export interface OwnProps {
-  unifiedTransaction: IUnifiedTransaction
-  onPress?: (payReqOrPaymentHashOrTxHashOrPaymentRequest: string) => void
-  USDRate: number
   payReq?: string
 }
 
 type Props = DispatchProps & StateProps & OwnProps
 
 export class UnifiedTransaction extends React.PureComponent<Props> {
-  onPress = () => {
-    const { onPress, unifiedTransaction } = this.props
-
-    if (!onPress) {
-      return
-    }
-
-    if (Schema.isInvoiceWhenListed(unifiedTransaction)) {
-      onPress(unifiedTransaction.payment_request)
-      return // avoid a duplicate duck typing
-    }
-
-    if (Wallet.isInvoice(unifiedTransaction)) {
-      onPress(unifiedTransaction.payment_request)
-      return // avoid a duplicate duck typing
-    }
-
-    if (Wallet.isPayment(unifiedTransaction)) {
-      onPress(unifiedTransaction.payment_hash)
-      return // avoid a duplicate duck typing
-    }
-
-    if (Wallet.isTransaction(unifiedTransaction)) {
-      onPress(unifiedTransaction.tx_hash)
-      // eslint-disable-next-line no-useless-return
-      return // avoid a duplicate duck typing
-    }
-  }
-
   render() {
-    const { unifiedTransaction, USDRate } = this.props
+    const { err, USDRate, description, outbound, timestamp, value } = this.props
 
-    let hash = ''
-    let value = '0'
-    let timestamp = 0
-    let outbound = false
-    let description = ''
-
-    if (Schema.isInvoiceWhenListed(unifiedTransaction)) {
-      if (!unifiedTransaction.settled) {
-        return null
-      }
-      hash = unifiedTransaction.payment_request
-      description = unifiedTransaction.memo
-      // eslint-disable-next-line prefer-destructuring
-      value = unifiedTransaction.value
-      timestamp =
-        unifiedTransaction.settle_date === '0'
-          ? Number(unifiedTransaction.creation_date)
-          : Number(unifiedTransaction.settle_date)
-
-      outbound = false
-    } else if (Wallet.isInvoice(unifiedTransaction)) {
-      hash = unifiedTransaction.payment_request
-      description = unifiedTransaction.memo
-      // eslint-disable-next-line prefer-destructuring
-      value = unifiedTransaction.value
-      timestamp =
-        unifiedTransaction.settle_date === '0'
-          ? Number(unifiedTransaction.creation_date)
-          : Number(unifiedTransaction.settle_date)
-
-      outbound = false
-    }
-
-    if (Wallet.isPayment(unifiedTransaction)) {
-      hash = unifiedTransaction.decodedPayment
-        ? unifiedTransaction.decodedPayment.destination
-        : 'Unknown'
-      description = 'Payment'
-      value = unifiedTransaction.value_sat
-      timestamp = Number(unifiedTransaction.creation_date)
-
-      outbound = true
-    }
-
-    if (Wallet.isTransaction(unifiedTransaction)) {
-      hash = unifiedTransaction.tx_hash
-      description = 'BTC Chain Transaction'
-      value = unifiedTransaction.amount
-      timestamp = Number(unifiedTransaction.time_stamp)
-
-      // we don't know yet
-      outbound = false
+    if (err) {
+      return <Text>{err}</Text>
     }
 
     const formattedTimestamp = moment.unix(timestamp).fromNow()
     const convertedBalance = (
-      Math.round(btcConvert(value, 'Satoshi', 'BTC') * USDRate * 100) / 100
+      Math.round(
+        btcConvert(value.toString(), 'Satoshi', 'BTC') * USDRate * 100,
+      ) / 100
     ).toLocaleString()
 
     return (
-      <TouchableOpacity style={styles.item} onPress={this.onPress}>
+      <TouchableOpacity style={styles.item}>
         <View style={styles.avatar}>
           <View style={styles.outboundIndicator}>
             {outbound ? (
@@ -170,7 +88,7 @@ export class UnifiedTransaction extends React.PureComponent<Props> {
             numberOfLines={1}
             ellipsizeMode="middle"
           >
-            {hash}
+            {'hash'}
           </Text>
           <Text style={styles.memoText}>{description}</Text>
         </View>
@@ -189,31 +107,30 @@ export class UnifiedTransaction extends React.PureComponent<Props> {
 const makeMapStateToProps = () => {
   const getInvoice = Store.makeGetInvoice()
 
-  const mapStateToProps = (state: Store.State, props: OwnProps): StateProps => {
-    if (props.payReq) {
+  return (state: Store.State, props: OwnProps): StateProps => {
+    const tx = getInvoice(
+      state,
+      props as Required<OwnProps> /* we just checked for props.payReq */,
+    ) as Schema.InvoiceWhenListed /* We know we'll only be using InvoiceWhenListed for now. */
+
+    try {
       return {
-        USDRate: props.USDRate,
-
-        unifiedTransaction: getInvoice(
-          state,
-          // still not sure if passing in props as opposed to an string argument
-          // will correctly memoize
-          props as Required<OwnProps> /* we already checked for props.payReq */,
-        )! /* Dangerous non-null assertion but we don't expect null for now
-              since the list itself will be fetched from the store */,
-
-        onPress: props.onPress,
+        USDRate:
+          ((state.wallet
+            .USDRate /* Typings fucked we know it's a number or null*/ as unknown) as
+            | number
+            | null) || 0,
+        description: tx.memo,
+        outbound: false,
+        timestamp: Number(tx.settle_date),
+        value: Number(tx.amt_paid_sat),
       }
-    }
-
-    return {
-      USDRate: props.USDRate,
-      unifiedTransaction: props.unifiedTransaction,
-      onPress: props.onPress,
+    } catch (err) {
+      return {
+        err: err.message,
+      } as StateProps
     }
   }
-
-  return mapStateToProps
 }
 
 const ConnectedUnifiedTransaction = connect<
