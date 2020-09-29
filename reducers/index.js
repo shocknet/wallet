@@ -17,6 +17,8 @@ import tips from './tips'
 import decodedInvoices from './decoded-invoices'
 import mediaLib from './mediaLib'
 import auth from './auth'
+import invoicesListed from './invoices-listed'
+import invoicesAdded from './invoices-added'
 
 const rootReducer = {
   auth,
@@ -38,6 +40,8 @@ const rootReducer = {
   tips,
   decodedInvoices,
   mediaLib,
+  invoicesListed,
+  invoicesAdded,
 }
 
 /**

@@ -1,8 +1,14 @@
+import { Schema } from 'shock-common'
+import { ListInvoiceResponse as ListInvoicesResponse } from '../services'
+
 export const authed = (data: {
   alias: string
   token: string
   gunPublicKey: string
-  lightningPublicKey: string
+  data: {
+    follows: Record<string, Schema.Follow>
+    invoices: ListInvoicesResponse
+  }
 }) =>
   ({
     type: 'authed',

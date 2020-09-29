@@ -1,5 +1,6 @@
 import Http from 'axios'
 import Logger from 'react-native-file-log'
+import { Schema } from 'shock-common'
 
 import * as Cache from '../cache'
 import * as Utils from '../utils'
@@ -208,8 +209,8 @@ import * as Utils from '../utils'
 /**
  * Not supported in API as of commit ed93a9e5c3915e1ccf6f76f0244466e999dbc939 .
  * @typedef {object} ListInvoiceResponse
- * @prop {Invoice[]} invoices A list of invoices from the time slice of the time
- * series specified in the request.
+ * @prop {Schema.InvoiceWhenListed[]} invoices A list of invoices from the time
+ * slice of the time series specified in the request.
  * @prop {number} last_index_offset The index of the last item in the set of
  * returned invoices.This can be used to seek further, pagination style.
  * @prop {number} first_index_offset The index of the last item in the set of
@@ -272,7 +273,7 @@ import * as Utils from '../utils'
 export const NO_CACHED_TOKEN = 'NO_CACHED_TOKEN'
 
 /**
- * @param {Invoice|Payment|Transaction} item
+ * @param {unknown} item
  * @returns {item is Invoice}
  */
 export const isInvoice = item => {
@@ -294,7 +295,7 @@ export const isInvoice = item => {
 }
 
 /**
- * @param {Invoice|Payment|Transaction} item
+ * @param {unknown} item
  * @returns {item is Payment}
  */
 export const isPayment = item => {
@@ -304,7 +305,7 @@ export const isPayment = item => {
 }
 
 /**
- * @param {Invoice|Payment|Transaction} item
+ * @param {unknown} item
  * @returns {item is Transaction}
  */
 export const isTransaction = item => {
@@ -566,23 +567,8 @@ export const newAddress = async useOlderFormat => {
  */
 
 /**
- * https://api.lightning.community/?javascript#grpc-response-addinvoiceresponse
- * @typedef {object} AddInvoiceResponse
- * @prop {string} r_hash
- * @prop {string} payment_request A bare-bones invoice for a payment within the
- * Lightning Network. With the details of the invoice, the sender has all the
- * data necessary to send a payment to the recipient.
- * @prop {number} add_index The "add" index of this invoice. Each newly created
- * invoice will increment this index making it monotonically increasing.
- * Callers to the SubscribeInvoices call can use this to instantly get notified
- * of all added invoices with an add_index greater than this one.
- * @prop {boolean} liquidityCheck check the remote balance of the largest channel
- */
-
-/**
- * https://api.lightning.community/?javascript#grpc-response-addinvoiceresponse
  * @param {AddInvoiceRequest} request
- * @returns {Promise<AddInvoiceResponse>}
+ * @returns {Promise<Schema.InvoiceWhenAdded>}
  */
 export const addInvoice = async request => {
   const token = await Cache.getToken()

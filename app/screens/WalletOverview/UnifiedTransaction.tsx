@@ -1,107 +1,69 @@
 /**
- * @format
+ * This component for now will only render on-chain transactions, outbound
+ * payments and settled invoices, basically actual money movements and not
+ * drafts, orders or unsettled invoices.
+ *
+ * Decoded invoices do not contain settlement information so we ignore them for
+ * now.
+ *
+ * Added invoices are outbound but could be settled, most likely recently so
+ * we'll rely on its listed counterpart and ignore the added one.
+ *
+ * In the future we might need to use decoded invoices for orders.
  */
 import React from 'react'
 
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 import moment from 'moment'
+import { Schema } from 'shock-common'
+import { connect } from 'react-redux'
 
-import * as Wallet from '../../services/wallet'
 import * as CSS from '../../res/css'
 import btcConvert from '../../services/convertBitcoin'
 import Pad from '../../components/Pad'
+import * as Store from '../../../store'
 
 const OUTBOUND_INDICATOR_RADIUS = 20
 
-/**
- * @typedef {Wallet.Invoice|Wallet.Payment|Wallet.Transaction} IUnifiedTransaction
- */
+export type IUnifiedTransaction = Schema.InvoiceWhenListed
 
-/**
- * @typedef {object} Props
- * @prop {IUnifiedTransaction} unifiedTransaction
- * @prop {((payReqOrPaymentHashOrTxHash: string) => void)=} onPress
- * @prop {number} USDRate
- */
+interface DispatchProps {}
 
-/**
- * "Component" suffix in name to avoid collision with Transaction interface.
- * @augments React.Component<Props, {}, never>
- */
-export default class UnifiedTransaction extends React.Component {
-  state = {}
+interface StateProps {
+  value: number
+  timestamp: number
+  outbound: boolean
+  description: string
 
-  onPress = () => {
-    const { onPress, unifiedTransaction } = this.props
+  USDRate: number
 
-    if (!onPress) {
-      return
-    }
+  err?: string
+}
 
-    if (Wallet.isInvoice(unifiedTransaction)) {
-      onPress(unifiedTransaction.payment_request)
-    }
+export interface OwnProps {
+  payReq?: string
+}
 
-    if (Wallet.isPayment(unifiedTransaction)) {
-      onPress(unifiedTransaction.payment_hash)
-    }
+type Props = DispatchProps & StateProps & OwnProps
 
-    if (Wallet.isTransaction(unifiedTransaction)) {
-      onPress(unifiedTransaction.tx_hash)
-    }
-  }
-
+export class UnifiedTransaction extends React.PureComponent<Props> {
   render() {
-    const { unifiedTransaction, USDRate } = this.props
+    const { err, USDRate, description, outbound, timestamp, value } = this.props
 
-    let hash = ''
-    let value = '0'
-    let timestamp = 0
-    let outbound = false
-    let description = ''
-
-    if (Wallet.isInvoice(unifiedTransaction)) {
-      hash = unifiedTransaction.payment_request
-      description = unifiedTransaction.memo
-      // eslint-disable-next-line prefer-destructuring
-      value = unifiedTransaction.value
-      timestamp =
-        unifiedTransaction.settle_date === '0'
-          ? Number(unifiedTransaction.creation_date)
-          : Number(unifiedTransaction.settle_date)
-
-      outbound = false
-    }
-
-    if (Wallet.isPayment(unifiedTransaction)) {
-      hash = unifiedTransaction.decodedPayment
-        ? unifiedTransaction.decodedPayment.destination
-        : 'Unknown'
-      description = 'Payment'
-      value = unifiedTransaction.value_sat
-      timestamp = Number(unifiedTransaction.creation_date)
-
-      outbound = true
-    }
-
-    if (Wallet.isTransaction(unifiedTransaction)) {
-      hash = unifiedTransaction.tx_hash
-      description = 'BTC Chain Transaction'
-      value = unifiedTransaction.amount
-      timestamp = Number(unifiedTransaction.time_stamp)
-
-      // we don't know yet
-      outbound = false
+    if (err) {
+      return <Text>{err}</Text>
     }
 
     const formattedTimestamp = moment.unix(timestamp).fromNow()
     const convertedBalance = (
-      Math.round(btcConvert(value, 'Satoshi', 'BTC') * USDRate * 100) / 100
+      Math.round(
+        btcConvert(value.toString(), 'Satoshi', 'BTC') * USDRate * 100,
+      ) / 100
     ).toLocaleString()
 
     return (
-      <TouchableOpacity style={styles.item} onPress={this.onPress}>
+      <TouchableOpacity style={styles.item}>
         <View style={styles.avatar}>
           <View style={styles.outboundIndicator}>
             {outbound ? (
@@ -126,7 +88,7 @@ export default class UnifiedTransaction extends React.Component {
             numberOfLines={1}
             ellipsizeMode="middle"
           >
-            {hash}
+            Lightning Invoice
           </Text>
           <Text style={styles.memoText}>{description}</Text>
         </View>
@@ -141,6 +103,44 @@ export default class UnifiedTransaction extends React.Component {
     )
   }
 }
+
+const makeMapStateToProps = () => {
+  const getInvoice = Store.makeGetInvoice()
+
+  return (state: Store.State, props: OwnProps): StateProps => {
+    const tx = getInvoice(
+      state,
+      props as Required<OwnProps> /* we just checked for props.payReq */,
+    ) as Schema.InvoiceWhenListed /* We know we'll only be using InvoiceWhenListed for now. */
+
+    try {
+      return {
+        USDRate:
+          ((state.wallet
+            .USDRate /* Typings fucked we know it's a number or null*/ as unknown) as
+            | number
+            | null) || 0,
+        description: tx.memo,
+        outbound: false,
+        timestamp: Number(tx.settle_date),
+        value: Number(tx.amt_paid_sat),
+      }
+    } catch (err) {
+      return {
+        err: err.message,
+      } as StateProps
+    }
+  }
+}
+
+const ConnectedUnifiedTransaction = connect<
+  StateProps,
+  DispatchProps,
+  OwnProps,
+  Store.State
+>(makeMapStateToProps)(UnifiedTransaction)
+
+export default ConnectedUnifiedTransaction
 
 const styles = StyleSheet.create({
   item: {

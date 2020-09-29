@@ -6,16 +6,16 @@ import createSagaMiddleware from 'redux-saga'
 import createSensitiveStorage from 'redux-persist-sensitive-storage'
 import thunk from 'redux-thunk'
 
-import { setStore } from '../app/services/contact-api/socket'
 import SocketManager from '../app/services/socket'
-import reducers, { State as _State } from '../reducers'
+import reducers, { State } from '../reducers'
 import { Action as _Action } from '../app/actions'
+
+import rootSaga from './sagas'
 
 const sagaMiddleware = createSagaMiddleware()
 
-export type State = _State
 export type Action = _Action
-export type Store = ReduxStore<_State, _Action>
+export type Store = ReduxStore<State, _Action>
 
 const storage = createSensitiveStorage({
   keychainService: 'ShockWalletKeychain',
@@ -25,7 +25,8 @@ const storage = createSensitiveStorage({
 const config = {
   key: 'root',
   // blacklist: ['connection'],
-  blacklist: ['follows', 'feed'],
+  // Easily handle different gun / ligtning identities
+  blacklist: ['follows', 'feed', 'invoicesListed'],
   storage,
 }
 
@@ -37,16 +38,14 @@ let store: Store
 
 export default () => {
   // TODO: Fix typings for createStore()
-  // @ts-ignore
+
   store = createStore(persistedReducers, applyMiddleware(thunk, sagaMiddleware))
-  // @ts-ignore
+
   const persistor = persistStore(store)
-  // @ts-ignore
-  setStore(store)
-  // @ts-ignore
+
   SocketManager.setStore(store)
 
-  sagaMiddleware.run(Common.Store.rootSaga)
+  sagaMiddleware.run(rootSaga)
 
   return { persistor, store }
 }

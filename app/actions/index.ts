@@ -1,3 +1,5 @@
+import * as Common from 'shock-common'
+
 import * as ChatActions from './ChatActions'
 import * as RequestActions from './RequestActions'
 import * as UsersActions from './UsersActions'
@@ -11,8 +13,6 @@ import { TipsAction } from './tips'
 import { InvoicesAction } from './InvoiceActions'
 import { ConnectionAction } from './ConnectionActions'
 import { AuthAction } from './auth'
-
-import * as Common from 'shock-common'
 
 export type Action =
   | UsersActions.ReceivedUsersDataAction
@@ -41,6 +41,7 @@ export const viewportChanged = Common.Store.Actions.viewportChanged
 export * from './tips'
 export * from './ConnectionActions'
 export * from './auth'
+export { invoicesRefreshForced, receivedOwnInvoices } from './InvoiceActions'
 
 export {
   ChatActions,

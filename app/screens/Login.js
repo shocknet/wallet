@@ -8,7 +8,6 @@ import { connect } from 'react-redux'
  * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation
  */
 
-import * as API from '../services/contact-api'
 import * as Cache from '../services/cache'
 import * as Auth from '../services/auth'
 import * as CSS from '../res/css'
@@ -25,7 +24,7 @@ import { WALLET_MANAGER } from '../navigators/WalletManager'
 import Pad from '../components/Pad'
 import OnboardingInput from '../components/OnboardingInput'
 import OnboardingBtn from '../components/OnboardingBtn'
-import { Follows } from '../actions'
+import * as Actions from '../actions'
 
 export const LOGIN = 'LOGIN'
 
@@ -211,9 +210,18 @@ export class Login extends React.Component {
               token: res.token,
             })
 
-            this.props.dispatch(Follows.receivedFollows(res.follows))
-
-            return API.Socket.connect()
+            this.props.dispatch(Actions.Follows.receivedFollows(res.follows))
+            this.props.dispatch(
+              Actions.authed({
+                alias: aliasToUse,
+                data: {
+                  follows: res.follows,
+                  invoices: res.invoices,
+                },
+                gunPublicKey: res.publicKey,
+                token: res.token,
+              }),
+            )
           })
           .then(() => {
             this.setState({
