@@ -28,7 +28,7 @@ import * as Reducers from '../../../reducers'
 import * as Routes from '../../routes'
 import { SafeAreaView } from 'react-navigation'
 import FollowBtn from '../../components/FollowBtn'
-import Post from '../../components/Post'
+import Post from '../../components/Post/Wall'
 import TipBtn from '../../components/TipBtn'
 
 type UserType = Common.Schema.User
@@ -177,11 +177,11 @@ class User extends React.Component<Props, State> {
     if (Common.Schema.isPost(item)) {
       const imageCIEntries = Object.entries(item.contentItems).filter(
         ([_, ci]) => ci.type === 'image/embedded',
-      ) as [string, Common.Schema.EmbeddedImage][]
+      ) as [string, Common.Schema.EmbeddedImage & {isPreview:boolean,isPrivate:boolean}][]
 
       const videoCIEntries = Object.entries(item.contentItems).filter(
         ([_, ci]) => ci.type === 'video/embedded',
-      ) as [string, Common.Schema.EmbeddedVideo][]
+      ) as [string, Common.Schema.EmbeddedVideo & {isPreview:boolean,isPrivate:boolean}][]
 
       const paragraphCIEntries = Object.entries(item.contentItems).filter(
         ([_, ci]) => ci.type === 'text/paragraph',
@@ -191,14 +191,18 @@ class User extends React.Component<Props, State> {
         id: key,
         data: imageCI.magnetURI,
         width:Number(imageCI.width),
-        height:Number(imageCI.height)
+        height:Number(imageCI.height),
+        isPreview:imageCI.isPreview,
+        isPrivate:imageCI.isPrivate
       }))
       
       const videos = videoCIEntries.map(([key, videoCI]) => ({
         id: key,
         data: videoCI.magnetURI,
         width:Number(videoCI.width),
-        height:Number(videoCI.height)
+        height:Number(videoCI.height),
+        isPreview:videoCI.isPreview,
+        isPrivate:videoCI.isPrivate
       }))
 
       const paragraphhs = paragraphCIEntries.map(([key, paragraphCI]) => ({
