@@ -18,7 +18,7 @@ import * as Common from 'shock-common'
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'
 
 import * as Reducers from '../../../reducers'
-import Post from '../../components/Post'
+import Post from '../../components/Post/Feed'
 import * as Routes from '../../routes'
 import * as CSS from '../../res/css'
 //import ShockAvatar from '../../components/ShockAvatar'
@@ -124,11 +124,11 @@ class Feed extends React.Component<Props, State> {
     if (!Common.Schema.isPost(item)) return null
     const imageCIEntries = Object.entries(item.contentItems).filter(
       ([_, ci]) => ci.type === 'image/embedded',
-    ) as [string, Common.Schema.EmbeddedImage][]
+    ) as [string, Common.Schema.EmbeddedImage & {isPreview:boolean,isPrivate:boolean}][]
 
     const videoCIEntries = Object.entries(item.contentItems).filter(
       ([_, ci]) => ci.type === 'video/embedded',
-    ) as [string, Common.Schema.EmbeddedVideo][]
+    ) as [string, Common.Schema.EmbeddedVideo & {isPreview:boolean,isPrivate:boolean}][]
 
     const paragraphCIEntries = Object.entries(item.contentItems).filter(
       ([_, ci]) => ci.type === 'text/paragraph',
@@ -138,14 +138,18 @@ class Feed extends React.Component<Props, State> {
         id: key,
         data: imageCI.magnetURI,
         width:Number(imageCI.width),
-        height:Number(imageCI.height)
+        height:Number(imageCI.height),
+        isPreview:imageCI.isPreview,
+        isPrivate:imageCI.isPrivate
       }))
 
       const videos = videoCIEntries.map(([key, videoCI]) => ({
         id: key,
         data: videoCI.magnetURI,
         width:Number(videoCI.width),
-        height:Number(videoCI.height)
+        height:Number(videoCI.height),
+        isPreview:videoCI.isPreview,
+        isPrivate:videoCI.isPrivate
       }))
 
     const paragraphs = paragraphCIEntries.map(([key, paragraphCI]) => ({

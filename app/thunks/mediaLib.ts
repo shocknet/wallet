@@ -87,4 +87,3 @@ export const uploadMedia = (media:MediaToUpload) => async (dispatch:any) =>{
     }
 
 }
-//NEED A PREVIEW CONTENT TYPE

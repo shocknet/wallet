@@ -34,7 +34,7 @@ import ShockAvatar from '../../components/ShockAvatar'
 import QR from '../WalletOverview/QR'
 import Pad from '../../components/Pad'
 import BasicDialog from '../../components/BasicDialog'
-import Post from '../../components/Post'
+import Post from '../../components/Post/Wall'
 import { PUBLISH_CONTENT_DARK } from '../../screens/PublishContentDark'
 
 import SetBioDialog from './SetBioDialog'
@@ -389,11 +389,11 @@ export default class MyProfile extends React.Component<Props, State> {
     if (Common.Schema.isPost(item)) {
       const imageCIEntries = Object.entries(item.contentItems).filter(
         ([_, ci]) => ci.type === 'image/embedded',
-      ) as [string, Common.Schema.EmbeddedImage][]
+      ) as [string, (Common.Schema.EmbeddedImage & {isPreview:boolean,isPrivate:boolean})][]
 
       const videoCIEntries = Object.entries(item.contentItems).filter(
         ([_, ci]) => ci.type === 'video/embedded',
-      ) as [string, Common.Schema.EmbeddedVideo][]
+      ) as [string, (Common.Schema.EmbeddedVideo & {isPreview:boolean,isPrivate:boolean})][]
 
       const paragraphCIEntries = Object.entries(item.contentItems).filter(
         ([_, ci]) => ci.type === 'text/paragraph',
@@ -403,20 +403,26 @@ export default class MyProfile extends React.Component<Props, State> {
         id: key,
         data: imageCI.magnetURI,
         width:Number(imageCI.width),
-        height:Number(imageCI.height)
+        height:Number(imageCI.height),
+        isPreview:imageCI.isPreview,
+        isPrivate:imageCI.isPrivate
       }))
 
       const videos = videoCIEntries.map(([key, videoCI]) => ({
         id: key,
         data: videoCI.magnetURI,
         width:Number(videoCI.width),
-        height:Number(videoCI.height)
+        height:Number(videoCI.height),
+        isPreview:videoCI.isPreview,
+        isPrivate:videoCI.isPrivate
       }))
 
       const paragraphhs = paragraphCIEntries.map(([key, paragraphCI]) => ({
         id: key,
         text: paragraphCI.text,
       }))
+      
+
 
       return (
         <Post

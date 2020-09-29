@@ -71,11 +71,28 @@ export const getPublicContent = (contentID:any):string => {
     const magnet = ''
     return magnet
 }
-
-export const getPrivateContent = (contentID:any):string => {
-    console.log(contentID)
-    const magnet = ''
-    return magnet
+export const getPrivateContent = async (images:MediaToCheck[],videos:MediaToCheck[]):Promise<{images:MediaToCheck[],videos:MediaToCheck[]}> => {
+    console.log(images) //send to API for the check
+    console.log(videos) //send to API for the check 
+    await new Promise(res => setTimeout(() => res(), 1000))//some delay to not make it instant, to remove later
+    const res = {images,videos} //api call to place the order and obtain the data
+    return res
+}
+type MediaToCheck = { 
+    id: string
+    data: string
+    width: number
+    height: number
+    isPreview:boolean
+    isPrivate:boolean
+}
+export const isContentAvailable = async (images:MediaToCheck[],videos:MediaToCheck[]):Promise<boolean|{images:MediaToCheck[],videos:MediaToCheck[]}> => {
+    console.log(images) //send to API for the check
+    console.log(videos) //send to API for the check
+    await new Promise(res => setTimeout(() => res(), 100))//some delay to not make it instant, to remove later
+     //TODO: API call to check if the content was already paid
+    //if the content is paid "data" should contain the content magnet if the op failed, return false
+    return false
 }
 
 
