@@ -31,6 +31,7 @@ import RootStack from './app/navigators/Root'
 import { LNURL_SCREEN } from './app/screens/LNURL'
 import { feedPage } from './app/services/feed'
 import WithConnWarning from './app/components/WithConnWarning'
+import { hostWasSet } from './app/actions'
 
 Logger.setTag('ShockWallet')
 Logger.setFileLogEnabled(true)
@@ -121,6 +122,7 @@ export default class ShockWallet extends React.Component {
     const nodeURL = await Cache.getNodeURL()
     if (nodeURL !== null) {
       Http.defaults.url = `http://${nodeURL}`
+      store.dispatch(hostWasSet(nodeURL))
     }
     RNBootSplash.hide({ duration: 250 })
     this.setState({
