@@ -196,19 +196,21 @@ class CreatePostDark extends React.Component<Props,State> {
     const [selectThis,content] = item
     const preview = content[0].isPreview ? content[0] : content[1]
     return (
-      <View style={styles.postContainer}>
-        {preview.type === 'image/embedded' && <ShockWebView
-          type="image"
-          width={preview.width}
-          height={preview.height}
-          magnet={preview.magnetURI}
-        />}
-        {preview.type === 'video/embedded' && <ShockWebView
-          type="video"
-          width={preview.width}
-          height={preview.height}
-          magnet={preview.magnetURI}
-        />}
+      <View style={{marginRight:20}}>
+        <View style={{height:100,aspectRatio:Number(preview.width)/Number(preview.height)}}>
+          {preview.type === 'image/embedded' && <ShockWebView
+            type="image"
+            width={preview.width}
+            height={preview.height}
+            magnet={preview.magnetURI}
+          />}
+          {preview.type === 'video/embedded' && <ShockWebView
+            type="video"
+            width={preview.width}
+            height={preview.height}
+            magnet={preview.magnetURI}
+          />}
+        </View>
         <FontAwesome name="plus" size={20} color="white" onPress={selectThis}/>
         {/*<ImageBackground
           source={item.image}
@@ -333,7 +335,7 @@ class CreatePostDark extends React.Component<Props,State> {
             </View>
             {selectedContentID && <View>
                 <Text style={{color:'white'}}>Content</Text>
-                {preview && <View style={{height:200}}>
+                {preview && <View style={{width:'100%',aspectRatio:Number(preview.width)/Number(preview.height)}}>
                   <Text style={{color:'white'}}>Selected Preview</Text>
                   <ShockWebView 
                   magnet={preview.magnetURI} 
@@ -342,7 +344,7 @@ class CreatePostDark extends React.Component<Props,State> {
                   type={preview.type === 'image/embedded'?'image':'video'}/>
                 </View>
                 }
-                {media && <View style={{height:200}}>
+                {media && <View style={{width:'100%',aspectRatio:Number(media.width)/Number(media.height)}}>
                   <Text style={{color:'white'}}>Selected Media</Text>
                   <ShockWebView 
                   magnet={media.magnetURI} 

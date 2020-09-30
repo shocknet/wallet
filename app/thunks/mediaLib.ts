@@ -67,9 +67,9 @@ export const uploadMedia = (media:MediaToUpload) => async (dispatch:any) =>{
         const main:MediaLib.uploadedFileInfo = await MediaLib.uploadMediaContent(mainParams)
         mediaComplete.push({
             //@ts-ignore
-            height:media.previewMediaHeight,
+            height:media.mainMediaHeight,
             //@ts-ignore
-            width:media.previewMediaWidth,
+            width:media.mainMediaWidth,
             isPreview:false,
             magnetURI:main.torrent,
             type:main.type,
