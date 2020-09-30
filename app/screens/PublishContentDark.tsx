@@ -307,6 +307,7 @@ class PublishContentDark extends React.Component<Props,State> {
       this.setState({
         processing:false
       })
+      this.goBack()
     }
     if(mediaLib.error !== oldMediaLib.error && mediaLib.error !== null){
       this.setState({
@@ -476,8 +477,8 @@ class PublishContentDark extends React.Component<Props,State> {
             style={[
               styles.sendingOverlay,
               {
-                width: width - 50,
-                height: height - 194,
+                width: width,
+                height: height,
               },
             ]}
           >
@@ -623,7 +624,7 @@ const styles = StyleSheet.create({
     height: '100%',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: CSS.Colors.BACKGROUND_WHITE_TRANSPARENT95,
+    backgroundColor: 'rgba(22,25,28,0.95)',
     elevation: 10,
     zIndex: 1000,
   },
