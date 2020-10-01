@@ -164,7 +164,7 @@ class Socket {
       const { connection } = store.getState()
       const nodeURL = await Cache.getNodeURL()
 
-      const socket = SocketIO(`http://${nodeURL}`, {
+      const socket = SocketIO(`http://${nodeURL}/default`, {
         query: {
           'x-shockwallet-device-id': connection.deviceId,
           IS_LND_SOCKET: true,
