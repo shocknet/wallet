@@ -13,6 +13,7 @@ import { TipsAction } from './tips'
 import { InvoicesAction } from './InvoiceActions'
 import { ConnectionAction } from './ConnectionActions'
 import { AuthAction } from './auth'
+import { PaymentsAction } from './payments'
 
 export type Action =
   | UsersActions.ReceivedUsersDataAction
@@ -30,6 +31,7 @@ export type Action =
   | InvoicesAction
   | ConnectionAction
   | AuthAction
+  | PaymentsAction
 
 export const receivedBackfeed = Common.Store.Actions.receivedBackfeed
 export const receivedFeed = Common.Store.Actions.receivedFeed
@@ -42,6 +44,7 @@ export * from './tips'
 export * from './ConnectionActions'
 export * from './auth'
 export { invoicesRefreshForced, receivedOwnInvoices } from './InvoiceActions'
+export * from './payments'
 
 export {
   ChatActions,

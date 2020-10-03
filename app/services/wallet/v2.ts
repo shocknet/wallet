@@ -152,3 +152,16 @@ export const decodeInvoice = async ({
     )
   }
 }
+
+export interface ListPaymentsReq {
+  include_incomplete?: boolean
+  index_offset?: number
+  max_payments?: number
+  reversed?: boolean
+}
+
+export interface ListPaymentsRes {
+  payments: Array<Schema.PaymentV2>
+  first_index_offset: string
+  last_index_offset: string
+}
