@@ -4,6 +4,7 @@ export * from './connection'
 export * from './invoices'
 export * from './payments'
 export * from './tx'
+export * from './users'
 
 /**
  * For use inside sagas, allows typing of the return value from the select
