@@ -37,6 +37,8 @@ import Pad from '../../components/Pad'
 import BasicDialog from '../../components/BasicDialog'
 import Post from '../../components/Post/Wall'
 import { PUBLISH_CONTENT_DARK } from '../../screens/PublishContentDark'
+import ShockInput from '../../components/ShockInput'
+import IGDialogBtn from '../../components/IGDialogBtn'
 
 import SetBioDialog from './SetBioDialog'
 import MetaConfigModal from './MetaConfigModal'
@@ -576,6 +578,8 @@ export default class MyProfile extends React.Component<Props, State> {
       displayName,
       bio,
       authData,
+      displayNameDialogOpen,
+      displayNameInput,
     } = this.state
 
     const headerHeight = this.state.scrollY.interpolate({
@@ -809,9 +813,36 @@ export default class MyProfile extends React.Component<Props, State> {
               <QrCode size={25} />
             </View>
           </TouchableOpacity>
+
+          <BasicDialog
+            visible={settingAvatar || settingBio || settingDisplayName}
+            onRequestClose={() => {}}
+          >
+            <ActivityIndicator />
+          </BasicDialog>
+
+          <BasicDialog
+            onRequestClose={this.toggleSetupDisplayName}
+            title="Display Name"
+            visible={displayNameDialogOpen}
+          >
+            <View style={styles.dialog}>
+              <ShockInput
+                onChangeText={this.onChangeDisplayNameInput}
+                value={displayNameInput}
+              />
+
+              <IGDialogBtn
+                disabled={displayNameInput.length === 0}
+                title="OK"
+                onPress={this.setDisplayName}
+              />
+            </View>
+          </BasicDialog>
         </View>
       )
     }
+
     return (
       <>
         <View style={styles.container}>
@@ -837,13 +868,6 @@ export default class MyProfile extends React.Component<Props, State> {
             </View>
           </TouchableOpacity>
         </View>
-
-        <BasicDialog
-          visible={settingAvatar || settingBio || settingDisplayName}
-          onRequestClose={() => {}}
-        >
-          <ActivityIndicator />
-        </BasicDialog>
       </>
     )
   }
