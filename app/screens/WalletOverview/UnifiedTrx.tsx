@@ -7,9 +7,9 @@ import Ionicons from 'react-native-vector-icons/Ionicons'
 import * as CSS from '../../res/css'
 import * as Store from '../../../store'
 
-import UnifiedTransaction from './UnifiedTransaction'
-
-type Item = { type: 'invoice'; id: string }
+import UnifiedTransaction, {
+  OwnProps as UnifiedTransactionProps,
+} from './UnifiedTransaction'
 
 interface DispatchProps {}
 
@@ -17,7 +17,7 @@ interface StateProps {
   /**
    *  Null when loading. When loading a loading indicator will be shown.
    */
-  unifiedTrx: Item[]
+  unifiedTrx: Store.UnifiedTx[]
 }
 
 export interface OwnProps {}
@@ -43,12 +43,11 @@ class UnifiedTrx extends React.PureComponent<Props> {
   }
 }
 
-const mapStateToProps = (state: Store.State): StateProps => ({
-  unifiedTrx: Store.getLatestSettledInvoicesIds(state).map(id => ({
-    type: 'invoice',
-    id,
-  })),
-})
+const mapStateToProps = (state: Store.State): StateProps => {
+  return {
+    unifiedTrx: Store.getLatestTx(state),
+  }
+}
 
 const ConnectedUnifiedTrx = connect(
   mapStateToProps,
@@ -96,7 +95,10 @@ const styles = StyleSheet.create({
   },
 })
 
-const keyExtractor = (item: Item) => item.id
+const keyExtractor = (item: Store.UnifiedTx) => {
+  if (item.type === 'invoice') return item.payReq
+  return item.paymentHash
+}
 
 const Separator = () => <View style={styles.separator} />
 
@@ -112,6 +114,11 @@ const empty = (
   </View>
 )
 
-const RenderItem: ListRenderItem<Item> = ({ item }) => (
-  <UnifiedTransaction payReq={item.id} />
-)
+const RenderItem: ListRenderItem<Store.UnifiedTx> = ({ item }) => {
+  const props: UnifiedTransactionProps = {}
+
+  if (item.type === 'invoice') props.payReq = item.payReq
+  if (item.type === 'payment') props.paymentHash = item.paymentHash
+
+  return <UnifiedTransaction {...props} />
+}

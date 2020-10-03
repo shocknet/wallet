@@ -26,15 +26,14 @@ import * as Store from '../../../store'
 
 const OUTBOUND_INDICATOR_RADIUS = 20
 
-export type IUnifiedTransaction = Schema.InvoiceWhenListed
-
 interface DispatchProps {}
 
 interface StateProps {
   value: number
   timestamp: number
   outbound: boolean
-  description: string
+  title: string
+  subTitle: string
 
   USDRate: number
 
@@ -43,13 +42,22 @@ interface StateProps {
 
 export interface OwnProps {
   payReq?: string
+  paymentHash?: string
 }
 
 type Props = DispatchProps & StateProps & OwnProps
 
 export class UnifiedTransaction extends React.PureComponent<Props> {
   render() {
-    const { err, USDRate, description, outbound, timestamp, value } = this.props
+    const {
+      err,
+      USDRate,
+      outbound,
+      timestamp,
+      value,
+      title,
+      subTitle,
+    } = this.props
 
     if (err) {
       return <Text>{err}</Text>
@@ -70,27 +78,25 @@ export class UnifiedTransaction extends React.PureComponent<Props> {
               <Ionicons
                 name="md-arrow-round-up"
                 size={15}
-                color={CSS.Colors.ICON_RED}
+                color={CSS.Colors.ICON_GREEN}
               />
             ) : (
               <Ionicons
                 name="md-arrow-round-down"
                 size={15}
-                color={CSS.Colors.ICON_GREEN}
+                color={CSS.Colors.ICON_RED}
               />
             )}
           </View>
         </View>
         <Pad amount={10} insideRow />
         <View style={styles.memo}>
-          <Text
-            style={styles.senderName}
-            numberOfLines={1}
-            ellipsizeMode="middle"
-          >
-            Lightning Invoice
+          <Text style={styles.title} numberOfLines={1} ellipsizeMode="middle">
+            {title}
           </Text>
-          <Text style={styles.memoText}>{description}</Text>
+          <Text style={styles.subTitle} numberOfLines={2} ellipsizeMode="tail">
+            {subTitle}
+          </Text>
         </View>
         <View style={styles.valuesContainer}>
           <Text style={styles.timestamp}>{formattedTimestamp + ' ago'}</Text>
@@ -106,24 +112,60 @@ export class UnifiedTransaction extends React.PureComponent<Props> {
 
 const makeMapStateToProps = () => {
   const getInvoice = Store.makeGetInvoice()
+  const getPayment = Store.makeGetPayment()
 
   return (state: Store.State, props: OwnProps): StateProps => {
-    const tx = getInvoice(
-      state,
-      props as Required<OwnProps> /* we just checked for props.payReq */,
-    ) as Schema.InvoiceWhenListed /* We know we'll only be using InvoiceWhenListed for now. */
-
     try {
+      let tx: ReturnType<typeof getInvoice> | ReturnType<typeof getPayment>
+
+      if (props.payReq) {
+        tx = getInvoice(
+          state,
+          props as Required<OwnProps> /* we just checked for props.payReq */,
+        )
+      }
+
+      if (props.paymentHash) {
+        tx = getPayment(
+          state,
+          props as Required<OwnProps> /* we just checked for props.payReq */,
+        )
+      }
+
+      if (!tx!) {
+        throw new TypeError(`No TX found: ${JSON.stringify(props)}`)
+      }
+
+      const asInvoice = tx! as Schema.InvoiceWhenListed
+
+      const asPayment = tx! as Schema.PaymentV2
+      const isPayment = !!asPayment.payment_hash
+      const maybeDecodedInvoice =
+        state.decodedInvoices[asPayment.payment_request]
+
+      const inProcess = isPayment && asPayment.status !== 'SUCCEEDED'
+      const description =
+        asInvoice.memo ||
+        (maybeDecodedInvoice &&
+          `${maybeDecodedInvoice.description}${
+            inProcess ? ' (sending)' : ''
+          }`) ||
+        'Fetching memo...'
+
+      // TODO: get Name from order / chat
+      const name = 'anonymous'
+
       return {
         USDRate:
           ((state.wallet
             .USDRate /* Typings fucked we know it's a number or null*/ as unknown) as
             | number
             | null) || 0,
-        description: tx.memo,
-        outbound: false,
-        timestamp: Number(tx.settle_date),
-        value: Number(tx.amt_paid_sat),
+        title: name,
+        outbound: isPayment,
+        timestamp: Number(asInvoice.settle_date || asPayment.creation_date),
+        value: Number(asInvoice.amt_paid_sat || asPayment.value_sat),
+        subTitle: description,
       }
     } catch (err) {
       return {
@@ -178,14 +220,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 
-  senderName: {
+  title: {
     width: '50%',
     color: CSS.Colors.TEXT_GRAY,
     fontSize: 16,
     fontFamily: 'Montserrat-700',
   },
 
-  memoText: {
+  subTitle: {
     color: CSS.Colors.TEXT_GRAY,
     fontSize: 11,
     fontFamily: 'Montserrat-500',
