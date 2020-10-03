@@ -8,7 +8,8 @@ type Props = {
   magnet:string,
   type:'video'|'image',
   permission:'private'|'public'
-  selectedView:'preview'|'media'
+  selectedView:'preview'|'media',
+  updateToMedia:(()=>void)|null
 }
 type CompleteWebView = (WebView & {postMessage:(message:string)=>void})
 
@@ -50,6 +51,13 @@ export default class ShockWebView extends React.Component<Props> {
         originWhitelist={['*']}
         // eslint-disable-next-line
         onMessage={event => {
+          const {data} = event.nativeEvent
+          if(data === 'updateSelectedMediaSizes'){
+            if(this.props.updateToMedia){
+              this.props.updateToMedia()
+            }
+            return
+          }
           notificationService.Log(
             'TESTING',
             'MESSAGE >>>>' + event.nativeEvent.data,
@@ -100,30 +108,8 @@ export default class ShockWebView extends React.Component<Props> {
           })
           if(previewFile){
             previewFile.renderTo('${domID}')
-          }
-          this.document.addEventListener('message', e => {
-            //window.ReactNativeWebView.postMessage("THIS IS IT");
-            const {data} = e
-            if(data === 'preview'){
-              if(previewFile){
-                document.getElementById("player").remove()
-                var element = "img"
-                var id = "img#player"
-                if(previewFile.name.endsWith('.mp4') || previewFile.name.endsWith('.webm')){
-                  element = "video"
-                  id="video#player"
-                }
-                var node = document.createElement(element);
-                node.style.cssText = "width:100%"
-                node.id ="player"
-                document.getElementById("body").appendChild(node)
-                previewFile.renderTo(id)
-                if(element === "video"){
-                  node.play()
-                }
-              }
-            }
-            if(data === 'media'){
+            document.getElementById("player").addEventListener("click", e => {
+              window.ReactNativeWebView.postMessage("updateSelectedMediaSizes");
               if(mainFile){
                 document.getElementById("player").remove()
                 var element = "img"
@@ -142,9 +128,10 @@ export default class ShockWebView extends React.Component<Props> {
                   node.play()
                 }
               }
-            }
-          
-          })
+            
+            })
+          }
+          //this.document.addEventListener('message',)
           //document.getElementById("swag").innerText =  (!!check1).toString() +" " + (!!check2).toString() +" " + (!!check3).toString() +" " + (!!check4).toString() +" "
         } else {
           var file = torrent.files.find(function (file) {
