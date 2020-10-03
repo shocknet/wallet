@@ -9,7 +9,7 @@ import {
   View,
   ActivityIndicator,
   StatusBar,
-  FlatListProps
+  FlatListProps,
 } from 'react-native'
 import { connect } from 'react-redux'
 import { NavigationScreenProp, NavigationScreenOptions } from 'react-navigation'
@@ -48,7 +48,7 @@ interface State {
   awaitingBackfeed: boolean
   awaitingMoreFeed: boolean
   avatar: string | null
-  selectedTab:'all' | 'saved' | 'videos'
+  selectedTab: 'all' | 'saved' | 'videos'
 }
 
 type Props = StateProps & DispatchProps & OwnProps
@@ -76,7 +76,7 @@ class Feed extends React.Component<Props, State> {
     awaitingBackfeed: false,
     awaitingMoreFeed: false,
     avatar: API.Events.getAvatar(),
-    selectedTab:'all',
+    selectedTab: 'all',
   }
 
   onEndReached = () => {
@@ -124,33 +124,39 @@ class Feed extends React.Component<Props, State> {
     if (!Common.Schema.isPost(item)) return null
     const imageCIEntries = Object.entries(item.contentItems).filter(
       ([_, ci]) => ci.type === 'image/embedded',
-    ) as [string, Common.Schema.EmbeddedImage & {isPreview:boolean,isPrivate:boolean}][]
+    ) as [
+      string,
+      Common.Schema.EmbeddedImage & { isPreview: boolean; isPrivate: boolean },
+    ][]
 
     const videoCIEntries = Object.entries(item.contentItems).filter(
       ([_, ci]) => ci.type === 'video/embedded',
-    ) as [string, Common.Schema.EmbeddedVideo & {isPreview:boolean,isPrivate:boolean}][]
+    ) as [
+      string,
+      Common.Schema.EmbeddedVideo & { isPreview: boolean; isPrivate: boolean },
+    ][]
 
     const paragraphCIEntries = Object.entries(item.contentItems).filter(
       ([_, ci]) => ci.type === 'text/paragraph',
     ) as [string, Common.Schema.Paragraph][]
 
     const images = imageCIEntries.map(([key, imageCI]) => ({
-        id: key,
-        data: imageCI.magnetURI,
-        width:Number(imageCI.width),
-        height:Number(imageCI.height),
-        isPreview:imageCI.isPreview,
-        isPrivate:imageCI.isPrivate
-      }))
+      id: key,
+      data: imageCI.magnetURI,
+      width: Number(imageCI.width),
+      height: Number(imageCI.height),
+      isPreview: imageCI.isPreview,
+      isPrivate: imageCI.isPrivate,
+    }))
 
-      const videos = videoCIEntries.map(([key, videoCI]) => ({
-        id: key,
-        data: videoCI.magnetURI,
-        width:Number(videoCI.width),
-        height:Number(videoCI.height),
-        isPreview:videoCI.isPreview,
-        isPrivate:videoCI.isPrivate
-      }))
+    const videos = videoCIEntries.map(([key, videoCI]) => ({
+      id: key,
+      data: videoCI.magnetURI,
+      width: Number(videoCI.width),
+      height: Number(videoCI.height),
+      isPreview: videoCI.isPreview,
+      isPrivate: videoCI.isPrivate,
+    }))
 
     const paragraphs = paragraphCIEntries.map(([key, paragraphCI]) => ({
       id: key,
@@ -242,7 +248,7 @@ class Feed extends React.Component<Props, State> {
       })
     }
   }
-  onPressAvatar = ()=>{}
+  onPressAvatar = () => {}
 
   onPressAllFeeds = () => {
     this.setState({ selectedTab: 'all' })
@@ -415,7 +421,6 @@ const mapStateToProps = (state: Reducers.State): StateProps => {
   const noRepeats = _.uniq(postsIDs)
 
   const posts = Common.Schema.denormalizePosts(noRepeats, state)
-  
 
   return {
     posts,
