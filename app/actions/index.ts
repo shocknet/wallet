@@ -10,7 +10,11 @@ import * as SingleFeed from './singleFeed'
 import * as Me from './me'
 import * as MediaLib from './mediaLib'
 import { TipsAction } from './tips'
-import { InvoicesAction } from './InvoiceActions'
+import {
+  InvoicesAction,
+  InvoicesBatchDecodeReqAction as _InvoicesBatchDecodeReqAction,
+  InvoicesBatchDecodeResAction as _InvoicesBatchDecodeResAction,
+} from './InvoiceActions'
 import { ConnectionAction } from './ConnectionActions'
 import { AuthAction } from './auth'
 import { PaymentsAction } from './payments'
@@ -43,7 +47,15 @@ export const viewportChanged = Common.Store.Actions.viewportChanged
 export * from './tips'
 export * from './ConnectionActions'
 export * from './auth'
-export { invoicesRefreshForced, receivedOwnInvoices } from './InvoiceActions'
+export {
+  invoicesRefreshForced,
+  receivedOwnInvoices,
+  decodePaymentRequest,
+  invoicesBatchDecodeReq,
+  invoicesBatchDecodeRes,
+} from './InvoiceActions'
+export type InvoicesBatchDecodeReqAction = _InvoicesBatchDecodeReqAction
+export type InvoicesBatchDecodeResAction = _InvoicesBatchDecodeResAction
 export * from './payments'
 
 export {
