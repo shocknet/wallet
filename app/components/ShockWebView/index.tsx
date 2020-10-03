@@ -1,5 +1,6 @@
 import React from 'react'
 import { WebView } from 'react-native-webview'
+import notificationService from '../../../notificationService'
 
 type Props = {
   width:number,
@@ -42,16 +43,18 @@ export default class ShockWebView extends React.Component<Props> {
         // eslint-disable-next-line
         style={{ width: '100%', aspectRatio: width / height }}
         allowUniversalAccessFromFileURLs
+        mediaPlaybackRequiresUserAction={false}
+        allowsInlineMediaPlayback={true}
         allowsFullscreenVideo
         mixedContentMode="always"
         originWhitelist={['*']}
         // eslint-disable-next-line
-        /*onMessage={event => {
+        onMessage={event => {
           notificationService.Log(
             'TESTING',
             'MESSAGE >>>>' + event.nativeEvent.data,
           )
-        }}*/
+        }}
         source={{
           html: `<!DOCTYPE html>
       <html lang="en">
@@ -115,6 +118,9 @@ export default class ShockWebView extends React.Component<Props> {
                 node.id ="player"
                 document.getElementById("body").appendChild(node)
                 previewFile.renderTo(id)
+                if(element === "video"){
+                  node.play()
+                }
               }
             }
             if(data === 'media'){
@@ -131,6 +137,10 @@ export default class ShockWebView extends React.Component<Props> {
                 node.id ="player"
                 document.getElementById("body").appendChild(node)
                 mainFile.renderTo(id)
+                if(element === "video"){
+                  window.ReactNativeWebView.postMessage("YE!!!P");
+                  node.play()
+                }
               }
             }
           
@@ -144,7 +154,7 @@ export default class ShockWebView extends React.Component<Props> {
           file.renderTo('${domID}')
         }
       })
-           </script>
+          </script>
       </body>
       </html>`,
         }}
