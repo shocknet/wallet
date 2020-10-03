@@ -274,6 +274,7 @@ class Feed extends React.Component<Props, State> {
 
         <FlatList
           style={CSS.styles.flex}
+          contentContainerStyle={CSS.styles.flex}
           renderItem={this.renderItem}
           data={posts}
           keyExtractor={keyExtractor}
