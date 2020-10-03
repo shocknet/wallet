@@ -9,9 +9,9 @@ let oldIsOnline = false
 
 function* fetchLatestPayments(action: Actions.Action) {
   try {
-    if (action.type !== 'payments/refreshForced') {
-      const state = getStateRoot(yield select())
+    const state = getStateRoot(yield select())
 
+    if (action.type !== 'payments/refreshForced') {
       if (!state.auth.token) {
         // If user was unauthenticated let's reset oldIsOnline to false, to avoid
         // wentOnline from being a false negative (and thus not fetching data).
@@ -40,6 +40,13 @@ function* fetchLatestPayments(action: Actions.Action) {
       `/api/lnd/cb/listPayments`,
       req,
     )
+
+    // we'll need to fetch them if not in decoded invoices
+    const needsInvoiceDecoding = data.payments
+      .filter(p => !state.decodedInvoices[p.payment_request])
+      .map(p => p.payment_request)
+
+    yield put(Actions.invoicesBatchDecodeReq(needsInvoiceDecoding))
 
     yield put(
       Actions.receivedOwnPayments({
