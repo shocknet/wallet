@@ -8,7 +8,7 @@ import {
   FlatList,
   ToastAndroid,
   ActivityIndicator,
-  ScrollView,
+  ScrollView
 } from 'react-native'
 import { connect } from 'react-redux'
 import Http from 'axios'
@@ -56,6 +56,7 @@ type State = {
   error:string|null
   loadingStatus:string|null
   selectedContentID:string|null
+  selectedView:"preview" | "media"
 }
 
 const DEFAULT_STATE:State = {
@@ -64,7 +65,8 @@ const DEFAULT_STATE:State = {
   description: '',
   error: null,
   loadingStatus: null,
-  selectedContentID:null
+  selectedContentID:null,
+  selectedView:'preview'
 }
 
 
@@ -187,28 +189,42 @@ class CreatePostDark extends React.Component<Props,State> {
         }
       }
     }
-    return mediaReady
+    return mediaReady.reverse()
 
   }
 
   renderPostItem({ item }:{item:[()=>void,CompleteAnyMedia[]]}) {
     //const localSelect = this.selectMedia.bind(this)
     const [selectThis,content] = item
-    const preview = content[0].isPreview ? content[0] : content[1]
+    
+    const previewMedia:CompleteAnyMedia|undefined=content.find(e => e.isPreview)
+    const mainMedia:CompleteAnyMedia|undefined=content.find(e => !e.isPreview)
+    if(!mainMedia){
+      return <View style={{marginRight:20}}>
+      <Text>Media not found</Text>
+    </View>
+    }
+    const ref:CompleteAnyMedia = previewMedia ? previewMedia : mainMedia
+    const permission = mainMedia.isPrivate ? 'private' : 'public'
     return (
       <View style={{marginRight:20}}>
-        <View style={{height:100,aspectRatio:Number(preview.width)/Number(preview.height)}}>
-          {preview.type === 'image/embedded' && <ShockWebView
+        <View style={{height:100,aspectRatio:Number(ref.width)/Number(ref.height)}}>
+          {ref.type === 'image/embedded' && <ShockWebView
             type="image"
-            width={preview.width}
-            height={preview.height}
-            magnet={preview.magnetURI}
+            width={Number(ref.width)}
+            height={Number(ref.height)}
+            magnet={ref.magnetURI}
+            permission={permission}
+            selectedView={'preview'}
+            
           />}
-          {preview.type === 'video/embedded' && <ShockWebView
+          {ref.type === 'video/embedded' && <ShockWebView
             type="video"
-            width={preview.width}
-            height={preview.height}
-            magnet={preview.magnetURI}
+            width={Number(ref.width)}
+            height={Number(ref.height)}
+            magnet={ref.magnetURI}
+            permission={permission}
+            selectedView={'preview'}
           />}
         </View>
         <FontAwesome name="plus" size={20} color="white" onPress={selectThis}/>
@@ -227,11 +243,18 @@ class CreatePostDark extends React.Component<Props,State> {
     )
   }
 
+  togglePublicMedia = () => {
+    if(this.state.selectedView === 'preview'){
+      this.setState({selectedView:'media'})
+    }
+  }
+
   render() {
     const {
       error,
       loadingStatus,
       selectedContentID,
+      selectedView
     } = this.state
     const {medias}=this.props.mediaLib
     let preview = null
@@ -254,6 +277,7 @@ class CreatePostDark extends React.Component<Props,State> {
       },
     ]
     if(selectedContentID){
+      //notificationService.Log("TESTING",JSON.stringify(medias[selectedContentID]))
       if(medias[selectedContentID][0].isPreview){
         [preview,media] = medias[selectedContentID]
       } else {
@@ -282,6 +306,15 @@ class CreatePostDark extends React.Component<Props,State> {
         ]
       }
     }
+    let mediaToShow:CompleteAnyMedia|null = media
+    if(media && !media.isPrivate){
+      if(selectedView === 'preview'){
+        mediaToShow = preview
+      } else {
+        mediaToShow = media
+      }
+    }
+
     return (
       <ScrollView style={styles.mainContainer}>
         <Pad amount={50} />
@@ -335,22 +368,31 @@ class CreatePostDark extends React.Component<Props,State> {
             </View>
             {selectedContentID && <View>
                 <Text style={{color:'white'}}>Content</Text>
-                {preview && <View style={{width:'100%',aspectRatio:Number(preview.width)/Number(preview.height)}}>
+                {preview && media && media.isPrivate && <View style={{width:'100%',aspectRatio:Number(preview.width)/Number(preview.height)}}>
                   <Text style={{color:'white'}}>Selected Preview</Text>
                   <ShockWebView 
-                  magnet={preview.magnetURI} 
-                  width={preview.width} 
-                  hight={preview.height} 
-                  type={preview.type === 'image/embedded'?'image':'video'}/>
+                    magnet={preview.magnetURI} 
+                    width={Number(preview.width)} 
+                    height={Number(preview.height)} 
+                    type={preview.type === 'image/embedded'?'image':'video'}
+                    permission={'private'}
+                    selectedView={'preview'}
+                  />
                 </View>
                 }
-                {media && <View style={{width:'100%',aspectRatio:Number(media.width)/Number(media.height)}}>
+                {mediaToShow && <View style={{width:'100%',aspectRatio:Number(mediaToShow.width)/Number(mediaToShow.height)}}>
                   <Text style={{color:'white'}}>Selected Media</Text>
                   <ShockWebView 
-                  magnet={media.magnetURI} 
-                  width={media.width} 
-                  hight={media.height} 
-                  type={media.type === 'image/embedded'?'image':'video'}/>
+                    magnet={mediaToShow.magnetURI} 
+                    width={Number(mediaToShow.width)} 
+                    height={Number(mediaToShow.height)} 
+                    type={mediaToShow.type === 'image/embedded'?'image':'video'}
+                    permission={(media && media.isPrivate) ? 'private' : 'public'}
+                    selectedView={selectedView}
+                  />
+                  <TouchableOpacity onPress={this.togglePublicMedia}>
+                    <Text>Reveal Media</Text>
+                  </TouchableOpacity>
                   </View>
                 }
             </View>}

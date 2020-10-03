@@ -2,9 +2,10 @@ import * as SeedServer from './seedServer'
 import {FilePickerFile} from 'react-native-file-picker'
 import { Schema } from 'shock-common'
 import { generateRandomBytes } from './encryption'
-import notificationService from '../../notificationService'
+
+export type FilePickerExtended = FilePickerFile & {isPreview:boolean}
 export type MediaType = {
-    file:FilePickerFile,
+    files:FilePickerExtended[],
     localID:string,
     serviceToken:string,
     serviceUrl:string
@@ -19,26 +20,65 @@ type CompleteEmbVideo = Schema.EmbeddedVideo & {isPreview:boolean,isPrivate:bool
 export type CompleteAnyMedia = CompleteEmbImage|CompleteEmbVideo
 
 export const uploadPreviewContent = async (mediaData:MediaType):Promise<uploadedFileInfo> => {
-    if(!SeedServer.isAllowedFormat(mediaData.file.type)){
-        throw new Error('Unknown media type in preview, got:'+mediaData.file.type)
+    const [firstFile] = mediaData.files//only one media for preview for the moment
+    if(!firstFile || !firstFile.isPreview){
+        throw new Error('no preview file was provided to uploadPreviewContent')
+    }
+    if(!SeedServer.isAllowedFormat(firstFile.type)){
+        throw new Error('Unknown media type in preview, got:'+firstFile.type)
     }
     const mediaToken:string = await SeedServer.enrollToken(mediaData.serviceUrl,mediaData.serviceToken)
-    const torrentFile:SeedServer.TorrentFile = await SeedServer.putFile(mediaData.serviceUrl,mediaToken,mediaData.file,mediaData.localID)
+    const torrentFile:SeedServer.TorrentFile = await SeedServer.putFile(mediaData.serviceUrl,mediaToken,[firstFile as FilePickerFile],mediaData.localID)
     return {
         torrent:torrentFile.magnet,
-        type:SeedServer.getMediaType(mediaData.file.type)
+        type:SeedServer.getMediaType(firstFile.type)
     }
 }
 
 export const uploadMediaContent = async (mediaData:MediaType):Promise<uploadedFileInfo> => {
-    if(!SeedServer.isAllowedFormat(mediaData.file.type)){
-        throw new Error('Unknown media type in media, got:'+mediaData.file.type)
+    const [firstFile,secondFile] = mediaData.files//only support one file for preview and one for media for the moment
+    const filesToSend:FilePickerFile[] =  []
+    let legend:{previewName:string,mediaName:string,localID:string}|null = null
+    let mediaType:"image/embedded" | "video/embedded" = 'video/embedded'
+    if(firstFile){
+        //in case there is no preview, the second file must be undefined
+        if(!secondFile){
+            //if only one exists it is the media
+            filesToSend.push(firstFile)
+            mediaType = SeedServer.getMediaType(firstFile.type)
+        } else {
+            //if both exist, the first must be preview and the second must be main media
+            filesToSend.push(firstFile,secondFile)
+            if(firstFile.isPreview){
+                legend = {
+                    previewName:firstFile.fileName,
+                    mediaName:secondFile.fileName,
+                    localID:mediaData.localID
+                }
+                mediaType = SeedServer.getMediaType(secondFile.type)
+            } else { //just in case
+                legend = {
+                    previewName:secondFile.fileName,
+                    mediaName:firstFile.fileName,
+                    localID:mediaData.localID
+                }
+                mediaType = SeedServer.getMediaType(firstFile.type)
+            }
+        }
+    } else {
+        throw new Error('no media file was provided to uploadMediaContent')
     }
+    filesToSend.forEach(file => {
+        if(!SeedServer.isAllowedFormat(file.type)){
+            throw new Error('Unknown media type in media, got:'+file.type)
+        }
+    })
+    const extraInfo = legend ? JSON.stringify(legend) : mediaData.localID
     const mediaToken:string = await SeedServer.enrollToken(mediaData.serviceUrl,mediaData.serviceToken)
-    const torrentFile:SeedServer.TorrentFile = await SeedServer.putFile(mediaData.serviceUrl,mediaToken,mediaData.file,mediaData.localID)
+    const torrentFile:SeedServer.TorrentFile = await SeedServer.putFile(mediaData.serviceUrl,mediaToken,filesToSend,extraInfo)
     return {
         torrent:torrentFile.magnet,
-        type:SeedServer.getMediaType(mediaData.file.type)
+        type:mediaType
     }
 }
 
@@ -46,7 +86,7 @@ export const createLibEntry = async (media:CompleteAnyMedia[])=>{
     //Http post -> create lipb entity
     //return gun object id as contentID
     console.log(media)
-    notificationService.Log("TESTING","createLibEntry not implemented yet, sending random bytes as response")
+    //notificationService.Log("TESTING","createLibEntry not implemented yet, sending random bytes as response")
     const contentID = await generateRandomBytes(16)
     return contentID
 }

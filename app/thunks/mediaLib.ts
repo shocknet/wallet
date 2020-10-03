@@ -26,9 +26,19 @@ export const uploadMedia = (media:MediaToUpload) => async (dispatch:any) =>{
         const localID:string = await generateRandomBytes(32)
         dispatch(Actions.gotLocalID(localID))
         const mediaComplete:Array<MediaLib.CompleteAnyMedia> = []
-        if(media.previewMedia){
+
+        const previewMedia:MediaLib.FilePickerExtended|null = media.previewMedia ? {
+            ...media.previewMedia,
+            isPreview:true
+        } : null
+        const mainMedia:MediaLib.FilePickerExtended|null = {
+            ...media.mainMedia,
+            isPreview:false
+        }
+        if(previewMedia && media.privateContent){
+            
             const previewParams:MediaLib.MediaType = {
-                file:media.previewMedia,
+                files:[previewMedia],
                 localID,
                 serviceToken:media.seedServerToken,
                 serviceUrl:media.seedServerUrl
@@ -57,13 +67,13 @@ export const uploadMedia = (media:MediaToUpload) => async (dispatch:any) =>{
                 magnet:''
             }))
         }
+        const toUpload = previewMedia && !media.privateContent ? [previewMedia,mainMedia] : [mainMedia]
         const mainParams:MediaLib.MediaType = {
-            file:media.mainMedia,
+            files:toUpload,
             localID,
             serviceToken:media.seedServerToken,
             serviceUrl:media.seedServerUrl
         }
-        
         const main:MediaLib.uploadedFileInfo = await MediaLib.uploadMediaContent(mainParams)
         mediaComplete.push({
             //@ts-ignore
@@ -75,6 +85,18 @@ export const uploadMedia = (media:MediaToUpload) => async (dispatch:any) =>{
             type:main.type,
             isPrivate:media.privateContent
         })
+        if(previewMedia && !media.privateContent){
+            mediaComplete.unshift({
+                //@ts-ignore
+                height:media.previewMediaHeight,
+                //@ts-ignore
+                width:media.previewMediaWidth,
+                isPreview:true,
+                magnetURI:main.torrent,
+                type:'image/embedded',
+                isPrivate:false
+            })
+        }
         dispatch(Actions.beganMetadataUpload({
             height:media.mainMediaHeight,
             width:media.mainMediaWidth,

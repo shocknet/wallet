@@ -309,11 +309,11 @@ class PublishContentDark extends React.Component<Props,State> {
       })
       this.goBack()
     }
-    if(mediaLib.error !== oldMediaLib.error && mediaLib.error !== null){
+    /*if(mediaLib.error !== oldMediaLib.error && mediaLib.error !== null){
       this.setState({
-        processing:false
+        processing:true
       })
-    }
+    }*/
   }
 
   onPressHeroImage = () => {
