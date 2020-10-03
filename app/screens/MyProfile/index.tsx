@@ -974,10 +974,7 @@ const styles = StyleSheet.create({
     marginLeft: 20,
   },
   mainButtons: {
-    width: '100%',
-    flexDirection: 'column',
-    justifyContent:'flex-start'
-    //marginTop: 300,
+     width: '100%',
   },
   qrViewModal: {
     flex: 1,
