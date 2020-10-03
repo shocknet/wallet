@@ -69,6 +69,7 @@ const reducer = (state:State = INITIAL_STATE,action:Action) => {
                 const {contentID,contents} = action.data
                 draft.medias[contentID] = contents
                 draft.status = ''
+                draft.error = null
                 draft.currentLocalID = ''
                 draft.currentMedia = createEmptyMedia()
                 draft.currentPreview = createEmptyMedia()

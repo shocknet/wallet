@@ -61,14 +61,18 @@ interface TorrentFileRes {
 export const putFile = async (
   serviceUrl: string,
   token : string,
-  file : FilePickerFile, 
+  files : FilePickerFile[], 
   extraInfo: string = '',
   comment:string = ''
 ) : Promise<TorrentFile> =>  {
-  //@ts-ignore
-  file.name = file.fileName
   const formData = new FormData()
-  formData.append("files",file)
+  files.forEach(file =>{
+    const fileComplete:(FilePickerFile & {name:string}) = {
+      ...file,
+      name:file.fileName
+    }
+    formData.append("files",fileComplete)
+  })
   formData.append("info",extraInfo)
   formData.append("comment",comment)
   const res = await fetch(`${serviceUrl}/api/put_file`,{

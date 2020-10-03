@@ -9,6 +9,7 @@ import * as CSS from '../../res/css'
 //import UserInfo from './UserInfo'
 import ShockWebView from '../ShockWebView'
 import moment from 'moment'
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'
 //@ts-ignore
 import GotoDetailIcon from '../../assets/images/feed/gotodetail.svg'
 //@ts-ignore
@@ -43,6 +44,9 @@ interface State {
   videosToDisplay:MediaToDisplay[]
   privateImages:MediaToDisplay[]
   privateVideos:MediaToDisplay[]
+  publicImages:MediaToDisplay[]
+  publicVideos:MediaToDisplay[]
+  selectedView:'preview'|'media'
   
 }
 const DEFAULT_STATE:State = {
@@ -53,6 +57,9 @@ const DEFAULT_STATE:State = {
   videosToDisplay:[],
   privateImages:[],
   privateVideos:[],
+  publicImages:[],
+  publicVideos:[],
+  selectedView:'preview'
 }
 
 export default class Post extends React.Component<Props,State> {
@@ -85,7 +92,6 @@ export default class Post extends React.Component<Props,State> {
 
     const privateVideos:typeof videos = []
     const privateImages:typeof images = []
-
     //fill an array with all the image media that isPreview and not
     images.forEach(e => {
       if(e.isPreview){
@@ -126,8 +132,10 @@ export default class Post extends React.Component<Props,State> {
         this.setState({
           //show media even if it has a preview, might edit later
           isReady:true,
-          imagesToDisplay:imageMedias,
-          videosToDisplay:videoMedias
+          imagesToDisplay:imagePreviews,
+          videosToDisplay:videoPreviews,
+          publicImages:imageMedias,
+          publicVideos:videoMedias
         })
       } else {
         //this post has private media,check if the media is already paid
@@ -160,13 +168,18 @@ export default class Post extends React.Component<Props,State> {
   renderRibbon = ():JSX.Element|null => {
     const {
       isPrivate,
-      isAvailable
+      isAvailable,
+      selectedView
     } = this.state
+    if(selectedView === 'media'){
+      return null
+    }
     if(!isPrivate){
       return <View style={{display:'flex',flexDirection:'row-reverse'}}>
         <View style={{backgroundColor:'#16191C',position:'relative',top:-120,width:100}} >
-          <Text style={{color:'white'}}>Total Tips</Text>
-          <Text style={{color:'white'}}>{'25000'/*TMP*/}sats</Text>
+          <TouchableOpacity onPress={this.handlePublicClick}>
+            <FontAwesome5 name="chevron-right" color="white" size={22} />
+          </TouchableOpacity>
         </View>
       </View>
     }
@@ -200,6 +213,16 @@ export default class Post extends React.Component<Props,State> {
     })
   }
 
+  handlePublicClick = () => {
+    const {selectedView} = this.state
+    if(selectedView !== 'preview'){
+      return
+    }
+    this.setState({
+      selectedView:'media'
+    })
+  }
+
   render() {
     const {
       author,
@@ -215,7 +238,11 @@ export default class Post extends React.Component<Props,State> {
     const {
       isReady,
       imagesToDisplay,
-      videosToDisplay
+      videosToDisplay,
+      isPrivate,
+      selectedView,
+      publicImages,
+      publicVideos
     } = this.state
     if(!isReady){
       return <View style={styles.postContainer}>
@@ -223,6 +250,13 @@ export default class Post extends React.Component<Props,State> {
         </View>
       </View>
     }
+    const privateVideoCond = isPrivate && videosToDisplay.length > 0
+    const privateImageCond = isPrivate && videosToDisplay.length === 0 && imagesToDisplay.length > 0
+
+    const video = selectedView === 'preview' ? videosToDisplay[0] : publicVideos[0]
+    const image = selectedView === 'preview' ? imagesToDisplay[0] : publicImages[0]
+    const publicMedia = video ? video : image
+    const publicMediaCond = !isPrivate && publicMedia
     return (
       <View style={styles.postContainer}>
         <View style={styles.postContainerTop}>
@@ -250,20 +284,34 @@ export default class Post extends React.Component<Props,State> {
             {paragraph.text}
           </Text>
         ))}
-        {videosToDisplay.length > 0 && (
+        {privateVideoCond && (
           <ShockWebView
             type="video"
             width={videosToDisplay[0].width}
             height={videosToDisplay[0].height}
             magnet={videosToDisplay[0].data}
+            permission={'private'}
+            selectedView={'preview'}
           />
         )}
-        {videosToDisplay.length === 0 && imagesToDisplay.length > 0 && (
+        {privateImageCond && (
           <ShockWebView
             type="image"
             width={imagesToDisplay[0].width}
             height={imagesToDisplay[0].height}
             magnet={imagesToDisplay[0].data}
+            permission={'private'}
+            selectedView={'preview'}
+          />
+        )}
+        {publicMediaCond && (
+          <ShockWebView
+            type={videosToDisplay[0] ? 'video' : 'image'}
+            width={publicMedia.width}
+            height={publicMedia.height}
+            magnet={publicMedia.data}
+            permission={'public'}
+            selectedView={selectedView}
           />
         )}
         {this.renderRibbon()}
