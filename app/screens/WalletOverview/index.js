@@ -41,7 +41,7 @@ import {
   loadNewTransaction,
 } from '../../actions/HistoryActions'
 import { subscribeOnChats } from '../../actions/ChatActions'
-import { invoicesRefreshForced } from '../../actions'
+import { invoicesRefreshForced, paymentsRefreshForced } from '../../actions'
 import { SEND_SCREEN } from '../Send'
 import { RECEIVE_SCREEN } from '../Receive'
 import notificationService from '../../../notificationService'
@@ -76,6 +76,7 @@ import UnifiedTrx from './UnifiedTrx'
  * @prop {{notifyDisconnect:boolean, notifyDisconnectAfterSeconds:number}} settings
  * @prop {() => void} forceInvoicesRefresh
  * @prop {boolean} isOnline
+ * @prop {() => void} forcePaymentsRefresh // TODO: do at auth
  */
 
 /**
@@ -153,8 +154,10 @@ class WalletOverview extends Component {
       loadNewTransaction,
       navigation,
       forceInvoicesRefresh,
+      forcePaymentsRefresh,
     } = this.props
 
+    forcePaymentsRefresh()
     forceInvoicesRefresh()
 
     this.didFocus = navigation.addListener('didFocus', () => {
@@ -502,6 +505,7 @@ const mapDispatchToProps = {
   loadNewInvoice,
   loadNewTransaction,
   forceInvoicesRefresh: invoicesRefreshForced,
+  forcePaymentsRefresh: paymentsRefreshForced,
 }
 
 export default connect(
