@@ -590,10 +590,10 @@ export default class MyProfile extends React.Component<Props, State> {
       outputRange: [-30, -200],
       extrapolate: 'clamp',
     });
-    this.state.scrollY.addListener(e => {
-      if(e.value <= 300){
-
-      }
+    const extrasOpacity = this.state.scrollY.interpolate({
+      inputRange: [0, HEADER_SCROLL_DISTANCE],
+      outputRange: [1, 0],
+      extrapolate: 'clamp',
     })
 
     if (theme === 'dark') {
@@ -712,19 +712,23 @@ export default class MyProfile extends React.Component<Props, State> {
 
               <Pad amount={8} />
 
-              <TouchableOpacity onPress={this.onPressBio}>
-                <Text style={styles.bodyTextDark}
-                >{bio || 'Loading...'}</Text>
-              </TouchableOpacity>
+              <Animated.View style={{opacity:extrasOpacity}} >
+                <TouchableOpacity onPress={this.onPressBio}>
+                  <Text style={styles.bodyTextDark}
+                  >{bio || 'Loading...'}</Text>
+                </TouchableOpacity>
+              </Animated.View>
 
-              <TouchableOpacity
-                style={styles.configButtonDark}
-                onPress={this.onPressMetaConfigModal}
-              >
-                <SettingIcon />
-                <Text style={styles.configButtonTextDark}
-                >Config</Text>
-              </TouchableOpacity>
+              <Animated.View style={{opacity:extrasOpacity}}>
+                <TouchableOpacity
+                  style={styles.configButtonDark}
+                  onPress={this.onPressMetaConfigModal}
+                >
+                  <SettingIcon />
+                  <Text style={styles.configButtonTextDark}
+                  >Config</Text>
+                </TouchableOpacity>
+              </Animated.View>
             </View>
           </Animated.View>
           </Animated.View>
@@ -877,10 +881,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   displayNameDark: {
-    backgroundColor:'#16191C',
+    textShadowColor:'#16191C',
+    textShadowRadius:3,
     color: '#F3EFEF',
     fontFamily: 'Montserrat-700',
     fontSize: 16,
+    textShadowOffset: { width: 0.5, height: 0.5 }
   },
 
   container: {
