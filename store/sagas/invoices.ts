@@ -1,10 +1,12 @@
 import { takeEvery, call, put, select } from 'redux-saga/effects'
 import Logger from 'react-native-file-log'
+import { Schema } from 'shock-common'
 
 import * as Actions from '../../app/actions'
 import {
   ListInvoiceRequest as ListInvoicesRequest,
   post,
+  batchDecodePayReqs,
 } from '../../app/services'
 import { isOnline, getStateRoot } from '../selectors'
 
@@ -52,8 +54,20 @@ function* fetchLatestInvoices(action: Actions.Action) {
   }
 }
 
+function* batchDecodeInvoices(action: Actions.InvoicesBatchDecodeReqAction) {
+  const { payReqs } = action.data
+
+  const decoded: Schema.InvoiceWhenDecoded[] = yield call(
+    batchDecodePayReqs,
+    payReqs,
+  )
+
+  yield put(Actions.invoicesBatchDecodeRes(payReqs, decoded))
+}
+
 function* rootSaga() {
   yield takeEvery('*', fetchLatestInvoices)
+  yield takeEvery(Actions.invoicesBatchDecodeReq, batchDecodeInvoices)
 }
 
 export default rootSaga
