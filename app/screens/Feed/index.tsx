@@ -15,7 +15,6 @@ import { connect } from 'react-redux'
 import { NavigationScreenProp, NavigationScreenOptions } from 'react-navigation'
 import _ from 'lodash'
 import * as Common from 'shock-common'
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'
 
 import * as Reducers from '../../../reducers'
 import Post from '../../components/Post/Feed'
@@ -25,6 +24,10 @@ import * as API from '../../services/contact-api'
 
 //@ts-ignore
 import AddonIcon from '../../assets/images/feed/addon.svg'
+//@ts-ignore
+import ShockIconWhite from '../../assets/images/shockW.svg'
+//@ts-ignore
+import ShockIconBlue from '../../assets/images/shockB.svg'
 
 type Navigation = NavigationScreenProp<{}, Routes.UserParams>
 type Item = Common.Schema.Post
@@ -58,16 +61,15 @@ class Feed extends React.Component<Props, State> {
   static navigationOptions: NavigationScreenOptions = {
     header: null,
     tabBarIcon: ({ focused }) => {
-      return (
-        <FontAwesome5
-          color={
-            focused ? CSS.Colors.BLUE_MEDIUM_DARK : CSS.Colors.GRAY_MEDIUM_LIGHT
-          }
-          name="bolt"
-          // reverseColor={'#CED0CE'}
-          size={32}
-        />
-      )
+      if(focused){
+        return (
+          <ShockIconBlue style={{width:32,height:32}}/>
+        )
+      } else {
+        return (
+          <ShockIconWhite style={{width:32,height:32}}/>
+        )
+      }
     },
   }
 
