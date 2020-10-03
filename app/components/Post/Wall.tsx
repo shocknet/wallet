@@ -9,7 +9,6 @@ import * as CSS from '../../res/css'
 //import UserInfo from './UserInfo'
 import ShockWebView from '../ShockWebView'
 import moment from 'moment'
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'
 //@ts-ignore
 import GotoDetailIcon from '../../assets/images/feed/gotodetail.svg'
 //@ts-ignore
@@ -175,13 +174,7 @@ export default class Post extends React.Component<Props,State> {
       return null
     }
     if(!isPrivate){
-      return <View style={{display:'flex',flexDirection:'row-reverse'}}>
-        <View style={{backgroundColor:'#16191C',position:'relative',top:-120,width:100}} >
-          <TouchableOpacity onPress={this.handlePublicClick}>
-            <FontAwesome5 name="chevron-right" color="white" size={22} />
-          </TouchableOpacity>
-        </View>
-      </View>
+      return null
     }
     if(!isAvailable){
       return <View style={{display:'flex',flexDirection:'row-reverse'}}>
@@ -292,6 +285,7 @@ export default class Post extends React.Component<Props,State> {
             magnet={videosToDisplay[0].data}
             permission={'private'}
             selectedView={'preview'}
+            updateToMedia={null}
           />
         )}
         {privateImageCond && (
@@ -302,6 +296,7 @@ export default class Post extends React.Component<Props,State> {
             magnet={imagesToDisplay[0].data}
             permission={'private'}
             selectedView={'preview'}
+            updateToMedia={null}
           />
         )}
         {publicMediaCond && (
@@ -312,6 +307,7 @@ export default class Post extends React.Component<Props,State> {
             magnet={publicMedia.data}
             permission={'public'}
             selectedView={selectedView}
+            updateToMedia={this.handlePublicClick}
           />
         )}
         {this.renderRibbon()}

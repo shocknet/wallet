@@ -216,6 +216,8 @@ class CreatePostDark extends React.Component<Props,State> {
             magnet={ref.magnetURI}
             permission={permission}
             selectedView={'preview'}
+            updateToMedia={null}
+
             
           />}
           {ref.type === 'video/embedded' && <ShockWebView
@@ -225,6 +227,7 @@ class CreatePostDark extends React.Component<Props,State> {
             magnet={ref.magnetURI}
             permission={permission}
             selectedView={'preview'}
+            updateToMedia={null}
           />}
         </View>
         <FontAwesome name="plus" size={20} color="white" onPress={selectThis}/>
@@ -377,6 +380,7 @@ class CreatePostDark extends React.Component<Props,State> {
                     type={preview.type === 'image/embedded'?'image':'video'}
                     permission={'private'}
                     selectedView={'preview'}
+                    updateToMedia={null}
                   />
                 </View>
                 }
@@ -389,10 +393,8 @@ class CreatePostDark extends React.Component<Props,State> {
                     type={mediaToShow.type === 'image/embedded'?'image':'video'}
                     permission={(media && media.isPrivate) ? 'private' : 'public'}
                     selectedView={selectedView}
+                    updateToMedia={this.togglePublicMedia}
                   />
-                  <TouchableOpacity onPress={this.togglePublicMedia}>
-                    <Text>Reveal Media</Text>
-                  </TouchableOpacity>
                   </View>
                 }
             </View>}
