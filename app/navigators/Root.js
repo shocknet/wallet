@@ -44,21 +44,6 @@ import * as Routes from '../routes'
 import LNURL, { LNURL_SCREEN } from '../screens/LNURL'
 
 import CustomDrawer from '../components/CustomDrawer'
-//@ts-ignore
-import IconDrawerProfile from '../assets/images/drawer-icons/icon-drawer-profile.svg'
-//@ts-ignore
-import IconDrawerWalletSettings from '../assets/images/drawer-icons/icon-drawer-wallet.svg'
-//@ts-ignore
-import IconDrawerSpendingRules from '../assets/images/drawer-icons/icon-drawer-spending-rule.svg'
-//@ts-ignore
-import IconDrawerAdvancedLightning from '../assets/images/drawer-icons/icon-drawer-advanced-lightning.svg'
-//@ts-ignore
-import IconDrawerHelp from '../assets/images/drawer-icons/icon-drawer-help.svg'
-//@ts-ignore
-import IconDrawerScan from '../assets/images/drawer-icons/icon-drawer-scan.svg'
-//@ts-ignore
-import IconDrawerPower from '../assets/images/drawer-icons/icon-drawer-power.svg'
-// import IconDrawerHome from '../assets/images/drawer-icons/icon-drawer-help.svg'
 
 export const APP = 'APP'
 export const BOTTOM_NAV = 'BOTTOM_NAV'
