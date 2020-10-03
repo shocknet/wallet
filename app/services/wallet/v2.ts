@@ -165,3 +165,13 @@ export interface ListPaymentsRes {
   first_index_offset: string
   last_index_offset: string
 }
+
+export const batchDecodePayReqs = async (
+  payReqs: string[],
+): Promise<Schema.InvoiceWhenDecoded[]> => {
+  const res = await Promise.all(
+    payReqs.map(payReq => decodeInvoice({ payReq })),
+  )
+
+  return res.map(r => r.decodedRequest)
+}
