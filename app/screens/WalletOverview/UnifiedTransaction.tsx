@@ -19,6 +19,7 @@ import moment from 'moment'
 import { Schema } from 'shock-common'
 import { connect } from 'react-redux'
 
+import { ConnectedShockAvatar } from '../../components/ShockAvatar'
 import * as CSS from '../../res/css'
 import btcConvert from '../../services/convertBitcoin'
 import Pad from '../../components/Pad'
@@ -34,6 +35,7 @@ interface StateProps {
   outbound: boolean
   title: string
   subTitle: string
+  relatedPublickey?: string
 
   USDRate: number
 
@@ -57,6 +59,7 @@ export class UnifiedTransaction extends React.PureComponent<Props> {
       value,
       title,
       subTitle,
+      relatedPublickey,
     } = this.props
 
     if (err) {
@@ -72,23 +75,45 @@ export class UnifiedTransaction extends React.PureComponent<Props> {
 
     return (
       <TouchableOpacity style={styles.item}>
-        <View style={styles.avatar}>
-          <View style={styles.outboundIndicator}>
-            {outbound ? (
-              <Ionicons
-                name="md-arrow-round-up"
-                size={15}
-                color={CSS.Colors.ICON_GREEN}
-              />
-            ) : (
-              <Ionicons
-                name="md-arrow-round-down"
-                size={15}
-                color={CSS.Colors.ICON_RED}
-              />
-            )}
+        {relatedPublickey ? (
+          <View>
+            <View style={styles.outboundIndicator2}>
+              {outbound ? (
+                <Ionicons
+                  name="md-arrow-round-up"
+                  size={15}
+                  color={CSS.Colors.ICON_GREEN}
+                />
+              ) : (
+                <Ionicons
+                  name="md-arrow-round-down"
+                  size={15}
+                  color={CSS.Colors.ICON_RED}
+                />
+              )}
+            </View>
+            <ConnectedShockAvatar publicKey={relatedPublickey} height={45} />
           </View>
-        </View>
+        ) : (
+          <View style={styles.avatar}>
+            <View style={styles.outboundIndicator}>
+              {outbound ? (
+                <Ionicons
+                  name="md-arrow-round-up"
+                  size={15}
+                  color={CSS.Colors.ICON_GREEN}
+                />
+              ) : (
+                <Ionicons
+                  name="md-arrow-round-down"
+                  size={15}
+                  color={CSS.Colors.ICON_RED}
+                />
+              )}
+            </View>
+          </View>
+        )}
+
         <Pad amount={10} insideRow />
         <View style={styles.memo}>
           <Text style={styles.title} numberOfLines={1} ellipsizeMode="middle">
@@ -113,6 +138,7 @@ export class UnifiedTransaction extends React.PureComponent<Props> {
 const makeMapStateToProps = () => {
   const getInvoice = Store.makeGetInvoice()
   const getPayment = Store.makeGetPayment()
+  const searchPublicKeyWithMsgBody = Store.makeSearchPublicKeyWithMsgBody()
 
   return (state: Store.State, props: OwnProps): StateProps => {
     try {
@@ -152,8 +178,19 @@ const makeMapStateToProps = () => {
           }`) ||
         'Fetching memo...'
 
-      // TODO: get Name from order / chat
-      const name = 'anonymous'
+      const relatedPublickey = searchPublicKeyWithMsgBody(
+        state,
+        isPayment ? asPayment.payment_preimage : asInvoice.payment_request,
+      )
+
+      const maybeUser = state.users[relatedPublickey as string]
+
+      // TODO: get Name from order / coordinates
+      let name = 'anonymous'
+
+      if (maybeUser) {
+        name = maybeUser.displayName || name
+      }
 
       return {
         USDRate:
@@ -166,6 +203,7 @@ const makeMapStateToProps = () => {
         timestamp: Number(asInvoice.settle_date || asPayment.creation_date),
         value: Number(asInvoice.amt_paid_sat || asPayment.value_sat),
         subTitle: description,
+        relatedPublickey: relatedPublickey || undefined,
       }
     } catch (err) {
       return {
@@ -208,6 +246,19 @@ const styles = StyleSheet.create({
       { translateX: OUTBOUND_INDICATOR_RADIUS / 4 },
       { translateY: OUTBOUND_INDICATOR_RADIUS / 4 },
     ],
+    borderRadius: 100,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: CSS.Colors.BACKGROUND_WHITE,
+  },
+
+  outboundIndicator2: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: OUTBOUND_INDICATOR_RADIUS,
+    height: OUTBOUND_INDICATOR_RADIUS,
+    elevation: 5,
     borderRadius: 100,
     alignItems: 'center',
     justifyContent: 'center',
