@@ -35,6 +35,7 @@ const reducer: Reducer<State, Action | RehydrateAction> = (
     if (action.type === 'invoices/receivedOwn') {
       const { invoices, originRequest } = action.data
 
+      // They come in no good order.
       const mostRecentToLeast = invoices.slice().sort((i1, i2) => {
         // If settled, use the settle date for sorting, else use creation date.
         // settle_date will be 0 if not settled
