@@ -3,43 +3,42 @@ import { WebView } from 'react-native-webview'
 import notificationService from '../../../notificationService'
 
 type Props = {
-  width:number,
-  height:number,
-  magnet:string,
-  type:'video'|'image',
-  permission:'private'|'public'
-  selectedView:'preview'|'media',
-  updateToMedia:(()=>void)|null
+  width: number
+  height: number
+  magnet: string
+  type: 'video' | 'image'
+  permission: 'private' | 'public'
+  selectedView: 'preview' | 'media'
+  updateToMedia: (() => void) | null
 }
-type CompleteWebView = (WebView & {postMessage:(message:string)=>void})
+type CompleteWebView = WebView & { postMessage: (message: string) => void }
 
 export default class ShockWebView extends React.Component<Props> {
   webview: CompleteWebView | null = null
-  componentDidUpdate(prevProps:Props){
-    if(prevProps.selectedView !== this.props.selectedView){
-      if(this.webview){
-        this.webview.postMessage( this.props.selectedView );
+  componentDidUpdate(prevProps: Props) {
+    if (prevProps.selectedView !== this.props.selectedView) {
+      if (this.webview) {
+        this.webview.postMessage(this.props.selectedView)
       }
     }
   }
-  assignRef = (ref:WebView) => {
+  assignRef = (ref: WebView) => {
     this.webview = ref as CompleteWebView
   }
   render() {
-    const { width, height, magnet, type,permission  } = this.props
+    const { width, height, magnet, type, permission } = this.props
     const finalType = permission === 'public' ? 'image' : type
     const playerString =
-    finalType === 'video'
+      finalType === 'video'
         ? `<video id="player" style="width:100%"></video>`
         : `<img id="player" style="width:100%"></img>`
     const fileExtension =
-    finalType === 'video'
+      finalType === 'video'
         ? `(file.name.endsWith('.mp4') || file.name.endsWith('.webm'))`
         : `(file.name.endsWith('.jpg') || file.name.endsWith('.png'))`
     const domID = finalType === 'video' ? `video#player` : `img#player`
     return (
       <WebView
-        
         ref={this.assignRef}
         // eslint-disable-next-line
         style={{ width: '100%', aspectRatio: width / height }}
@@ -51,9 +50,9 @@ export default class ShockWebView extends React.Component<Props> {
         originWhitelist={['*']}
         // eslint-disable-next-line
         onMessage={event => {
-          const {data} = event.nativeEvent
-          if(data === 'updateSelectedMediaSizes'){
-            if(this.props.updateToMedia){
+          const { data } = event.nativeEvent
+          if (data === 'updateSelectedMediaSizes') {
+            if (this.props.updateToMedia) {
               this.props.updateToMedia()
             }
             return

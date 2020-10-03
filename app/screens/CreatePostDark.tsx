@@ -8,7 +8,7 @@ import {
   FlatList,
   ToastAndroid,
   ActivityIndicator,
-  ScrollView
+  ScrollView,
 } from 'react-native'
 import { connect } from 'react-redux'
 import Http from 'axios'
@@ -34,10 +34,9 @@ import { CompleteAnyMedia } from '../services/mediaLib'
 
 export const CREATE_POST_DARK = 'CREATE_POST_DARK'
 
-
 type Props = {
-  navigation:import('react-navigation').NavigationScreenProp<{}, {}>
-  mediaLib:import('../../reducers/mediaLib').State
+  navigation: import('react-navigation').NavigationScreenProp<{}, {}>
+  mediaLib: import('../../reducers/mediaLib').State
 }
 
 /**
@@ -50,28 +49,26 @@ type Props = {
  */
 
 type State = {
-  isCreating:boolean
-  shareMode:'public'|'paywall'|'subscribers'
-  description:string
-  error:string|null
-  loadingStatus:string|null
-  selectedContentID:string|null
-  selectedView:"preview" | "media"
+  isCreating: boolean
+  shareMode: 'public' | 'paywall' | 'subscribers'
+  description: string
+  error: string | null
+  loadingStatus: string | null
+  selectedContentID: string | null
+  selectedView: 'preview' | 'media'
 }
 
-const DEFAULT_STATE:State = {
+const DEFAULT_STATE: State = {
   isCreating: false,
   shareMode: 'public',
   description: '',
   error: null,
   loadingStatus: null,
-  selectedContentID:null,
-  selectedView:'preview'
+  selectedContentID: null,
+  selectedView: 'preview',
 }
 
-
-class CreatePostDark extends React.Component<Props,State> {
-
+class CreatePostDark extends React.Component<Props, State> {
   /**
    * @type {import('react-navigation').NavigationScreenOptions}
    */
@@ -85,9 +82,9 @@ class CreatePostDark extends React.Component<Props,State> {
     this.props.navigation.goBack()
   }
 
-  onChangeText = (e:string) => this.setState({ description: e })
+  onChangeText = (e: string) => this.setState({ description: e })
 
-  onChangeShareMode = (item:{value:any}) => {
+  onChangeShareMode = (item: { value: any }) => {
     this.setState({
       shareMode: item.value,
     })
@@ -101,12 +98,12 @@ class CreatePostDark extends React.Component<Props,State> {
 
     try {
       //mediaContent=
-      const {medias} = this.props.mediaLib
-      const {selectedContentID} = this.state
-      if(!selectedContentID){
+      const { medias } = this.props.mediaLib
+      const { selectedContentID } = this.state
+      if (!selectedContentID) {
         return
       }
-      const mediaContent=medias[selectedContentID]
+      const mediaContent = medias[selectedContentID]
       const { description } = this.state
       const dataToSendToService = {
         paragraphs: description.split('\n'),
@@ -160,77 +157,82 @@ class CreatePostDark extends React.Component<Props,State> {
     }
   }
 
-
-  selectMedia = (contentID:string) => () => {
-    this.setState({selectedContentID:contentID})
+  selectMedia = (contentID: string) => () => {
+    this.setState({ selectedContentID: contentID })
   }
 
-  prepareMediaItems = ():[()=>void,CompleteAnyMedia[]][] => {
-    const {medias} = this.props.mediaLib
-    const {shareMode} = this.state
-    const mediaReady:[()=>void,CompleteAnyMedia[]][] = []
-    for(let contentID in medias){
-      const media:CompleteAnyMedia[] = medias[contentID]
+  prepareMediaItems = (): [() => void, CompleteAnyMedia[]][] => {
+    const { medias } = this.props.mediaLib
+    const { shareMode } = this.state
+    const mediaReady: [() => void, CompleteAnyMedia[]][] = []
+    for (let contentID in medias) {
+      const media: CompleteAnyMedia[] = medias[contentID]
       const mainMedia = media[0].isPreview ? media[1] : media[0]
-      if(shareMode === 'public'){
-        if(!mainMedia.isPrivate){
-          mediaReady.push([
-            this.selectMedia(contentID),
-            media
-          ])
+      if (shareMode === 'public') {
+        if (!mainMedia.isPrivate) {
+          mediaReady.push([this.selectMedia(contentID), media])
         }
       }
-      if(shareMode === 'paywall' || shareMode === 'subscribers'){
-        if(mainMedia.isPrivate){
-          mediaReady.push([
-            this.selectMedia(contentID),
-            media
-          ])
+      if (shareMode === 'paywall' || shareMode === 'subscribers') {
+        if (mainMedia.isPrivate) {
+          mediaReady.push([this.selectMedia(contentID), media])
         }
       }
     }
     return mediaReady.reverse()
-
   }
 
-  renderPostItem({ item }:{item:[()=>void,CompleteAnyMedia[]]}) {
+  renderPostItem({ item }: { item: [() => void, CompleteAnyMedia[]] }) {
     //const localSelect = this.selectMedia.bind(this)
-    const [selectThis,content] = item
-    
-    const previewMedia:CompleteAnyMedia|undefined=content.find(e => e.isPreview)
-    const mainMedia:CompleteAnyMedia|undefined=content.find(e => !e.isPreview)
-    if(!mainMedia){
-      return <View style={{marginRight:20}}>
-      <Text>Media not found</Text>
-    </View>
+    const [selectThis, content] = item
+
+    const previewMedia: CompleteAnyMedia | undefined = content.find(
+      e => e.isPreview,
+    )
+    const mainMedia: CompleteAnyMedia | undefined = content.find(
+      e => !e.isPreview,
+    )
+    if (!mainMedia) {
+      return (
+        <View style={{ marginRight: 20 }}>
+          <Text>Media not found</Text>
+        </View>
+      )
     }
-    const ref:CompleteAnyMedia = previewMedia ? previewMedia : mainMedia
+    const ref: CompleteAnyMedia = previewMedia ? previewMedia : mainMedia
     const permission = mainMedia.isPrivate ? 'private' : 'public'
     return (
-      <View style={{marginRight:20}}>
-        <View style={{height:100,aspectRatio:Number(ref.width)/Number(ref.height)}}>
-          {ref.type === 'image/embedded' && <ShockWebView
-            type="image"
-            width={Number(ref.width)}
-            height={Number(ref.height)}
-            magnet={ref.magnetURI}
-            permission={permission}
-            selectedView={'preview'}
-            updateToMedia={null}
-
-            
-          />}
-          {ref.type === 'video/embedded' && <ShockWebView
-            type="video"
-            width={Number(ref.width)}
-            height={Number(ref.height)}
-            magnet={ref.magnetURI}
-            permission={permission}
-            selectedView={'preview'}
-            updateToMedia={null}
-          />}
+      <View style={{ marginRight: 20 }}>
+        <View
+          style={{
+            height: 100,
+            aspectRatio: Number(ref.width) / Number(ref.height),
+          }}
+        >
+          {ref.type === 'image/embedded' && (
+            <ShockWebView
+              type="image"
+              width={Number(ref.width)}
+              height={Number(ref.height)}
+              magnet={ref.magnetURI}
+              permission={permission}
+              selectedView={'preview'}
+              updateToMedia={null}
+            />
+          )}
+          {ref.type === 'video/embedded' && (
+            <ShockWebView
+              type="video"
+              width={Number(ref.width)}
+              height={Number(ref.height)}
+              magnet={ref.magnetURI}
+              permission={permission}
+              selectedView={'preview'}
+              updateToMedia={null}
+            />
+          )}
         </View>
-        <FontAwesome name="plus" size={20} color="white" onPress={selectThis}/>
+        <FontAwesome name="plus" size={20} color="white" onPress={selectThis} />
         {/*<ImageBackground
           source={item.image}
           resizeMode="cover"
@@ -247,19 +249,14 @@ class CreatePostDark extends React.Component<Props,State> {
   }
 
   togglePublicMedia = () => {
-    if(this.state.selectedView === 'preview'){
-      this.setState({selectedView:'media'})
+    if (this.state.selectedView === 'preview') {
+      this.setState({ selectedView: 'media' })
     }
   }
 
   render() {
-    const {
-      error,
-      loadingStatus,
-      selectedContentID,
-      selectedView
-    } = this.state
-    const {medias}=this.props.mediaLib
+    const { error, loadingStatus, selectedContentID, selectedView } = this.state
+    const { medias } = this.props.mediaLib
     let preview = null
     let media = null
     let availableDropdownItems = [
@@ -279,14 +276,14 @@ class CreatePostDark extends React.Component<Props,State> {
         icon: () => <PaywallIcon />,
       },
     ]
-    if(selectedContentID){
+    if (selectedContentID) {
       //notificationService.Log("TESTING",JSON.stringify(medias[selectedContentID]))
-      if(medias[selectedContentID][0].isPreview){
-        [preview,media] = medias[selectedContentID]
+      if (medias[selectedContentID][0].isPreview) {
+        ;[preview, media] = medias[selectedContentID]
       } else {
-        [media] = medias[selectedContentID]
+        ;[media] = medias[selectedContentID]
       }
-      if(media.isPrivate){
+      if (media.isPrivate) {
         availableDropdownItems = [
           {
             label: 'Subscribers',
@@ -309,9 +306,9 @@ class CreatePostDark extends React.Component<Props,State> {
         ]
       }
     }
-    let mediaToShow:CompleteAnyMedia|null = media
-    if(media && !media.isPrivate){
-      if(selectedView === 'preview'){
+    let mediaToShow: CompleteAnyMedia | null = media
+    if (media && !media.isPrivate) {
+      if (selectedView === 'preview') {
         mediaToShow = preview
       } else {
         mediaToShow = media
@@ -363,48 +360,72 @@ class CreatePostDark extends React.Component<Props,State> {
                 <Icon name="check" color="white" size={15} />
                 <Text style={styles.contentTypeText1}>Offers</Text>
               </TouchableOpacity>*/}
-              <TouchableOpacity
-                style={styles.contentType2}
-              >
+              <TouchableOpacity style={styles.contentType2}>
                 <Text style={styles.contentTypeText2}>Content</Text>
               </TouchableOpacity>
             </View>
-            {selectedContentID && <View>
-                <Text style={{color:'white'}}>Content</Text>
-                {preview && media && media.isPrivate && <View style={{width:'100%',aspectRatio:Number(preview.width)/Number(preview.height)}}>
-                  <Text style={{color:'white'}}>Selected Preview</Text>
-                  <ShockWebView 
-                    magnet={preview.magnetURI} 
-                    width={Number(preview.width)} 
-                    height={Number(preview.height)} 
-                    type={preview.type === 'image/embedded'?'image':'video'}
-                    permission={'private'}
-                    selectedView={'preview'}
-                    updateToMedia={null}
-                  />
-                </View>
-                }
-                {mediaToShow && <View style={{width:'100%',aspectRatio:Number(mediaToShow.width)/Number(mediaToShow.height)}}>
-                  <Text style={{color:'white'}}>Selected Media</Text>
-                  <ShockWebView 
-                    magnet={mediaToShow.magnetURI} 
-                    width={Number(mediaToShow.width)} 
-                    height={Number(mediaToShow.height)} 
-                    type={mediaToShow.type === 'image/embedded'?'image':'video'}
-                    permission={(media && media.isPrivate) ? 'private' : 'public'}
-                    selectedView={selectedView}
-                    updateToMedia={this.togglePublicMedia}
-                  />
+            {selectedContentID && (
+              <View>
+                <Text style={{ color: 'white' }}>Content</Text>
+                {preview && media && media.isPrivate && (
+                  <View
+                    style={{
+                      width: '100%',
+                      aspectRatio:
+                        Number(preview.width) / Number(preview.height),
+                    }}
+                  >
+                    <Text style={{ color: 'white' }}>Selected Preview</Text>
+                    <ShockWebView
+                      magnet={preview.magnetURI}
+                      width={Number(preview.width)}
+                      height={Number(preview.height)}
+                      type={
+                        preview.type === 'image/embedded' ? 'image' : 'video'
+                      }
+                      permission={'private'}
+                      selectedView={'preview'}
+                      updateToMedia={null}
+                    />
                   </View>
-                }
-            </View>}
-            {!selectedContentID && <View style={styles.postsCarousel}>
-              <FlatList
-                data={this.prepareMediaItems()}
-                renderItem={this.renderPostItem}
-                horizontal
-              />
-            </View>}
+                )}
+                {mediaToShow && (
+                  <View
+                    style={{
+                      width: '100%',
+                      aspectRatio:
+                        Number(mediaToShow.width) / Number(mediaToShow.height),
+                    }}
+                  >
+                    <Text style={{ color: 'white' }}>Selected Media</Text>
+                    <ShockWebView
+                      magnet={mediaToShow.magnetURI}
+                      width={Number(mediaToShow.width)}
+                      height={Number(mediaToShow.height)}
+                      type={
+                        mediaToShow.type === 'image/embedded'
+                          ? 'image'
+                          : 'video'
+                      }
+                      permission={
+                        media && media.isPrivate ? 'private' : 'public'
+                      }
+                      selectedView={selectedView}
+                      updateToMedia={this.togglePublicMedia}
+                    />
+                  </View>
+                )}
+              </View>
+            )}
+            {!selectedContentID && (
+              <View style={styles.postsCarousel}>
+                <FlatList
+                  data={this.prepareMediaItems()}
+                  renderItem={this.renderPostItem}
+                  horizontal
+                />
+              </View>
+            )}
 
             <Pad amount={10} />
             {this.state.isCreating ? (
@@ -438,9 +459,8 @@ class CreatePostDark extends React.Component<Props,State> {
   }
 }
 
-
-const mapStateToProps = ({ mediaLib }:import('../../reducers').State) => ({
-  mediaLib
+const mapStateToProps = ({ mediaLib }: import('../../reducers').State) => ({
+  mediaLib,
 })
 
 const mapDispatchToProps = {}
