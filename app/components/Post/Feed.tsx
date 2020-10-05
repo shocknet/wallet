@@ -87,7 +87,7 @@ export default class Post extends React.Component<Props, State> {
       id: image.id,
       imagePath: image.data,
     }))*/
-
+    
     const imagePreviews: typeof images = []
     const imageMedias: typeof images = []
     const videoPreviews: typeof videos = []
@@ -95,9 +95,14 @@ export default class Post extends React.Component<Props, State> {
 
     const privateVideos: typeof videos = []
     const privateImages: typeof images = []
+
+    const oldImages: typeof images = []
+    const oldVideos: typeof videos = []
     //fill an array with all the image media that isPreview and not
     images.forEach(e => {
-      if (e.isPreview) {
+      if(e.isPreview === undefined){
+        oldImages.push(e)
+      } else if (e.isPreview) {
         imagePreviews.push(e)
       } else {
         imageMedias.push(e)
@@ -105,12 +110,22 @@ export default class Post extends React.Component<Props, State> {
     })
     //fill an array with all the videos media that isPreview and not
     videos.forEach(e => {
-      if (e.isPreview) {
+      if(e.isPreview === undefined){
+        oldVideos.push(e)
+      } else if (e.isPreview) {
         videoPreviews.push(e)
       } else {
         videoMedias.push(e)
       }
     })
+    if(oldVideos.length > 0 || oldImages.length > 0){
+      this.setState({
+        isReady:true,
+        imagesToDisplay:oldImages,
+        videosToDisplay:oldVideos
+      })
+      return
+    }
     if (imagePreviews.length === 0 && videoPreviews.length === 0) {
       //this post has no preview, must be public, ribbon used for tip count
       this.setState({

@@ -9,7 +9,7 @@ import {
   View,
   ActivityIndicator,
   StatusBar,
-  FlatListProps,
+  FlatListProps, ScrollView
 } from 'react-native'
 import { connect } from 'react-redux'
 import { NavigationScreenProp, NavigationScreenOptions } from 'react-navigation'
@@ -273,7 +273,7 @@ class Feed extends React.Component<Props, State> {
           backgroundColor="transparent"
           barStyle="light-content"
         />
-
+        <ScrollView>
         <FlatList
           style={CSS.styles.flex}
           contentContainerStyle={CSS.styles.flex}
@@ -293,6 +293,7 @@ class Feed extends React.Component<Props, State> {
           onViewableItemsChanged={this.onViewableItemsChanged}
           viewabilityConfig={VIEWABILITY_CONFIG}
         />
+        </ScrollView>
       </SafeAreaView>
     )
   }

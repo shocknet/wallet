@@ -93,7 +93,7 @@ export default class ShockWebView extends React.Component<Props,State> {
               document.getElementById("body").appendChild(node)
               mainFile.renderTo(id)
               if(element === "video"){
-                window.ReactNativeWebView.postMessage("YE!!!P");
+                //window.ReactNativeWebView.postMessage("YE!!!P");
                 node.play()
               }
             }
