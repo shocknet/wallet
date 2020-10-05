@@ -370,19 +370,6 @@ class CreatePostDark extends React.Component<Props, State> {
                   />
                 </View>
                 }
-                {mediaToShow && <View style={{width:'100%',aspectRatio:Number(mediaToShow.width)/Number(mediaToShow.height)}}>
-                  <Text style={{color:'white'}}>Selected Media</Text>
-                  <ShockWebView 
-                    magnet={mediaToShow.magnetURI} 
-                    width={Number(mediaToShow.width)} 
-                    height={Number(mediaToShow.height)} 
-                    type={mediaToShow.type === 'image/embedded'?'image':'video'}
-                    permission={(media && media.isPrivate) ? 'private' : 'public'}
-                    //selectedView={selectedView}
-                    updateToMedia={this.togglePublicMedia}
-                  />
-                  </View>
-                }
                 {mediaToShow && (
                   <View
                     style={{
