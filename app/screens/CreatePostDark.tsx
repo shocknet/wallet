@@ -31,6 +31,7 @@ import DropDownPicker from 'react-native-dropdown-picker'
 //import Icon from 'react-native-vector-icons/Feather'
 import ShockWebView from '../components/ShockWebView'
 import { CompleteAnyMedia } from '../services/mediaLib'
+import notificationService from '../../notificationService'
 
 export const CREATE_POST_DARK = 'CREATE_POST_DARK'
 
@@ -201,36 +202,30 @@ class CreatePostDark extends React.Component<Props, State> {
     }
     const ref: CompleteAnyMedia = previewMedia ? previewMedia : mainMedia
     const permission = mainMedia.isPrivate ? 'private' : 'public'
+    notificationService.Log("TESTING",JSON.stringify(ref))
     return (
-      <View style={{ marginRight: 20 }}>
-        <View
-          style={{
-            height: 100,
-            aspectRatio: Number(ref.width) / Number(ref.height),
-          }}
-        >
-          {ref.type === 'image/embedded' && (
-            <ShockWebView
-              type="image"
-              width={Number(ref.width)}
-              height={Number(ref.height)}
-              magnet={ref.magnetURI}
-              permission={permission}
-              selectedView={'preview'}
-              updateToMedia={null}
-            />
-          )}
-          {ref.type === 'video/embedded' && (
-            <ShockWebView
-              type="video"
-              width={Number(ref.width)}
-              height={Number(ref.height)}
-              magnet={ref.magnetURI}
-              permission={permission}
-              selectedView={'preview'}
-              updateToMedia={null}
-            />
-          )}
+      <View style={{marginRight:20}}>
+        <View style={{height:100,aspectRatio:Number(ref.width)/Number(ref.height)}}>
+          {ref.type === 'image/embedded' && <ShockWebView
+            type="image"
+            width={Number(ref.width)}
+            height={Number(ref.height)}
+            magnet={ref.magnetURI}
+            permission={permission}
+            //selectedView={'preview'}
+            updateToMedia={null}
+
+            
+          />}
+          {ref.type === 'video/embedded' && <ShockWebView
+            type="video"
+            width={Number(ref.width)}
+            height={Number(ref.height)}
+            magnet={ref.magnetURI}
+            permission={permission}
+            //selectedView={'preview'}
+            updateToMedia={null}
+          />}
         </View>
         <FontAwesome name="plus" size={20} color="white" onPress={selectThis} />
         {/*<ImageBackground
@@ -306,12 +301,10 @@ class CreatePostDark extends React.Component<Props, State> {
         ]
       }
     }
-    let mediaToShow: CompleteAnyMedia | null = media
-    if (media && !media.isPrivate) {
-      if (selectedView === 'preview') {
+    let mediaToShow:CompleteAnyMedia|null = media
+    if(media && preview && !media.isPrivate){
+      if(selectedView === 'preview'){
         mediaToShow = preview
-      } else {
-        mediaToShow = media
       }
     }
 
@@ -364,31 +357,34 @@ class CreatePostDark extends React.Component<Props, State> {
                 <Text style={styles.contentTypeText2}>Content</Text>
               </TouchableOpacity>
             </View>
-            {selectedContentID && (
-              <View>
-                <Text style={{ color: 'white' }}>Content</Text>
-                {preview && media && media.isPrivate && (
-                  <View
-                    style={{
-                      width: '100%',
-                      aspectRatio:
-                        Number(preview.width) / Number(preview.height),
-                    }}
-                  >
-                    <Text style={{ color: 'white' }}>Selected Preview</Text>
-                    <ShockWebView
-                      magnet={preview.magnetURI}
-                      width={Number(preview.width)}
-                      height={Number(preview.height)}
-                      type={
-                        preview.type === 'image/embedded' ? 'image' : 'video'
-                      }
-                      permission={'private'}
-                      selectedView={'preview'}
-                      updateToMedia={null}
-                    />
+            {selectedContentID && <View>
+                <Text style={{color:'white'}}>Content</Text>
+                {preview && media && media.isPrivate && <View style={{width:'100%',aspectRatio:Number(preview.width)/Number(preview.height)}}>
+                  <Text style={{color:'white'}}>Selected Preview</Text>
+                  <ShockWebView 
+                    magnet={preview.magnetURI} 
+                    width={Number(preview.width)} 
+                    height={Number(preview.height)} 
+                    type={preview.type === 'image/embedded'?'image':'video'}
+                    permission={'private'}
+                    //selectedView={'preview'}
+                    updateToMedia={null}
+                  />
+                </View>
+                }
+                {mediaToShow && <View style={{width:'100%',aspectRatio:Number(mediaToShow.width)/Number(mediaToShow.height)}}>
+                  <Text style={{color:'white'}}>Selected Media</Text>
+                  <ShockWebView 
+                    magnet={mediaToShow.magnetURI} 
+                    width={Number(mediaToShow.width)} 
+                    height={Number(mediaToShow.height)} 
+                    type={mediaToShow.type === 'image/embedded'?'image':'video'}
+                    permission={(media && media.isPrivate) ? 'private' : 'public'}
+                    //selectedView={selectedView}
+                    updateToMedia={this.togglePublicMedia}
+                  />
                   </View>
-                )}
+                }
                 {mediaToShow && (
                   <View
                     style={{
@@ -410,13 +406,13 @@ class CreatePostDark extends React.Component<Props, State> {
                       permission={
                         media && media.isPrivate ? 'private' : 'public'
                       }
-                      selectedView={selectedView}
+                      //selectedView={selectedView}
                       updateToMedia={this.togglePublicMedia}
                     />
                   </View>
                 )}
               </View>
-            )}
+            }
             {!selectedContentID && (
               <View style={styles.postsCarousel}>
                 <FlatList
