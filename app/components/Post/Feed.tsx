@@ -1,5 +1,11 @@
 import React from 'react'
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native'
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+} from 'react-native'
 // @ts-ignore
 import Carousel from 'react-native-smart-carousel'
 import * as Common from 'shock-common'
@@ -18,13 +24,14 @@ import UnpinPostIcon from '../../assets/images/feed/unpin.svg'
 import ShockAvatar from '../ShockAvatar'
 import * as MediaLib from '../../services/mediaLib'
 
-interface MediaToDisplay { 
+interface MediaToDisplay {
   id: string
   data: string
   width: number
   height: number
-  isPreview:boolean
-  isPrivate:boolean }
+  isPreview: boolean
+  isPrivate: boolean
+}
 
 interface Props {
   author: Common.Schema.User
@@ -36,42 +43,40 @@ interface Props {
 }
 
 interface State {
-  isPrivate:boolean
-  isAvailable:boolean
-  isReady:boolean
-  imagesToDisplay:MediaToDisplay[]
-  videosToDisplay:MediaToDisplay[]
-  privateImages:MediaToDisplay[]
-  privateVideos:MediaToDisplay[]
-  publicImages:MediaToDisplay[]
-  publicVideos:MediaToDisplay[]
-  selectedView:'preview'|'media'
-  
+  isPrivate: boolean
+  isAvailable: boolean
+  isReady: boolean
+  imagesToDisplay: MediaToDisplay[]
+  videosToDisplay: MediaToDisplay[]
+  privateImages: MediaToDisplay[]
+  privateVideos: MediaToDisplay[]
+  publicImages: MediaToDisplay[]
+  publicVideos: MediaToDisplay[]
+  selectedView: 'preview' | 'media'
 }
-const DEFAULT_STATE:State = {
-  isAvailable:false,
-  isPrivate:false,
-  isReady:false,
-  imagesToDisplay:[],
-  videosToDisplay:[],
-  privateImages:[],
-  privateVideos:[],
-  publicImages:[],
-  publicVideos:[],
-  selectedView:'preview'
+const DEFAULT_STATE: State = {
+  isAvailable: false,
+  isPrivate: false,
+  isReady: false,
+  imagesToDisplay: [],
+  videosToDisplay: [],
+  privateImages: [],
+  privateVideos: [],
+  publicImages: [],
+  publicVideos: [],
+  selectedView: 'preview',
 }
 
-export default class Post extends React.Component<Props,State> {
-  //shouldComponentUpdate() { 
-    //return false why?
+export default class Post extends React.Component<Props, State> {
+  //shouldComponentUpdate() {
+  //return false why?
   //}
 
   gotoPostDetail = (_item: any) => {}
 
   state = DEFAULT_STATE
 
-
-  async componentDidMount(){
+  async componentDidMount() {
     const {
       images = [],
       videos = [],
@@ -82,51 +87,50 @@ export default class Post extends React.Component<Props,State> {
       id: image.id,
       imagePath: image.data,
     }))*/
-    
 
-    const imagePreviews:typeof images  = []
-    const imageMedias:typeof images  = []
-    const videoPreviews:typeof videos  = []
-    const videoMedias:typeof videos  = []
+    const imagePreviews: typeof images = []
+    const imageMedias: typeof images = []
+    const videoPreviews: typeof videos = []
+    const videoMedias: typeof videos = []
 
-    const privateVideos:typeof videos = []
-    const privateImages:typeof images = []
+    const privateVideos: typeof videos = []
+    const privateImages: typeof images = []
     //fill an array with all the image media that isPreview and not
     images.forEach(e => {
-      if(e.isPreview){
+      if (e.isPreview) {
         imagePreviews.push(e)
       } else {
         imageMedias.push(e)
       }
     })
     //fill an array with all the videos media that isPreview and not
-    videos.forEach(e=> {
-      if(e.isPreview){
+    videos.forEach(e => {
+      if (e.isPreview) {
         videoPreviews.push(e)
       } else {
         videoMedias.push(e)
       }
     })
-    if(imagePreviews.length === 0 && videoPreviews.length === 0){
+    if (imagePreviews.length === 0 && videoPreviews.length === 0) {
       //this post has no preview, must be public, ribbon used for tip count
       this.setState({
-        isReady:true,
-        imagesToDisplay:imageMedias,
-        videosToDisplay:videoMedias
+        isReady: true,
+        imagesToDisplay: imageMedias,
+        videosToDisplay: videoMedias,
       })
     } else {
       //this post has a preview, check if it has private media
       videoMedias.forEach(e => {
-        if(e.isPrivate){
+        if (e.isPrivate) {
           privateVideos.push(e)
         }
       })
       imageMedias.forEach(e => {
-        if(e.isPrivate){
+        if (e.isPrivate) {
           privateImages.push(e)
         }
       })
-      if(privateImages.length === 0 && privateVideos.length === 0){
+      if (privateImages.length === 0 && privateVideos.length === 0) {
         //this post has a preview but no private media, ribbon used for tip count
         const anyPreview = imagePreviews.length > 0 ? imagePreviews[0] : videoPreviews[0]
         const anyMedia = videoMedias.length > 0 ? videoMedias[0] : imageMedias[0]
@@ -150,81 +154,91 @@ export default class Post extends React.Component<Props,State> {
         
       } else {
         //this post has private media,check if the media is already paid
-        const clearContent:boolean|{images:typeof images,videos:typeof videos} = await MediaLib.isContentAvailable(privateImages,privateVideos)
-        if(clearContent === false) {
+        const clearContent:
+          | boolean
+          | {
+              images: typeof images
+              videos: typeof videos
+            } = await MediaLib.isContentAvailable(privateImages, privateVideos)
+        if (clearContent === false) {
           //the content is not available display preview instead, ribbon is to pay
           this.setState({
-            isReady:true,
-            isPrivate:true,
-            isAvailable:false,
-            imagesToDisplay:imagePreviews,
-            videosToDisplay:videoPreviews,
-            privateImages:privateImages,
-            privateVideos:privateVideos
+            isReady: true,
+            isPrivate: true,
+            isAvailable: false,
+            imagesToDisplay: imagePreviews,
+            videosToDisplay: videoPreviews,
+            privateImages: privateImages,
+            privateVideos: privateVideos,
           })
         } else {
-          //the content is private and is available, ribbon not used 
+          //the content is private and is available, ribbon not used
           this.setState({
-            isReady:true,
-            isPrivate:true,
-            isAvailable:true,
-            imagesToDisplay:imageMedias,
-            videosToDisplay:videoMedias
+            isReady: true,
+            isPrivate: true,
+            isAvailable: true,
+            imagesToDisplay: imageMedias,
+            videosToDisplay: videoMedias,
           })
         }
       }
     }
   }
 
-  renderRibbon = ():JSX.Element|null => {
-    const {
-      isPrivate,
-      isAvailable,
-      selectedView
-    } = this.state
-    if(selectedView === 'media'){
+  renderRibbon = (): JSX.Element | null => {
+    const { isPrivate, isAvailable, selectedView } = this.state
+    if (selectedView === 'media') {
       return null
     }
-    if(!isPrivate){
+    if (!isPrivate) {
       return null
     }
-    if(!isAvailable){
-      return <View style={{display:'flex',flexDirection:'row-reverse'}}>
-        <View style={{backgroundColor:'#16191C',position:'relative',top:-120,width:100}}>
-          <TouchableOpacity onPress={this.handlePaywallClick}>
-            <Text style={{color:'white'}}>Paywall</Text>
-            <Text style={{color:'white'}}>{'250'/*TMP*/}sats</Text>
-          </TouchableOpacity>
+    if (!isAvailable) {
+      return (
+        <View style={{ display: 'flex', flexDirection: 'row-reverse' }}>
+          <View
+            style={{
+              backgroundColor: '#16191C',
+              position: 'relative',
+              top: -120,
+              width: 100,
+            }}
+          >
+            <TouchableOpacity onPress={this.handlePaywallClick}>
+              <Text style={{ color: 'white' }}>Paywall</Text>
+              <Text style={{ color: 'white' }}>{'250' /*TMP*/}sats</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
+      )
     }
 
     return null
   }
 
   handlePaywallClick = async () => {
-    const {
+    const { privateImages, privateVideos } = this.state
+    this.setState({ isReady: false })
+    const unlockedMedia = await MediaLib.getPrivateContent(
       privateImages,
-      privateVideos
-    } = this.state
-    this.setState({isReady:false})
-    const unlockedMedia = await MediaLib.getPrivateContent(privateImages,privateVideos)
+      privateVideos,
+    )
     this.setState({
-      isReady:true,
-      imagesToDisplay:unlockedMedia.images,
-      videosToDisplay:unlockedMedia.videos,
-      isPrivate:true,
-      isAvailable:true,
+      isReady: true,
+      imagesToDisplay: unlockedMedia.images,
+      videosToDisplay: unlockedMedia.videos,
+      isPrivate: true,
+      isAvailable: true,
     })
   }
 
   handlePublicClick = () => {
-    const {selectedView} = this.state
-    if(selectedView !== 'preview'){
+    const { selectedView } = this.state
+    if (selectedView !== 'preview') {
       return
     }
     this.setState({
-      selectedView:'media'
+      selectedView: 'media',
     })
   }
 
@@ -247,32 +261,36 @@ export default class Post extends React.Component<Props,State> {
       isPrivate,
       selectedView,
       publicImages,
-      publicVideos
+      publicVideos,
     } = this.state
-    if(!isReady){
-      return <View style={styles.postContainer}>
-        <View style={styles.postContainerTop}>
+    if (!isReady) {
+      return (
+        <View style={styles.postContainer}>
+          <View style={styles.postContainerTop}></View>
         </View>
-      </View>
+      )
     }
     const privateVideoCond = isPrivate && videosToDisplay.length > 0
-    const privateImageCond = isPrivate && videosToDisplay.length === 0 && imagesToDisplay.length > 0
+    const privateImageCond =
+      isPrivate && videosToDisplay.length === 0 && imagesToDisplay.length > 0
 
-    const video = selectedView === 'preview' ? videosToDisplay[0] : publicVideos[0]
-    const image = selectedView === 'preview' ? imagesToDisplay[0] : publicImages[0]
+    const video =
+      selectedView === 'preview' ? videosToDisplay[0] : publicVideos[0]
+    const image =
+      selectedView === 'preview' ? imagesToDisplay[0] : publicImages[0]
     const publicMedia = video ? video : image
     const publicMediaCond = !isPrivate && publicMedia
     return (
       <View style={styles.postContainer}>
         <View style={styles.postContainerTop}>
-        <ShockAvatar
-          height={44}
-          image={author.avatar ? author.avatar : null}
-          //onPress={this.onPressAvatar}
-          lastSeenApp={Date.now()}
-          avatarStyle={styles.avatarStyle}
-          disableOnlineRing
-        />
+          <ShockAvatar
+            height={44}
+            image={author.avatar ? author.avatar : null}
+            //onPress={this.onPressAvatar}
+            lastSeenApp={Date.now()}
+            avatarStyle={styles.avatarStyle}
+            disableOnlineRing
+          />
           <View style={styles.postItemTitle}>
             <Text style={styles.postItemTitleText}>{author.displayName}</Text>
             <Text style={styles.postItemTimestamp}>{diffString + ' ago'}</Text>
@@ -381,7 +399,7 @@ const styles = StyleSheet.create({
     borderWidth: 5,
     borderRadius: 100,
     borderColor: '#707070',
-    marginRight:8,
+    marginRight: 8,
   },
 })
 

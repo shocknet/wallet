@@ -10,7 +10,10 @@ import {
   ActivityIndicator,
   //StatusBar,
   TouchableHighlight,
-  Image, PixelRatio, Dimensions, LayoutChangeEvent
+  Image,
+  PixelRatio,
+  Dimensions,
+  LayoutChangeEvent,
 } from 'react-native'
 //import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'
 //import Logger from 'react-native-file-log'
@@ -39,78 +42,84 @@ import ContentFile from '../assets/images/publish-content/file.svg'
 import CheckBox from 'react-native-check-box'
 import { pickFile } from '../services/seedServer'
 import * as Thunks from '../thunks'
-import{MediaToUpload} from '../thunks/mediaLib'
+import { MediaToUpload } from '../thunks/mediaLib'
 import { clearContentUpload } from '../actions/mediaLib'
 
 export const PUBLISH_CONTENT_DARK = 'PUBLISH_CONTENT_DARK'
-type FileReady = FilePickerFile & {name:string}
+type FileReady = FilePickerFile & { name: string }
 type Props = {
-  navigation:import('react-navigation').NavigationScreenProp<{}, {}>
-  mediaLib:import('../../reducers/mediaLib').State
-  publishMedia:(media:MediaToUpload) => void
-  clearContentUpload:()=>void
-
+  navigation: import('react-navigation').NavigationScreenProp<{}, {}>
+  mediaLib: import('../../reducers/mediaLib').State
+  publishMedia: (media: MediaToUpload) => void
+  clearContentUpload: () => void
 }
 
 type selectedFileInfo = {
-  file:FileReady|null
-  isImage:boolean
-  isVideo:boolean
-  height:number
-  width:number
-} 
+  file: FileReady | null
+  isImage: boolean
+  isVideo: boolean
+  height: number
+  width: number
+}
 
 type State = {
-  title:string
-  description:string
-  isPostOrTeaser:boolean
-  isPrivate:boolean
+  title: string
+  description: string
+  isPostOrTeaser: boolean
+  isPrivate: boolean
 
-  selectedMedia:selectedFileInfo
-  selectedPreview:selectedFileInfo
+  selectedMedia: selectedFileInfo
+  selectedPreview: selectedFileInfo
 
-  processing:boolean
-  error:string|null
+  processing: boolean
+  error: string | null
 
-  previewImageWidth:number
-  previewVideoWidth:number
-  mainImageWidth:number
-  mainVideoWidth:number
+  previewImageWidth: number
+  previewVideoWidth: number
+  mainImageWidth: number
+  mainVideoWidth: number
 }
 
-
-const emptySelectedMedia = ():selectedFileInfo => ({
-  file:null,
-  isImage:false,
-  isVideo:false,
-  height:0,
-  width:0  
+const emptySelectedMedia = (): selectedFileInfo => ({
+  file: null,
+  isImage: false,
+  isVideo: false,
+  height: 0,
+  width: 0,
 })
 
-const DEFAULT_STATE:State = {
-  title:'',
+const DEFAULT_STATE: State = {
+  title: '',
   description: '',
   isPostOrTeaser: false,
-  isPrivate:false,
-  selectedMedia:emptySelectedMedia(),
-  selectedPreview:emptySelectedMedia(),
-  processing:false,
-  error:null,
-  mainImageWidth:0,
-  mainVideoWidth:0,
-  previewImageWidth:0,
-  previewVideoWidth:0
+  isPrivate: false,
+  selectedMedia: emptySelectedMedia(),
+  selectedPreview: emptySelectedMedia(),
+  processing: false,
+  error: null,
+  mainImageWidth: 0,
+  mainVideoWidth: 0,
+  previewImageWidth: 0,
+  previewVideoWidth: 0,
 }
 
-const getMediaStyle = ({ w, h,parentW = Dimensions.get('window').width }:{w:number,h:number,parentW:number|undefined}) => {
-  if(!parentW){
+const getMediaStyle = ({
+  w,
+  h,
+  parentW = Dimensions.get('window').width,
+}: {
+  w: number
+  h: number
+  parentW: number | undefined
+}) => {
+  if (!parentW) {
     parentW = Dimensions.get('window').width
   }
   const screenR = PixelRatio.get()
   const rW = PixelRatio.roundToNearestPixel(w / screenR)
   const rH = PixelRatio.roundToNearestPixel(h / screenR)
   const factor = rW > parentW ? 1 : rW / parentW
-  
+
   const s = StyleSheet.create({
     video: {
       width: rW > parentW ? '100%' : rW,
@@ -120,7 +129,7 @@ const getMediaStyle = ({ w, h,parentW = Dimensions.get('window').width }:{w:numb
   return s.video
 }
 
-class PublishContentDark extends React.Component<Props,State> {
+class PublishContentDark extends React.Component<Props, State> {
   /**
    * @type {import('react-navigation').NavigationScreenOptions}
    */
@@ -130,29 +139,29 @@ class PublishContentDark extends React.Component<Props,State> {
 
   state = DEFAULT_STATE
 
-  mediaVideoPlayer:any = null
+  mediaVideoPlayer: any = null
 
-  updateMediaContainerWidth = (key:string) => (e:LayoutChangeEvent) => {
+  updateMediaContainerWidth = (key: string) => (e: LayoutChangeEvent) => {
     switch (key) {
       case 'mainImageWidth':
-        this.setState({[key]:e.nativeEvent.layout.width})
-        break;
+        this.setState({ [key]: e.nativeEvent.layout.width })
+        break
       case 'mainVideoWidth':
-        this.setState({[key]:e.nativeEvent.layout.width})
-        break;
+        this.setState({ [key]: e.nativeEvent.layout.width })
+        break
       case 'previewImageWidth':
-        this.setState({[key]:e.nativeEvent.layout.width})
-        break;
+        this.setState({ [key]: e.nativeEvent.layout.width })
+        break
       case 'previewVideoWidth':
-        this.setState({[key]:e.nativeEvent.layout.width})
-        break;
+        this.setState({ [key]: e.nativeEvent.layout.width })
+        break
       default:
-        break;
+        break
     }
   }
 
-  assignVideoRef =(type:'main'|'preview') => (ref:any) => {
-    if(type === 'main'){
+  assignVideoRef = (type: 'main' | 'preview') => (ref: any) => {
+    if (type === 'main') {
       this.mediaVideoPlayer = ref
     }
   }
@@ -172,27 +181,29 @@ class PublishContentDark extends React.Component<Props,State> {
     }
   }
 
-  onVideoLoad =(type:'main'|'preview') => (e:{naturalSize:{height:number,width:number}}) => {
-    if(type === 'main'){
+  onVideoLoad = (type: 'main' | 'preview') => (e: {
+    naturalSize: { height: number; width: number }
+  }) => {
+    if (type === 'main') {
       this.setState({
-        selectedMedia:{
+        selectedMedia: {
           ...this.state.selectedMedia,
-          height:e.naturalSize.height,
-          width:e.naturalSize.width
-        }
+          height: e.naturalSize.height,
+          width: e.naturalSize.width,
+        },
       })
     }
   }
 
-  onChangeTitle = (text:string) => {
+  onChangeTitle = (text: string) => {
     this.setState({
-      title:text
+      title: text,
     })
   }
 
-  onChangeDescription = (text:string) => {
+  onChangeDescription = (text: string) => {
     this.setState({
-      description:text
+      description: text,
     })
   }
 
@@ -200,67 +211,68 @@ class PublishContentDark extends React.Component<Props,State> {
     this.props.navigation.goBack()
   }
 
-  
-
-  onPressPicker = async (prefix:'image'|'video'|'audio'|'file',preview:boolean) => {
+  onPressPicker = async (
+    prefix: 'image' | 'video' | 'audio' | 'file',
+    preview: boolean,
+  ) => {
     try {
-      if(prefix === 'audio'){
-        throw new Error("Audio files are not supported yet")
+      if (prefix === 'audio') {
+        throw new Error('Audio files are not supported yet')
       }
-      if(prefix === 'file'){
-        throw new Error("General files are not supported yet")
+      if (prefix === 'file') {
+        throw new Error('General files are not supported yet')
       }
-      const file = await pickFile() as FileReady
-      if(!file.type.startsWith(prefix+'/')){
-        throw new Error("Invalid file type selected please select a "+prefix)
+      const file = (await pickFile()) as FileReady
+      if (!file.type.startsWith(prefix + '/')) {
+        throw new Error('Invalid file type selected please select a ' + prefix)
       }
       file.name = file.fileName
       if (file.type.startsWith('image/')) {
-        const size = await new Promise((res, rej) => {
+        const size = (await new Promise((res, rej) => {
           Image.getSize(file.uri, (w, h) => res({ w, h }), err => rej(err))
-        }) as {w:number, h:number}
-        if(preview){
+        })) as { w: number; h: number }
+        if (preview) {
           this.setState({
-            selectedPreview:{
+            selectedPreview: {
               file: file,
               isImage: true,
               height: size.h,
               width: size.w,
-              isVideo:false
-            }
+              isVideo: false,
+            },
           })
         } else {
           this.setState({
-            selectedMedia:{
+            selectedMedia: {
               file: file,
               isImage: true,
               height: size.h,
               width: size.w,
-              isVideo:false
-            }
+              isVideo: false,
+            },
           })
         }
       } else if (file.type.startsWith('video/')) {
-        if(preview){
+        if (preview) {
           this.setState({
-            selectedPreview:{
+            selectedPreview: {
               file: file,
               isVideo: true,
-              height:0,//still unknown
-              width:0,//still unknown
-              isImage:false
-            }
+              height: 0, //still unknown
+              width: 0, //still unknown
+              isImage: false,
+            },
           })
         } else {
           //should be unreachable, not supported yet
           this.setState({
-            selectedMedia:{
+            selectedMedia: {
               file: file,
               isVideo: true,
-              height:0,//still unknown
-              width:0,//still unknown
-              isImage:false
-            }
+              height: 0, //still unknown
+              width: 0, //still unknown
+              isImage: false,
+            },
           })
         }
       } else {
@@ -273,39 +285,44 @@ class PublishContentDark extends React.Component<Props,State> {
   onDiscard = () => {
     this.setState(DEFAULT_STATE)
     this.props.clearContentUpload()
-
   }
   onPublish = () => {
-    const {selectedPreview,selectedMedia,description,title,isPrivate} = this.state
-    const {mediaLib} = this.props
-    if(!selectedMedia.file){
+    const {
+      selectedPreview,
+      selectedMedia,
+      description,
+      title,
+      isPrivate,
+    } = this.state
+    const { mediaLib } = this.props
+    if (!selectedMedia.file) {
       //err
       return
     }
-    const media:MediaToUpload = {
-      seedServerUrl:mediaLib.seedServerUrl,
-      seedServerToken:mediaLib.seedServerToken,
+    const media: MediaToUpload = {
+      seedServerUrl: mediaLib.seedServerUrl,
+      seedServerToken: mediaLib.seedServerToken,
       privateContent: isPrivate,
-      previewMedia:selectedPreview.file ? selectedPreview.file : null,
-      previewMediaHeight:selectedPreview.file ? selectedPreview.height : 0,
-      previewMediaWidth:selectedPreview.file ? selectedPreview.width : 0,
-      mainMedia:selectedMedia.file,
-      mainMediaHeight:selectedMedia.height,
-      mainMediaWidth:selectedMedia.width,
+      previewMedia: selectedPreview.file ? selectedPreview.file : null,
+      previewMediaHeight: selectedPreview.file ? selectedPreview.height : 0,
+      previewMediaWidth: selectedPreview.file ? selectedPreview.width : 0,
+      mainMedia: selectedMedia.file,
+      mainMediaHeight: selectedMedia.height,
+      mainMediaWidth: selectedMedia.width,
       description,
-      title
+      title,
     }
     this.props.publishMedia(media)
     this.setState({
-      processing:true
+      processing: true,
     })
   }
-  componentDidUpdate(prevProps:Props){
-    const {mediaLib:oldMediaLib} = prevProps
-    const {mediaLib} = this.props
-    if(mediaLib.status !== oldMediaLib.status && mediaLib.status === ''){
+  componentDidUpdate(prevProps: Props) {
+    const { mediaLib: oldMediaLib } = prevProps
+    const { mediaLib } = this.props
+    if (mediaLib.status !== oldMediaLib.status && mediaLib.status === '') {
       this.setState({
-        processing:false
+        processing: false,
       })
       this.goBack()
     }
@@ -317,29 +334,46 @@ class PublishContentDark extends React.Component<Props,State> {
   }
 
   onPressHeroImage = () => {
-    this.onPressPicker('image',true)
+    this.onPressPicker('image', true)
   }
   onPressImageContent = () => {
-    this.onPressPicker('image',false)
+    this.onPressPicker('image', false)
   }
   onPressVideoContent = () => {
-    this.onPressPicker('video',false)
+    this.onPressPicker('video', false)
   }
   onPressMusicContent = () => {
-    this.onPressPicker('audio',false)
+    this.onPressPicker('audio', false)
   }
   onPressFileContent = () => {
-    this.onPressPicker('file',false)
+    this.onPressPicker('file', false)
   }
 
   render() {
-    const {title,description,selectedPreview,selectedMedia,processing,isPrivate,isPostOrTeaser,previewImageWidth,mainImageWidth,mainVideoWidth} = this.state
-    const {mediaLib} = this.props
+    const {
+      title,
+      description,
+      selectedPreview,
+      selectedMedia,
+      processing,
+      isPrivate,
+      isPostOrTeaser,
+      previewImageWidth,
+      mainImageWidth,
+      mainVideoWidth,
+    } = this.state
+    const { mediaLib } = this.props
     const previewSource = {
-      uri: (selectedPreview.file && selectedPreview.file.uri) ? selectedPreview.file.uri : '',
+      uri:
+        selectedPreview.file && selectedPreview.file.uri
+          ? selectedPreview.file.uri
+          : '',
     }
     const mediaSource = {
-      uri: (selectedMedia.file && selectedMedia.file.uri) ? selectedMedia.file.uri : '',
+      uri:
+        selectedMedia.file && selectedMedia.file.uri
+          ? selectedMedia.file.uri
+          : '',
     }
     const { width, height } = Dimensions.get('window')
     return (
@@ -365,12 +399,19 @@ class PublishContentDark extends React.Component<Props,State> {
             />
             <View style={styles.heroImage}>
               <Text style={styles.labelDark}>Hero Image</Text>
-              <HeroImage onPress ={this.onPressHeroImage}/>
+              <HeroImage onPress={this.onPressHeroImage} />
             </View>
             {selectedPreview.isImage && (
-              <View onLayout={this.updateMediaContainerWidth('previewImageWidth')} style={{display:'flex',alignItems:'center',width:'100%'}}>
+              <View
+                onLayout={this.updateMediaContainerWidth('previewImageWidth')}
+                style={{ display: 'flex', alignItems: 'center', width: '100%' }}
+              >
                 <Image
-                  style={getMediaStyle({ w: selectedPreview.width, h: selectedPreview.height,parentW:previewImageWidth })}
+                  style={getMediaStyle({
+                    w: selectedPreview.width,
+                    h: selectedPreview.height,
+                    parentW: previewImageWidth,
+                  })}
                   source={previewSource}
                 />
               </View>
@@ -382,7 +423,7 @@ class PublishContentDark extends React.Component<Props,State> {
               <Text style={styles.labelDark}>Contents</Text>
               <View style={styles.contentIcons}>
                 <View style={styles.contentIcon}>
-                  <ContentImages onPress={this.onPressImageContent}/>
+                  <ContentImages onPress={this.onPressImageContent} />
                 </View>
                 <View style={styles.contentIcon}>
                   <ContentVideo onPress={this.onPressVideoContent} />
@@ -396,18 +437,32 @@ class PublishContentDark extends React.Component<Props,State> {
               </View>
             </View>
             {selectedMedia.isImage && (
-              <View onLayout={this.updateMediaContainerWidth('mainImageWidth')} style={{display:'flex',alignItems:'center',width:'100%'}}>
+              <View
+                onLayout={this.updateMediaContainerWidth('mainImageWidth')}
+                style={{ display: 'flex', alignItems: 'center', width: '100%' }}
+              >
                 <Image
-                  style={getMediaStyle({ w: selectedMedia.width, h: selectedMedia.height,parentW:mainImageWidth })}
+                  style={getMediaStyle({
+                    w: selectedMedia.width,
+                    h: selectedMedia.height,
+                    parentW: mainImageWidth,
+                  })}
                   source={mediaSource}
                 />
               </View>
             )}
             {selectedMedia.isVideo && (
-              <View onLayout={this.updateMediaContainerWidth('mainVideoWidth')} style={{display:'flex',alignItems:'center',width:'100%'}}>
+              <View
+                onLayout={this.updateMediaContainerWidth('mainVideoWidth')}
+                style={{ display: 'flex', alignItems: 'center', width: '100%' }}
+              >
                 <Video
                   ref={this.assignVideoRef('main')}
-                  style={getMediaStyle({ w: selectedMedia.width, h: selectedMedia.height,parentW:mainVideoWidth })}
+                  style={getMediaStyle({
+                    w: selectedMedia.width,
+                    h: selectedMedia.height,
+                    parentW: mainVideoWidth,
+                  })}
                   controls
                   onLoad={this.onVideoLoad('main')}
                   source={mediaSource}
@@ -424,9 +479,12 @@ class PublishContentDark extends React.Component<Props,State> {
               style={styles.descContainer}
               placeholder="I made a quick video to show you guys how easy it is to run your own social platform on ShockWallet, and start earning Bitcoin"
             />
-            {isPrivate && <Text style={{color:'red'}}>
-              This content can be made available only to subscribers or via a paywall
-            </Text>}
+            {isPrivate && (
+              <Text style={{ color: 'red' }}>
+                This content can be made available only to subscribers or via a
+                paywall
+              </Text>
+            )}
             <View style={styles.checkboxContainer}>
               <CheckBox
                 style={styles.checkbox}
@@ -436,11 +494,10 @@ class PublishContentDark extends React.Component<Props,State> {
                 leftTextStyle={styles.labelCheckbox}
                 checkBoxColor="#BBB8B8"
               />
-              
 
               {/*<Text style={styles.labelCheckbox}>Create Post/Teaser</Text>*/}
             </View>
-            
+
             <View style={styles.checkboxContainer}>
               <CheckBox
                 style={styles.checkbox}
@@ -483,7 +540,9 @@ class PublishContentDark extends React.Component<Props,State> {
             ]}
           >
             <ActivityIndicator color={CSS.Colors.FUN_BLUE} size="large" />
-            <Text style={styles.sendingText}>Processing: {mediaLib.status}</Text>
+            <Text style={styles.sendingText}>
+              Processing: {mediaLib.status}
+            </Text>
             <Text style={styles.sendingText}>{mediaLib.error}</Text>
           </View>
         ) : null}
@@ -492,17 +551,17 @@ class PublishContentDark extends React.Component<Props,State> {
   }
 }
 
-const mapStateToProps = ({ mediaLib }:import('../../reducers').State) => ({
-  mediaLib
+const mapStateToProps = ({ mediaLib }: import('../../reducers').State) => ({
+  mediaLib,
 })
 
-const mapDispatchToProps = (dispatch:any) => ({
-  publishMedia: (media:MediaToUpload) => {
+const mapDispatchToProps = (dispatch: any) => ({
+  publishMedia: (media: MediaToUpload) => {
     dispatch(Thunks.uploadMedia(media))
   },
-  clearContentUpload:() =>{
+  clearContentUpload: () => {
     dispatch(clearContentUpload())
-  }
+  },
 })
 
 export default connect(

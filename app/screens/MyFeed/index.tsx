@@ -6,7 +6,8 @@ import {
   View,
   StatusBar,
   FlatList,
-  ImageBackground, Image,
+  ImageBackground,
+  Image,
 } from 'react-native'
 import {
   NavigationScreenProp,
@@ -39,17 +40,17 @@ interface Props {
 }
 
 interface State {
-  avatar: string | null,
-  selectedTab: string,
+  avatar: string | null
+  selectedTab: string
 }
 
 export default class MyFeed extends React.Component<Props, State> {
   static navigationOptions: NavigationBottomTabScreenOptions = {
     tabBarIcon: ({ focused }) => {
       if (focused) {
-        return (<FeedIconFocused size={32}/>)
+        return <FeedIconFocused size={32} />
       }
-      return (<FeedIcon size={32}/>)
+      return <FeedIcon size={32} />
     },
   }
 
@@ -58,9 +59,7 @@ export default class MyFeed extends React.Component<Props, State> {
     selectedTab: 'all',
   }
 
-  onPressAvatar = () => {
-
-  }
+  onPressAvatar = () => {}
 
   // @ts-ignore
   _renderUserItem({ item }) {
@@ -95,7 +94,7 @@ export default class MyFeed extends React.Component<Props, State> {
             <Text style={styles.postItemTimestamp}>{diffString + ' ago'}</Text>
           </View>
           <View style={styles.postItemBookmark}>
-            {item.saved ? (<UnpinPostIcon />) : (<PinPostIcon />)}
+            {item.saved ? <UnpinPostIcon /> : <PinPostIcon />}
           </View>
         </View>
         <View style={styles.postContainerBody}>
@@ -194,26 +193,30 @@ export default class MyFeed extends React.Component<Props, State> {
           uri:
             'https://www.flatironsquare.co.uk/content/_mobile/Food_Hero_Image.jpg',
         },
-        description: 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam ...',
+        description:
+          'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam ...',
         video: 'https://www.youtube.com/watch?v=PCwL3-hkKrg',
         image: {
-          uri: 'https://guidable.co/wp-content/uploads/2018/10/fake-plastic-food-1487542_1920.jpg'
+          uri:
+            'https://guidable.co/wp-content/uploads/2018/10/fake-plastic-food-1487542_1920.jpg',
         },
         productName: 'Red wine',
         productPrice: 0.000365,
         unit: 'sats',
       },
       {
-        title: "Mark suckemberk",
+        title: 'Mark suckemberk',
         timestamp: 1598141554,
         avatar: {
           uri:
             'https://www.flatironsquare.co.uk/content/_mobile/Food_Hero_Image.jpg',
         },
-        description: 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam ...',
+        description:
+          'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam ...',
         video: 'https://www.youtube.com/watch?v=PCwL3-hkKrg',
         image: {
-          uri: 'https://guidable.co/wp-content/uploads/2018/10/fake-plastic-food-1487542_1920.jpg'
+          uri:
+            'https://guidable.co/wp-content/uploads/2018/10/fake-plastic-food-1487542_1920.jpg',
         },
         productName: 'Red wine',
         productPrice: 0.000365,
@@ -226,9 +229,11 @@ export default class MyFeed extends React.Component<Props, State> {
           uri:
             'https://www.flatironsquare.co.uk/content/_mobile/Food_Hero_Image.jpg',
         },
-        description: 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam ...',
+        description:
+          'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam ...',
         image: {
-          uri: 'https://guidable.co/wp-content/uploads/2018/10/fake-plastic-food-1487542_1920.jpg'
+          uri:
+            'https://guidable.co/wp-content/uploads/2018/10/fake-plastic-food-1487542_1920.jpg',
         },
         productName: 'Red wine',
         productPrice: 0.000365,
@@ -242,10 +247,12 @@ export default class MyFeed extends React.Component<Props, State> {
           uri:
             'https://www.flatironsquare.co.uk/content/_mobile/Food_Hero_Image.jpg',
         },
-        description: 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam ...',
+        description:
+          'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam ...',
         video: 'https://www.youtube.com/watch?v=PCwL3-hkKrg',
         image: {
-          uri: 'https://guidable.co/wp-content/uploads/2018/10/fake-plastic-food-1487542_1920.jpg'
+          uri:
+            'https://guidable.co/wp-content/uploads/2018/10/fake-plastic-food-1487542_1920.jpg',
         },
         productName: 'Red wine',
         productPrice: 0.000365,
@@ -259,10 +266,12 @@ export default class MyFeed extends React.Component<Props, State> {
           uri:
             'https://www.flatironsquare.co.uk/content/_mobile/Food_Hero_Image.jpg',
         },
-        description: 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam ...',
+        description:
+          'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam ...',
         video: 'https://www.youtube.com/watch?v=PCwL3-hkKrg',
         image: {
-          uri: 'https://guidable.co/wp-content/uploads/2018/10/fake-plastic-food-1487542_1920.jpg'
+          uri:
+            'https://guidable.co/wp-content/uploads/2018/10/fake-plastic-food-1487542_1920.jpg',
         },
         productName: 'Red wine',
         productPrice: 0.000365,
@@ -270,7 +279,7 @@ export default class MyFeed extends React.Component<Props, State> {
       },
     ]
 
-    const { avatar, selectedTab, } = this.state
+    const { avatar, selectedTab } = this.state
 
     return (
       <View style={styles.container}>
@@ -289,7 +298,7 @@ export default class MyFeed extends React.Component<Props, State> {
               avatarStyle={styles.avatarStyle}
               disableOnlineRing
             />
-            <AddonIcon size={25} style={styles.avatarAddon}/>
+            <AddonIcon size={25} style={styles.avatarAddon} />
           </TouchableOpacity>
 
           <FlatList

@@ -9,7 +9,7 @@ import {
   View,
   ActivityIndicator,
   StatusBar,
-  FlatListProps
+  FlatListProps,
 } from 'react-native'
 import { connect } from 'react-redux'
 import { NavigationScreenProp, NavigationScreenOptions } from 'react-navigation'
@@ -20,7 +20,6 @@ import * as Reducers from '../../../reducers'
 import Post from '../../components/Post/Feed'
 import * as Routes from '../../routes'
 import * as CSS from '../../res/css'
-//import ShockAvatar from '../../components/ShockAvatar'
 import * as API from '../../services/contact-api'
 
 //@ts-ignore
@@ -51,7 +50,7 @@ interface State {
   awaitingBackfeed: boolean
   awaitingMoreFeed: boolean
   avatar: string | null
-  selectedTab:'all' | 'saved' | 'videos'
+  selectedTab: 'all' | 'saved' | 'videos'
 }
 
 type Props = StateProps & DispatchProps & OwnProps
@@ -78,7 +77,7 @@ class Feed extends React.Component<Props, State> {
     awaitingBackfeed: false,
     awaitingMoreFeed: false,
     avatar: API.Events.getAvatar(),
-    selectedTab:'all',
+    selectedTab: 'all',
   }
 
   onEndReached = () => {
@@ -126,33 +125,39 @@ class Feed extends React.Component<Props, State> {
     if (!Common.Schema.isPost(item)) return null
     const imageCIEntries = Object.entries(item.contentItems).filter(
       ([_, ci]) => ci.type === 'image/embedded',
-    ) as [string, Common.Schema.EmbeddedImage & {isPreview:boolean,isPrivate:boolean}][]
+    ) as [
+      string,
+      Common.Schema.EmbeddedImage & { isPreview: boolean; isPrivate: boolean },
+    ][]
 
     const videoCIEntries = Object.entries(item.contentItems).filter(
       ([_, ci]) => ci.type === 'video/embedded',
-    ) as [string, Common.Schema.EmbeddedVideo & {isPreview:boolean,isPrivate:boolean}][]
+    ) as [
+      string,
+      Common.Schema.EmbeddedVideo & { isPreview: boolean; isPrivate: boolean },
+    ][]
 
     const paragraphCIEntries = Object.entries(item.contentItems).filter(
       ([_, ci]) => ci.type === 'text/paragraph',
     ) as [string, Common.Schema.Paragraph][]
 
     const images = imageCIEntries.map(([key, imageCI]) => ({
-        id: key,
-        data: imageCI.magnetURI,
-        width:Number(imageCI.width),
-        height:Number(imageCI.height),
-        isPreview:imageCI.isPreview,
-        isPrivate:imageCI.isPrivate
-      }))
+      id: key,
+      data: imageCI.magnetURI,
+      width: Number(imageCI.width),
+      height: Number(imageCI.height),
+      isPreview: imageCI.isPreview,
+      isPrivate: imageCI.isPrivate,
+    }))
 
-      const videos = videoCIEntries.map(([key, videoCI]) => ({
-        id: key,
-        data: videoCI.magnetURI,
-        width:Number(videoCI.width),
-        height:Number(videoCI.height),
-        isPreview:videoCI.isPreview,
-        isPrivate:videoCI.isPrivate
-      }))
+    const videos = videoCIEntries.map(([key, videoCI]) => ({
+      id: key,
+      data: videoCI.magnetURI,
+      width: Number(videoCI.width),
+      height: Number(videoCI.height),
+      isPreview: videoCI.isPreview,
+      isPrivate: videoCI.isPrivate,
+    }))
 
     const paragraphs = paragraphCIEntries.map(([key, paragraphCI]) => ({
       id: key,
@@ -244,7 +249,7 @@ class Feed extends React.Component<Props, State> {
       })
     }
   }
-  onPressAvatar = ()=>{}
+  onPressAvatar = () => {}
 
   onPressAllFeeds = () => {
     this.setState({ selectedTab: 'all' })
@@ -260,44 +265,7 @@ class Feed extends React.Component<Props, State> {
 
   render() {
     const { posts } = this.props
-    //const {avatar,selectedTab} = this.state
-    /*const testUsers = [
-      {
-        avatar: {
-          uri:
-            'https://dukeofyorksquare.com/wp-content/uploads/2017/02/Pancakes-2.jpg',
-        },
-        name: 'David',
-      },
-      {
-        avatar: {
-          uri:
-            'https://www.flatironsquare.co.uk/content/_mobile/Food_Hero_Image.jpg',
-        },
-        name: 'James',
-      },
-      {
-        avatar: {
-          uri:
-            'https://dukeofyorksquare.com/wp-content/uploads/2017/02/Pancakes-2.jpg',
-        },
-        name: 'Karem',
-      },
-      {
-        avatar: {
-          uri:
-            'https://mariettasquaremarket.com/wp-content/uploads/2018/12/Pita-Mediterranean-5.jpg',
-        },
-        name: 'Jhon',
-      },
-      {
-        avatar: {
-          uri:
-            'https://www.pietrzaka030.macombserver.net/itwp1000/webproject4/images/basil.jpg',
-        },
-        name: 'Fabio',
-      },
-    ]*/
+
     return (
       <SafeAreaView style={styles.container}>
         <StatusBar
@@ -305,71 +273,10 @@ class Feed extends React.Component<Props, State> {
           backgroundColor="transparent"
           barStyle="light-content"
         />
-        {/*<View style={styles.usersContainer}>
-          <TouchableOpacity style={styles.avatarContainer}>
-            <ShockAvatar
-              height={63}
-              image={avatar}
-              onPress={this.onPressAvatar}
-              lastSeenApp={Date.now()}
-              avatarStyle={styles.avatarStyle}
-              disableOnlineRing
-            />
-            <AddonIcon size={25} style={styles.avatarAddon}/>
-          </TouchableOpacity>
 
-          <FlatList
-            data={testUsers}
-            renderItem={this._renderUserItem}
-            horizontal
-          />
-        </View>*/}
-        {/*<View style={styles.tabsContainer}>
-          <TouchableOpacity
-            style={styles.tabButton}
-            onPress={this.onPressAllFeeds}
-          >
-            <Text
-              style={
-                selectedTab === 'all'
-                  ? styles.tabButtonTextSelected
-                  : styles.tabButtonText
-              }
-            >
-              Feed
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.tabButton}
-            onPress={this.onPressSavedFeeds}
-          >
-            <Text
-              style={
-                selectedTab === 'saved'
-                  ? styles.tabButtonTextSelected
-                  : styles.tabButtonText
-              }
-            >
-              Saved
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.tabButton}
-            onPress={this.onPressVideoFeeds}
-          >
-            <Text
-              style={
-                selectedTab === 'videos'
-                  ? styles.tabButtonTextSelected
-                  : styles.tabButtonText
-              }
-            >
-              Videos
-            </Text>
-          </TouchableOpacity>
-        </View>*/}
         <FlatList
           style={CSS.styles.flex}
+          contentContainerStyle={CSS.styles.flex}
           renderItem={this.renderItem}
           data={posts}
           keyExtractor={keyExtractor}
@@ -382,7 +289,7 @@ class Feed extends React.Component<Props, State> {
               onRefresh={this.onRefresh}
             />
           }
-          ListFooterComponent={listFooterElement}
+          ListFooterComponent={posts.length ? listFooterElement : null}
           onViewableItemsChanged={this.onViewableItemsChanged}
           viewabilityConfig={VIEWABILITY_CONFIG}
         />
@@ -417,7 +324,6 @@ const mapStateToProps = (state: Reducers.State): StateProps => {
   const noRepeats = _.uniq(postsIDs)
 
   const posts = Common.Schema.denormalizePosts(noRepeats, state)
-  
 
   return {
     posts,
