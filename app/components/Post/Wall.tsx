@@ -128,14 +128,26 @@ export default class Post extends React.Component<Props,State> {
       })
       if(privateImages.length === 0 && privateVideos.length === 0){
         //this post has a preview but no private media, ribbon used for tip count
-        this.setState({
-          //show media even if it has a preview, might edit later
-          isReady:true,
-          imagesToDisplay:imagePreviews,
-          videosToDisplay:videoPreviews,
-          publicImages:imageMedias,
-          publicVideos:videoMedias
-        })
+        const anyPreview = imagePreviews.length > 0 ? imagePreviews[0] : videoPreviews[0]
+        const anyMedia = videoMedias.length > 0 ? videoMedias[0] : imageMedias[0]
+        if(anyPreview.data !== anyMedia.data){
+          //old public  post
+          this.setState({
+            isReady:true,
+            imagesToDisplay:imageMedias,
+            videosToDisplay:videoMedias,
+          })
+        } else {
+          //new public post
+          this.setState({
+            isReady:true,
+            imagesToDisplay:imagePreviews,
+            videosToDisplay:videoPreviews,
+            publicImages:imageMedias,
+            publicVideos:videoMedias
+          })
+        }
+        
       } else {
         //this post has private media,check if the media is already paid
         const clearContent:boolean|{images:typeof images,videos:typeof videos} = await MediaLib.isContentAvailable(privateImages,privateVideos)
@@ -284,7 +296,7 @@ export default class Post extends React.Component<Props,State> {
             height={videosToDisplay[0].height}
             magnet={videosToDisplay[0].data}
             permission={'private'}
-            selectedView={'preview'}
+            //selectedView={'preview'}
             updateToMedia={null}
           />
         )}
@@ -295,7 +307,7 @@ export default class Post extends React.Component<Props,State> {
             height={imagesToDisplay[0].height}
             magnet={imagesToDisplay[0].data}
             permission={'private'}
-            selectedView={'preview'}
+            //selectedView={'preview'}
             updateToMedia={null}
           />
         )}
@@ -306,7 +318,7 @@ export default class Post extends React.Component<Props,State> {
             height={publicMedia.height}
             magnet={publicMedia.data}
             permission={'public'}
-            selectedView={selectedView}
+            //selectedView={selectedView}
             updateToMedia={this.handlePublicClick}
           />
         )}
