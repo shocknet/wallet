@@ -31,7 +31,6 @@ import DropDownPicker from 'react-native-dropdown-picker'
 //import Icon from 'react-native-vector-icons/Feather'
 import ShockWebView from '../components/ShockWebView'
 import { CompleteAnyMedia } from '../services/mediaLib'
-import notificationService from '../../notificationService'
 
 export const CREATE_POST_DARK = 'CREATE_POST_DARK'
 
@@ -202,7 +201,6 @@ class CreatePostDark extends React.Component<Props, State> {
     }
     const ref: CompleteAnyMedia = previewMedia ? previewMedia : mainMedia
     const permission = mainMedia.isPrivate ? 'private' : 'public'
-    notificationService.Log("TESTING",JSON.stringify(ref))
     return (
       <View style={{marginRight:20}}>
         <View style={{height:100,aspectRatio:Number(ref.width)/Number(ref.height)}}>
