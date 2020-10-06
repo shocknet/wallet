@@ -11,15 +11,15 @@ function* fetchLatestPayments(action: Actions.Action) {
   try {
     const state = getStateRoot(yield select())
 
-    if (action.type !== 'payments/refreshForced') {
-      if (!state.auth.token) {
-        // If user was unauthenticated let's reset oldIsOnline to false, to avoid
-        // wentOnline from being a false negative (and thus not fetching data).
-        // Some false positives will occur but this is ok.
-        oldIsOnline = false
-        return
-      }
+    if (!state.auth.token) {
+      // If user was unauthenticated let's reset oldIsOnline to false, to avoid
+      // wentOnline from being a false negative (and thus not fetching data).
+      // Some false positives will occur but this is ok.
+      oldIsOnline = false
+      return
+    }
 
+    if (action.type !== 'payments/refreshForced') {
       const newIsOnline = isOnline(state)
       const wentOnline = !oldIsOnline && newIsOnline
 
