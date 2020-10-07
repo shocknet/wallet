@@ -21,8 +21,12 @@ import { tokenDidInvalidate } from '../actions'
  * gun.get('handshakeNodes').on(...)
  * ```
  * @param query
+ * @param publicKeyForDecryption
  */
-export const rifle = (query: string): ReturnType<typeof SocketIO> => {
+export const rifle = (
+  query: string,
+  publicKeyForDecryption?: string,
+): ReturnType<typeof SocketIO> => {
   const {
     auth: { host: nodeURL },
   } = getStore().getState()
@@ -30,6 +34,7 @@ export const rifle = (query: string): ReturnType<typeof SocketIO> => {
   const socket = SocketIO(`http://${nodeURL}/gun`, {
     query: {
       $shock: query,
+      publicKeyForDecryption,
     },
   })
 
