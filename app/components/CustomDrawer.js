@@ -9,6 +9,9 @@ import {
 import { LNURL_SCREEN } from '../screens/LNURL'
 import Pad from './Pad'
 // import ShockAvatar from './ShockAvatar'
+import { ADVANCED_SCREEN } from '../screens/Advanced'
+import { SEED_BACKUP } from '../screens/SeedBackup'
+import { WALLET_SETTINGS } from '../screens/WalletSettings'
 
 import { Colors } from '../res/css'
 import ShockIcon from '../res/icons'
@@ -19,6 +22,7 @@ import ShockIcon from '../res/icons'
  * @typedef {object} DrawerItem
  * @prop {string} name
  * @prop {string} iconName
+ * @prop {(string)=} screen
  */
 
 /** @type {DrawerItem[]} */
@@ -26,18 +30,22 @@ const drawerTopItems = [
   {
     name: 'Wallet Settings',
     iconName: 'solid-wallet',
+    screen: WALLET_SETTINGS,
   },
   {
     name: 'Spending Rules',
     iconName: 'solid-spending-rule',
+    screen: WALLET_SETTINGS,
   },
   {
     name: 'Advanced Lightning',
     iconName: 'solid-lightning',
+    screen: ADVANCED_SCREEN,
   },
   {
     name: 'Seed Backup',
     iconName: 'solid-help',
+    screen: SEED_BACKUP,
   },
 ]
 
@@ -73,10 +81,32 @@ export default class CustomDrawer extends Component {
     this.props.navigation.navigate(LNURL_SCREEN, { clipboardRequest: true })
   }
 
+  /**
+   * @argument {(string)=} screenName
+   * @returns {() => void}
+   */
+  navigateScreen = screenName => () => {
+    const { navigation } = this.props
+
+    if (!screenName) {
+      return
+    }
+
+    navigation.navigate(screenName)
+  }
+
   /** @argument {DrawerItem[]} items */
   renderDrawerItems = (items = []) => {
-    return items.map(({ name, iconName }) => (
-      <TouchableOpacity style={styles.drawerItemContainer} key={name}>
+    return items.map(({ name, iconName, screen }) => (
+      <TouchableOpacity
+        style={[
+          styles.drawerItemContainer,
+          !screen ? styles.drawerItemDisabled : null,
+        ]}
+        key={name}
+        disabled={!screen}
+        onPress={this.navigateScreen(screen)}
+      >
         <Text style={styles.drawerItemTitle}>{name}</Text>
         <View style={styles.drawerItemIcon}>
           <ShockIcon name={iconName} size={18} color={Colors.BUTTON_BLUE} />
@@ -165,6 +195,9 @@ const styles = StyleSheet.create({
   //   margin: 5,
   // },
   customDrawerScrollView: { flex: 1, paddingRight: 20 },
+  drawerItemDisabled: {
+    opacity: 0.5,
+  },
   drawerItemContainer: {
     flexDirection: 'row',
     alignItems: 'center',
