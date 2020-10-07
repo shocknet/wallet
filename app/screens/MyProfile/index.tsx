@@ -44,29 +44,19 @@ import SetBioDialog from './SetBioDialog'
 import MetaConfigModal from './MetaConfigModal'
 
 import profileBG from '../../assets/images/profile-bg.png'
-// @ts-ignore
 import SettingIcon from '../../assets/images/profile/setting-icon.svg'
-// @ts-ignore
 import QrCode from '../../assets/images/qrcode.svg'
-// @ts-ignore
 import TapCopy from '../../assets/images/profile/tapcopy.svg'
-// @ts-ignore
 import OfferProduct from '../../assets/images/profile/offer-product.svg'
-// @ts-ignore
 import OfferService from '../../assets/images/profile/offer-service.svg'
-// @ts-ignore
 import PublishContent from '../../assets/images/profile/publish-content.svg'
-// @ts-ignore
 import CreatePost from '../../assets/images/profile/create-post.svg'
-// @ts-ignore
-import ProfileIcon from '../../assets/images/navbar-icons/profile.svg'
-// @ts-ignore
-import ProfileIconFocused from '../../assets/images/navbar-icons/profile-focused.svg'
-// @ts-ignore
-import IconDrawerProfile from '../../assets/images/drawer-icons/icon-drawer-profile.svg'
+// import IconDrawerProfile from '../../assets/images/drawer-icons/icon-drawer-profile.svg'
+import ShockIcon from '../../res/icons'
 
 import Modal from 'react-native-modal'
 import { CREATE_POST_DARK as CREATE_POST } from '../CreatePostDark'
+import { Color } from 'shock-common/dist/constants'
 
 export const MY_PROFILE = 'MY_PROFILE'
 
@@ -119,13 +109,16 @@ export default class MyProfile extends React.Component<Props, State> {
         //   // reverseColor={'#CED0CE'}
         //   size={32}
         // />
-        focused ? <ProfileIconFocused size={32} /> : <ProfileIcon size={32} />
+        <ShockIcon
+          name="thin-profile"
+          size={32}
+          color={focused ? Color.BUTTON_BLUE : Color.TEXT_WHITE}
+        />
       )
     },
-    //@ts-ignore
-    drawerIcon: ({ focused }) => {
-      return <IconDrawerProfile />
-    },
+    // drawerIcon: ({ focused }) => {
+    //   return <IconDrawerProfile />
+    // },
   }
 
   state: State = {

@@ -26,19 +26,12 @@ import * as CSS from '../res/css'
 //import Modal from 'react-native-modal'
 import Pad from '../components/Pad'
 import InputGroup from '../components/InputGroup'
-//@ts-ignore
 import ArrowLeft from '../assets/images/arrow-left.svg'
-//@ts-ignore
 import HeroImage from '../assets/images/publish-content/image.svg'
-//@ts-ignore
 import ContentImages from '../assets/images/publish-content/images.svg'
-//@ts-ignore
 import ContentVideo from '../assets/images/publish-content/video.svg'
-//@ts-ignore
 import ContentMusic from '../assets/images/publish-content/music.svg'
-//@ts-ignore
 import ContentFile from '../assets/images/publish-content/file.svg'
-//@ts-ignore
 import CheckBox from 'react-native-check-box'
 import { pickFile } from '../services/seedServer'
 import * as Thunks from '../thunks'

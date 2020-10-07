@@ -49,8 +49,7 @@ import CloseChannelModal from './Modals/CloseChannel'
 import ShockDialog from '../../components/ShockDialog'
 import InfoPeerModal from './Modals/infoPeer'
 import { disconnectPeer } from '../../services/wallet'
-// @ts-ignore
-import IconDrawerAdvancedLightning from '../../assets/images/drawer-icons/icon-drawer-advanced-lightning.svg'
+// import IconDrawerAdvancedLightning from '../../assets/images/drawer-icons/icon-drawer-advanced-lightning.svg'
 import * as ContactAPI from '../../services/contact-api'
 
 export const ADVANCED_SCREEN = 'ADVANCED_SCREEN'
@@ -132,9 +131,9 @@ export const ADVANCED_SCREEN = 'ADVANCED_SCREEN'
 class AdvancedScreen extends Component {
   static navigationOptions = {
     header: null,
-    drawerIcon: () => {
-      return <IconDrawerAdvancedLightning />
-    },
+    // drawerIcon: () => {
+    //   return <IconDrawerAdvancedLightning />
+    // },
   }
 
   /** @type {State} */

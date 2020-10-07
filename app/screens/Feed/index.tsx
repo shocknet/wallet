@@ -22,11 +22,7 @@ import * as Routes from '../../routes'
 import * as CSS from '../../res/css'
 import * as API from '../../services/contact-api'
 
-//@ts-ignore
-import AddonIcon from '../../assets/images/feed/addon.svg'
-//@ts-ignore
 import ShockIconWhite from '../../assets/images/shockW.svg'
-//@ts-ignore
 import ShockIconBlue from '../../assets/images/shockB.svg'
 
 type Navigation = NavigationScreenProp<{}, Routes.UserParams>
@@ -61,14 +57,10 @@ class Feed extends React.Component<Props, State> {
   static navigationOptions: NavigationScreenOptions = {
     header: null,
     tabBarIcon: ({ focused }) => {
-      if(focused){
-        return (
-          <ShockIconBlue style={{width:32,height:32}}/>
-        )
+      if (focused) {
+        return <ShockIconBlue style={{ width: 32, height: 32 }} />
       } else {
-        return (
-          <ShockIconWhite style={{width:32,height:32}}/>
-        )
+        return <ShockIconWhite style={{ width: 32, height: 32 }} />
       }
     },
   }

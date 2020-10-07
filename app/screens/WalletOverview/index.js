@@ -21,12 +21,7 @@ import * as Navigation from '../../services/navigation'
 import Nav from '../../components/Nav'
 import wavesBG from '../../assets/images/waves-bg.png'
 import wavesBGDark from '../../assets/images/waves-bg-dark.png'
-//@ts-ignore
-import WalletIcon from '../../assets/images/navbar-icons/wallet.svg'
-//@ts-ignore
-import WalletIconFocused from '../../assets/images/navbar-icons/wallet-focused.svg'
-// @ts-ignore
-import IconDrawerHome from '../../assets/images/drawer-icons/icon-drawer-help.svg'
+import ShockIcon from '../../res/icons'
 import btcConvert from '../../services/convertBitcoin'
 import * as ContactAPI from '../../services/contact-api'
 import * as CSS from '../../res/css'
@@ -56,6 +51,7 @@ import * as Store from '../../../store'
  */
 
 import UnifiedTrx from './UnifiedTrx'
+import { Color } from 'shock-common/dist/constants'
 
 /**
  * @typedef {ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps} ConnectedRedux
@@ -110,17 +106,13 @@ class WalletOverview extends Component {
    * @type {import('react-navigation').NavigationBottomTabScreenOptions}
    */
   static navigationOptions = {
-    tabBarIcon: ({ focused }) => {
-      return (focused ? (
-        <WalletIconFocused size={32} />
-      ) : (
-        <WalletIcon size={32} />
-      ))
-    },
-    // @ts-ignore
-    drawerIcon: ({ focused }) => {
-      return (<WalletIconFocused />)
-    },
+    tabBarIcon: ({ focused }) => ((
+      <ShockIcon
+        name="thin-wallet"
+        size={32}
+        color={focused ? Color.BUTTON_BLUE : Color.TEXT_WHITE}
+      />
+    )),
   }
 
   /**

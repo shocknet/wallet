@@ -1543,6 +1543,14 @@
   dependencies:
     "@types/react" "*"
 
+"@types/react-native-check-box@^2.1.1":
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/@types/react-native-check-box/-/react-native-check-box-2.1.1.tgz#93485710818dcea0222dd14e98db1d120ecd534d"
+  integrity sha512-lE+caBD90+wWD8BFgL0qXmVTbqN2KL9gR+mXf37yZD4zsY0gAOhxziRA1NFRKMZSUnEGoopRvKUMxpLiAZiKAg==
+  dependencies:
+    "@types/react" "*"
+    "@types/react-native" "*"
+
 "@types/react-native-modalbox@^1.4.8":
   version "1.4.8"
   resolved "https://registry.yarnpkg.com/@types/react-native-modalbox/-/react-native-modalbox-1.4.8.tgz#e0cdd9e6ab08dcc9f330a9cf418e35298018fb58"
