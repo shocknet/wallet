@@ -35,7 +35,6 @@ function* fetchLatestPayments(action: Actions.Action) {
     }
 
     const data: ListPaymentsRes = yield call(
-      // @ts-expect-error WTF
       post,
       `/api/lnd/cb/listPayments`,
       req,

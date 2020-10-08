@@ -1,5 +1,4 @@
 import Http, { AxiosResponse } from 'axios'
-import {} from 'shock-common'
 
 interface ErrorResponse {
   message?: string
@@ -37,7 +36,12 @@ const isErrResponse = (u: unknown): u is ErrorResponse => {
  */
 export const post = async <T>(
   url: string,
-  data?: Record<string, unknown>,
+  /**
+   * This would be typed as `Record<string, unknown>` except for
+   * https://github.com/microsoft/TypeScript/issues/15300. It's easier to have
+   * this "badly" typed than to correct dozens of typings elsewhere.
+   */
+  data?: Record<string, any>,
   validator?: (data: unknown) => string,
 ): Promise<T> => {
   try {
