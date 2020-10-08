@@ -6,6 +6,7 @@ import {
   ScrollView,
   Text,
 } from 'react-native'
+import { DrawerActions } from 'react-navigation-drawer'
 import { LNURL_SCREEN } from '../screens/LNURL'
 import Pad from './Pad'
 // import ShockAvatar from './ShockAvatar'
@@ -62,10 +63,10 @@ const drawerBottomItems = [
 ]
 
 /**
- * @typedef {import('react-navigation').DrawerItemsProps} DrawerItemsProps
+ * @typedef {import('react-navigation-drawer').DrawerContentComponentProps} DrawerContentComponentProps
  */
 /**
- * @extends Component<DrawerItemsProps>
+ * @extends Component<DrawerContentComponentProps>
  */
 
 export default class CustomDrawer extends Component {
@@ -93,6 +94,7 @@ export default class CustomDrawer extends Component {
     }
 
     navigation.navigate(screenName)
+    navigation.dispatch(DrawerActions.closeDrawer())
   }
 
   /** @argument {DrawerItem[]} items */

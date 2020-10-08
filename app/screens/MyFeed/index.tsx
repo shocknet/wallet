@@ -11,8 +11,8 @@ import {
 } from 'react-native'
 import {
   NavigationScreenProp,
-  NavigationBottomTabScreenOptions,
 } from 'react-navigation'
+import { NavigationBottomTabOptions } from 'react-navigation-tabs'
 type Navigation = NavigationScreenProp<{}>
 
 import * as API from '../../services/contact-api'
@@ -38,7 +38,7 @@ interface State {
 }
 
 export default class MyFeed extends React.Component<Props, State> {
-  static navigationOptions: NavigationBottomTabScreenOptions = {
+  static navigationOptions: NavigationBottomTabOptions = {
     tabBarIcon: ({ focused }) => (
       <ShockIcon
         name="solid-feed"

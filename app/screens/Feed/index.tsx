@@ -12,7 +12,8 @@ import {
   FlatListProps,
 } from 'react-native'
 import { connect } from 'react-redux'
-import { NavigationScreenProp, NavigationScreenOptions } from 'react-navigation'
+import { NavigationScreenProp } from 'react-navigation'
+import { NavigationBottomTabOptions } from 'react-navigation-tabs';
 import _ from 'lodash'
 import * as Common from 'shock-common'
 
@@ -54,8 +55,7 @@ type Props = StateProps & DispatchProps & OwnProps
 const keyExtractor = (item: Common.Schema.Post) => item.id
 
 class Feed extends React.Component<Props, State> {
-  static navigationOptions: NavigationScreenOptions = {
-    header: null,
+  static navigationOptions: NavigationBottomTabOptions = {
     tabBarIcon: ({ focused }) => {
       if (focused) {
         return <ShockIconBlue style={{ width: 32, height: 32 }} />

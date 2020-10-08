@@ -56,7 +56,7 @@ const byTimestampFromOldestToNewest = (a, b) => a.timestamp - b.timestamp
  */
 export default class Chats extends React.Component {
   /**
-   * @type {import('react-navigation').NavigationBottomTabScreenOptions}
+   * @type {import('react-navigation-tabs').NavigationBottomTabOptions}
    */
   static navigationOptions = {
     // tabBarIcon: ({ focused }) => {

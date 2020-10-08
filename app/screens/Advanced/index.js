@@ -129,8 +129,9 @@ export const ADVANCED_SCREEN = 'ADVANCED_SCREEN'
  * @augments React.Component<Props, State, never>
  */
 class AdvancedScreen extends Component {
+  /** @type {import('react-navigation-stack').NavigationStackOptions} */
   static navigationOptions = {
-    header: null,
+    header: () => null,
     // drawerIcon: () => {
     //   return <IconDrawerAdvancedLightning />
     // },

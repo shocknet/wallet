@@ -95,10 +95,10 @@ import notificationService from '../../notificationService'
  */
 class WalletSettings extends React.Component {
   /**
-   * @type {import('react-navigation').NavigationScreenOptions}
+   * @type {import('react-navigation-stack').NavigationStackOptions}
    */
   static navigationOptions = {
-    header: null,
+    header: () => null,
     // drawerIcon: () => {
     //   return (<IconDrawerWalletSettings />)
     // },

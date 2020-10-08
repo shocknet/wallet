@@ -65,11 +65,8 @@ const DEFAULT_STATE: State = {
 }
 
 class CreatePostDark extends React.Component<Props, State> {
-  /**
-   * @type {import('react-navigation').NavigationScreenOptions}
-   */
-  static navigationOptions = {
-    header: null,
+  static navigationOptions: import('react-navigation-stack').NavigationStackOptions = {
+    header: () => null,
   }
 
   state = DEFAULT_STATE

@@ -103,7 +103,7 @@ class WalletOverview extends Component {
   webview = null
 
   /**
-   * @type {import('react-navigation').NavigationBottomTabScreenOptions}
+   * @type {import('react-navigation-tabs').NavigationBottomTabOptions}
    */
   static navigationOptions = {
     tabBarIcon: ({ focused }) => ((

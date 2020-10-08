@@ -54,10 +54,10 @@ const shockBG = require('../assets/images/shock-bg.png')
  */
 export class Login extends React.Component {
   /**
-   * @type {import('react-navigation').NavigationScreenOptions}
+   * @type {import('react-navigation-stack').NavigationStackOptions}
    */
   static navigationOptions = {
-    header: null,
+    header: () => null,
   }
 
   /** @type {State} */

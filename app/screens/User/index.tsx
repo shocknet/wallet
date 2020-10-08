@@ -17,7 +17,8 @@ import Http from 'axios'
 import * as R from 'ramda'
 import Logger from 'react-native-file-log'
 
-import { NavigationScreenProp, NavigationScreenOptions } from 'react-navigation'
+import { SafeAreaView } from 'react-navigation'
+import { NavigationStackOptions, NavigationStackScreenProps } from "react-navigation-stack"
 
 import { SET_LAST_SEEN_APP_INTERVAL } from '../../services/utils'
 import * as CSS from '../../res/css'
@@ -26,21 +27,18 @@ import QR from '../WalletOverview/QR'
 import Pad from '../../components/Pad'
 import * as Reducers from '../../../reducers'
 import * as Routes from '../../routes'
-import { SafeAreaView } from 'react-navigation'
 import FollowBtn from '../../components/FollowBtn'
 import Post from '../../components/Post/Wall'
 import TipBtn from '../../components/TipBtn'
 
 type UserType = Common.Schema.User
-type Navigation = NavigationScreenProp<{}, Routes.UserParams>
+type Navigation = NavigationStackScreenProps<{}, Routes.UserParams>
 
 interface ConnectedProps {
   users: UserType[]
 }
 
-export interface Props extends ConnectedProps {
-  navigation: Navigation
-}
+type Props = ConnectedProps & Navigation;
 
 interface State {
   posts: Common.Schema.Post[]
@@ -59,7 +57,7 @@ interface Sentinel {
 type Item = Sentinel | Common.Schema.Post
 
 class User extends React.Component<Props, State> {
-  static navigationOptions: NavigationScreenOptions = {
+  static navigationOptions: NavigationStackOptions = {
     header: undefined,
     headerStyle: {
       elevation: 0,
@@ -80,7 +78,9 @@ class User extends React.Component<Props, State> {
   }
 
   fetchNextPage = async () => {
-    const publicKey = this.props.navigation.getParam('publicKey')
+    // getParam is deprecated
+    // const publicKey = this.props.navigation.getParam('publicKey')
+    const publicKey = this.props.navigation.state.params?.publicKey
     if (!publicKey) {
       return
     }
@@ -161,14 +161,14 @@ class User extends React.Component<Props, State> {
     // TODO fix this
     return (
       this.props.users.find(
-        u => u.publicKey === this.props.navigation.getParam('publicKey'),
+        u => u.publicKey === this.props.navigation.state.params?.publicKey,
       ) || {
         avatar: null,
         bio: null,
         displayName: null,
         lastSeenApp: 0,
         lastSeenNode: 0,
-        publicKey: this.props.navigation.getParam('publicKey'),
+        publicKey: this.props.navigation.state.params?.publicKey,
       }
     )
   }
