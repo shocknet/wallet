@@ -14,21 +14,19 @@ Running a Shockwallet node requires the [Shock API](https://github.com/shocknet/
 
 
 - [X] Basic LND Channel and Peer Management
-- [X] Fee Control
+- [X] Fee Control from [mempool.space](https://github.com/mempool/mempool) source
 - [X] LNURL-Pay, Withdraw and Channel
-- [X] Social Personas
+- [X] Social Personas, Presence Indication and Feeds
+- [X] E2EEncrypted Chat/Messaging
 - [X] Automatic Seed and Channel Backup
-- [X] E2EEncrypted Chat Messaging
-- [X] Online Presence Indication
-- [X] Sender-Initiated Payments
-- [X] Provider-less Notifications
-- [X] Node-Disconnected Notification Settings
-- [X] LND 10 with Keysend & Multi-Shard Payments
-- [X] Liquidity Pre-Checks
+- [X] Sender-Initiated Payments (Keysend-less)
+- [X] Provider-less Notifications with node monitor (Android only)
+- [X] LND 11 with Keysend & MPP (sharded payments)
+- [X] Invoice liquidity intercept
 - [X] Torrent Content Streaming
 - [X] Torrent Publishing and Seed Service
 - [X] Guest Webclient (prototype)
-- [ ] Advanced Coin Control
+- [ ] Advanced Coin Control and PSBT 
 - [ ] Advanced Channel Management
 - [ ] Automatic Swaps
 - [ ] Portable LNURL-Auth Keyring
