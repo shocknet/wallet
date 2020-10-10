@@ -4,8 +4,6 @@ import { ListInvoiceRequest } from '../../services/wallet'
 
 export const receivedOwnInvoices = (data: {
   invoices: Schema.InvoiceWhenListed[]
-  last_index_offset: number
-  first_index_offset: number
   originRequest: ListInvoiceRequest
 }) =>
   ({

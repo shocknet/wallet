@@ -42,9 +42,7 @@ function* fetchLatestInvoices(action: Actions.Action) {
 
     yield put(
       Actions.receivedOwnInvoices({
-        first_index_offset: Number(data.first_index_offset),
         invoices: data.invoices,
-        last_index_offset: Number(data.last_index_offset),
         originRequest: req,
       }),
     )
