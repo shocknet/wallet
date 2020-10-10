@@ -195,28 +195,35 @@ class CreatePostDark extends React.Component<Props, State> {
     const ref: CompleteAnyMedia = previewMedia ? previewMedia : mainMedia
     const permission = mainMedia.isPrivate ? 'private' : 'public'
     return (
-      <View style={{marginRight:20}}>
-        <View style={{height:100,aspectRatio:Number(ref.width)/Number(ref.height)}}>
-          {ref.type === 'image/embedded' && <ShockWebView
-            type="image"
-            width={Number(ref.width)}
-            height={Number(ref.height)}
-            magnet={ref.magnetURI}
-            permission={permission}
-            //selectedView={'preview'}
-            updateToMedia={null}
-
-            
-          />}
-          {ref.type === 'video/embedded' && <ShockWebView
-            type="video"
-            width={Number(ref.width)}
-            height={Number(ref.height)}
-            magnet={ref.magnetURI}
-            permission={permission}
-            //selectedView={'preview'}
-            updateToMedia={null}
-          />}
+      <View style={{ marginRight: 20 }}>
+        <View
+          style={{
+            height: 100,
+            aspectRatio: Number(ref.width) / Number(ref.height),
+          }}
+        >
+          {ref.type === 'image/embedded' && (
+            <ShockWebView
+              type="image"
+              width={Number(ref.width)}
+              height={Number(ref.height)}
+              magnet={ref.magnetURI}
+              permission={permission}
+              //selectedView={'preview'}
+              updateToMedia={null}
+            />
+          )}
+          {ref.type === 'video/embedded' && (
+            <ShockWebView
+              type="video"
+              width={Number(ref.width)}
+              height={Number(ref.height)}
+              magnet={ref.magnetURI}
+              permission={permission}
+              //selectedView={'preview'}
+              updateToMedia={null}
+            />
+          )}
         </View>
         <FontAwesome name="plus" size={20} color="white" onPress={selectThis} />
         {/*<ImageBackground
@@ -292,9 +299,9 @@ class CreatePostDark extends React.Component<Props, State> {
         ]
       }
     }
-    let mediaToShow:CompleteAnyMedia|null = media
-    if(media && preview && !media.isPrivate){
-      if(selectedView === 'preview'){
+    let mediaToShow: CompleteAnyMedia | null = media
+    if (media && preview && !media.isPrivate) {
+      if (selectedView === 'preview') {
         mediaToShow = preview
       }
     }
@@ -348,21 +355,31 @@ class CreatePostDark extends React.Component<Props, State> {
                 <Text style={styles.contentTypeText2}>Content</Text>
               </TouchableOpacity>
             </View>
-            {selectedContentID && <View>
-                <Text style={{color:'white'}}>Content</Text>
-                {preview && media && media.isPrivate && <View style={{width:'100%',aspectRatio:Number(preview.width)/Number(preview.height)}}>
-                  <Text style={{color:'white'}}>Selected Preview</Text>
-                  <ShockWebView 
-                    magnet={preview.magnetURI} 
-                    width={Number(preview.width)} 
-                    height={Number(preview.height)} 
-                    type={preview.type === 'image/embedded'?'image':'video'}
-                    permission={'private'}
-                    //selectedView={'preview'}
-                    updateToMedia={null}
-                  />
-                </View>
-                }
+            {selectedContentID && (
+              <View>
+                <Text style={{ color: 'white' }}>Content</Text>
+                {preview && media && media.isPrivate && (
+                  <View
+                    style={{
+                      width: '100%',
+                      aspectRatio:
+                        Number(preview.width) / Number(preview.height),
+                    }}
+                  >
+                    <Text style={{ color: 'white' }}>Selected Preview</Text>
+                    <ShockWebView
+                      magnet={preview.magnetURI}
+                      width={Number(preview.width)}
+                      height={Number(preview.height)}
+                      type={
+                        preview.type === 'image/embedded' ? 'image' : 'video'
+                      }
+                      permission={'private'}
+                      //selectedView={'preview'}
+                      updateToMedia={null}
+                    />
+                  </View>
+                )}
                 {mediaToShow && (
                   <View
                     style={{
@@ -390,7 +407,7 @@ class CreatePostDark extends React.Component<Props, State> {
                   </View>
                 )}
               </View>
-            }
+            )}
             {!selectedContentID && (
               <View style={styles.postsCarousel}>
                 <FlatList

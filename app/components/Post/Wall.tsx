@@ -18,6 +18,7 @@ import moment from 'moment'
 import GotoDetailIcon from '../../assets/images/feed/gotodetail.svg'
 import ShockAvatar from '../ShockAvatar'
 import * as MediaLib from '../../services/mediaLib'
+import PopupMenu from '../popUpMenu'
 
 interface MediaToDisplay {
   id: string
@@ -35,6 +36,9 @@ interface Props {
   images: MediaToDisplay[]
   videos: MediaToDisplay[]
   parentScrollViewRef: ScrollView | undefined
+  postId: string
+  postPage: string
+  deletePost: (postInfo: { page: string; id: string }) => void
 }
 
 interface State {
@@ -61,6 +65,8 @@ const DEFAULT_STATE: State = {
   publicVideos: [],
   selectedView: 'preview',
 }
+
+const popupMenuOptions: ['Pin', 'Remove'] = ['Pin', 'Remove']
 
 export default class Post extends React.Component<Props, State> {
   //shouldComponentUpdate() {
@@ -127,26 +133,27 @@ export default class Post extends React.Component<Props, State> {
       })
       if (privateImages.length === 0 && privateVideos.length === 0) {
         //this post has a preview but no private media, ribbon used for tip count
-        const anyPreview = imagePreviews.length > 0 ? imagePreviews[0] : videoPreviews[0]
-        const anyMedia = videoMedias.length > 0 ? videoMedias[0] : imageMedias[0]
-        if(anyPreview.data !== anyMedia.data){
+        const anyPreview =
+          imagePreviews.length > 0 ? imagePreviews[0] : videoPreviews[0]
+        const anyMedia =
+          videoMedias.length > 0 ? videoMedias[0] : imageMedias[0]
+        if (anyPreview.data !== anyMedia.data) {
           //old public  post
           this.setState({
-            isReady:true,
-            imagesToDisplay:imageMedias,
-            videosToDisplay:videoMedias,
+            isReady: true,
+            imagesToDisplay: imageMedias,
+            videosToDisplay: videoMedias,
           })
         } else {
           //new public post
           this.setState({
-            isReady:true,
-            imagesToDisplay:imagePreviews,
-            videosToDisplay:videoPreviews,
-            publicImages:imageMedias,
-            publicVideos:videoMedias
+            isReady: true,
+            imagesToDisplay: imagePreviews,
+            videosToDisplay: videoPreviews,
+            publicImages: imageMedias,
+            publicVideos: videoMedias,
           })
         }
-        
       } else {
         //this post has private media,check if the media is already paid
         const clearContent:
@@ -237,6 +244,26 @@ export default class Post extends React.Component<Props, State> {
     })
   }
 
+  handlePopMenu = (event: string, index: number | undefined) => {
+    if (event === 'itemSelected' && index !== undefined) {
+      switch (popupMenuOptions[index]) {
+        case 'Pin': {
+          //set this post as pinned
+          break
+        }
+        case 'Remove': {
+          this.props.deletePost({
+            page: this.props.postPage,
+            id: this.props.postId,
+          })
+          break
+        }
+        default: {
+        }
+      }
+    }
+  }
+
   render() {
     const {
       author,
@@ -293,50 +320,51 @@ export default class Post extends React.Component<Props, State> {
           {/*<View style={styles.postItemBookmark}>
             {saved ? (<UnpinPostIcon />) : (<PinPostIcon />)}
           </View>*/}
+          <PopupMenu actions={popupMenuOptions} onPress={this.handlePopMenu} />
         </View>
 
         <View style={styles.postContainer}>
-        {/*<UserInfo author={author} date={date} />*/}
-        {paragraphs.map(paragraph => (
-          <Text style={xStyles.paragraph} key={paragraph.id}>
-            {paragraph.text}
-          </Text>
-        ))}
-        {privateVideoCond && (
-          <ShockWebView
-            type="video"
-            width={videosToDisplay[0].width}
-            height={videosToDisplay[0].height}
-            magnet={videosToDisplay[0].data}
-            permission={'private'}
-            //selectedView={'preview'}
-            updateToMedia={null}
-          />
-        )}
-        {privateImageCond && (
-          <ShockWebView
-            type="image"
-            width={imagesToDisplay[0].width}
-            height={imagesToDisplay[0].height}
-            magnet={imagesToDisplay[0].data}
-            permission={'private'}
-            //selectedView={'preview'}
-            updateToMedia={null}
-          />
-        )}
-        {publicMediaCond && (
-          <ShockWebView
-            type={videosToDisplay[0] ? 'video' : 'image'}
-            width={publicMedia.width}
-            height={publicMedia.height}
-            magnet={publicMedia.data}
-            permission={'public'}
-            //selectedView={selectedView}
-            updateToMedia={this.handlePublicClick}
-          />
-        )}
-        {this.renderRibbon()}
-      </View>
+          {/*<UserInfo author={author} date={date} />*/}
+          {paragraphs.map(paragraph => (
+            <Text style={xStyles.paragraph} key={paragraph.id}>
+              {paragraph.text}
+            </Text>
+          ))}
+          {privateVideoCond && (
+            <ShockWebView
+              type="video"
+              width={videosToDisplay[0].width}
+              height={videosToDisplay[0].height}
+              magnet={videosToDisplay[0].data}
+              permission={'private'}
+              //selectedView={'preview'}
+              updateToMedia={null}
+            />
+          )}
+          {privateImageCond && (
+            <ShockWebView
+              type="image"
+              width={imagesToDisplay[0].width}
+              height={imagesToDisplay[0].height}
+              magnet={imagesToDisplay[0].data}
+              permission={'private'}
+              //selectedView={'preview'}
+              updateToMedia={null}
+            />
+          )}
+          {publicMediaCond && (
+            <ShockWebView
+              type={videosToDisplay[0] ? 'video' : 'image'}
+              width={publicMedia.width}
+              height={publicMedia.height}
+              magnet={publicMedia.data}
+              permission={'public'}
+              //selectedView={selectedView}
+              updateToMedia={this.handlePublicClick}
+            />
+          )}
+          {this.renderRibbon()}
+        </View>
         <View style={styles.postContainerBottom}>
           <TouchableOpacity onPress={this.gotoPostDetail}>
             <GotoDetailIcon />

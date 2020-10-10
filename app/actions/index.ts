@@ -9,6 +9,7 @@ import * as FeedWall from './FeedAction'
 import * as SingleFeed from './singleFeed'
 import * as Me from './me'
 import * as MediaLib from './mediaLib'
+import * as Wall from './myWall'
 import { TipsAction } from './tips'
 import {
   InvoicesAction,
@@ -32,6 +33,7 @@ export type Action =
   | Feed.FeedActions
   | FeedWall.FeedActions
   | MediaLib.MediaLibAction
+  | Wall.WallActions
   | TipsAction
   | InvoicesAction
   | ConnectionAction

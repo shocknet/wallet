@@ -9,7 +9,8 @@ import {
   View,
   ActivityIndicator,
   StatusBar,
-  FlatListProps, ScrollView
+  FlatListProps,
+  ScrollView,
 } from 'react-native'
 import { connect } from 'react-redux'
 import { NavigationScreenProp } from 'react-navigation'
@@ -266,25 +267,25 @@ class Feed extends React.Component<Props, State> {
           barStyle="light-content"
         />
         <ScrollView>
-        <FlatList
-          style={CSS.styles.flex}
-          contentContainerStyle={CSS.styles.flex}
-          renderItem={this.renderItem}
-          data={posts}
-          keyExtractor={keyExtractor}
-          ListEmptyComponent={listEmptyElement}
-          onEndReached={this.onEndReached}
-          onEndReachedThreshold={0.5}
-          refreshControl={
-            <RefreshControl
-              refreshing={this.state.awaitingBackfeed}
-              onRefresh={this.onRefresh}
-            />
-          }
-          ListFooterComponent={posts.length ? listFooterElement : null}
-          onViewableItemsChanged={this.onViewableItemsChanged}
-          viewabilityConfig={VIEWABILITY_CONFIG}
-        />
+          <FlatList
+            style={CSS.styles.flex}
+            contentContainerStyle={CSS.styles.flex}
+            renderItem={this.renderItem}
+            data={posts}
+            keyExtractor={keyExtractor}
+            ListEmptyComponent={listEmptyElement}
+            onEndReached={this.onEndReached}
+            onEndReachedThreshold={0.5}
+            refreshControl={
+              <RefreshControl
+                refreshing={this.state.awaitingBackfeed}
+                onRefresh={this.onRefresh}
+              />
+            }
+            ListFooterComponent={posts.length ? listFooterElement : null}
+            onViewableItemsChanged={this.onViewableItemsChanged}
+            viewabilityConfig={VIEWABILITY_CONFIG}
+          />
         </ScrollView>
       </SafeAreaView>
     )

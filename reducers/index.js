@@ -16,6 +16,7 @@ import paymentsV2s from './paymentV2s'
 import tips from './tips'
 import decodedInvoices from './decoded-invoices'
 import mediaLib from './mediaLib'
+import myWall from './myWall'
 import auth from './auth'
 import invoicesListed from './invoices-listed'
 import invoicesAdded from './invoices-added'
@@ -41,6 +42,7 @@ const rootReducer = {
   tips,
   decodedInvoices,
   mediaLib,
+  myWall,
   invoicesListed,
   invoicesAdded,
   chainTXs,
