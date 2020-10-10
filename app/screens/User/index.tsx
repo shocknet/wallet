@@ -230,6 +230,11 @@ class User extends React.Component<Props, State> {
           videos={videos}
           paragraphs={paragraphhs}
           parentScrollViewRef={undefined}
+          deletePost={()=>{}}
+          postId={item.id}
+          //@ts-ignore
+          postPage={item.page ? item.page : '0'}
+
         />
       )
     }

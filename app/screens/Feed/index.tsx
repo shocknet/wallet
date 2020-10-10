@@ -9,7 +9,8 @@ import {
   View,
   ActivityIndicator,
   StatusBar,
-  FlatListProps, ScrollView
+  FlatListProps,
+  ScrollView,
 } from 'react-native'
 import { connect } from 'react-redux'
 import { NavigationScreenProp, NavigationScreenOptions } from 'react-navigation'
@@ -61,14 +62,10 @@ class Feed extends React.Component<Props, State> {
   static navigationOptions: NavigationScreenOptions = {
     header: null,
     tabBarIcon: ({ focused }) => {
-      if(focused){
-        return (
-          <ShockIconBlue style={{width:32,height:32}}/>
-        )
+      if (focused) {
+        return <ShockIconBlue style={{ width: 32, height: 32 }} />
       } else {
-        return (
-          <ShockIconWhite style={{width:32,height:32}}/>
-        )
+        return <ShockIconWhite style={{ width: 32, height: 32 }} />
       }
     },
   }
@@ -274,25 +271,25 @@ class Feed extends React.Component<Props, State> {
           barStyle="light-content"
         />
         <ScrollView>
-        <FlatList
-          style={CSS.styles.flex}
-          contentContainerStyle={CSS.styles.flex}
-          renderItem={this.renderItem}
-          data={posts}
-          keyExtractor={keyExtractor}
-          ListEmptyComponent={listEmptyElement}
-          onEndReached={this.onEndReached}
-          onEndReachedThreshold={0.5}
-          refreshControl={
-            <RefreshControl
-              refreshing={this.state.awaitingBackfeed}
-              onRefresh={this.onRefresh}
-            />
-          }
-          ListFooterComponent={posts.length ? listFooterElement : null}
-          onViewableItemsChanged={this.onViewableItemsChanged}
-          viewabilityConfig={VIEWABILITY_CONFIG}
-        />
+          <FlatList
+            style={CSS.styles.flex}
+            contentContainerStyle={CSS.styles.flex}
+            renderItem={this.renderItem}
+            data={posts}
+            keyExtractor={keyExtractor}
+            ListEmptyComponent={listEmptyElement}
+            onEndReached={this.onEndReached}
+            onEndReachedThreshold={0.5}
+            refreshControl={
+              <RefreshControl
+                refreshing={this.state.awaitingBackfeed}
+                onRefresh={this.onRefresh}
+              />
+            }
+            ListFooterComponent={posts.length ? listFooterElement : null}
+            onViewableItemsChanged={this.onViewableItemsChanged}
+            viewabilityConfig={VIEWABILITY_CONFIG}
+          />
         </ScrollView>
       </SafeAreaView>
     )

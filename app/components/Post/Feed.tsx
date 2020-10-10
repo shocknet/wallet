@@ -87,7 +87,7 @@ export default class Post extends React.Component<Props, State> {
       id: image.id,
       imagePath: image.data,
     }))*/
-    
+
     const imagePreviews: typeof images = []
     const imageMedias: typeof images = []
     const videoPreviews: typeof videos = []
@@ -100,7 +100,7 @@ export default class Post extends React.Component<Props, State> {
     const oldVideos: typeof videos = []
     //fill an array with all the image media that isPreview and not
     images.forEach(e => {
-      if(e.isPreview === undefined){
+      if (e.isPreview === undefined) {
         oldImages.push(e)
       } else if (e.isPreview) {
         imagePreviews.push(e)
@@ -110,7 +110,7 @@ export default class Post extends React.Component<Props, State> {
     })
     //fill an array with all the videos media that isPreview and not
     videos.forEach(e => {
-      if(e.isPreview === undefined){
+      if (e.isPreview === undefined) {
         oldVideos.push(e)
       } else if (e.isPreview) {
         videoPreviews.push(e)
@@ -118,11 +118,11 @@ export default class Post extends React.Component<Props, State> {
         videoMedias.push(e)
       }
     })
-    if(oldVideos.length > 0 || oldImages.length > 0){
+    if (oldVideos.length > 0 || oldImages.length > 0) {
       this.setState({
-        isReady:true,
-        imagesToDisplay:oldImages,
-        videosToDisplay:oldVideos
+        isReady: true,
+        imagesToDisplay: oldImages,
+        videosToDisplay: oldVideos,
       })
       return
     }
@@ -147,26 +147,27 @@ export default class Post extends React.Component<Props, State> {
       })
       if (privateImages.length === 0 && privateVideos.length === 0) {
         //this post has a preview but no private media, ribbon used for tip count
-        const anyPreview = imagePreviews.length > 0 ? imagePreviews[0] : videoPreviews[0]
-        const anyMedia = videoMedias.length > 0 ? videoMedias[0] : imageMedias[0]
-        if(anyPreview.data !== anyMedia.data){
+        const anyPreview =
+          imagePreviews.length > 0 ? imagePreviews[0] : videoPreviews[0]
+        const anyMedia =
+          videoMedias.length > 0 ? videoMedias[0] : imageMedias[0]
+        if (anyPreview.data !== anyMedia.data) {
           //old public  post
           this.setState({
-            isReady:true,
-            imagesToDisplay:imageMedias,
-            videosToDisplay:videoMedias,
+            isReady: true,
+            imagesToDisplay: imageMedias,
+            videosToDisplay: videoMedias,
           })
         } else {
           //new public post
           this.setState({
-            isReady:true,
-            imagesToDisplay:imagePreviews,
-            videosToDisplay:videoPreviews,
-            publicImages:imageMedias,
-            publicVideos:videoMedias
+            isReady: true,
+            imagesToDisplay: imagePreviews,
+            videosToDisplay: videoPreviews,
+            publicImages: imageMedias,
+            publicVideos: videoMedias,
           })
         }
-        
       } else {
         //this post has private media,check if the media is already paid
         const clearContent:
@@ -316,47 +317,47 @@ export default class Post extends React.Component<Props, State> {
         </View>
 
         <View style={styles.postContainer}>
-        {/*<UserInfo author={author} date={date} />*/}
-        {paragraphs.map(paragraph => (
-          <Text style={xStyles.paragraph} key={paragraph.id}>
-            {paragraph.text}
-          </Text>
-        ))}
-        {privateVideoCond && (
-          <ShockWebView
-            type="video"
-            width={videosToDisplay[0].width}
-            height={videosToDisplay[0].height}
-            magnet={videosToDisplay[0].data}
-            permission={'private'}
-            //selectedView={'preview'}
-            updateToMedia={null}
-          />
-        )}
-        {privateImageCond && (
-          <ShockWebView
-            type="image"
-            width={imagesToDisplay[0].width}
-            height={imagesToDisplay[0].height}
-            magnet={imagesToDisplay[0].data}
-            permission={'private'}
-            //selectedView={'preview'}
-            updateToMedia={null}
-          />
-        )}
-        {publicMediaCond && (
-          <ShockWebView
-            type={videosToDisplay[0] ? 'video' : 'image'}
-            width={publicMedia.width}
-            height={publicMedia.height}
-            magnet={publicMedia.data}
-            permission={'public'}
-            //selectedView={selectedView}
-            updateToMedia={this.handlePublicClick}
-          />
-        )}
-        {this.renderRibbon()}
-      </View>
+          {/*<UserInfo author={author} date={date} />*/}
+          {paragraphs.map(paragraph => (
+            <Text style={xStyles.paragraph} key={paragraph.id}>
+              {paragraph.text}
+            </Text>
+          ))}
+          {privateVideoCond && (
+            <ShockWebView
+              type="video"
+              width={videosToDisplay[0].width}
+              height={videosToDisplay[0].height}
+              magnet={videosToDisplay[0].data}
+              permission={'private'}
+              //selectedView={'preview'}
+              updateToMedia={null}
+            />
+          )}
+          {privateImageCond && (
+            <ShockWebView
+              type="image"
+              width={imagesToDisplay[0].width}
+              height={imagesToDisplay[0].height}
+              magnet={imagesToDisplay[0].data}
+              permission={'private'}
+              //selectedView={'preview'}
+              updateToMedia={null}
+            />
+          )}
+          {publicMediaCond && (
+            <ShockWebView
+              type={videosToDisplay[0] ? 'video' : 'image'}
+              width={publicMedia.width}
+              height={publicMedia.height}
+              magnet={publicMedia.data}
+              permission={'public'}
+              //selectedView={selectedView}
+              updateToMedia={this.handlePublicClick}
+            />
+          )}
+          {this.renderRibbon()}
+        </View>
         <View style={styles.postContainerBottom}>
           <TouchableOpacity onPress={this.gotoPostDetail}>
             <GotoDetailIcon />

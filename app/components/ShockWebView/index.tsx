@@ -3,25 +3,25 @@ import { WebView } from 'react-native-webview'
 import notificationService from '../../../notificationService'
 
 type Props = {
-  width:number,
-  height:number,
-  magnet:string,
-  type:'video'|'image',
-  permission:'private'|'public'
+  width: number
+  height: number
+  magnet: string
+  type: 'video' | 'image'
+  permission: 'private' | 'public'
   //selectedView:'preview'|'media',
-  updateToMedia:(()=>void)|null
+  updateToMedia: (() => void) | null
 }
 type State = {
-  html:string
+  html: string
 }
-type CompleteWebView = (WebView & {postMessage:(message:string)=>void})
+type CompleteWebView = WebView & { postMessage: (message: string) => void }
 
-export default class ShockWebView extends React.Component<Props,State> {
+export default class ShockWebView extends React.Component<Props, State> {
   state = {
-    html:''
+    html: '',
   }
-  componentDidMount(){
-    const { magnet, type,permission  } = this.props
+  componentDidMount() {
+    const { magnet, type, permission } = this.props
     const finalType = /*permission === 'public' ? 'image' :*/ type
     const playerString =
       finalType === 'video'
@@ -115,7 +115,7 @@ export default class ShockWebView extends React.Component<Props,State> {
     </body>
     </html>`
 
-    this.setState({html})
+    this.setState({ html })
   }
 
   webview: CompleteWebView | null = null
@@ -126,12 +126,12 @@ export default class ShockWebView extends React.Component<Props,State> {
       }
     }
   }*/
-  assignRef = (ref:WebView) => {
+  assignRef = (ref: WebView) => {
     this.webview = ref as CompleteWebView
   }
   render() {
     const { width, height } = this.props
-    
+
     return (
       <WebView
         ref={this.assignRef}
@@ -158,7 +158,7 @@ export default class ShockWebView extends React.Component<Props,State> {
           )
         }}
         source={{
-          html:this.state.html ,
+          html: this.state.html,
         }}
       />
     )
