@@ -5,37 +5,49 @@ import { State } from '../../reducers'
 
 import * as Invoices from './invoices'
 import * as Payments from './payments'
+import * as ChainTXs from './chain-txs'
+
+type Invoice = Schema.InvoiceWhenListed
+type Payment = Schema.PaymentV2
+type ChainTX = Schema.ChainTransaction
 
 export type UnifiedTx =
   | { type: 'invoice'; payReq: string }
   | { type: 'payment'; paymentHash: string }
+  | { type: 'chain'; chainTXHash: string }
 
 export const getLatestTx = createSelector<
   State,
-  Schema.InvoiceWhenListed[],
-  Schema.PaymentV2[],
+  Invoice[],
+  Payment[],
+  ChainTX[],
   UnifiedTx[]
 >(
   Invoices.getLatestSettledInvoices,
   Payments.getLatestPayments,
-  (invoices, payments) => {
-    const tx: UnifiedTx[] = [...invoices, ...payments]
-      .sort((pOrI1, pOrI2) => {
+  ChainTXs.getLatestChainTransactions,
+  (invoices, payments, chainTXs) => {
+    const tx: UnifiedTx[] = [...invoices, ...payments, ...chainTXs]
+      .sort((pOrIOrChain1, pOrIOrChain2) => {
         const a = Number(
-          (pOrI1 as Schema.InvoiceWhenListed).settle_date ||
-            pOrI1.creation_date,
+          (pOrIOrChain1 as Invoice).settle_date ||
+            (pOrIOrChain1 as Payment).creation_date ||
+            (pOrIOrChain1 as ChainTX).time_stamp,
         )
 
         const b = Number(
-          (pOrI2 as Schema.InvoiceWhenListed).settle_date ||
-            pOrI2.creation_date,
+          (pOrIOrChain2 as Invoice).settle_date ||
+            (pOrIOrChain2 as Payment).creation_date ||
+            (pOrIOrChain2 as ChainTX).time_stamp,
         )
 
         return b - a
       })
       .map(t => {
-        const asPayment = t as Schema.PaymentV2
-        const asInvoice = t as Schema.InvoiceWhenListed
+        const asPayment = t as Payment
+        const asInvoice = t as Invoice
+        const asChainTX = t as ChainTX
+
         if (asPayment.payment_hash) {
           return {
             type: 'payment',
@@ -43,10 +55,21 @@ export const getLatestTx = createSelector<
           }
         }
 
-        return {
-          type: 'invoice',
-          payReq: asInvoice.payment_request,
+        if (asInvoice.payment_request) {
+          return {
+            type: 'invoice',
+            payReq: asInvoice.payment_request,
+          }
         }
+
+        if (asChainTX.tx_hash) {
+          return {
+            type: 'chain',
+            chainTXHash: asChainTX.tx_hash,
+          }
+        }
+
+        throw new TypeError()
       })
 
     return tx

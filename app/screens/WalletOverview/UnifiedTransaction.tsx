@@ -45,6 +45,7 @@ interface StateProps {
 export interface OwnProps {
   payReq?: string
   paymentHash?: string
+  chainTXHash?: string
 }
 
 type Props = DispatchProps & StateProps & OwnProps
@@ -138,11 +139,15 @@ export class UnifiedTransaction extends React.PureComponent<Props> {
 const makeMapStateToProps = () => {
   const getInvoice = Store.makeGetInvoice()
   const getPayment = Store.makeGetPayment()
+  const getChainTransaction = Store.makeGetChainTransaction()
   const searchPublicKeyWithMsgBody = Store.makeSearchPublicKeyWithMsgBody()
 
   return (state: Store.State, props: OwnProps): StateProps => {
     try {
-      let tx: ReturnType<typeof getInvoice> | ReturnType<typeof getPayment>
+      let tx:
+        | ReturnType<typeof getInvoice>
+        | ReturnType<typeof getPayment>
+        | ReturnType<typeof getChainTransaction>
 
       if (props.payReq) {
         tx = getInvoice(
@@ -158,30 +163,62 @@ const makeMapStateToProps = () => {
         )
       }
 
+      if (props.chainTXHash) {
+        tx = getChainTransaction(state, props.chainTXHash)
+      }
+
       if (!tx!) {
         throw new TypeError(`No TX found: ${JSON.stringify(props)}`)
       }
 
       const asInvoice = tx! as Schema.InvoiceWhenListed
-
       const asPayment = tx! as Schema.PaymentV2
+      const asChainTX = tx! as Schema.ChainTransaction
+
+      const isInvoice = !!asInvoice.r_preimage
       const isPayment = !!asPayment.payment_hash
+      const isChainTX = !!asChainTX.tx_hash
+
       const maybeDecodedInvoice =
         state.decodedInvoices[asPayment.payment_request]
 
-      const inProcess = isPayment && asPayment.status !== 'SUCCEEDED'
-      const description =
-        asInvoice.memo ||
-        (maybeDecodedInvoice &&
-          `${maybeDecodedInvoice.description}${
-            inProcess ? ' (sending)' : ''
-          }`) ||
-        'Fetching memo...'
+      // TODO inProces = isInvoice && orderInProcess(invoice.r_hash)
+      const inProcess =
+        (isPayment && asPayment.status !== 'SUCCEEDED') ||
+        (isChainTX && asChainTX.num_confirmations < 1)
 
-      const relatedPublickey = searchPublicKeyWithMsgBody(
-        state,
-        isPayment ? asPayment.payment_preimage : asInvoice.payment_request,
-      )
+      const description = (() => {
+        if (isInvoice) {
+          return asInvoice.memo
+        }
+
+        if (isPayment) {
+          if (maybeDecodedInvoice) {
+            const a = maybeDecodedInvoice.description
+            const b = inProcess ? ' (sending)' : ''
+
+            return a + b
+          }
+
+          return 'Fetching memo...'
+        }
+
+        if (isChainTX) {
+          return asChainTX.label
+        }
+
+        return ''
+      })()
+
+      // TODO for chain transactions
+      const relatedPublickey = (() => {
+        if (isChainTX) return null
+
+        return searchPublicKeyWithMsgBody(
+          state,
+          isPayment ? asPayment.payment_preimage : asInvoice.payment_request,
+        )
+      })()
 
       const maybeUser = state.users[relatedPublickey as string]
 
@@ -192,6 +229,8 @@ const makeMapStateToProps = () => {
         name = maybeUser.displayName || name
       }
 
+      const outbound = isChainTX ? Number(asChainTX.amount) < 0 : isPayment
+
       return {
         USDRate:
           ((state.wallet
@@ -199,9 +238,18 @@ const makeMapStateToProps = () => {
             | number
             | null) || 0,
         title: name,
-        outbound: isPayment,
-        timestamp: Number(asInvoice.settle_date || asPayment.creation_date),
-        value: Number(asInvoice.amt_paid_sat || asPayment.value_sat),
+        outbound,
+        timestamp: Number(
+          asInvoice.settle_date ||
+            asPayment.creation_date ||
+            asChainTX.time_stamp,
+        ),
+        // Math.abs for outbound chain tx where the amount is negative
+        value: Math.abs(
+          Number(
+            asInvoice.amt_paid_sat || asPayment.value_sat || asChainTX.amount,
+          ),
+        ),
         subTitle: description,
         relatedPublickey: relatedPublickey || undefined,
       }

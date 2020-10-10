@@ -45,6 +45,7 @@ import {
   invoicesRefreshForced,
   paymentsRefreshForced,
   getMoreFeed,
+  chainTXsRefreshForced,
 } from '../../actions'
 import { SEND_SCREEN } from '../Send'
 import { RECEIVE_SCREEN } from '../Receive'
@@ -82,6 +83,7 @@ import UnifiedTrx from './UnifiedTrx'
  * @prop {boolean} isOnline
  * @prop {() => void} forcePaymentsRefresh // TODO: do at auth
  * @prop {() => void} getMoreFeed
+ * @prop {() => void} forceChainTXsRefresh
  */
 
 /**
@@ -161,11 +163,13 @@ class WalletOverview extends Component {
       forceInvoicesRefresh,
       forcePaymentsRefresh,
       getMoreFeed,
+      forceChainTXsRefresh,
     } = this.props
 
     forcePaymentsRefresh()
     forceInvoicesRefresh()
     getMoreFeed()
+    forceChainTXsRefresh()
 
     this.didFocus = navigation.addListener('didFocus', () => {
       StatusBar.setBackgroundColor(CSS.Colors.TRANSPARENT)
@@ -514,6 +518,7 @@ const mapDispatchToProps = {
   forceInvoicesRefresh: invoicesRefreshForced,
   forcePaymentsRefresh: paymentsRefreshForced,
   getMoreFeed,
+  forceChainTXsRefresh: chainTXsRefreshForced,
 }
 
 export default connect(

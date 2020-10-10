@@ -97,7 +97,9 @@ const styles = StyleSheet.create({
 
 const keyExtractor = (item: Store.UnifiedTx) => {
   if (item.type === 'invoice') return item.payReq
-  return item.paymentHash
+  if (item.type === 'chain') return item.chainTXHash
+  if (item.type === 'payment') return item.paymentHash
+  throw new TypeError()
 }
 
 const Separator = () => <View style={styles.separator} />
@@ -119,6 +121,7 @@ const RenderItem: ListRenderItem<Store.UnifiedTx> = ({ item }) => {
 
   if (item.type === 'invoice') props.payReq = item.payReq
   if (item.type === 'payment') props.paymentHash = item.paymentHash
+  if (item.type === 'chain') props.chainTXHash = item.chainTXHash
 
   return <UnifiedTransaction {...props} />
 }
