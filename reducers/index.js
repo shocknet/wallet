@@ -19,6 +19,7 @@ import mediaLib from './mediaLib'
 import auth from './auth'
 import invoicesListed from './invoices-listed'
 import invoicesAdded from './invoices-added'
+import chainTXs from './chain-txs'
 
 const rootReducer = {
   auth,
@@ -42,6 +43,7 @@ const rootReducer = {
   mediaLib,
   invoicesListed,
   invoicesAdded,
+  chainTXs,
 }
 
 /**
