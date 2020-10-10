@@ -59,6 +59,5 @@ export const getLatestSettledInvoices = createSelector<
 >(
   getLatestSettledInvoicesIds,
   getInvoicesListed,
-  (ids, invoicesListed) =>
-    ids.map(id => invoicesListed.byId[id]).filter(i => i.settled),
+  (ids, invoicesListed) => ids.map(id => invoicesListed.byId[id]),
 )
