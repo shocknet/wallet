@@ -15,12 +15,7 @@ import * as CSS from '../../res/css'
 //import UserInfo from './UserInfo'
 import ShockWebView from '../ShockWebView'
 import moment from 'moment'
-//@ts-ignore
 import GotoDetailIcon from '../../assets/images/feed/gotodetail.svg'
-//@ts-ignore
-import PinPostIcon from '../../assets/images/feed/pin.svg'
-//@ts-ignore
-import UnpinPostIcon from '../../assets/images/feed/unpin.svg'
 import ShockAvatar from '../ShockAvatar'
 import * as MediaLib from '../../services/mediaLib'
 import PopupMenu from '../popUpMenu'

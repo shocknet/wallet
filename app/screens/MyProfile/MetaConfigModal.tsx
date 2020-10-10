@@ -12,7 +12,6 @@ import Modal from 'react-native-modal'
 import * as CSS from '../../res/css'
 import Pad from '../../components/Pad'
 import InputGroup from '../../components/InputGroup'
-// @ts-ignore
 import ArrowLeft from '../../assets/images/arrow-left.svg'
 
 // @ts-ignore

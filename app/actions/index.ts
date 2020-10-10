@@ -19,6 +19,7 @@ import {
 import { ConnectionAction } from './ConnectionActions'
 import { AuthAction } from './auth'
 import { PaymentsAction } from './payments'
+import { ChainTXsAction } from './chain-txs'
 
 export type Action =
   | UsersActions.ReceivedUsersDataAction
@@ -38,6 +39,7 @@ export type Action =
   | ConnectionAction
   | AuthAction
   | PaymentsAction
+  | ChainTXsAction
 
 export const receivedBackfeed = Common.Store.Actions.receivedBackfeed
 export const receivedFeed = Common.Store.Actions.receivedFeed
@@ -59,6 +61,7 @@ export {
 export type InvoicesBatchDecodeReqAction = _InvoicesBatchDecodeReqAction
 export type InvoicesBatchDecodeResAction = _InvoicesBatchDecodeResAction
 export * from './payments'
+export * from './chain-txs'
 
 export {
   ChatActions,

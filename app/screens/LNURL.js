@@ -19,7 +19,7 @@ import bech32 from 'bech32'
 import { connect } from 'react-redux'
 import * as Cache from '../services/cache'
 import { WALLET_OVERVIEW } from './WalletOverview'
-import QRCodeScanner from '../components/QRScanner'
+import QRScanner from './QRScanner'
 import { fetchPeers } from '../actions/HistoryActions'
 import ExtractInfo from '../services/validators'
 import { SEND_SCREEN } from './Send'
@@ -666,13 +666,14 @@ class LNURL extends React.Component {
   }
 
   /**
-   * @param {{data:string}} e
+   * @param {string} data
    */
-  onScanQR = e => {
+  onScanQR = data => {
     this.setState({
       scanQR: false,
     })
-    this.decodeAll(e.data)
+
+    this.decodeAll(data)
   }
 
   scanQR = () => {
@@ -681,7 +682,7 @@ class LNURL extends React.Component {
     })
   }
 
-  closeScanQR = () => {
+  toggleScanQR = () => {
     this.setState({
       scanQR: false,
     })
@@ -698,10 +699,13 @@ class LNURL extends React.Component {
     }
     if (scanQR) {
       return (
-        <QRCodeScanner
-          onRead={this.onScanQR}
-          onRequestClose={this.closeScanQR}
-        />
+        <View style={CSS.styles.flex}>
+          <QRScanner
+            onQRSuccess={this.onScanQR}
+            toggleQRScreen={this.toggleScanQR}
+            type="send"
+          />
+        </View>
       )
     }
     return (

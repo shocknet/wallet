@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
   hamburger: { marginRight: 24 },
 })
 
-const headerRight = (
+const headerRight = () => (
   <Ion name="ios-menu" color="white" size={36} style={styles.hamburger} />
 )
 
@@ -88,8 +88,8 @@ const HeaderLeft = React.memo(({ onPress }) => ((
  */
 export default class Chat extends React.Component {
   /**
-   * @param {{ navigation: Navigation }} args
-   * @returns {import('react-navigation').NavigationStackScreenOptions}
+   * @param {import('react-navigation-stack').NavigationStackScreenProps} args
+   * @returns {import('react-navigation-stack').NavigationStackOptions}
    */
   static navigationOptions = ({ navigation }) => {
     const title = navigation.getParam('_title')

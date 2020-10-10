@@ -18,13 +18,9 @@ import * as CSS from '../res/css'
 import Pad from '../components/Pad'
 import InputGroup from '../components/InputGroup'
 
-// @ts-ignore
 import ArrowLeft from '../assets/images/arrow-left.svg'
-// @ts-ignore
 import PublicIcon from '../assets/images/create-post/public.svg'
-// @ts-ignore
 import SubscribersIcon from '../assets/images/create-post/subscribers.svg'
-// @ts-ignore
 import PaywallIcon from '../assets/images/create-post/paywall.svg'
 
 import DropDownPicker from 'react-native-dropdown-picker'
@@ -69,11 +65,8 @@ const DEFAULT_STATE: State = {
 }
 
 class CreatePostDark extends React.Component<Props, State> {
-  /**
-   * @type {import('react-navigation').NavigationScreenOptions}
-   */
-  static navigationOptions = {
-    header: null,
+  static navigationOptions: import('react-navigation-stack').NavigationStackOptions = {
+    header: () => null,
   }
 
   state = DEFAULT_STATE

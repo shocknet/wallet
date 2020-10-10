@@ -1,5 +1,6 @@
 /** @format  */
-import { NavigationActions, DrawerActions } from 'react-navigation'
+import { NavigationActions } from 'react-navigation'
+import { DrawerActions } from 'react-navigation-drawer'
 /**
  * @typedef {import('react-navigation').NavigationNavigateAction} NavigationNavigateAction
  * @typedef {import('react-navigation').NavigationContainerComponent} NavigationContainerComponent

@@ -10,9 +10,7 @@ import { Colors, WIDTH } from '../../res/css'
 import Pad from '../../components/Pad'
 
 import ChatAvatar from './ChatAvatar'
-//@ts-ignore
 import TrendOngoing from '../../assets/images/chatting/trend-ongoing.svg'
-//@ts-ignore
 import TrendOutgoing from '../../assets/images/chatting/trend-outgoing.svg'
 
 const BUBBLE_TRIANGLE_VERTICAL_OFFSET = 6

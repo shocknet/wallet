@@ -21,12 +21,7 @@ import * as Navigation from '../../services/navigation'
 import Nav from '../../components/Nav'
 import wavesBG from '../../assets/images/waves-bg.png'
 import wavesBGDark from '../../assets/images/waves-bg-dark.png'
-//@ts-ignore
-import WalletIcon from '../../assets/images/navbar-icons/wallet.svg'
-//@ts-ignore
-import WalletIconFocused from '../../assets/images/navbar-icons/wallet-focused.svg'
-// @ts-ignore
-import IconDrawerHome from '../../assets/images/drawer-icons/icon-drawer-help.svg'
+import ShockIcon from '../../res/icons'
 import btcConvert from '../../services/convertBitcoin'
 import * as ContactAPI from '../../services/contact-api'
 import * as CSS from '../../res/css'
@@ -45,6 +40,7 @@ import {
   invoicesRefreshForced,
   paymentsRefreshForced,
   getMoreFeed,
+  chainTXsRefreshForced,
 } from '../../actions'
 import { SEND_SCREEN } from '../Send'
 import { RECEIVE_SCREEN } from '../Receive'
@@ -56,6 +52,7 @@ import * as Store from '../../../store'
  */
 
 import UnifiedTrx from './UnifiedTrx'
+import { Color } from 'shock-common/dist/constants'
 
 /**
  * @typedef {ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps} ConnectedRedux
@@ -82,6 +79,7 @@ import UnifiedTrx from './UnifiedTrx'
  * @prop {boolean} isOnline
  * @prop {() => void} forcePaymentsRefresh // TODO: do at auth
  * @prop {() => void} getMoreFeed
+ * @prop {() => void} forceChainTXsRefresh
  */
 
 /**
@@ -107,20 +105,16 @@ class WalletOverview extends Component {
   webview = null
 
   /**
-   * @type {import('react-navigation').NavigationBottomTabScreenOptions}
+   * @type {import('react-navigation-tabs').NavigationBottomTabOptions}
    */
   static navigationOptions = {
-    tabBarIcon: ({ focused }) => {
-      return (focused ? (
-        <WalletIconFocused size={32} />
-      ) : (
-        <WalletIcon size={32} />
-      ))
-    },
-    // @ts-ignore
-    drawerIcon: ({ focused }) => {
-      return (<WalletIconFocused />)
-    },
+    tabBarIcon: ({ focused }) => ((
+      <ShockIcon
+        name="thin-wallet"
+        size={32}
+        color={focused ? Color.BUTTON_BLUE : Color.TEXT_WHITE}
+      />
+    )),
   }
 
   /**
@@ -161,11 +155,13 @@ class WalletOverview extends Component {
       forceInvoicesRefresh,
       forcePaymentsRefresh,
       getMoreFeed,
+      forceChainTXsRefresh,
     } = this.props
 
     forcePaymentsRefresh()
     forceInvoicesRefresh()
     getMoreFeed()
+    forceChainTXsRefresh()
 
     this.didFocus = navigation.addListener('didFocus', () => {
       StatusBar.setBackgroundColor(CSS.Colors.TRANSPARENT)
@@ -514,6 +510,7 @@ const mapDispatchToProps = {
   forceInvoicesRefresh: invoicesRefreshForced,
   forcePaymentsRefresh: paymentsRefreshForced,
   getMoreFeed,
+  forceChainTXsRefresh: chainTXsRefreshForced,
 }
 
 export default connect(
