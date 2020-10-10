@@ -57,6 +57,7 @@ export {
   decodePaymentRequest,
   invoicesBatchDecodeReq,
   invoicesBatchDecodeRes,
+  receivedSingleInvoice,
 } from './InvoiceActions'
 export type InvoicesBatchDecodeReqAction = _InvoicesBatchDecodeReqAction
 export type InvoicesBatchDecodeResAction = _InvoicesBatchDecodeResAction
