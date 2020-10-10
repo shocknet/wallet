@@ -11,8 +11,8 @@ import {
 } from 'react-native'
 import {
   NavigationScreenProp,
-  NavigationBottomTabScreenOptions,
 } from 'react-navigation'
+import { NavigationBottomTabOptions } from 'react-navigation-tabs'
 type Navigation = NavigationScreenProp<{}>
 
 import * as API from '../../services/contact-api'
@@ -20,18 +20,11 @@ import * as CSS from '../../res/css'
 import ShockAvatar from '../../components/ShockAvatar'
 import moment from 'moment'
 
-//@ts-ignore
-import FeedIcon from '../../assets/images/navbar-icons/feed.svg'
-//@ts-ignore
-import FeedIconFocused from '../../assets/images/navbar-icons/feed-focused.svg'
-//@ts-ignore
 import PinPostIcon from '../../assets/images/feed/pin.svg'
-//@ts-ignore
 import UnpinPostIcon from '../../assets/images/feed/unpin.svg'
-//@ts-ignore
 import GotoDetailIcon from '../../assets/images/feed/gotodetail.svg'
-//@ts-ignore
 import AddonIcon from '../../assets/images/feed/addon.svg'
+import ShockIcon from '../../res/icons'
 
 export const MY_FEED = 'MY_FEED'
 
@@ -45,13 +38,14 @@ interface State {
 }
 
 export default class MyFeed extends React.Component<Props, State> {
-  static navigationOptions: NavigationBottomTabScreenOptions = {
-    tabBarIcon: ({ focused }) => {
-      if (focused) {
-        return <FeedIconFocused size={32} />
-      }
-      return <FeedIcon size={32} />
-    },
+  static navigationOptions: NavigationBottomTabOptions = {
+    tabBarIcon: ({ focused }) => (
+      <ShockIcon
+        name="solid-feed"
+        color={focused ? CSS.Colors.BUTTON_BLUE : CSS.Colors.TEXT_WHITE}
+        size={32}
+      />
+    ),
   }
 
   state: State = {

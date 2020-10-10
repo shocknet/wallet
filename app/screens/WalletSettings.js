@@ -13,8 +13,7 @@ import { connect } from 'react-redux'
 import Logger from 'react-native-file-log'
 import { Slider } from 'react-native-elements'
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'
-// @ts-ignore
-import IconDrawerWalletSettings from '../assets/images/drawer-icons/icon-drawer-wallet.svg'
+// import IconDrawerWalletSettings from '../assets/images/drawer-icons/icon-drawer-wallet.svg'
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}, Params>} Navigation
  */
@@ -96,13 +95,13 @@ import notificationService from '../../notificationService'
  */
 class WalletSettings extends React.Component {
   /**
-   * @type {import('react-navigation').NavigationScreenOptions}
+   * @type {import('react-navigation-stack').NavigationStackOptions}
    */
   static navigationOptions = {
-    header: null,
-    drawerIcon: () => {
-      return (<IconDrawerWalletSettings />)
-    },
+    header: () => null,
+    // drawerIcon: () => {
+    //   return (<IconDrawerWalletSettings />)
+    // },
   }
 
   fadeAnim = new Animated.Value(-75)

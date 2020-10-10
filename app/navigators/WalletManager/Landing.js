@@ -28,10 +28,10 @@ export const LANDING = 'LANDING'
  */
 export default class CreateWallet extends React.Component {
   /**
-   * @type {import('react-navigation').NavigationScreenOptions}
+   * @type {import('react-navigation-stack').NavigationStackOptions}
    */
   static navigationOptions = {
-    header: null,
+    header: () => null,
   }
 
   didFocus = {

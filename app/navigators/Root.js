@@ -2,12 +2,11 @@
  * @prettier
  */
 
-import {
-  createBottomTabNavigator,
-  createStackNavigator,
-  createSwitchNavigator,
-  createDrawerNavigator,
-} from 'react-navigation'
+import { Dimensions } from 'react-native'
+import { createSwitchNavigator, createAppContainer } from 'react-navigation'
+import { createDrawerNavigator } from 'react-navigation-drawer'
+import { createStackNavigator } from 'react-navigation-stack'
+import { createBottomTabNavigator } from 'react-navigation-tabs'
 import * as CSS from '../res/css'
 
 import Chat, { CHAT_ROUTE } from '../screens/Chat'
@@ -90,14 +89,14 @@ const WalletNav = createStackNavigator(
   },
   {
     initialRouteName: BOTTOM_NAV,
-    navigationOptions: {
-      header: null,
+    defaultNavigationOptions: {
+      header: () => null,
     },
   },
 )
 
 BottomNav.navigationOptions = {
-  header: null,
+  header: () => null,
   // drawerIcon: () => {
   //   return <IconDrawerHome />
   // },
@@ -106,8 +105,13 @@ BottomNav.navigationOptions = {
 const MAIN_DRAWER = 'MAIN_DRAWER'
 const theme = 'dark'
 
-/** @type {import('react-navigation').NavigationRouteConfigMap} */
+/** @typedef {import('react-navigation-drawer').NavigationDrawerOptions} NavigationDrawerOptions */
+/** @typedef {import('react-navigation').NavigationParams} NavigationParams */
+/** @typedef {import('react-navigation').NavigationRoute<NavigationParams>} NavigationRoute */
+/** @typedef {import('react-navigation-drawer').NavigationDrawerProp<NavigationRoute, any>} NavigationDrawerProp */
+/** @typedef {import('react-navigation').NavigationRouteConfigMap<NavigationDrawerOptions, NavigationDrawerProp, unknown>} NavigationRouteConfigMap */
 
+/** @type {NavigationRouteConfigMap} */
 const drawerScreens = {
   [WALLET_NAV]: {
     screen: WalletNav,
@@ -258,10 +262,14 @@ if (__DEV__) {
   }
 }
 
+const EDGE_WIDTH = Dimensions.get('screen').width
+
 const MainDrawer = createDrawerNavigator(drawerScreens, {
   initialRouteName: WALLET_NAV,
   drawerPosition: 'right',
   contentComponent: CustomDrawer,
+  edgeWidth: EDGE_WIDTH,
+  drawerBackgroundColor: 'transparent',
   contentOptions: {
     labelStyle: {
       textAlign: 'right',
@@ -280,7 +288,6 @@ const App = createStackNavigator(
     [MAIN_DRAWER]: MainDrawer,
   },
   {
-    headerLayoutPreset: 'center',
     initialRouteName: MAIN_DRAWER,
   },
 )
@@ -309,4 +316,4 @@ const MainSwitch = createSwitchNavigator(
   },
 )
 
-export default MainSwitch
+export default createAppContainer(MainSwitch)

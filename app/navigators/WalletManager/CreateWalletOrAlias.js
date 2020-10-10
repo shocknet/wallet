@@ -57,7 +57,7 @@ export const CREATE_WALLET_OR_ALIAS = 'CREATE_WALLET_OR_ALIAS'
  */
 class CreateWalletOrAlias extends React.Component {
   /**
-   * @type {import('react-navigation').NavigationStackScreenOptions}
+   * @type {import('react-navigation-stack').NavigationStackOptions}
    */
   static navigationOptions = ({
     title: 'CREATE WALLET/ALIAS',
