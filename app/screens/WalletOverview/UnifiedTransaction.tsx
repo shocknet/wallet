@@ -83,13 +83,13 @@ export class UnifiedTransaction extends React.PureComponent<Props> {
                 <Ionicons
                   name="md-arrow-round-up"
                   size={15}
-                  color={CSS.Colors.ICON_GREEN}
+                  color={CSS.Colors.ICON_RED}
                 />
               ) : (
                 <Ionicons
                   name="md-arrow-round-down"
                   size={15}
-                  color={CSS.Colors.ICON_RED}
+                  color={CSS.Colors.ICON_GREEN}
                 />
               )}
             </View>
@@ -102,13 +102,13 @@ export class UnifiedTransaction extends React.PureComponent<Props> {
                 <Ionicons
                   name="md-arrow-round-up"
                   size={15}
-                  color={CSS.Colors.ICON_GREEN}
+                  color={CSS.Colors.ICON_RED}
                 />
               ) : (
                 <Ionicons
                   name="md-arrow-round-down"
                   size={15}
-                  color={CSS.Colors.ICON_RED}
+                  color={CSS.Colors.ICON_GREEN}
                 />
               )}
             </View>
