@@ -73,9 +73,7 @@ const reducer: Reducer<State, Action | RehydrateAction> = (
         originRequest.index_offset === 0
 
       const isLatestInvoices =
-        !!originRequest.reversed &&
-        fromBeginning &&
-        typeof originRequest.pending_only === 'undefined'
+        !!originRequest.reversed && fromBeginning && !originRequest.pending_only
 
       if (isLatestInvoices) {
         draft.ids = mostRecentToLeast.map(i => i.payment_request)
