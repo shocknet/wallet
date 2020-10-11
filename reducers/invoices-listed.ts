@@ -32,6 +32,24 @@ const reducer: Reducer<State, Action | RehydrateAction> = (
   action,
 ) =>
   produce(state, draft => {
+    if (action.type === 'invoices/receivedSingle') {
+      const { invoice } = action.payload
+      draft.byId[invoice.payment_request] = invoice
+
+      if (invoice.settled) {
+        const existingSettled = [
+          ...draft.latestSettled.map(payReq => draft.byId[payReq]),
+          invoice,
+        ]
+
+        existingSettled.sort(
+          (i1, i2) => Number(i2.settle_date) - Number(i1.settle_date),
+        )
+
+        draft.latestSettled = existingSettled.map(i => i.payment_request)
+      }
+    }
+
     if (action.type === 'invoices/receivedOwn') {
       const { invoices, originRequest } = action.data
 
