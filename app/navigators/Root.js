@@ -278,7 +278,7 @@ const MainDrawer = createDrawerNavigator(drawerScreens, {
 })
 
 MainDrawer.navigationOptions = {
-  header: null,
+  headerShown: false,
 }
 
 const App = createStackNavigator(

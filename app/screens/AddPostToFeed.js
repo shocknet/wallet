@@ -57,7 +57,7 @@ class AddPostToFeed extends React.Component {
    * @type {import('react-navigation').NavigationScreenOptions}
    */
   static navigationOptions = {
-    header: null,
+    headerShown: false,
   }
 
   /** @type {State} */

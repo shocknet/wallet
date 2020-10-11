@@ -32,7 +32,7 @@ import * as CSS from '../res/css'
  */
 export default class QRScanner extends React.Component {
   static navigationOptions = {
-    header: null,
+    headerShown: false,
   }
 
   onBackBtn = () => {
