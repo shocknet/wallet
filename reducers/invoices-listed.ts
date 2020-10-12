@@ -36,7 +36,7 @@ const reducer: Reducer<State, Action | RehydrateAction> = (
       const { invoice } = action.payload
       draft.byId[invoice.payment_request] = invoice
 
-      if (invoice.settled) {
+      if (invoice.settled /* && isOwn (TODO: coordinates) */) {
         const existingSettled = [
           ...draft.latestSettled.map(payReq => draft.byId[payReq]),
           invoice,
