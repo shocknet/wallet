@@ -15,7 +15,6 @@ import * as CSS from '../../res/css'
 //import UserInfo from './UserInfo'
 import ShockWebView from '../ShockWebView'
 import moment from 'moment'
-import GotoDetailIcon from '../../assets/images/feed/gotodetail.svg'
 import ShockAvatar from '../ShockAvatar'
 import * as MediaLib from '../../services/mediaLib'
 import PopupMenu from '../popUpMenu'
@@ -38,6 +37,8 @@ interface Props {
   parentScrollViewRef: ScrollView | undefined
   postId: string
   postPage: string
+  tipCounter:number
+  tipValue:number
   deletePost: (postInfo: { page: string; id: string }) => void
 }
 
@@ -267,13 +268,13 @@ export default class Post extends React.Component<Props, State> {
   render() {
     const {
       author,
-
+      tipCounter,
+      tipValue,
       date,
       paragraphs = [],
       //parentScrollViewRef,
     } = this.props
-    const currentTimestamp = Date.now() / 1000
-    const duration = currentTimestamp - date
+    const duration = (Date.now() - date)/1000
     const diffString = moment.duration(duration, 'seconds').humanize()
 
     const {
@@ -365,10 +366,13 @@ export default class Post extends React.Component<Props, State> {
           )}
           {this.renderRibbon()}
         </View>
-        <View style={styles.postContainerBottom}>
-          <TouchableOpacity onPress={this.gotoPostDetail}>
-            <GotoDetailIcon />
-          </TouchableOpacity>
+        <View>
+        <View
+          style={styles.configButtonDark}
+          //onPress={this.onPressMetaConfigModal}
+        >
+          <Text style={styles.configButtonTextDark}>{tipCounter} Tips - {tipValue} Sats</Text>
+        </View>
         </View>
       </View>
     )
@@ -387,6 +391,7 @@ const styles = StyleSheet.create({
   postContainerTop: {
     width: '100%',
     flexDirection: 'row',
+    margin:15
   },
   postItemAvatar: {
     width: 48,
@@ -415,14 +420,39 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  postContainerBottom: {
+  /*postContainerBottom: {
     alignItems: 'flex-end',
-  },
+  },*/
   avatarStyle: {
     borderWidth: 5,
     borderRadius: 100,
     borderColor: '#707070',
     marginRight: 8,
+  },
+  configButtonDark: {
+    width:'100%',
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 6,
+    backgroundColor: CSS.Colors.TRANSPARENT,
+    borderColor: '#4285B9',
+    borderWidth: 1,
+    flexDirection: 'row',
+    paddingVertical: 6,
+    //paddingHorizontal: 12,
+    marginTop: 5,
+    elevation: 6,
+    shadowColor: '#4285B9',
+    shadowOffset: { height: 3, width: 0 },
+    shadowOpacity: 1, // IOS
+    shadowRadius: 6, //IOS
+  },
+  configButtonTextDark: {
+    color: '#4285B9',
+    fontFamily: 'Montserrat-600',
+    fontSize: 10,
+    paddingLeft: 7,
   },
 })
 

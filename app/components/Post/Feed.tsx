@@ -15,7 +15,7 @@ import * as CSS from '../../res/css'
 //import UserInfo from './UserInfo'
 import ShockWebView from '../ShockWebView'
 import moment from 'moment'
-import GotoDetailIcon from '../../assets/images/feed/gotodetail.svg'
+import ShockIcon from '../../assets/images/shockB.svg'
 import ShockAvatar from '../ShockAvatar'
 import * as MediaLib from '../../services/mediaLib'
 
@@ -35,6 +35,8 @@ interface Props {
   images: MediaToDisplay[]
   videos: MediaToDisplay[]
   parentScrollViewRef: ScrollView | undefined
+  tipCounter:number
+  tipValue:number
 }
 
 interface State {
@@ -256,15 +258,13 @@ export default class Post extends React.Component<Props, State> {
   render() {
     const {
       author,
-
+      tipCounter,
       date,
       paragraphs = [],
       //parentScrollViewRef,
     } = this.props
-    const currentTimestamp = Date.now() / 1000
-    const duration = currentTimestamp - date
+    const duration = (Date.now() - date)/1000
     const diffString = moment.duration(duration, 'seconds').humanize()
-
     const {
       isReady,
       imagesToDisplay,
@@ -304,7 +304,7 @@ export default class Post extends React.Component<Props, State> {
           />
           <View style={styles.postItemTitle}>
             <Text style={styles.postItemTitleText}>{author.displayName}</Text>
-            <Text style={styles.postItemTimestamp}>{diffString + ' ago'}</Text>
+            <Text style={styles.postItemTimestamp}>{diffString} ago</Text>
           </View>
           {/*<View style={styles.postItemBookmark}>
             {saved ? (<UnpinPostIcon />) : (<PinPostIcon />)}
@@ -353,10 +353,16 @@ export default class Post extends React.Component<Props, State> {
           )}
           {this.renderRibbon()}
         </View>
-        <View style={styles.postContainerBottom}>
-          <TouchableOpacity onPress={this.gotoPostDetail}>
-            <GotoDetailIcon />
-          </TouchableOpacity>
+        <View >
+        
+        <TouchableOpacity
+          style={styles.configButtonDark}
+          //onPress={this.onPressMetaConfigModal}
+        >
+          <ShockIcon width={20} height={20}/>
+          <Text style={styles.configButtonTextDark}>Tip - {tipCounter} Tips</Text>
+        </TouchableOpacity>
+        
         </View>
       </View>
     )
@@ -375,6 +381,7 @@ const styles = StyleSheet.create({
   postContainerTop: {
     width: '100%',
     flexDirection: 'row',
+    margin:15
   },
   postItemAvatar: {
     width: 48,
@@ -403,14 +410,39 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  postContainerBottom: {
+  /*postContainerBottom: {
     alignItems: 'flex-end',
-  },
+  },*/
   avatarStyle: {
     borderWidth: 5,
     borderRadius: 100,
     borderColor: '#707070',
     marginRight: 8,
+  },
+  configButtonDark: {
+    width:'100%',
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 6,
+    backgroundColor: CSS.Colors.TRANSPARENT,
+    borderColor: '#4285B9',
+    borderWidth: 1,
+    flexDirection: 'row',
+    paddingVertical: 6,
+    //paddingHorizontal: 12,
+    //marginTop: 5,
+    elevation: 6,
+    shadowColor: '#4285B9',
+    shadowOffset: { height: 3, width: 0 },
+    shadowOpacity: 1, // IOS
+    shadowRadius: 6, //IOS
+  },
+  configButtonTextDark: {
+    color: '#4285B9',
+    fontFamily: 'Montserrat-600',
+    fontSize: 10,
+    paddingLeft: 7,
   },
 })
 

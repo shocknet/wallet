@@ -234,6 +234,10 @@ class User extends React.Component<Props, State> {
           postId={item.id}
           //@ts-ignore
           postPage={item.page ? item.page : '0'}
+          //@ts-ignore
+          tipCounter={item.tipCounter ? item.tipCounter : 0}
+          //@ts-ignore
+          tipValue={item.tipValue ? item.tipValue : 0}
 
         />
       )

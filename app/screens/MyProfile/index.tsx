@@ -12,7 +12,6 @@ import {
   ListRenderItemInfo,
   RefreshControl,
   ImageBackground,
-  ScrollView,
   Animated,
   Platform,
 } from 'react-native'
@@ -25,7 +24,6 @@ import {
 import { NavigationBottomTabOptions }from "react-navigation-tabs"
 import * as Common from 'shock-common'
 import Http from 'axios'
-import * as R from 'ramda'
 // import { AirbnbRating } from 'react-native-ratings'
 type Navigation = NavigationScreenProp<{}>
 
@@ -58,7 +56,6 @@ import ShockIcon from '../../res/icons'
 
 import Modal from 'react-native-modal'
 import { CREATE_POST_DARK as CREATE_POST } from '../CreatePostDark'
-import notificationService from '../../../notificationService'
 import { connect } from 'react-redux'
 import { Color } from 'shock-common/dist/constants'
 
@@ -72,6 +69,7 @@ interface Props {
   navigation: Navigation
   myWall: import('../../../reducers/myWall').State | undefined
   DeletePost: (postInfo: { postId: string; page: string }) => void
+  FetchPage:(page:number,posts:Common.Schema.Post[]) => void
 }
 
 interface State {
@@ -158,7 +156,18 @@ class MyProfile extends React.Component<Props, State> {
     this.setState({
       loadingNextPage: true,
     })
-
+    const {myWall} = this.props
+    if(!myWall){
+      return
+    }
+    try{
+      await this.props.FetchPage(myWall.lastPageFetched,myWall.posts)
+    } finally{
+      this.setState({
+        loadingNextPage: false,
+      })
+    }
+    /*
     try {
       const res = await Http.get(
         `/api/gun/wall?page=${this.state.lastPageFetched - 1}`,
@@ -193,7 +202,24 @@ class MyProfile extends React.Component<Props, State> {
       this.setState({
         loadingNextPage: false,
       })
+    }*/
+  }
+  resetPages = async () => {
+    this.setState({
+      loadingNextPage: true,
+    })
+    const {myWall} = this.props
+    if(!myWall){
+      return
     }
+    try{
+      await this.props.FetchPage(0,[])
+    } finally{
+      this.setState({
+        loadingNextPage: false,
+      })
+    }
+    
   }
 
   reload = () => {
@@ -216,6 +242,10 @@ class MyProfile extends React.Component<Props, State> {
   didFocus = { remove() {} }
 
   async componentDidMount() {
+    const {myWall} = this.props
+    if(myWall && myWall.posts.length === 0){
+      this.props.FetchPage(0,[])
+    }
     this.didFocus = this.props.navigation.addListener('didFocus', () => {
       if (theme === 'dark') {
         StatusBar.setBackgroundColor(CSS.Colors.TRANSPARENT)
@@ -407,7 +437,6 @@ class MyProfile extends React.Component<Props, State> {
       postIdToDelete: id,
       postPageToDelete: page,
     })
-    notificationService.Log('TESTING', 'aa' + id + page)
   }
   cancelDeletePost = () => {
     this.setState({
@@ -422,7 +451,6 @@ class MyProfile extends React.Component<Props, State> {
         sendingDelete: true,
       })
       const { postIdToDelete: id, postPageToDelete: page } = this.state
-      notificationService.Log('TESTING', `/api/gun/wall/${page}&${id}`)
       const res = await Http.delete(`/api/gun/wall/${page}&${id}`)
       if (res.status !== 200) {
         throw new Error('status not 200 deletePost')
@@ -437,11 +465,40 @@ class MyProfile extends React.Component<Props, State> {
         postIdToDelete: null,
         deleteError: e.errorMessage ? e.errorMessage : e.message,
       })
-      notificationService.Log('TESTING', 'EEE' + JSON.stringify(e))
     }
   }
 
-  renderItem = ({ item }: ListRenderItemInfo<Item>) => {
+  renderItem = ({ item }: ListRenderItemInfo<(Item|string)>) => {
+    if(typeof item === 'string'){
+      return <View>
+        <View style={{ width: '100%', height: 300 }}></View>
+        <TouchableOpacity style={styles.actionButtonDark}>
+              <OfferProduct />
+              <Text style={styles.actionButtonTextDark}>Offer a Product</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.actionButtonDark}>
+              <OfferService />
+              <Text style={styles.actionButtonTextDark}>Offer a Service</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.actionButtonDark}
+              onPress={this.onPressPublish}
+            >
+              <PublishContent />
+              <Text style={styles.actionButtonTextDark}>Publish Content</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.actionButtonDark}
+              onPress={this.onPressCreate}
+            >
+              <CreatePost />
+              <Text style={styles.actionButtonTextDark}>Create a Post</Text>
+            </TouchableOpacity>
+      </View>
+    }
     if (Common.Schema.isPost(item)) {
       const imageCIEntries = Object.entries(item.contentItems).filter(
         ([_, ci]) => ci.type === 'image/embedded',
@@ -501,6 +558,10 @@ class MyProfile extends React.Component<Props, State> {
           deletePost={this.deletePost}
           postId={item.id}
           postPage={item.page ? item.page : '0'}
+          //@ts-ignore
+          tipCounter={item.tipCounter ? item.tipCounter : 0}
+          //@ts-ignore
+          tipValue={item.tipValue ? item.tipValue : 0}
         />
       )
     }
@@ -602,11 +663,20 @@ class MyProfile extends React.Component<Props, State> {
     )*/
   }
 
-  getData = (): Item[] => {
-    return this.state.posts as Item[]
+  getData = (): (Item|string)[] => {
+
+    const {myWall} = this.props
+    if(!myWall){
+      return []
+    }
+    const items =  myWall.posts as Item[]
+    return ['selection',...items]
   }
 
-  keyExtractor = (item: Item) => {
+  keyExtractor = (item: Item|string) => {
+    if(typeof item === 'string'){
+      return 'o'
+    }
     return (item as Common.Schema.Post).id
   }
 
@@ -801,59 +871,27 @@ class MyProfile extends React.Component<Props, State> {
             </Animated.View>
           </Animated.View>
 
-          <ScrollView
-            overScrollMode={'never'}
-            style={styles.mainButtons}
-            scrollEventThrottle={16}
-            //contentOffset={{x:0,y:-100}}
-            onScroll={Animated.event([
-              { nativeEvent: { contentOffset: { y: this.state.scrollY } } },
-            ])}
-            //scrollEnabled={false}
-          >
-            <View style={{ width: '100%', height: 300 }}></View>
-            <TouchableOpacity style={styles.actionButtonDark}>
-              <OfferProduct />
-              <Text style={styles.actionButtonTextDark}>Offer a Product</Text>
-            </TouchableOpacity>
 
-            <TouchableOpacity style={styles.actionButtonDark}>
-              <OfferService />
-              <Text style={styles.actionButtonTextDark}>Offer a Service</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.actionButtonDark}
-              onPress={this.onPressPublish}
-            >
-              <PublishContent />
-              <Text style={styles.actionButtonTextDark}>Publish Content</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.actionButtonDark}
-              onPress={this.onPressCreate}
-            >
-              <CreatePost />
-              <Text style={styles.actionButtonTextDark}>Create a Post</Text>
-            </TouchableOpacity>
-
-            {this.state.loadingNextPage && <ActivityIndicator />}
-
-            <FlatList
+            <FlatList  
+              style={{width:'100%'}}
+              overScrollMode={'never'}
+              scrollEventThrottle={16}
+              //contentOffset={{x:0,y:-100}}
+              onScroll={Animated.event([
+                { nativeEvent: { contentOffset: { y: this.state.scrollY } } },
+              ])}
               renderItem={this.renderItem}
               data={this.getData()}
               keyExtractor={this.keyExtractor}
-              onEndReached={this.fetchNextPage}
+              onEndReached={this.resetPages}
               refreshControl={
                 <RefreshControl
+                renderToHardwareTextureAndroid
                   refreshing={this.state.loadingNextPage}
                   onRefresh={this.fetchNextPage}
                 />
               }
             />
-          </ScrollView>
-
           <TouchableOpacity
             style={styles.createBtn}
             onPress={this.onPressShowMyQrCodeModal}
@@ -909,6 +947,7 @@ class MyProfile extends React.Component<Props, State> {
       <>
         <View style={styles.container}>
           <FlatList
+          
             renderItem={this.renderItem}
             data={this.getData()}
             keyExtractor={this.keyExtractor}
@@ -943,6 +982,9 @@ const mapDispatchToProps = (dispatch: any) => ({
   DeletePost: (postInfo: { postId: string; page: string }) => {
     dispatch(Thunks.MyWall.DeletePost(postInfo))
   },
+  FetchPage:(page:number,posts:Common.Schema.Post[]) => {
+    dispatch(Thunks.MyWall.FetchPage(page,posts))
+  }
 })
 
 export default connect(
