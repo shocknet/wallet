@@ -1,14 +1,79 @@
 import { takeEvery, call, put, select } from 'redux-saga/effects'
 import Logger from 'react-native-file-log'
 import { Schema } from 'shock-common'
+import { default as SocketIO } from 'socket.io-client'
 
 import * as Actions from '../../app/actions'
 import {
   ListInvoiceRequest as ListInvoicesRequest,
   post,
   batchDecodePayReqs,
+  rod,
 } from '../../app/services'
 import { isOnline, getStateRoot } from '../selectors'
+import { getStore } from '../store'
+
+let socket: ReturnType<typeof SocketIO> | null = null
+
+const setSockedt = (s: ReturnType<typeof SocketIO> | null) => {
+  if (socket && !!s) throw new Error('Tried to set socket twice')
+  socket = s
+}
+
+let oldIsAuth = false
+
+function* invoicesSocket() {
+  try {
+    const state = getStateRoot(yield select())
+
+    if (!isOnline(state)) {
+      oldIsAuth = false
+      // We have no way of knowing if we'll be really authenticated (wallet
+      // unlocked) when we connect again
+      if (socket) {
+        socket.off('*')
+        socket.close()
+        setSockedt(null)
+      }
+      return
+    }
+
+    const newIsAuth = !!state.auth.token
+    const authed = !oldIsAuth && newIsAuth
+
+    oldIsAuth = newIsAuth
+
+    if (!authed) {
+      return
+    }
+
+    setSockedt(rod('lightning', 'subscribeInvoices', {}))
+
+    socket!.on('data', (invoice: unknown) => {
+      if (!Schema.isInvoiceWhenListed(invoice)) {
+        Logger.log(`Error inside invoicesSocket* ()`)
+        Logger.log(`data received from subscribeInvoices() not a InvoiceLIsted`)
+        Logger.log(invoice)
+        return
+      }
+
+      const store = getStore()
+      const state = store.getState()
+
+      if (state.auth.token) {
+        store.dispatch(Actions.receivedSingleInvoice(invoice))
+      }
+    })
+
+    socket!.on('$error', (err: unknown) => {
+      Logger.log(`Error inside invoicesSocket* ()`)
+      Logger.log(err)
+    })
+  } catch (err) {
+    Logger.log(`Error inside invoicesSocket* ()`)
+    Logger.log(err.message)
+  }
+}
 
 let oldIsOnline = false
 
@@ -42,9 +107,7 @@ function* fetchLatestInvoices(action: Actions.Action) {
 
     yield put(
       Actions.receivedOwnInvoices({
-        first_index_offset: Number(data.first_index_offset),
         invoices: data.invoices,
-        last_index_offset: Number(data.last_index_offset),
         originRequest: req,
       }),
     )
@@ -68,6 +131,7 @@ function* batchDecodeInvoices(action: Actions.InvoicesBatchDecodeReqAction) {
 function* rootSaga() {
   yield takeEvery('*', fetchLatestInvoices)
   yield takeEvery(Actions.invoicesBatchDecodeReq, batchDecodeInvoices)
+  yield takeEvery('*', invoicesSocket)
 }
 
 export default rootSaga

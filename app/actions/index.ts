@@ -1,4 +1,5 @@
 import * as Common from 'shock-common'
+import { RehydrateAction } from 'redux-persist'
 
 import * as ChatActions from './ChatActions'
 import * as RequestActions from './RequestActions'
@@ -40,6 +41,7 @@ export type Action =
   | AuthAction
   | PaymentsAction
   | ChainTXsAction
+  | RehydrateAction
 
 export const receivedBackfeed = Common.Store.Actions.receivedBackfeed
 export const receivedFeed = Common.Store.Actions.receivedFeed
@@ -57,6 +59,7 @@ export {
   decodePaymentRequest,
   invoicesBatchDecodeReq,
   invoicesBatchDecodeRes,
+  receivedSingleInvoice,
 } from './InvoiceActions'
 export type InvoicesBatchDecodeReqAction = _InvoicesBatchDecodeReqAction
 export type InvoicesBatchDecodeResAction = _InvoicesBatchDecodeResAction

@@ -32,6 +32,24 @@ const reducer: Reducer<State, Action | RehydrateAction> = (
   action,
 ) =>
   produce(state, draft => {
+    if (action.type === 'invoices/receivedSingle') {
+      const { invoice } = action.payload
+      draft.byId[invoice.payment_request] = invoice
+
+      if (invoice.settled /* && isOwn (TODO: coordinates) */) {
+        const existingSettled = [
+          ...draft.latestSettled.map(payReq => draft.byId[payReq]),
+          invoice,
+        ]
+
+        existingSettled.sort(
+          (i1, i2) => Number(i2.settle_date) - Number(i1.settle_date),
+        )
+
+        draft.latestSettled = existingSettled.map(i => i.payment_request)
+      }
+    }
+
     if (action.type === 'invoices/receivedOwn') {
       const { invoices, originRequest } = action.data
 
@@ -55,9 +73,7 @@ const reducer: Reducer<State, Action | RehydrateAction> = (
         originRequest.index_offset === 0
 
       const isLatestInvoices =
-        !!originRequest.reversed &&
-        fromBeginning &&
-        typeof originRequest.pending_only === 'undefined'
+        !!originRequest.reversed && fromBeginning && !originRequest.pending_only
 
       if (isLatestInvoices) {
         draft.ids = mostRecentToLeast.map(i => i.payment_request)
@@ -66,32 +82,6 @@ const reducer: Reducer<State, Action | RehydrateAction> = (
           .filter(i => i.settled)
           .map(i => i.payment_request)
       }
-    }
-
-    if (action.type === 'authed') {
-      const {
-        data: {
-          invoices: { invoices },
-        },
-      } = action.data
-
-      const mostRecentToLeast = invoices.slice().sort((i1, i2) => {
-        // If settled, use the settle date for sorting, else use creation date.
-        // settle_date will be 0 if not settled
-        const date1 = Number(i1.settle_date) || Number(i1.creation_date)
-        const date2 = Number(i2.settle_date) || Number(i2.creation_date)
-
-        return date2 - date1
-      })
-
-      for (const invoice of mostRecentToLeast) {
-        draft.byId[invoice.payment_request] = invoice
-      }
-
-      draft.ids = mostRecentToLeast.map(i => i.payment_request)
-      draft.latestSettled = mostRecentToLeast
-        .filter(i => i.settled)
-        .map(i => i.payment_request)
     }
   })
 

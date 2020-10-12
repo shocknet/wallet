@@ -18,6 +18,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons'
 import moment from 'moment'
 import { Schema } from 'shock-common'
 import { connect } from 'react-redux'
+import Entypo from 'react-native-vector-icons/Entypo'
 
 import { ConnectedShockAvatar } from '../../components/ShockAvatar'
 import * as CSS from '../../res/css'
@@ -32,7 +33,7 @@ interface DispatchProps {}
 interface StateProps {
   value: number
   timestamp: number
-  outbound: boolean
+  status: 'sent' | 'received' | 'process'
   title: string
   subTitle: string
   relatedPublickey?: string
@@ -55,12 +56,12 @@ export class UnifiedTransaction extends React.PureComponent<Props> {
     const {
       err,
       USDRate,
-      outbound,
       timestamp,
       value,
       title,
       subTitle,
       relatedPublickey,
+      status,
     } = this.props
 
     if (err) {
@@ -74,44 +75,48 @@ export class UnifiedTransaction extends React.PureComponent<Props> {
       ) / 100
     ).toLocaleString()
 
+    const icon = (() => {
+      if (status === 'sent') {
+        return (
+          <Ionicons
+            name="md-arrow-round-up"
+            size={15}
+            color={CSS.Colors.ICON_RED}
+          />
+        )
+      }
+
+      if (status === 'process') {
+        return (
+          <Entypo name="clock" color={CSS.Colors.CAUTION_YELLOW} size={15} />
+        )
+      }
+
+      if (status === 'received') {
+        return (
+          <Ionicons
+            name="md-arrow-round-down"
+            size={15}
+            color={CSS.Colors.ICON_GREEN}
+          />
+        )
+      }
+
+      throw new TypeError(
+        '<UnifiedTransaction /> prop status not of correct type',
+      )
+    })()
+
     return (
       <TouchableOpacity style={styles.item}>
         {relatedPublickey ? (
           <View>
-            <View style={styles.outboundIndicator2}>
-              {outbound ? (
-                <Ionicons
-                  name="md-arrow-round-up"
-                  size={15}
-                  color={CSS.Colors.ICON_GREEN}
-                />
-              ) : (
-                <Ionicons
-                  name="md-arrow-round-down"
-                  size={15}
-                  color={CSS.Colors.ICON_RED}
-                />
-              )}
-            </View>
+            <View style={styles.outboundIndicator2}>{icon}</View>
             <ConnectedShockAvatar publicKey={relatedPublickey} height={45} />
           </View>
         ) : (
           <View style={styles.avatar}>
-            <View style={styles.outboundIndicator}>
-              {outbound ? (
-                <Ionicons
-                  name="md-arrow-round-up"
-                  size={15}
-                  color={CSS.Colors.ICON_GREEN}
-                />
-              ) : (
-                <Ionicons
-                  name="md-arrow-round-down"
-                  size={15}
-                  color={CSS.Colors.ICON_RED}
-                />
-              )}
-            </View>
+            <View style={styles.outboundIndicator}>{icon}</View>
           </View>
         )}
 
@@ -182,25 +187,15 @@ const makeMapStateToProps = () => {
       const maybeDecodedInvoice =
         state.decodedInvoices[asPayment.payment_request]
 
-      // TODO inProces = isInvoice && orderInProcess(invoice.r_hash)
-      const inProcess =
-        (isPayment && asPayment.status !== 'SUCCEEDED') ||
-        (isChainTX && asChainTX.num_confirmations < 1)
-
       const description = (() => {
         if (isInvoice) {
           return asInvoice.memo
         }
 
         if (isPayment) {
-          if (maybeDecodedInvoice) {
-            const a = maybeDecodedInvoice.description
-            const b = inProcess ? ' (sending)' : ''
-
-            return a + b
-          }
-
-          return 'Fetching memo...'
+          return maybeDecodedInvoice
+            ? maybeDecodedInvoice.description
+            : 'Fetching memo...'
         }
 
         if (isChainTX) {
@@ -229,7 +224,22 @@ const makeMapStateToProps = () => {
         name = maybeUser.displayName || name
       }
 
-      const outbound = isChainTX ? Number(asChainTX.amount) < 0 : isPayment
+      const status: StateProps['status'] = (() => {
+        if (isChainTX) {
+          if (asChainTX.num_confirmations === 0) {
+            return 'process'
+          }
+
+          return Number(asChainTX.amount) < 0 ? 'sent' : 'received'
+        }
+
+        if (isInvoice) {
+          return asInvoice.settled ? 'received' : 'process'
+        }
+
+        // is payment
+        return 'sent'
+      })()
 
       return {
         USDRate:
@@ -238,7 +248,6 @@ const makeMapStateToProps = () => {
             | number
             | null) || 0,
         title: name,
-        outbound,
         timestamp: Number(
           asInvoice.settle_date ||
             asPayment.creation_date ||
@@ -252,6 +261,7 @@ const makeMapStateToProps = () => {
         ),
         subTitle: description,
         relatedPublickey: relatedPublickey || undefined,
+        status,
       }
     } catch (err) {
       return {

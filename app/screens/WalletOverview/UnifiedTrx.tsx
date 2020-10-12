@@ -49,18 +49,7 @@ const mapStateToProps = (state: Store.State): StateProps => {
   }
 }
 
-const ConnectedUnifiedTrx = connect(
-  mapStateToProps,
-  null,
-  null,
-  {
-    areStatesEqual(next, prev) {
-      // TODO: this will be handled by a selector later when dealing with
-      // several types of tx
-      return next.invoicesListed.ids === prev.invoicesListed.ids
-    },
-  },
-)(UnifiedTrx)
+const ConnectedUnifiedTrx = connect(mapStateToProps)(UnifiedTrx)
 
 export default ConnectedUnifiedTrx
 

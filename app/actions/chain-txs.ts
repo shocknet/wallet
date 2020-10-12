@@ -1,4 +1,8 @@
-import { TransactionDetails, GetTransactionsRequest } from 'shock-common'
+import {
+  TransactionDetails,
+  GetTransactionsRequest,
+  Schema,
+} from 'shock-common'
 
 export const receivedChainTransactions = (data: {
   transactions: TransactionDetails['transactions']
@@ -14,6 +18,15 @@ export const chainTXsRefreshForced = () =>
     type: 'chainTXs/refreshForced',
   } as const)
 
+export const receivedSingleChainTX = (tx: Schema.ChainTransaction) =>
+  ({
+    type: 'chainTXs/receivedSingle',
+    payload: {
+      tx,
+    },
+  } as const)
+
 export type ChainTXsAction =
   | ReturnType<typeof receivedChainTransactions>
   | ReturnType<typeof chainTXsRefreshForced>
+  | ReturnType<typeof receivedSingleChainTX>
