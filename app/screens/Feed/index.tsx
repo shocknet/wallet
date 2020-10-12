@@ -10,7 +10,6 @@ import {
   ActivityIndicator,
   StatusBar,
   FlatListProps,
-  ScrollView,
 } from 'react-native'
 import { connect } from 'react-redux'
 import { NavigationScreenProp } from 'react-navigation'
@@ -23,21 +22,25 @@ import Post from '../../components/Post/Feed'
 import * as Routes from '../../routes'
 import * as CSS from '../../res/css'
 import * as API from '../../services/contact-api'
+import * as Thunks from '../../thunks'
 
 import ShockIconWhite from '../../assets/images/shockW.svg'
 import ShockIconBlue from '../../assets/images/shockB.svg'
+
 
 type Navigation = NavigationScreenProp<{}, Routes.UserParams>
 type Item = Common.Schema.Post
 
 interface StateProps {
   posts: Common.Schema.Post[]
+  myFeed: import('../../../reducers/myFeed').State
 }
 
 interface DispatchProps {
-  requestBackfeed: () => void
-  requestMoreFeed: () => void
-  onViewportChanged: (newViewport: string[]) => void
+  //requestBackfeed: () => void
+  //requestMoreFeed: () => void
+  //onViewportChanged: (newViewport: string[]) => void
+  FetchPage: (page:number,currentPosts:Common.Schema.Post[]) => void
 }
 
 interface OwnProps {
@@ -74,8 +77,10 @@ class Feed extends React.Component<Props, State> {
   }
 
   onEndReached = () => {
+    const {myFeed} = this.props
+    this.props.FetchPage(myFeed.lastPageFetched,myFeed.posts)
     // todo: move this check to redux in a way that makes sense
-    if (!this.state.awaitingMoreFeed) {
+    /*if (!this.state.awaitingMoreFeed) {
       this.setState(
         {
           awaitingMoreFeed: true,
@@ -84,11 +89,12 @@ class Feed extends React.Component<Props, State> {
           this.props.requestMoreFeed()
         },
       )
-    }
+    }*/
   }
 
   onRefresh = () => {
-    const { awaitingBackfeed, awaitingMoreFeed } = this.state
+    this.props.FetchPage(0,[])//clear and reload 
+    /*const { awaitingBackfeed, awaitingMoreFeed } = this.state
 
     if (!awaitingBackfeed && !awaitingMoreFeed) {
       this.setState(
@@ -111,9 +117,8 @@ class Feed extends React.Component<Props, State> {
           }, 10000)
         },
       )
-    }
+    }*/
   }
-
   renderItem = ({ item }: ListRenderItemInfo<Item>) => {
     if (!Common.Schema.isPost(item)) return null
     const imageCIEntries = Object.entries(item.contentItems).filter(
@@ -165,6 +170,10 @@ class Feed extends React.Component<Props, State> {
         videos={videos}
         paragraphs={paragraphs}
         parentScrollViewRef={undefined}
+        //@ts-ignore
+        tipValue={item.tipValue ? item.tipValue : 0}
+        //@ts-ignore
+        tipCounter={item.tipCounter ? item.tipCounter : 0}
       />
     )
   }
@@ -182,7 +191,7 @@ class Feed extends React.Component<Props, State> {
     )
   }*/
 
-  _onViewableItemsChanged: FlatListProps<
+  /*_onViewableItemsChanged: FlatListProps<
     Common.Schema.Post
   >['onViewableItemsChanged'] = ({ viewableItems }) => {
     const posts = viewableItems.map(
@@ -191,16 +200,16 @@ class Feed extends React.Component<Props, State> {
 
     const ids = posts.map(p => p.id)
 
-    this.props.onViewportChanged(ids)
-  }
+    //this.props.onViewportChanged(ids)
+  }*/
 
   // TODO: debounce in redux
-  onViewableItemsChanged: FlatListProps<
+  /*onViewableItemsChanged: FlatListProps<
     Common.Schema.Post
   >['onViewableItemsChanged'] = _.debounce(this
-    ._onViewableItemsChanged as () => {})
+    ._onViewableItemsChanged as () => {})*/
 
-  componentDidUpdate(prevProps: Readonly<Props>) {
+  /*componentDidUpdate(prevProps: Readonly<Props>) {
     const { posts: prevPosts } = prevProps
     const { posts: currentPosts } = this.props
     const postsChanged = currentPosts !== prevPosts
@@ -241,7 +250,7 @@ class Feed extends React.Component<Props, State> {
         awaitingMoreFeed: false,
       })
     }
-  }
+  }*/
   onPressAvatar = () => {}
 
   onPressAllFeeds = () => {
@@ -257,8 +266,7 @@ class Feed extends React.Component<Props, State> {
   }
 
   render() {
-    const { posts } = this.props
-
+    const { posts,myFeed } = this.props
     return (
       <SafeAreaView style={styles.container}>
         <StatusBar
@@ -266,12 +274,12 @@ class Feed extends React.Component<Props, State> {
           backgroundColor="transparent"
           barStyle="light-content"
         />
-        <ScrollView>
+        
           <FlatList
-            style={CSS.styles.flex}
-            contentContainerStyle={CSS.styles.flex}
+            //style={CSS.styles.flex}
+            //contentContainerStyle={CSS.styles.flex}
             renderItem={this.renderItem}
-            data={posts}
+            data={myFeed.posts}
             keyExtractor={keyExtractor}
             ListEmptyComponent={listEmptyElement}
             onEndReached={this.onEndReached}
@@ -283,10 +291,10 @@ class Feed extends React.Component<Props, State> {
               />
             }
             ListFooterComponent={posts.length ? listFooterElement : null}
-            onViewableItemsChanged={this.onViewableItemsChanged}
+            //onViewableItemsChanged={this.onViewableItemsChanged}
             viewabilityConfig={VIEWABILITY_CONFIG}
           />
-        </ScrollView>
+        
       </SafeAreaView>
     )
   }
@@ -321,9 +329,12 @@ const mapStateToProps = (state: Reducers.State): StateProps => {
 
   return {
     posts,
+
+
+    myFeed:state.myFeed
   }
 }
-
+/*
 const mapDispatchToProps: Record<
   keyof DispatchProps,
   (...args: any[]) => Common.Store.Actions.FeedAction
@@ -331,8 +342,14 @@ const mapDispatchToProps: Record<
   onViewportChanged: Common.Store.Actions.viewportChanged,
   requestBackfeed: Common.Store.Actions.getMoreBackfeed,
   requestMoreFeed: Common.Store.Actions.getMoreFeed,
-}
 
+
+}*/
+const mapDispatchToProps = (dispatch: any) => ({
+  FetchPage: (page:number,currentPosts:Common.Schema.Post[]) => {
+    dispatch(Thunks.myFeed.FetchPage(page,currentPosts))
+  },
+})
 const ConnectedFeed = connect(
   mapStateToProps,
   mapDispatchToProps,

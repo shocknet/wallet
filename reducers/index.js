@@ -17,6 +17,7 @@ import tips from './tips'
 import decodedInvoices from './decoded-invoices'
 import mediaLib from './mediaLib'
 import myWall from './myWall'
+import myFeed from './myFeed'
 import auth from './auth'
 import invoicesListed from './invoices-listed'
 import invoicesAdded from './invoices-added'
@@ -43,6 +44,7 @@ const rootReducer = {
   decodedInvoices,
   mediaLib,
   myWall,
+  myFeed,
   invoicesListed,
   invoicesAdded,
   chainTXs,

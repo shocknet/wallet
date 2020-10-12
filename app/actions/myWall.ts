@@ -1,5 +1,27 @@
+import * as Common from 'shock-common'
 type ErrMessage = {
   errorMessage: string
+}
+
+export type BeganFetchPageAction = {
+  type: 'myWall/beganFetchPage'
+  data:{
+    page:number
+  }
+}
+export type FinishedFetchPageAction = {
+  type: 'myWall/finishedFetchPage'
+  data:{
+    page:number,
+    posts:Common.Schema.Post[]
+  }
+}
+export type ErrorFetchPageAction = {
+  type: 'myWall/errorFetchPage'
+  data:{
+    page:number,
+    error: string
+  }
 }
 
 export type BeganSettingPinnedAction = {
@@ -37,12 +59,36 @@ export type ErrorDeletePostAction = {
 }
 
 export type WallActions =
+  BeganFetchPageAction
+  | FinishedFetchPageAction
+  | ErrorFetchPageAction
   | BeganSettingPinnedAction
   | FinishedSettingPinnedAction
   | ErrorSettingPinnedAction
   | BeganDeletePostAction
   | FinishedDeletePostAction
   | ErrorDeletePostAction
+
+
+export const beganFetchPage = (page:number):BeganFetchPageAction => ({
+  type:'myWall/beganFetchPage',
+  data:{page}
+})
+export const finishedFetchPage = (page:number,posts:Common.Schema.Post[]):FinishedFetchPageAction => ({
+  type:'myWall/finishedFetchPage',
+  data:{
+    page,
+    posts
+  }
+})
+export const errorFetchPage = (page:number,error:string):ErrorFetchPageAction => ({
+  type:'myWall/errorFetchPage',
+  data:{
+    page,
+    error
+  }
+})
+
 
 export const beganSettingPinned = (
   contentID: string,

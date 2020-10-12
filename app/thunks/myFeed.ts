@@ -1,14 +1,14 @@
 import Http from 'axios'
 import * as Common from 'shock-common'
 import * as R from 'ramda'
-import * as Actions from '../actions/myWall'
+import * as Actions from '../actions/myFeed'
 
 export const FetchPage = (page:number,currentPosts:Common.Schema.Post[]) => async (dispatch:any) => {
-  const pageToFetch = page - 1
+  const pageToFetch = page + 1
   dispatch(Actions.beganFetchPage(pageToFetch))
   try {
     const res = await Http.get(
-      `/api/gun/wall?page=${pageToFetch}`,
+      `api/gun/feed?page=${pageToFetch}`,
     )
 
     if (res.status !== 200) {
@@ -25,35 +25,5 @@ export const FetchPage = (page:number,currentPosts:Common.Schema.Post[]) => asyn
     dispatch(Actions.errorFetchPage(pageToFetch,err.message ||
       err.errorMessage ||
       'Unknown error'))
-  }
-}
-
-export const PinPost = (contentID: string) => async (dispatch: any) => {
-  dispatch(Actions.beganSettingPinned(contentID))
-  try {
-    //TODO
-    dispatch(Actions.finishedSettingPinned)
-  } catch (e) {
-    dispatch(Actions.ErrorSettingPinned(contentID, e))
-  }
-}
-
-export const DeletePost = ({
-  postId,
-  page,
-}: {
-  postId: string
-  page: string
-}) => async (dispatch: any) => {
-  const contentID = `${page}&${postId}`
-  dispatch(Actions.beganDeletePost(contentID))
-  try {
-    const res = await Http.delete(`/api/gun/wall/${contentID}`)
-    if (res.status !== 200) {
-      throw new Error(`Status not OK`)
-    }
-    dispatch(Actions.finishedDeletePost(contentID))
-  } catch (e) {
-    dispatch(Actions.ErrorDeletePost(contentID, e))
   }
 }
