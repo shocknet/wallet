@@ -5,15 +5,9 @@ import Logger from 'react-native-file-log'
 import { Schema } from 'shock-common'
 
 import { Action } from '../app/actions'
+import { Tip } from '../app/schema'
 
-type State = Record<
-  string,
-  {
-    amount: number
-    state: 'processing' | 'wentThrough' | 'err'
-    lastErr: string
-  }
->
+type State = Record<string, Tip>
 
 const reducer: Reducer<State, Action | RehydrateAction> = (
   state = {},
@@ -62,12 +56,13 @@ const reducer: Reducer<State, Action | RehydrateAction> = (
     }
 
     if (action.type === 'tips/requestedTip') {
-      const { amount, recipientsPublicKey } = action.data
+      const { amount, recipientsPublicKey, memo } = action.data
 
       draft[recipientsPublicKey] = {
         amount,
         state: 'processing',
         lastErr: '',
+        lastMemo: memo,
       }
     }
 
