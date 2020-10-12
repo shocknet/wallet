@@ -1,6 +1,3 @@
-/**
- * @prettier
- */
 import React from 'react'
 import Logger from 'react-native-file-log'
 

@@ -1,6 +1,3 @@
-/**
- * @prettier
- */
 import React from 'react'
 import { ToastAndroid, StyleSheet, StatusBar } from 'react-native'
 import Ion from 'react-native-vector-icons/Ionicons'

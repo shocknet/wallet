@@ -1,6 +1,3 @@
-/**
- * @prettier
- */
 import React from 'react'
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
 import moment from 'moment'
@@ -8,10 +5,10 @@ import { Svg, Polygon } from 'react-native-svg'
 
 import { Colors, WIDTH } from '../../res/css'
 import Pad from '../../components/Pad'
-
-import ChatAvatar from './ChatAvatar'
 import TrendOngoing from '../../assets/images/chatting/trend-ongoing.svg'
 import TrendOutgoing from '../../assets/images/chatting/trend-outgoing.svg'
+
+import ChatAvatar from './ChatAvatar'
 
 const BUBBLE_TRIANGLE_VERTICAL_OFFSET = 6
 
