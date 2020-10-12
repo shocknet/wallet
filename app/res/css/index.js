@@ -10,6 +10,7 @@ import * as Common from 'shock-common'
 export const Colors = {
   ...Common.Constants.Color,
   DARK_MODE_TEXT_NEAR_WHITE: '#EBEBEB',
+  DARK_MODE_TEXT_GRAY: '#9C9C9C',
 }
 
 export const styles = StyleSheet.create({
