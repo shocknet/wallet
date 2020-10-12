@@ -191,7 +191,7 @@ export default class ChatsView extends React.Component {
 
                 return lastMsg.body
               })()}
-              lowerTextStyle={unread ? styles.boldFont : undefined}
+              lowerTextStyle={unread ? styles.boldFont : styles.nearWhiteFont}
               name={
                 chat.recipientDisplayName === null
                   ? chat.recipientPublicKey
@@ -452,13 +452,19 @@ const ITEM_CONTAINER_HORIZONTAL_PADDING = SCREEN_PADDING / 2
 const ITEM_CONTAINER_VERTICAL_PADDING = 15
 
 const styles = StyleSheet.create({
+  nearWhiteFont: {
+    color: Colors.DARK_MODE_TEXT_NEAR_WHITE,
+    fontFamily: 'Montserrat-600',
+  },
+
   boldFont: {
-    // @ts-ignore
+    fontFamily: 'Montserrat-700',
+    color: Colors.DARK_MODE_TEXT_NEAR_WHITE,
     fontWeight: 'bold',
   },
 
   redBoldFont: {
-    // @ts-ignore
+    fontFamily: 'Montserrat-700',
     fontWeight: 'bold',
     color: 'red',
   },
