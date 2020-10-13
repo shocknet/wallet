@@ -1,65 +1,76 @@
 import * as Common from 'shock-common'
-type ErrMessage = {
-  errorMessage: string
-}
 
 export type BeganFetchPageAction = {
   type: 'myWall/beganFetchPage'
-  data:{
-    page:number
+  data: {
+    page: number
   }
 }
 export type FinishedFetchPageAction = {
   type: 'myWall/finishedFetchPage'
-  data:{
-    page:number,
-    posts:Common.Schema.Post[]
+  data: {
+    page: number
+    posts: Common.Schema.Post[]
   }
 }
 export type ErrorFetchPageAction = {
   type: 'myWall/errorFetchPage'
-  data:{
-    page:number,
+  data: {
+    page: number
     error: string
   }
 }
 
 export type BeganSettingPinnedAction = {
   type: 'myWall/beganSettingPinned'
-  data: string
+  data: {
+    page: number
+    postId: string
+  }
 }
 export type FinishedSettingPinnedAction = {
   type: 'myWall/finishedSettingPinned'
-  data: string
+  data: {
+    page: number
+    postId: string
+  }
 }
 export type ErrorSettingPinnedAction = {
   type: 'myWall/ErrorSettingPinned'
   data: {
-    contentID: string
-    error: string | Error | ErrMessage
+    page: number
+    postId: string
+    error: string
   }
 }
 
 export type BeganDeletePostAction = {
   type: 'myWall/beganDeletePost'
-  data: string
+  data: {
+    page: number
+    postId: string
+  }
 }
 
 export type FinishedDeletePostAction = {
   type: 'myWall/finishedDeletePost'
-  data: string
+  data: {
+    index: number
+    postId: string
+  }
 }
 
 export type ErrorDeletePostAction = {
   type: 'myWall/ErrorDeletePost'
   data: {
-    contentID: string
+    index: number
+    postId: string
     error: string
   }
 }
 
 export type WallActions =
-  BeganFetchPageAction
+  | BeganFetchPageAction
   | FinishedFetchPageAction
   | ErrorFetchPageAction
   | BeganSettingPinnedAction
@@ -69,65 +80,89 @@ export type WallActions =
   | FinishedDeletePostAction
   | ErrorDeletePostAction
 
-
-export const beganFetchPage = (page:number):BeganFetchPageAction => ({
-  type:'myWall/beganFetchPage',
-  data:{page}
+export const beganFetchPage = (page: number): BeganFetchPageAction => ({
+  type: 'myWall/beganFetchPage',
+  data: { page },
 })
-export const finishedFetchPage = (page:number,posts:Common.Schema.Post[]):FinishedFetchPageAction => ({
-  type:'myWall/finishedFetchPage',
-  data:{
+export const finishedFetchPage = (
+  page: number,
+  posts: Common.Schema.Post[],
+): FinishedFetchPageAction => ({
+  type: 'myWall/finishedFetchPage',
+  data: {
     page,
-    posts
-  }
+    posts,
+  },
 })
-export const errorFetchPage = (page:number,error:string):ErrorFetchPageAction => ({
-  type:'myWall/errorFetchPage',
-  data:{
+export const errorFetchPage = (
+  page: number,
+  error: string,
+): ErrorFetchPageAction => ({
+  type: 'myWall/errorFetchPage',
+  data: {
     page,
-    error
-  }
+    error,
+  },
 })
-
 
 export const beganSettingPinned = (
-  contentID: string,
+  page: number,
+  postId: string,
 ): BeganSettingPinnedAction => ({
   type: 'myWall/beganSettingPinned',
-  data: contentID,
+  data: {
+    page,
+    postId,
+  },
 })
 
 export const finishedSettingPinned = (
-  contentID: string,
+  page: number,
+  postId: string,
 ): FinishedSettingPinnedAction => ({
   type: 'myWall/finishedSettingPinned',
-  data: contentID,
+  data: {
+    page,
+    postId,
+  },
 })
 
 export const ErrorSettingPinned = (
-  contentID: string,
+  page: number,
+  postId: string,
   error: string,
 ): ErrorSettingPinnedAction => ({
   type: 'myWall/ErrorSettingPinned',
-  data: { contentID, error },
+  data: { page, postId, error },
 })
 
-export const beganDeletePost = (contentID: string): BeganDeletePostAction => ({
+export const beganDeletePost = (
+  page: number,
+  postId: string,
+): BeganDeletePostAction => ({
   type: 'myWall/beganDeletePost',
-  data: contentID,
+  data: {
+    page,
+    postId,
+  },
 })
 
 export const finishedDeletePost = (
-  contentID: string,
+  index: number,
+  postId: string,
 ): FinishedDeletePostAction => ({
   type: 'myWall/finishedDeletePost',
-  data: contentID,
+  data: {
+    index,
+    postId,
+  },
 })
 
 export const ErrorDeletePost = (
-  contentID: string,
+  index: number,
+  postId: string,
   error: string,
 ): ErrorDeletePostAction => ({
   type: 'myWall/ErrorDeletePost',
-  data: { contentID, error },
+  data: { index, postId, error },
 })

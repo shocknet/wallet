@@ -13,7 +13,7 @@ import {
 } from 'react-native'
 import { connect } from 'react-redux'
 import { NavigationScreenProp } from 'react-navigation'
-import { NavigationBottomTabOptions } from 'react-navigation-tabs';
+import { NavigationBottomTabOptions } from 'react-navigation-tabs'
 import _ from 'lodash'
 import * as Common from 'shock-common'
 
@@ -27,7 +27,6 @@ import * as Thunks from '../../thunks'
 import ShockIconWhite from '../../assets/images/shockW.svg'
 import ShockIconBlue from '../../assets/images/shockB.svg'
 
-
 type Navigation = NavigationScreenProp<{}, Routes.UserParams>
 type Item = Common.Schema.Post
 
@@ -40,7 +39,7 @@ interface DispatchProps {
   //requestBackfeed: () => void
   //requestMoreFeed: () => void
   //onViewportChanged: (newViewport: string[]) => void
-  FetchPage: (page:number,currentPosts:Common.Schema.Post[]) => void
+  FetchPage: (page: number, currentPosts: Common.Schema.Post[]) => void
 }
 
 interface OwnProps {
@@ -77,8 +76,8 @@ class Feed extends React.Component<Props, State> {
   }
 
   onEndReached = () => {
-    const {myFeed} = this.props
-    this.props.FetchPage(myFeed.lastPageFetched,myFeed.posts)
+    const { myFeed } = this.props
+    this.props.FetchPage(myFeed.lastPageFetched, myFeed.posts)
     // todo: move this check to redux in a way that makes sense
     /*if (!this.state.awaitingMoreFeed) {
       this.setState(
@@ -93,7 +92,7 @@ class Feed extends React.Component<Props, State> {
   }
 
   onRefresh = () => {
-    this.props.FetchPage(0,[])//clear and reload 
+    this.props.FetchPage(0, []) //clear and reload
     /*const { awaitingBackfeed, awaitingMoreFeed } = this.state
 
     if (!awaitingBackfeed && !awaitingMoreFeed) {
@@ -266,7 +265,7 @@ class Feed extends React.Component<Props, State> {
   }
 
   render() {
-    const { posts,myFeed } = this.props
+    const { posts, myFeed } = this.props
     return (
       <SafeAreaView style={styles.container}>
         <StatusBar
@@ -274,27 +273,26 @@ class Feed extends React.Component<Props, State> {
           backgroundColor="transparent"
           barStyle="light-content"
         />
-        
-          <FlatList
-            //style={CSS.styles.flex}
-            //contentContainerStyle={CSS.styles.flex}
-            renderItem={this.renderItem}
-            data={myFeed.posts}
-            keyExtractor={keyExtractor}
-            ListEmptyComponent={listEmptyElement}
-            onEndReached={this.onEndReached}
-            onEndReachedThreshold={0.5}
-            refreshControl={
-              <RefreshControl
-                refreshing={this.state.awaitingBackfeed}
-                onRefresh={this.onRefresh}
-              />
-            }
-            ListFooterComponent={posts.length ? listFooterElement : null}
-            //onViewableItemsChanged={this.onViewableItemsChanged}
-            viewabilityConfig={VIEWABILITY_CONFIG}
-          />
-        
+
+        <FlatList
+          //style={CSS.styles.flex}
+          //contentContainerStyle={CSS.styles.flex}
+          renderItem={this.renderItem}
+          data={myFeed.posts}
+          keyExtractor={keyExtractor}
+          ListEmptyComponent={listEmptyElement}
+          onEndReached={this.onEndReached}
+          onEndReachedThreshold={0.5}
+          refreshControl={
+            <RefreshControl
+              refreshing={this.state.awaitingBackfeed}
+              onRefresh={this.onRefresh}
+            />
+          }
+          ListFooterComponent={posts.length ? listFooterElement : null}
+          //onViewableItemsChanged={this.onViewableItemsChanged}
+          viewabilityConfig={VIEWABILITY_CONFIG}
+        />
       </SafeAreaView>
     )
   }
@@ -330,8 +328,7 @@ const mapStateToProps = (state: Reducers.State): StateProps => {
   return {
     posts,
 
-
-    myFeed:state.myFeed
+    myFeed: state.myFeed,
   }
 }
 /*
@@ -346,8 +343,8 @@ const mapDispatchToProps: Record<
 
 }*/
 const mapDispatchToProps = (dispatch: any) => ({
-  FetchPage: (page:number,currentPosts:Common.Schema.Post[]) => {
-    dispatch(Thunks.myFeed.FetchPage(page,currentPosts))
+  FetchPage: (page: number, currentPosts: Common.Schema.Post[]) => {
+    dispatch(Thunks.myFeed.FetchPage(page, currentPosts))
   },
 })
 const ConnectedFeed = connect(

@@ -47,7 +47,11 @@ const reducer = (state:State = INITIAL_STATE,action:Action) => {
             return state
         }
         case 'myWall/beganDeletePost':{
-            return state
+            const {data} = action
+            return produce(state,draft =>{
+                draft.postToDeleteID=data.postId
+                draft.status="deleting..."
+            })
         }
         case 'myWall/finishedDeletePost':{
             return state

@@ -3,13 +3,14 @@ import * as Common from 'shock-common'
 import * as R from 'ramda'
 import * as Actions from '../actions/myWall'
 
-export const FetchPage = (page:number,currentPosts:Common.Schema.Post[]) => async (dispatch:any) => {
+export const FetchPage = (
+  page: number,
+  currentPosts: Common.Schema.Post[],
+) => async (dispatch: any) => {
   const pageToFetch = page - 1
   dispatch(Actions.beganFetchPage(pageToFetch))
   try {
-    const res = await Http.get(
-      `/api/gun/wall?page=${pageToFetch}`,
-    )
+    const res = await Http.get(`/api/gun/wall?page=${pageToFetch}`)
 
     if (res.status !== 200) {
       throw new Error(`Not 200`)
@@ -20,11 +21,14 @@ export const FetchPage = (page:number,currentPosts:Common.Schema.Post[]) => asyn
     const mixedWithExisting = [...currentPosts, ...fetchedPosts]
     const dedupped = R.uniqBy(R.prop('id'), mixedWithExisting)
     const sorted = R.sort((a, b) => b.date - a.date, dedupped)
-    dispatch(Actions.finishedFetchPage(pageToFetch,sorted))
+    dispatch(Actions.finishedFetchPage(pageToFetch, sorted))
   } catch (err) {
-    dispatch(Actions.errorFetchPage(pageToFetch,err.message ||
-      err.errorMessage ||
-      'Unknown error'))
+    dispatch(
+      Actions.errorFetchPage(
+        pageToFetch,
+        err.message || err.errorMessage || 'Unknown error',
+      ),
+    )
   }
 }
 

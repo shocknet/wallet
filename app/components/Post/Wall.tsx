@@ -37,8 +37,8 @@ interface Props {
   parentScrollViewRef: ScrollView | undefined
   postId: string
   postPage: string
-  tipCounter:number
-  tipValue:number
+  tipCounter: number
+  tipValue: number
   deletePost: (postInfo: { page: string; id: string }) => void
 }
 
@@ -274,7 +274,7 @@ export default class Post extends React.Component<Props, State> {
       paragraphs = [],
       //parentScrollViewRef,
     } = this.props
-    const duration = (Date.now() - date)/1000
+    const duration = (Date.now() - date) / 1000
     const diffString = moment.duration(duration, 'seconds').humanize()
 
     const {
@@ -367,12 +367,14 @@ export default class Post extends React.Component<Props, State> {
           {this.renderRibbon()}
         </View>
         <View>
-        <View
-          style={styles.configButtonDark}
-          //onPress={this.onPressMetaConfigModal}
-        >
-          <Text style={styles.configButtonTextDark}>{tipCounter} Tips - {tipValue} Sats</Text>
-        </View>
+          <View
+            style={styles.configButtonDark}
+            //onPress={this.onPressMetaConfigModal}
+          >
+            <Text style={styles.configButtonTextDark}>
+              {tipCounter} Tips - {tipValue} Sats
+            </Text>
+          </View>
         </View>
       </View>
     )
@@ -391,7 +393,7 @@ const styles = StyleSheet.create({
   postContainerTop: {
     width: '100%',
     flexDirection: 'row',
-    margin:15
+    margin: 15,
   },
   postItemAvatar: {
     width: 48,
@@ -430,7 +432,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   configButtonDark: {
-    width:'100%',
+    width: '100%',
     height: 40,
     alignItems: 'center',
     justifyContent: 'center',

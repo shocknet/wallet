@@ -18,10 +18,8 @@ import {
 import ImagePicker from 'react-native-image-crop-picker'
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'
 import Logger from 'react-native-file-log'
-import {
-  NavigationScreenProp,
-} from 'react-navigation'
-import { NavigationBottomTabOptions }from "react-navigation-tabs"
+import { NavigationScreenProp } from 'react-navigation'
+import { NavigationBottomTabOptions } from 'react-navigation-tabs'
 import * as Common from 'shock-common'
 import Http from 'axios'
 // import { AirbnbRating } from 'react-native-ratings'
@@ -69,7 +67,7 @@ interface Props {
   navigation: Navigation
   myWall: import('../../../reducers/myWall').State | undefined
   DeletePost: (postInfo: { postId: string; page: string }) => void
-  FetchPage:(page:number,posts:Common.Schema.Post[]) => void
+  FetchPage: (page: number, posts: Common.Schema.Post[]) => void
 }
 
 interface State {
@@ -156,13 +154,13 @@ class MyProfile extends React.Component<Props, State> {
     this.setState({
       loadingNextPage: true,
     })
-    const {myWall} = this.props
-    if(!myWall){
+    const { myWall } = this.props
+    if (!myWall) {
       return
     }
-    try{
-      await this.props.FetchPage(myWall.lastPageFetched,myWall.posts)
-    } finally{
+    try {
+      await this.props.FetchPage(myWall.lastPageFetched, myWall.posts)
+    } finally {
       this.setState({
         loadingNextPage: false,
       })
@@ -208,18 +206,17 @@ class MyProfile extends React.Component<Props, State> {
     this.setState({
       loadingNextPage: true,
     })
-    const {myWall} = this.props
-    if(!myWall){
+    const { myWall } = this.props
+    if (!myWall) {
       return
     }
-    try{
-      await this.props.FetchPage(0,[])
-    } finally{
+    try {
+      await this.props.FetchPage(0, [])
+    } finally {
       this.setState({
         loadingNextPage: false,
       })
     }
-    
   }
 
   reload = () => {
@@ -242,9 +239,9 @@ class MyProfile extends React.Component<Props, State> {
   didFocus = { remove() {} }
 
   async componentDidMount() {
-    const {myWall} = this.props
-    if(myWall && myWall.posts.length === 0){
-      this.props.FetchPage(0,[])
+    const { myWall } = this.props
+    if (myWall && myWall.posts.length === 0) {
+      this.props.FetchPage(0, [])
     }
     this.didFocus = this.props.navigation.addListener('didFocus', () => {
       if (theme === 'dark') {
@@ -468,36 +465,38 @@ class MyProfile extends React.Component<Props, State> {
     }
   }
 
-  renderItem = ({ item }: ListRenderItemInfo<(Item|string)>) => {
-    if(typeof item === 'string'){
-      return <View>
-        <View style={{ width: '100%', height: 300 }}></View>
-        <TouchableOpacity style={styles.actionButtonDark}>
-              <OfferProduct />
-              <Text style={styles.actionButtonTextDark}>Offer a Product</Text>
-            </TouchableOpacity>
+  renderItem = ({ item }: ListRenderItemInfo<Item | string>) => {
+    if (typeof item === 'string') {
+      return (
+        <View>
+          <View style={{ width: '100%', height: 300 }}></View>
+          <TouchableOpacity style={styles.actionButtonDark}>
+            <OfferProduct />
+            <Text style={styles.actionButtonTextDark}>Offer a Product</Text>
+          </TouchableOpacity>
 
-            <TouchableOpacity style={styles.actionButtonDark}>
-              <OfferService />
-              <Text style={styles.actionButtonTextDark}>Offer a Service</Text>
-            </TouchableOpacity>
+          <TouchableOpacity style={styles.actionButtonDark}>
+            <OfferService />
+            <Text style={styles.actionButtonTextDark}>Offer a Service</Text>
+          </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.actionButtonDark}
-              onPress={this.onPressPublish}
-            >
-              <PublishContent />
-              <Text style={styles.actionButtonTextDark}>Publish Content</Text>
-            </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.actionButtonDark}
+            onPress={this.onPressPublish}
+          >
+            <PublishContent />
+            <Text style={styles.actionButtonTextDark}>Publish Content</Text>
+          </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.actionButtonDark}
-              onPress={this.onPressCreate}
-            >
-              <CreatePost />
-              <Text style={styles.actionButtonTextDark}>Create a Post</Text>
-            </TouchableOpacity>
-      </View>
+          <TouchableOpacity
+            style={styles.actionButtonDark}
+            onPress={this.onPressCreate}
+          >
+            <CreatePost />
+            <Text style={styles.actionButtonTextDark}>Create a Post</Text>
+          </TouchableOpacity>
+        </View>
+      )
     }
     if (Common.Schema.isPost(item)) {
       const imageCIEntries = Object.entries(item.contentItems).filter(
@@ -663,18 +662,17 @@ class MyProfile extends React.Component<Props, State> {
     )*/
   }
 
-  getData = (): (Item|string)[] => {
-
-    const {myWall} = this.props
-    if(!myWall){
+  getData = (): (Item | string)[] => {
+    const { myWall } = this.props
+    if (!myWall) {
       return []
     }
-    const items =  myWall.posts as Item[]
-    return ['selection',...items]
+    const items = myWall.posts as Item[]
+    return ['selection', ...items]
   }
 
-  keyExtractor = (item: Item|string) => {
-    if(typeof item === 'string'){
+  keyExtractor = (item: Item | string) => {
+    if (typeof item === 'string') {
       return 'o'
     }
     return (item as Common.Schema.Post).id
@@ -871,27 +869,26 @@ class MyProfile extends React.Component<Props, State> {
             </Animated.View>
           </Animated.View>
 
-
-            <FlatList  
-              style={{width:'100%'}}
-              overScrollMode={'never'}
-              scrollEventThrottle={16}
-              //contentOffset={{x:0,y:-100}}
-              onScroll={Animated.event([
-                { nativeEvent: { contentOffset: { y: this.state.scrollY } } },
-              ])}
-              renderItem={this.renderItem}
-              data={this.getData()}
-              keyExtractor={this.keyExtractor}
-              onEndReached={this.resetPages}
-              refreshControl={
-                <RefreshControl
+          <FlatList
+            style={{ width: '100%' }}
+            overScrollMode={'never'}
+            scrollEventThrottle={16}
+            //contentOffset={{x:0,y:-100}}
+            onScroll={Animated.event([
+              { nativeEvent: { contentOffset: { y: this.state.scrollY } } },
+            ])}
+            renderItem={this.renderItem}
+            data={this.getData()}
+            keyExtractor={this.keyExtractor}
+            onEndReached={this.resetPages}
+            refreshControl={
+              <RefreshControl
                 renderToHardwareTextureAndroid
-                  refreshing={this.state.loadingNextPage}
-                  onRefresh={this.fetchNextPage}
-                />
-              }
-            />
+                refreshing={this.state.loadingNextPage}
+                onRefresh={this.fetchNextPage}
+              />
+            }
+          />
           <TouchableOpacity
             style={styles.createBtn}
             onPress={this.onPressShowMyQrCodeModal}
@@ -947,7 +944,6 @@ class MyProfile extends React.Component<Props, State> {
       <>
         <View style={styles.container}>
           <FlatList
-          
             renderItem={this.renderItem}
             data={this.getData()}
             keyExtractor={this.keyExtractor}
@@ -982,9 +978,9 @@ const mapDispatchToProps = (dispatch: any) => ({
   DeletePost: (postInfo: { postId: string; page: string }) => {
     dispatch(Thunks.MyWall.DeletePost(postInfo))
   },
-  FetchPage:(page:number,posts:Common.Schema.Post[]) => {
-    dispatch(Thunks.MyWall.FetchPage(page,posts))
-  }
+  FetchPage: (page: number, posts: Common.Schema.Post[]) => {
+    dispatch(Thunks.MyWall.FetchPage(page, posts))
+  },
 })
 
 export default connect(
