@@ -48,7 +48,6 @@ import OfferService from '../../assets/images/profile/offer-service.svg'
 import PublishContent from '../../assets/images/profile/publish-content.svg'
 import CreatePost from '../../assets/images/profile/create-post.svg'
 import ShockIcon from '../../res/icons'
-import { post } from '../../services'
 import * as Actions from '../../actions'
 
 import SetBioDialog from './SetBioDialog'
