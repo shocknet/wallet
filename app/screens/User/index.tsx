@@ -165,14 +165,10 @@ class User extends React.Component<Props, State> {
     return (
       this.props.users.find(
         u => u.publicKey === this.props.navigation.getParam('publicKey', ''),
-      ) || {
-        avatar: null,
-        bio: null,
-        displayName: null,
-        lastSeenApp: 0,
-        lastSeenNode: 0,
-        publicKey: this.props.navigation.getParam('publicKey', ''),
-      }
+      ) ||
+      Common.Schema.createEmptyUser(
+        this.props.navigation.getParam('publicKey', ''),
+      )
     )
   }
 
