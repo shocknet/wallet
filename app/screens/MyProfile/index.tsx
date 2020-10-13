@@ -108,14 +108,6 @@ class MyProfile extends React.Component<Props, State> {
   static navigationOptions: NavigationBottomTabOptions = {
     tabBarIcon: ({ focused }) => {
       return (
-        // <FontAwesome5
-        //   color={
-        //     focused ? CSS.Colors.BLUE_MEDIUM_DARK : CSS.Colors.GRAY_MEDIUM_LIGHT
-        //   }
-        //   name="user-circle"
-        //   // reverseColor={'#CED0CE'}
-        //   size={32}
-        // />
         <ShockIcon
           name="thin-profile"
           size={32}
@@ -123,9 +115,6 @@ class MyProfile extends React.Component<Props, State> {
         />
       )
     },
-    // drawerIcon: ({ focused }) => {
-    //   return <IconDrawerProfile />
-    // },
   }
 
   state: State = {
@@ -165,42 +154,6 @@ class MyProfile extends React.Component<Props, State> {
         loadingNextPage: false,
       })
     }
-    /*
-    try {
-      const res = await Http.get(
-        `/api/gun/wall?page=${this.state.lastPageFetched - 1}`,
-      )
-
-      if (res.status !== 200) {
-        throw new Error(`Not 200`)
-      }
-
-      this.setState(({ posts, lastPageFetched }) => {
-        const { posts: postsRecord } = res.data
-        const fetchedPosts: Common.Schema.Post[] = Object.values(postsRecord)
-        const mixedWithExisting = [...posts, ...fetchedPosts]
-        const dedupped = R.uniqBy(R.prop('id'), mixedWithExisting)
-
-        const sorted = R.sort((a, b) => b.date - a.date, dedupped)
-
-        return {
-          posts: sorted,
-          lastPageFetched: lastPageFetched - 1,
-        }
-      })
-    } catch (err) {
-      Logger.log(err)
-      ToastAndroid.show(
-        `Error fetching posts: ${err.message ||
-          err.errorMessage ||
-          'Unknown error'}`,
-        800,
-      )
-    } finally {
-      this.setState({
-        loadingNextPage: false,
-      })
-    }*/
   }
   resetPages = async () => {
     this.setState({
@@ -565,101 +518,6 @@ class MyProfile extends React.Component<Props, State> {
       )
     }
     return <></>
-    /* User data are already showed no need to show them again
-    const {
-      displayName,
-      authData,
-      avatar,
-      displayNameInput,
-      displayNameDialogOpen,
-      bio,
-    } = this.state
-
-    if (authData === null) {
-      return <ActivityIndicator size="large" />
-    }
-
-    return (
-      <>
-        <Pad amount={60} />
-        <View style={styles.subContainer}>
-          <TouchableOpacity>
-            <ShockAvatar
-              height={100}
-              image={avatar}
-              onPress={this.onPressAvatar}
-              lastSeenApp={Date.now()}
-              disableOnlineRing
-            />
-          </TouchableOpacity>
-
-          <Pad amount={4} />
-
-          <TouchableOpacity
-            onPress={this.toggleSetupDisplayName}
-            disabled={displayName === null}
-          >
-            <Text style={styles.displayName}>
-              {displayName === null ? 'Loading...' : displayName}
-            </Text>
-          </TouchableOpacity>
-
-          { <Pad amount={6} />
-
-            <TouchableOpacity>
-              <AirbnbRating
-                defaultRating={0}
-                isDisabled
-                showRating={false}
-                size={10}
-              />
-            </TouchableOpacity> }
-
-          <Pad amount={8} />
-
-          <TouchableOpacity onPress={this.onPressBio}>
-            <Text style={styles.bodyText}>{bio || 'Loading...'}</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.subContainer}>
-          <React.Fragment>
-            <TouchableOpacity onPress={this.copyDataToClipboard}>
-              <QR
-                size={256}
-                logoToShow="shock"
-                value={`$$__SHOCKWALLET__USER__${authData.publicKey}`}
-              />
-            </TouchableOpacity>
-            <Pad amount={10} />
-            <Text style={styles.bodyTextQrModal}>
-              Other users can scan this QR to contact you.
-            </Text>
-          </React.Fragment>
-        </View>
-
-        <BasicDialog
-          onRequestClose={this.toggleSetupDisplayName}
-          title="Display Name"
-          visible={displayNameDialogOpen}
-        >
-          <View style={styles.dialog}>
-            <ShockInput
-              onChangeText={this.onChangeDisplayNameInput}
-              value={displayNameInput}
-            />
-
-            <IGDialogBtn
-              disabled={displayNameInput.length === 0}
-              title="OK"
-              onPress={this.setDisplayName}
-            />
-          </View>
-        </BasicDialog>
-
-        <SetBioDialog ref={this.setBioDialog} onSubmit={this.onSubmitBio} />
-      </>
-    )*/
   }
 
   getData = (): (Item | string)[] => {
