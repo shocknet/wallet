@@ -9,9 +9,7 @@ import {
   ImageBackground,
   Image,
 } from 'react-native'
-import {
-  NavigationScreenProp,
-} from 'react-navigation'
+import { NavigationScreenProp } from 'react-navigation'
 import { NavigationBottomTabOptions } from 'react-navigation-tabs'
 type Navigation = NavigationScreenProp<{}>
 

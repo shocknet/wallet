@@ -35,8 +35,8 @@ interface Props {
   images: MediaToDisplay[]
   videos: MediaToDisplay[]
   parentScrollViewRef: ScrollView | undefined
-  tipCounter:number
-  tipValue:number
+  tipCounter: number
+  tipValue: number
 }
 
 interface State {
@@ -263,7 +263,7 @@ export default class Post extends React.Component<Props, State> {
       paragraphs = [],
       //parentScrollViewRef,
     } = this.props
-    const duration = (Date.now() - date)/1000
+    const duration = (Date.now() - date) / 1000
     const diffString = moment.duration(duration, 'seconds').humanize()
     const {
       isReady,
@@ -353,16 +353,16 @@ export default class Post extends React.Component<Props, State> {
           )}
           {this.renderRibbon()}
         </View>
-        <View >
-        
-        <TouchableOpacity
-          style={styles.configButtonDark}
-          //onPress={this.onPressMetaConfigModal}
-        >
-          <ShockIcon width={20} height={20}/>
-          <Text style={styles.configButtonTextDark}>Tip - {tipCounter} Tips</Text>
-        </TouchableOpacity>
-        
+        <View>
+          <TouchableOpacity
+            style={styles.configButtonDark}
+            //onPress={this.onPressMetaConfigModal}
+          >
+            <ShockIcon width={20} height={20} />
+            <Text style={styles.configButtonTextDark}>
+              Tip - {tipCounter} Tips
+            </Text>
+          </TouchableOpacity>
         </View>
       </View>
     )
@@ -381,7 +381,7 @@ const styles = StyleSheet.create({
   postContainerTop: {
     width: '100%',
     flexDirection: 'row',
-    margin:15
+    margin: 15,
   },
   postItemAvatar: {
     width: 48,
@@ -420,7 +420,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   configButtonDark: {
-    width:'100%',
+    width: '100%',
     height: 40,
     alignItems: 'center',
     justifyContent: 'center',
