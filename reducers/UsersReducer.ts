@@ -136,6 +136,15 @@ const reducer: Reducer<State, Action> = (
         })
       })
 
+    case 'authed':
+      return produce(state, draft => {
+        const { gunPublicKey } = action.data
+        draft.myPublicKey = gunPublicKey
+        if (!draft[gunPublicKey]) {
+          draft[gunPublicKey] = Schema.createEmptyUser(gunPublicKey)
+        }
+      })
+
     default:
       return state
   }
