@@ -18,12 +18,14 @@ import Ionicons from 'react-native-vector-icons/Ionicons'
 import moment from 'moment'
 import { Schema } from 'shock-common'
 import { connect } from 'react-redux'
+import Entypo from 'react-native-vector-icons/Entypo'
 
 import { ConnectedShockAvatar } from '../../components/ShockAvatar'
 import * as CSS from '../../res/css'
 import btcConvert from '../../services/convertBitcoin'
 import Pad from '../../components/Pad'
 import * as Store from '../../../store'
+import { Tip } from '../../schema'
 
 const OUTBOUND_INDICATOR_RADIUS = 20
 
@@ -32,7 +34,7 @@ interface DispatchProps {}
 interface StateProps {
   value: number
   timestamp: number
-  outbound: boolean
+  status: 'sent' | 'received' | 'process' | 'err'
   title: string
   subTitle: string
   relatedPublickey?: string
@@ -46,6 +48,7 @@ export interface OwnProps {
   payReq?: string
   paymentHash?: string
   chainTXHash?: string
+  tippingPublicKey?: string
 }
 
 type Props = DispatchProps & StateProps & OwnProps
@@ -55,12 +58,12 @@ export class UnifiedTransaction extends React.PureComponent<Props> {
     const {
       err,
       USDRate,
-      outbound,
       timestamp,
       value,
       title,
       subTitle,
       relatedPublickey,
+      status,
     } = this.props
 
     if (err) {
@@ -74,44 +77,52 @@ export class UnifiedTransaction extends React.PureComponent<Props> {
       ) / 100
     ).toLocaleString()
 
+    const icon = (() => {
+      if (status === 'sent') {
+        return (
+          <Ionicons
+            name="md-trending-down"
+            size={15}
+            color={CSS.Colors.ICON_RED}
+          />
+        )
+      }
+
+      if (status === 'process') {
+        return (
+          <Entypo name="clock" color={CSS.Colors.CAUTION_YELLOW} size={15} />
+        )
+      }
+
+      if (status === 'received') {
+        return (
+          <Ionicons
+            name="md-trending-up"
+            size={15}
+            color={CSS.Colors.ICON_GREEN}
+          />
+        )
+      }
+
+      if (status === 'err') {
+        return <Entypo name="cross" size={15} color={CSS.Colors.FAILURE_RED} />
+      }
+
+      throw new TypeError(
+        '<UnifiedTransaction /> prop status not of correct type',
+      )
+    })()
+
     return (
       <TouchableOpacity style={styles.item}>
         {relatedPublickey ? (
           <View>
-            <View style={styles.outboundIndicator2}>
-              {outbound ? (
-                <Ionicons
-                  name="md-arrow-round-up"
-                  size={15}
-                  color={CSS.Colors.ICON_GREEN}
-                />
-              ) : (
-                <Ionicons
-                  name="md-arrow-round-down"
-                  size={15}
-                  color={CSS.Colors.ICON_RED}
-                />
-              )}
-            </View>
+            <View style={styles.outboundIndicator2}>{icon}</View>
             <ConnectedShockAvatar publicKey={relatedPublickey} height={45} />
           </View>
         ) : (
           <View style={styles.avatar}>
-            <View style={styles.outboundIndicator}>
-              {outbound ? (
-                <Ionicons
-                  name="md-arrow-round-up"
-                  size={15}
-                  color={CSS.Colors.ICON_GREEN}
-                />
-              ) : (
-                <Ionicons
-                  name="md-arrow-round-down"
-                  size={15}
-                  color={CSS.Colors.ICON_RED}
-                />
-              )}
-            </View>
+            <View style={styles.outboundIndicator}>{icon}</View>
           </View>
         )}
 
@@ -141,6 +152,7 @@ const makeMapStateToProps = () => {
   const getPayment = Store.makeGetPayment()
   const getChainTransaction = Store.makeGetChainTransaction()
   const searchPublicKeyWithMsgBody = Store.makeSearchPublicKeyWithMsgBody()
+  const getTip = Store.makeGetTip()
 
   return (state: Store.State, props: OwnProps): StateProps => {
     try {
@@ -148,6 +160,7 @@ const makeMapStateToProps = () => {
         | ReturnType<typeof getInvoice>
         | ReturnType<typeof getPayment>
         | ReturnType<typeof getChainTransaction>
+        | ReturnType<typeof getTip>
 
       if (props.payReq) {
         tx = getInvoice(
@@ -167,6 +180,10 @@ const makeMapStateToProps = () => {
         tx = getChainTransaction(state, props.chainTXHash)
       }
 
+      if (props.tippingPublicKey) {
+        tx = getTip(state, props.tippingPublicKey)
+      }
+
       if (!tx!) {
         throw new TypeError(`No TX found: ${JSON.stringify(props)}`)
       }
@@ -174,18 +191,15 @@ const makeMapStateToProps = () => {
       const asInvoice = tx! as Schema.InvoiceWhenListed
       const asPayment = tx! as Schema.PaymentV2
       const asChainTX = tx! as Schema.ChainTransaction
+      const asTip = tx! as Tip
 
       const isInvoice = !!asInvoice.r_preimage
       const isPayment = !!asPayment.payment_hash
       const isChainTX = !!asChainTX.tx_hash
+      const isTip = !!asTip.amount && !!asTip.state
 
       const maybeDecodedInvoice =
         state.decodedInvoices[asPayment.payment_request]
-
-      // TODO inProces = isInvoice && orderInProcess(invoice.r_hash)
-      const inProcess =
-        (isPayment && asPayment.status !== 'SUCCEEDED') ||
-        (isChainTX && asChainTX.num_confirmations < 1)
 
       const description = (() => {
         if (isInvoice) {
@@ -193,18 +207,23 @@ const makeMapStateToProps = () => {
         }
 
         if (isPayment) {
-          if (maybeDecodedInvoice) {
-            const a = maybeDecodedInvoice.description
-            const b = inProcess ? ' (sending)' : ''
-
-            return a + b
-          }
-
-          return 'Fetching memo...'
+          return maybeDecodedInvoice
+            ? maybeDecodedInvoice.description
+            : 'Fetching memo...'
         }
 
         if (isChainTX) {
           return asChainTX.label
+        }
+
+        if (isTip) {
+          const { lastErr, lastMemo, state } = asTip
+
+          if (state === 'err') {
+            return lastErr + (lastMemo ? ` [${lastMemo}]` : '')
+          }
+
+          return lastMemo
         }
 
         return ''
@@ -213,6 +232,7 @@ const makeMapStateToProps = () => {
       // TODO for chain transactions
       const relatedPublickey = (() => {
         if (isChainTX) return null
+        if (isTip) return props.tippingPublicKey!
 
         return searchPublicKeyWithMsgBody(
           state,
@@ -229,7 +249,34 @@ const makeMapStateToProps = () => {
         name = maybeUser.displayName || name
       }
 
-      const outbound = isChainTX ? Number(asChainTX.amount) < 0 : isPayment
+      const status: StateProps['status'] = (() => {
+        if (isChainTX) {
+          if (asChainTX.num_confirmations === 0) {
+            return 'process'
+          }
+
+          return Number(asChainTX.amount) < 0 ? 'sent' : 'received'
+        }
+
+        if (isInvoice) {
+          return asInvoice.settled ? 'received' : 'process'
+        }
+
+        if (isTip) {
+          if (asTip.state === 'err') {
+            return 'err'
+          }
+          if (asTip.state === 'processing') {
+            return 'process'
+          }
+          if (asTip.state === 'wentThrough') {
+            return 'sent'
+          }
+        }
+
+        // is payment
+        return 'sent'
+      })()
 
       return {
         USDRate:
@@ -238,20 +285,24 @@ const makeMapStateToProps = () => {
             | number
             | null) || 0,
         title: name,
-        outbound,
         timestamp: Number(
           asInvoice.settle_date ||
             asPayment.creation_date ||
-            asChainTX.time_stamp,
+            asChainTX.time_stamp ||
+            moment.now() - 200000,
         ),
         // Math.abs for outbound chain tx where the amount is negative
         value: Math.abs(
           Number(
-            asInvoice.amt_paid_sat || asPayment.value_sat || asChainTX.amount,
+            asInvoice.amt_paid_sat ||
+              asPayment.value_sat ||
+              asChainTX.amount ||
+              asTip.amount,
           ),
         ),
         subTitle: description,
         relatedPublickey: relatedPublickey || undefined,
+        status,
       }
     } catch (err) {
       return {
@@ -321,13 +372,13 @@ const styles = StyleSheet.create({
 
   title: {
     width: '50%',
-    color: CSS.Colors.TEXT_GRAY,
+    color: CSS.Colors.DARK_MODE_TEXT_GRAY,
     fontSize: 16,
     fontFamily: 'Montserrat-700',
   },
 
   subTitle: {
-    color: CSS.Colors.TEXT_GRAY,
+    color: CSS.Colors.DARK_MODE_TEXT_NEAR_WHITE,
     fontSize: 11,
     fontFamily: 'Montserrat-500',
   },
@@ -338,19 +389,19 @@ const styles = StyleSheet.create({
   },
 
   timestamp: {
-    color: CSS.Colors.TEXT_DARK_WHITE,
+    color: CSS.Colors.DARK_MODE_TEXT_GRAY,
     fontFamily: 'Montserrat-700',
     fontSize: 9,
   },
 
   value: {
-    color: CSS.Colors.TEXT_LIGHT,
+    color: CSS.Colors.TEXT_WHITE,
     fontFamily: 'Montserrat-600',
     fontSize: 15,
   },
 
   USDValue: {
-    color: CSS.Colors.TEXT_ORANGE,
+    color: '#64BBFF',
     fontFamily: 'Montserrat-700',
     fontSize: 10,
   },

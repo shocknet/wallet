@@ -4,8 +4,6 @@ import { ListInvoiceRequest } from '../../services/wallet'
 
 export const receivedOwnInvoices = (data: {
   invoices: Schema.InvoiceWhenListed[]
-  last_index_offset: number
-  first_index_offset: number
   originRequest: ListInvoiceRequest
 }) =>
   ({
@@ -61,4 +59,16 @@ invoicesBatchDecodeRes.type = INVOICES_BATCH_DECODE_RES
 
 export type InvoicesBatchDecodeResAction = ReturnType<
   typeof invoicesBatchDecodeRes
+>
+
+export const receivedSingleInvoice = (invoice: Schema.InvoiceWhenListed) =>
+  ({
+    type: 'invoices/receivedSingle',
+    payload: {
+      invoice,
+    },
+  } as const)
+
+export type ReceivedSingleInvoiceAction = ReturnType<
+  typeof receivedSingleInvoice
 >

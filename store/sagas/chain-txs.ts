@@ -1,10 +1,85 @@
 import { takeEvery, call, put, select } from 'redux-saga/effects'
 import Logger from 'react-native-file-log'
-import { GetTransactionsRequest, TransactionDetails } from 'shock-common'
+import {
+  GetTransactionsRequest,
+  TransactionDetails,
+  Schema,
+} from 'shock-common'
+import SocketIO from 'socket.io-client'
 
 import * as Actions from '../../app/actions'
 import { isOnline, getStateRoot } from '../selectors'
-import { post } from '../../app/services'
+import { post, rod } from '../../app/services'
+import { getStore } from '../store'
+
+let socket: ReturnType<typeof SocketIO> | null = null
+
+const setSocket = (s: ReturnType<typeof SocketIO> | null) => {
+  if (socket && !!s) throw new Error('Tried to set socket twice')
+  socket = s
+}
+
+let oldIsAuth = false
+
+function* chainTXsSocket() {
+  try {
+    const state = getStateRoot(yield select())
+
+    if (!isOnline(state)) {
+      oldIsAuth = false
+      // We have no way of knowing if we'll be really authenticated (wallet
+      // unlocked) when we connect again
+      if (socket) {
+        socket.off('*')
+        socket.close()
+        setSocket(null)
+      }
+      return
+    }
+
+    const newIsAuth = !!state.auth.token
+    const authed = !oldIsAuth && newIsAuth
+
+    oldIsAuth = newIsAuth
+
+    if (!authed) {
+      return
+    }
+
+    setSocket(
+      rod('lightning', 'subscribeTransactions', {
+        end_height: -1,
+      }),
+    )
+
+    socket!.on('data', (chainTX: unknown) => {
+      console.warn('lol tx data')
+      if (!Schema.isChainTransaction(chainTX)) {
+        Logger.log(`Error inside chainTXsSocket* ()`)
+        Logger.log(
+          `data received from subscribeTransactions() not a ChainTransaction`,
+        )
+        Logger.log(chainTX)
+        return
+      }
+
+      const store = getStore()
+      const state = store.getState()
+
+      if (state.auth.token) {
+        store.dispatch(Actions.receivedSingleChainTX(chainTX))
+      }
+    })
+
+    socket!.on('$error', (err: unknown) => {
+      Logger.log(`Error inside chainTXsSocket* ()`)
+      Logger.log(err)
+    })
+  } catch (err) {
+    Logger.log(`Error inside chainTXsSocket* ()`)
+    Logger.log(err.message)
+  }
+}
 
 let oldIsOnline = false
 
@@ -53,6 +128,7 @@ function* fetchLatestChainTransactions(action: Actions.Action) {
 
 function* rootSaga() {
   yield takeEvery('*', fetchLatestChainTransactions)
+  yield takeEvery('*', chainTXsSocket)
 }
 
 export default rootSaga

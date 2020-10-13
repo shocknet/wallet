@@ -26,6 +26,19 @@ const INITIAL_STATE: State = {
 
 const reducer: Reducer<State, Action> = (state = INITIAL_STATE, action) =>
   produce(state, draft => {
+    if (action.type === 'chainTXs/receivedSingle') {
+      const { tx } = action.payload
+      draft.byId[tx.tx_hash] = tx
+
+      const existing = [...draft.ids.map(tx_hash => draft.byId[tx_hash]), tx]
+
+      existing.sort(
+        (tx1, tx2) => Number(tx2.time_stamp) - Number(tx1.time_stamp),
+      )
+
+      draft.ids = existing.map(tx => tx.tx_hash)
+    }
+
     if (action.type === 'chainTXs/receivedOwn') {
       const { transactions, originRequest } = action.data
       // They come in no good order.
