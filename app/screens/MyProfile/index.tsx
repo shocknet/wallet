@@ -49,6 +49,8 @@ import PublishContent from '../../assets/images/profile/publish-content.svg'
 import CreatePost from '../../assets/images/profile/create-post.svg'
 import ShockIcon from '../../res/icons'
 import * as Actions from '../../actions'
+import * as Store from '../../../store'
+import { post } from '../../services'
 
 import SetBioDialog from './SetBioDialog'
 import MetaConfigModal from './MetaConfigModal'
@@ -333,7 +335,7 @@ class MyProfile extends React.PureComponent<Props, State> {
       }
 
       if (typeof image.data !== 'string') {
-        throw new TypeError('image.data === null')
+        throw new TypeError("typeof image.data !== 'string'")
       }
 
       this.setState({
@@ -562,13 +564,13 @@ class MyProfile extends React.PureComponent<Props, State> {
       const HEADER_SHORT_EDGE = HEADER_LONG_EDGE / 3
       const image = await ImagePicker.openPicker({
         cropping: true,
-        width: HEADER_LONG_EDGE,
-        height: HEADER_SHORT_EDGE,
+        width: HEADER_LONG_EDGE - 1,
+        height: HEADER_SHORT_EDGE - 1,
 
         includeBase64: true,
         compressImageQuality: 0.5,
-        compressImageMaxWidth: HEADER_LONG_EDGE,
-        compressImageMaxHeight: HEADER_LONG_EDGE,
+        compressImageMaxWidth: HEADER_LONG_EDGE - 1,
+        compressImageMaxHeight: HEADER_LONG_EDGE - 1,
         mediaType: 'photo',
       })
 
@@ -580,13 +582,13 @@ class MyProfile extends React.PureComponent<Props, State> {
 
       if (image.width > HEADER_LONG_EDGE) {
         throw new RangeError(
-          `Expected image width to not exceed ${HEADER_LONG_EDGE}`,
+          `Expected image width to not exceed ${HEADER_LONG_EDGE}, got: ${image.width}`,
         )
       }
 
       if (image.height > HEADER_LONG_EDGE) {
         throw new RangeError(
-          `Expected image height to not exceed ${HEADER_SHORT_EDGE}`,
+          `Expected image height to not exceed ${HEADER_SHORT_EDGE}, got: ${image.height}`,
         )
       }
 
@@ -594,9 +596,16 @@ class MyProfile extends React.PureComponent<Props, State> {
         throw new TypeError('Expected image to be jpeg')
       }
 
-      if (image.data === null) {
-        throw new TypeError('image.data === null')
+      if (typeof image.data !== 'string') {
+        throw new TypeError("typeof image.data !== 'string'")
       }
+
+      await post(`api/gun/put`, {
+        path: '$user.Profile.header',
+        value: image.data,
+      })
+
+      this.props.onSetHeaderImage(image.data)
     } catch (err) {
       Logger.log(err.message)
       ToastAndroid.show(
@@ -885,9 +894,16 @@ class MyProfile extends React.PureComponent<Props, State> {
   }
 }
 
-const mapStateToProps = ({ myWall }: import('../../../reducers').State) => ({
-  myWall,
-})
+const makeMapStateToProps = () => {
+  const getUser = Store.makeGetUser()
+
+  return (state: Store.State): StateProps => {
+    return {
+      myWall: state.myWall,
+      headerImage: getUser(state, state.auth.gunPublicKey).header,
+    }
+  }
+}
 
 const mapDispatchToProps = (dispatch: any): DispatchProps => ({
   DeletePost: (postInfo: { postId: string; page: string }) => {
@@ -906,7 +922,7 @@ const mapDispatchToProps = (dispatch: any): DispatchProps => ({
 })
 
 export default connect(
-  mapStateToProps,
+  makeMapStateToProps,
   mapDispatchToProps,
 )(MyProfile)
 
