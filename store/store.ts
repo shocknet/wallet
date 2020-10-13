@@ -26,7 +26,7 @@ const config = {
   key: 'root',
   // blacklist: ['connection'],
   // Easily handle different gun / ligtning identities
-  blacklist: ['follows', 'feed', 'invoicesListed', 'tips'],
+  blacklist: ['follows', 'feed', 'invoicesListed', 'tips', 'paymentsV2s'],
   storage,
 }
 
