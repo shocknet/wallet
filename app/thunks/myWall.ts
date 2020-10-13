@@ -33,12 +33,12 @@ export const FetchPage = (
 }
 
 export const PinPost = (contentID: string) => async (dispatch: any) => {
-  dispatch(Actions.beganSettingPinned(contentID))
+  dispatch(Actions.beganSettingPinned(1, contentID))
   try {
     //TODO
     dispatch(Actions.finishedSettingPinned)
   } catch (e) {
-    dispatch(Actions.ErrorSettingPinned(contentID, e))
+    dispatch(Actions.ErrorSettingPinned(1, contentID, e))
   }
 }
 
@@ -50,14 +50,14 @@ export const DeletePost = ({
   page: string
 }) => async (dispatch: any) => {
   const contentID = `${page}&${postId}`
-  dispatch(Actions.beganDeletePost(contentID))
+  dispatch(Actions.beganDeletePost(1, contentID))
   try {
     const res = await Http.delete(`/api/gun/wall/${contentID}`)
     if (res.status !== 200) {
       throw new Error(`Status not OK`)
     }
-    dispatch(Actions.finishedDeletePost(contentID))
+    dispatch(Actions.finishedDeletePost(1, contentID))
   } catch (e) {
-    dispatch(Actions.ErrorDeletePost(contentID, e))
+    dispatch(Actions.ErrorDeletePost(1, contentID, e))
   }
 }
