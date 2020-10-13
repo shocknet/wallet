@@ -53,7 +53,6 @@ function* chainTXsSocket() {
     )
 
     socket!.on('data', (chainTX: unknown) => {
-      console.warn('lol tx data')
       if (!Schema.isChainTransaction(chainTX)) {
         Logger.log(`Error inside chainTXsSocket* ()`)
         Logger.log(
