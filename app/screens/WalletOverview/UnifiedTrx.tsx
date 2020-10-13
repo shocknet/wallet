@@ -88,7 +88,10 @@ const keyExtractor = (item: Store.UnifiedTx) => {
   if (item.type === 'invoice') return item.payReq
   if (item.type === 'chain') return item.chainTXHash
   if (item.type === 'payment') return item.paymentHash
-  throw new TypeError()
+  if (item.type === 'tip') return item.publicKey
+  throw new TypeError(
+    `<UnifiedTrx /> -> Unknown Kind of TX: ${JSON.stringify(item)}`,
+  )
 }
 
 const Separator = () => <View style={styles.separator} />
@@ -111,6 +114,7 @@ const RenderItem: ListRenderItem<Store.UnifiedTx> = ({ item }) => {
   if (item.type === 'invoice') props.payReq = item.payReq
   if (item.type === 'payment') props.paymentHash = item.paymentHash
   if (item.type === 'chain') props.chainTXHash = item.chainTXHash
+  if (item.type === 'tip') props.tippingPublicKey = item.publicKey
 
   return <UnifiedTransaction {...props} />
 }
