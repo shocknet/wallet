@@ -70,10 +70,6 @@ const drawerBottomItems = [
  */
 
 export default class CustomDrawer extends Component {
-  // state = {
-  //   avatar: ContactAPI.Events.getAvatar(),
-  // }
-
   moveToQr = () => {
     this.props.navigation.navigate(LNURL_SCREEN, { qrRequest: true })
   }
