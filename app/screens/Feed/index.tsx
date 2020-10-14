@@ -21,7 +21,6 @@ import * as Reducers from '../../../reducers'
 import Post from '../../components/Post/Feed'
 import * as Routes from '../../routes'
 import * as CSS from '../../res/css'
-import * as API from '../../services/contact-api'
 import * as Thunks from '../../thunks'
 
 import ShockIconWhite from '../../assets/images/shockW.svg'
@@ -33,6 +32,7 @@ type Item = Common.Schema.Post
 interface StateProps {
   posts: Common.Schema.Post[]
   myFeed: import('../../../reducers/myFeed').State
+  avatar: string | null
 }
 
 interface DispatchProps {
@@ -49,7 +49,6 @@ interface OwnProps {
 interface State {
   awaitingBackfeed: boolean
   awaitingMoreFeed: boolean
-  avatar: string | null
   selectedTab: 'all' | 'saved' | 'videos'
 }
 
@@ -71,7 +70,6 @@ class Feed extends React.Component<Props, State> {
   state: State = {
     awaitingBackfeed: false,
     awaitingMoreFeed: false,
-    avatar: API.Events.getAvatar(),
     selectedTab: 'all',
   }
 
@@ -327,7 +325,7 @@ const mapStateToProps = (state: Reducers.State): StateProps => {
 
   return {
     posts,
-
+    avatar: state.users[state.auth.gunPublicKey].avatar,
     myFeed: state.myFeed,
   }
 }

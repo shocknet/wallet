@@ -11,19 +11,19 @@ import {
   StatusBar,
 } from 'react-native'
 import Logger from 'react-native-file-log'
-import SocketManager from '../../services/socket'
+
 import { connect } from 'react-redux'
 import { Schema } from 'shock-common'
-//@ts-ignore
+// @ts-expect-error
 import bech32 from 'bech32'
 
+import SocketManager from '../../services/socket'
 import * as Navigation from '../../services/navigation'
 import Nav from '../../components/Nav'
 import wavesBG from '../../assets/images/waves-bg.png'
 import wavesBGDark from '../../assets/images/waves-bg-dark.png'
 import ShockIcon from '../../res/icons'
 import btcConvert from '../../services/convertBitcoin'
-import * as ContactAPI from '../../services/contact-api'
 import * as CSS from '../../res/css'
 import * as Wallet from '../../services/wallet'
 import { getUSDRate, getWalletBalance } from '../../actions/WalletActions'
@@ -80,15 +80,11 @@ import { Color } from 'shock-common/dist/constants'
  * @prop {() => void} forcePaymentsRefresh // TODO: do at auth
  * @prop {() => void} getMoreFeed
  * @prop {() => void} forceChainTXsRefresh
+ * @prop {string|null} avatar
  */
 
 /**
  * @typedef {{ displayName: string|null , avatar: string|null, pk: string }} ShockUser
- */
-
-/**
- * @typedef {object} State
- * @prop {string | null} avatar
  */
 
 const { height } = Dimensions.get('window')
@@ -96,7 +92,7 @@ const { height } = Dimensions.get('window')
 export const WALLET_OVERVIEW = 'WALLET_OVERVIEW'
 
 /**
- * @augments Component<Props, State, never>
+ * @augments Component<Props, {}, never>
  */
 class WalletOverview extends Component {
   /**
@@ -115,13 +111,6 @@ class WalletOverview extends Component {
         color={focused ? Color.BUTTON_BLUE : Color.TEXT_WHITE}
       />
     )),
-  }
-
-  /**
-   * @type {State}
-   */
-  state = {
-    avatar: ContactAPI.Events.getAvatar(),
   }
 
   /** @type {null|ReturnType<typeof setInterval>} */
@@ -200,14 +189,6 @@ class WalletOverview extends Component {
       fetchRecentPayments(),
       fetchNodeInfo(),
     ])
-
-    this.subs.push(
-      ContactAPI.Events.onAvatar(avatar => {
-        this.setState({
-          avatar,
-        })
-      }),
-    )
 
     SocketManager.socket.on(
       'invoice:new',
@@ -385,19 +366,11 @@ class WalletOverview extends Component {
   }
 
   render() {
+    const { avatar } = this.props
     const { nodeInfo } = this.props.node
-
-    const { avatar } = this.state
 
     return (
       <View style={styles.container}>
-        {/*<LNURL
-          LNURLdata={LNURLdata}
-          requestClose={this.requestCloseLNURL}
-          payInvoice={this.payLightningInvoice}
-          resetLNURL={resetLNURL}
-          refreshLNURL={this.refreshLNURL}
-        />*/}
         <StatusBar
           translucent
           backgroundColor="transparent"
@@ -484,7 +457,7 @@ class WalletOverview extends Component {
  * @param {Store.State} state
  */
 const mapStateToProps = state => {
-  const { wallet, history, node, fees, settings } = state
+  const { wallet, history, node, fees, settings, users, auth } = state
   const isOnline = Store.isOnline(state)
 
   return {
@@ -494,6 +467,7 @@ const mapStateToProps = state => {
     fees,
     settings,
     isOnline,
+    avatar: users[auth.gunPublicKey].avatar,
   }
 }
 

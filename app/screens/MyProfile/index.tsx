@@ -48,7 +48,6 @@ import OfferService from '../../assets/images/profile/offer-service.svg'
 import PublishContent from '../../assets/images/profile/publish-content.svg'
 import CreatePost from '../../assets/images/profile/create-post.svg'
 import ShockIcon from '../../res/icons'
-import * as Actions from '../../actions'
 import * as Store from '../../../store'
 import { post } from '../../services'
 
@@ -70,19 +69,18 @@ interface OwnProps {
 interface StateProps {
   myWall: import('../../../reducers/myWall').State | undefined
   headerImage: string | null
+  avatar: string | null
 }
 
 interface DispatchProps {
   DeletePost: (postInfo: { postId: string; page: string }) => void
   FetchPage: (page: number, posts: Common.Schema.Post[]) => void
-  onSetHeaderImage(image: string | null): void
 }
 
 type Props = OwnProps & StateProps & DispatchProps
 
 interface State {
   authData: Cache.AuthData | null
-  avatar: string | null
   settingAvatar: boolean
   displayName: string | null
   displayNameDialogOpen: boolean
@@ -129,7 +127,6 @@ class MyProfile extends React.PureComponent<Props, State> {
 
   state: State = {
     authData: null,
-    avatar: API.Events.getAvatar(),
     settingAvatar: false,
     displayName: API.Events.getDisplayName(),
     displayNameDialogOpen: false,
@@ -221,9 +218,6 @@ class MyProfile extends React.PureComponent<Props, State> {
       })
     })
 
-    this.onAvatarUnsub = API.Events.onAvatar(avatar => {
-      this.setState({ avatar })
-    })
     this.onBioUnsub = API.Events.onBio(bio => this.setState({ bio }))
 
     const authData = await Cache.getStoredAuthData()
@@ -342,10 +336,9 @@ class MyProfile extends React.PureComponent<Props, State> {
         settingAvatar: true,
       })
 
-      await API.Actions.setAvatar(image.data)
-
-      this.setState({
-        avatar: image.data,
+      await post(`api/gun/put`, {
+        path: '$user.profileBinary.avatar',
+        value: image.data,
       })
     } catch (err) {
       Logger.log(err.message)
@@ -601,11 +594,9 @@ class MyProfile extends React.PureComponent<Props, State> {
       }
 
       await post(`api/gun/put`, {
-        path: '$user.Profile.header',
+        path: '$user.profileBinary.header',
         value: image.data,
       })
-
-      this.props.onSetHeaderImage(image.data)
     } catch (err) {
       Logger.log(err.message)
       ToastAndroid.show(
@@ -616,11 +607,11 @@ class MyProfile extends React.PureComponent<Props, State> {
   }
 
   render() {
+    const { avatar } = this.props
     const {
       settingAvatar,
       settingBio,
       settingDisplayName,
-      avatar,
       displayName,
       bio,
       authData,
@@ -901,6 +892,7 @@ const makeMapStateToProps = () => {
     return {
       myWall: state.myWall,
       headerImage: getUser(state, state.auth.gunPublicKey).header,
+      avatar: getUser(state, state.auth.gunPublicKey).avatar,
     }
   }
 }
@@ -911,13 +903,6 @@ const mapDispatchToProps = (dispatch: any): DispatchProps => ({
   },
   FetchPage: (page: number, posts: Common.Schema.Post[]) => {
     dispatch(Thunks.MyWall.FetchPage(page, posts))
-  },
-  onSetHeaderImage: header => {
-    dispatch(
-      Actions.receivedMeData({
-        header,
-      }),
-    )
   },
 })
 

@@ -20,15 +20,6 @@ const { Event } = Constants
 
 const POLL_INTERVAL = 3500
 
-/** @type {number[]} */
-let pollIntervalIDs = []
-const clean = () => {
-  pollIntervalIDs.forEach(id => {
-    clearInterval(id)
-  })
-  pollIntervalIDs = []
-}
-
 /**
  * @returns {Promise<boolean>}
  */
@@ -41,12 +32,6 @@ const isAuth = async () => {
   return storedAuthData !== null
 }
 
-/**
- * We need to sub inside a functoin call because of circular dependency making
- * Cache.onAuth() undefined.
- */
-let cleanSubbed = false
-
 ////////////////////////////////////////////////////////////////////////////////
 // DATA EVENTS /////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -58,90 +43,6 @@ let cleanSubbed = false
  * @type {HandshakeAddrListener[]}
  */
 const handshakeAddrListeners = []
-
-////////////////////////////////////////////////////////////////////////////////
-
-/**
- * @typedef {(a: string|null) => void} AvatarListener
- */
-
-/** @type {Set<AvatarListener>} */
-const avatarListeners = new Set()
-
-/** @type {string|null} */
-let currentAvatar = null
-
-export const getAvatar = () => currentAvatar
-
-/**
- * @param {string|null} a
- */
-export const setAvatar = a => {
-  currentAvatar = a || null
-  avatarListeners.forEach(l => {
-    l(currentAvatar)
-  })
-}
-
-const avatarFetcher = async () => {
-  if (!(await isAuth())) {
-    setTimeout(avatarFetcher, POLL_INTERVAL)
-    return
-  }
-
-  Http.get(`/api/gun/${Event.ON_AVATAR}`)
-    .then(res => {
-      if (res.status === 200) {
-        setAvatar(res.data.data)
-      } else {
-        throw new Error(
-          res.data.errorMessage || res.data.message || JSON.stringify(res.data),
-        )
-      }
-
-      setTimeout(avatarFetcher, POLL_INTERVAL)
-    })
-    .catch(e => {
-      Logger.log(`Error in avatar Poll: ${e.message || 'Unknown error'}`)
-      setTimeout(avatarFetcher, POLL_INTERVAL)
-    })
-}
-
-let onAvatarSubbed = false
-
-/**
- * @param {AvatarListener} listener
- * @returns {() => void}
- */
-export const onAvatar = listener => {
-  if (!avatarListeners.add(listener)) {
-    throw new Error('tried to subscribe twice')
-  }
-
-  listener(currentAvatar)
-
-  if (!cleanSubbed) {
-    cleanSubbed = true
-    Cache.onAuth(() => {
-      Cache.getStoredAuthData().then(authData => {
-        if (authData === null) {
-          clean()
-        }
-      })
-    })
-  }
-
-  if (!onAvatarSubbed) {
-    onAvatarSubbed = true
-    avatarFetcher()
-  }
-
-  return () => {
-    if (!avatarListeners.delete(listener)) {
-      throw new Error('tried to unsubscribe twice')
-    }
-  }
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -616,9 +517,6 @@ export const setupEvents = async () => {
   // TODO: Setup or replace seed backup event
   const store = Store.getStore()
 
-  onAvatar(avatar => {
-    store.dispatch(Actions.Me.receivedMeData({ avatar }))
-  })
   onDisplayName(displayName => {
     store.dispatch(Actions.Me.receivedMeData({ displayName }))
   })

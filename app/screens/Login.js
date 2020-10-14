@@ -214,10 +214,6 @@ export class Login extends React.Component {
             this.props.dispatch(
               Actions.authed({
                 alias: aliasToUse,
-                data: {
-                  follows: res.follows,
-                  invoices: res.invoices,
-                },
                 gunPublicKey: res.publicKey,
                 token: res.token,
               }),
