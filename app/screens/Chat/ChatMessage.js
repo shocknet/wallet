@@ -5,8 +5,6 @@ import { Svg, Polygon } from 'react-native-svg'
 
 import { Colors, WIDTH } from '../../res/css'
 import Pad from '../../components/Pad'
-import TrendOngoing from '../../assets/images/chatting/trend-ongoing.svg'
-import TrendOutgoing from '../../assets/images/chatting/trend-outgoing.svg'
 
 import ChatAvatar from './ChatAvatar'
 
@@ -29,8 +27,6 @@ const BUBBLE_TRIANGLE_VERTICAL_OFFSET = 6
  * @augments React.Component<Props>
  */
 export default class ChatMessage extends React.Component {
-  theme = 'dark'
-
   componentDidMount() {
     /**
      * Force-updates every minute so moment-formatted dates refresh.
@@ -49,15 +45,10 @@ export default class ChatMessage extends React.Component {
     onPress && onPress(id)
   }
 
-  renderTrendIcon = () => {
-    const { body, outgoing } = this.props
+  render() {
+    const { body, outgoing, timestamp } = this.props
 
-    if (this.theme === 'dark') {
-      if (outgoing) {
-        return <TrendOutgoing />
-      }
-      return <TrendOngoing />
-    }
+    const formattedTime = moment(timestamp).format('hh:mm')
 
     const SVG_EDGE = 25
     const UNIT = SVG_EDGE / 5
@@ -67,78 +58,10 @@ export default class ChatMessage extends React.Component {
     const FIVE = UNIT * 5
 
     return (
-      <>
-        <View style={[styles.bubble, outgoing && styles.bubbleOutgoing]}>
-          <TouchableOpacity onPress={this.onPress}>
-            <Text style={styles.body}>{body}</Text>
-          </TouchableOpacity>
-        </View>
-
-        <Svg
-          height={SVG_EDGE}
-          width={SVG_EDGE}
-          style={outgoing ? styles.arrowOutgoing : styles.arrow}
-        >
-          <Polygon
-            points={
-              outgoing
-                ? `${ZERO},${THREE} ${FOUR},${ZERO} ${FIVE},${FIVE}`
-                : `${ZERO},${FIVE} ${UNIT},${ZERO} ${FIVE},${THREE}`
-            }
-            fill={outgoing ? Colors.ORANGE : Colors.BLUE_MEDIUM_DARK}
-            strokeWidth="0"
-          />
-        </Svg>
-      </>
-    )
-    //   this.theme === 'dark' ?
-    //     (
-    //
-    //     ) : (
-    //       <Svg
-    //         height={SVG_EDGE}
-    //         width={SVG_EDGE}
-    //         style={outgoing ? styles.arrowOutgoing : styles.arrow}
-    //       >
-    //         <Polygon
-    //           points={
-    //             outgoing
-    //               ? `${ZERO},${THREE} ${FOUR},${ZERO} ${FIVE},${FIVE}`
-    //               : `${ZERO},${FIVE} ${UNIT},${ZERO} ${FIVE},${THREE}`
-    //           }
-    //           fill={outgoing ? Colors.ORANGE : Colors.BLUE_MEDIUM_DARK}
-    //           strokeWidth="0"
-    //         />
-    //       </Svg>
-    //     )
-    // }
-  }
-
-  render() {
-    const { outgoing, timestamp } = this.props
-
-    const formattedTime = moment(timestamp).format('hh:mm')
-
-    // const SVG_EDGE = 25
-    // const UNIT = SVG_EDGE / 5
-    // const ZERO = UNIT * 0
-    // const THREE = UNIT * 3
-    // const FOUR = UNIT * 4
-    // const FIVE = UNIT * 5
-
-    return (
-      <View
-        style={this.theme === 'dark' ? styles.containerDark : styles.container}
-      >
+      <View style={styles.container}>
         {!outgoing && (
           <>
-            <View
-              style={
-                this.theme === 'dark'
-                  ? styles.avatarContainerDark
-                  : styles.avatarContainer
-              }
-            >
+            <View style={styles.avatarContainer}>
               {this.props.shouldRenderAvatar ? (
                 <ChatAvatar publicKey={this.props.publicKey} />
               ) : (
@@ -151,29 +74,39 @@ export default class ChatMessage extends React.Component {
 
         {outgoing && (
           <>
-            <Text
-              style={
-                this.theme === 'dark' ? styles.timestampDark : styles.timestamp
-              }
-            >
-              {formattedTime}
-            </Text>
+            <Text style={styles.timestamp}>{formattedTime}</Text>
             <Pad insideRow amount={12} />
           </>
         )}
 
-        <View>{this.renderTrendIcon}</View>
+        <View>
+          <View style={[styles.bubble, outgoing && styles.bubbleOutgoing]}>
+            <TouchableOpacity onPress={this.onPress}>
+              <Text style={styles.body}>{body}</Text>
+            </TouchableOpacity>
+          </View>
+
+          <Svg
+            height={SVG_EDGE}
+            width={SVG_EDGE}
+            style={outgoing ? styles.arrowOutgoing : styles.arrow}
+          >
+            <Polygon
+              points={
+                outgoing
+                  ? `${ZERO},${THREE} ${FOUR},${ZERO} ${FIVE},${FIVE}`
+                  : `${ZERO},${FIVE} ${UNIT},${ZERO} ${FIVE},${THREE}`
+              }
+              fill={outgoing ? Colors.ORANGE : Colors.BLUE_MEDIUM_DARK}
+              strokeWidth="0"
+            />
+          </Svg>
+        </View>
 
         {!outgoing && (
           <>
             <Pad insideRow amount={12} />
-            <Text
-              style={
-                this.theme === 'dark' ? styles.timestampDark : styles.timestamp
-              }
-            >
-              {formattedTime}
-            </Text>
+            <Text style={styles.timestamp}>{formattedTime}</Text>
           </>
         )}
       </View>
@@ -191,22 +124,7 @@ const styles = StyleSheet.create({
     paddingBottom: BUBBLE_TRIANGLE_VERTICAL_OFFSET,
   },
 
-  containerDark: {
-    alignItems: 'flex-end',
-    flexDirection: 'row',
-    paddingBottom: BUBBLE_TRIANGLE_VERTICAL_OFFSET,
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderTopColor: '#4285B9',
-    borderBottomColor: '#4285B9',
-    marginBottom: 5,
-  },
-
   avatarContainer: {
-    marginBottom: -BUBBLE_TRIANGLE_VERTICAL_OFFSET,
-  },
-
-  avatarContainerDark: {
     marginBottom: -BUBBLE_TRIANGLE_VERTICAL_OFFSET,
   },
 
@@ -250,12 +168,5 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontFamily: 'Montserrat-500',
     color: '#A59797',
-  },
-
-  timestampDark: {
-    alignSelf: 'center',
-    fontSize: 10,
-    fontFamily: 'Montserrat-500',
-    color: '#9C9C9C',
   },
 })
