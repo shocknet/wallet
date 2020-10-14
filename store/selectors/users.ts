@@ -4,16 +4,10 @@ import { createSelector } from 'reselect'
 import { State } from '../../reducers'
 
 const getUsers = (state: State) => state.users
-const getPublicKey = (_: State, props: Schema.HasPublicKey) => props.publicKey
+const getPublicKey = (_: State, props: string) => props
 
 export const makeGetUser = () =>
-  createSelector<
-    State,
-    Schema.HasPublicKey,
-    State['users'],
-    string,
-    Schema.User
-  >(
+  createSelector<State, string, State['users'], string, Schema.User>(
     getUsers,
     getPublicKey,
     (users, publicKey) => {

@@ -24,7 +24,7 @@ const auth: Reducer<State, Action> = (state = INITIAL_STATE, action) =>
     }
 
     if (action.type === 'tokenDidInvalidate') {
-      Object.assign(draft, INITIAL_STATE)
+      draft.token = ''
     }
 
     if (action.type === 'hostWasSet') {

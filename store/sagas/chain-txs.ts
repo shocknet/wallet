@@ -53,7 +53,6 @@ function* chainTXsSocket() {
     )
 
     socket!.on('data', (chainTX: unknown) => {
-      console.warn('lol tx data')
       if (!Schema.isChainTransaction(chainTX)) {
         Logger.log(`Error inside chainTXsSocket* ()`)
         Logger.log(
@@ -90,7 +89,9 @@ function* fetchLatestChainTransactions(action: Actions.Action) {
     if (!state.auth.token) {
       // If user was unauthenticated let's reset oldIsOnline to false, to avoid
       // wentOnline from being a false negative (and thus not fetching data).
-      // Some false positives will occur but this is ok.
+      // Some false positives will occur but this is ok. In other words
+      // unauthenticated is equivalent to disconnected from the server (no
+      // interactions whatsoever).
       oldIsOnline = false
       return
     }

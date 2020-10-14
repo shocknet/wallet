@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React from 'react'
 import {
   // Clipboard,
   StyleSheet,
@@ -17,22 +17,11 @@ import Http from 'axios'
 import Big from 'big.js'
 import { connect } from 'react-redux'
 import Logger from 'react-native-file-log'
-// import wavesBG from '../../assets/images/waves-bg.png'
-import wavesBGDark from '../../assets/images/waves-bg-dark.png'
 
+import wavesBGDark from '../../assets/images/waves-bg-dark.png'
 import * as CSS from '../../res/css'
 import Pad from '../../components/Pad'
 import Nav from '../../components/Nav'
-
-import AccordionItem from './Accordion'
-import Transaction from './Accordion/Transaction'
-import Channel from './Accordion/Channel'
-// import Invoice from './Accordion/Invoice'
-import Peer from './Accordion/Peer'
-import InfoModal from './InfoModal'
-import AddChannelModal from './Modals/AddChannel'
-import InfoChannelModal from './Modals/InfoChannel'
-// import { Icon } from 'react-native-elements'
 import {
   fetchChannels,
   fetchPendingChannels,
@@ -44,13 +33,20 @@ import {
   fetchHistory,
 } from '../../actions/HistoryActions'
 import { fetchNodeInfo } from '../../actions/NodeActions'
+import { disconnectPeer } from '../../services/wallet'
+import * as Store from '../../../store'
+
+import AccordionItem from './Accordion'
+import Transaction from './Accordion/Transaction'
+import Channel from './Accordion/Channel'
+import Peer from './Accordion/Peer'
+import InfoModal from './InfoModal'
+import AddChannelModal from './Modals/AddChannel'
+import InfoChannelModal from './Modals/InfoChannel'
 import AddPeerModal from './Modals/AddPeer'
 import CloseChannelModal from './Modals/CloseChannel'
 import ShockDialog from '../../components/ShockDialog'
 import InfoPeerModal from './Modals/infoPeer'
-import { disconnectPeer } from '../../services/wallet'
-// import IconDrawerAdvancedLightning from '../../assets/images/drawer-icons/icon-drawer-advanced-lightning.svg'
-import * as ContactAPI from '../../services/contact-api'
 
 export const ADVANCED_SCREEN = 'ADVANCED_SCREEN'
 /**
@@ -96,7 +92,6 @@ export const ADVANCED_SCREEN = 'ADVANCED_SCREEN'
  * @prop {string} confirmCloseChannelText
  * @prop {boolean} refreshingChannels
  * @prop {boolean} refreshingTransactions
- * @prop {string | null} avatar
  */
 
 /**
@@ -126,9 +121,9 @@ export const ADVANCED_SCREEN = 'ADVANCED_SCREEN'
  */
 
 /**
- * @augments React.Component<Props, State, never>
+ * @augments React.PureComponent<Props, State, never>
  */
-class AdvancedScreen extends Component {
+class AdvancedScreen extends React.PureComponent {
   /** @type {import('react-navigation-stack').NavigationStackOptions} */
   static navigationOptions = {
     header: () => null,
@@ -174,7 +169,6 @@ class AdvancedScreen extends Component {
     confirmCloseChannelText: '',
     refreshingChannels: false,
     refreshingTransactions: false,
-    avatar: ContactAPI.Events.getAvatar(),
   }
 
   addChannelModal = React.createRef()
@@ -230,6 +224,7 @@ class AdvancedScreen extends Component {
     if (USDRate !== null) {
       const parsedConfirmedBalance = new Big(confirmedBalance)
       const parsedChannelBalance = new Big(channelBalance)
+      // @ts-expect-error
       const parsedUSDRate = new Big(USDRate)
       const satoshiUnit = new Big(0.00000001)
       const confirmedBalanceUSD = parsedConfirmedBalance
@@ -709,7 +704,7 @@ class AdvancedScreen extends Component {
   transactionKeyExtractor = transaction => transaction.tx_hash
 
   render() {
-    const { node, wallet, history } = this.props
+    const { node, wallet, history, avatar } = this.props
     const {
       accordions,
       peerURI,
@@ -729,7 +724,6 @@ class AdvancedScreen extends Component {
       confirmCloseChannelText,
       refreshingChannels,
       refreshingTransactions,
-      avatar,
     } = this.state
 
     //Logger.log(history.channels)
@@ -913,17 +907,6 @@ class AdvancedScreen extends Component {
               toggleAccordion={this.toggleAccordion('peers')}
               keyExtractor={peerKeyExtractor}
             />
-            {/*
-              <AccordionItem
-                fetchNextPage={() => this.fetchNextPage('invoices', 'invoices')}
-                data={history.invoices}
-                Item={Invoice}
-                title="Invoices"
-                open={accordions['invoices']}
-                toggleAccordion={() => this.toggleAccordion('invoices')}
-                keyExtractor={inv => inv.r_hash.data.join('-')}
-              />
-            */}
           </View>
         </View>
         <CloseChannelModal
@@ -998,18 +981,14 @@ class AdvancedScreen extends Component {
 }
 
 /**
- * @param {{
- * history:import('../../../reducers/HistoryReducer').State
- * node:import('../../../reducers/NodeReducer').State
- * wallet:import('../../../reducers/WalletReducer').State
- * fees:import('../../../reducers/FeesReducer').State
- * }} state
+ * @param {Store.State} state
  */
-const mapStateToProps = ({ history, node, wallet, fees }) => ({
+const mapStateToProps = ({ history, node, wallet, fees, users, auth }) => ({
   history,
   node,
   wallet,
   fees,
+  avatar: users[auth.gunPublicKey].avatar,
 })
 
 const mapDispatchToProps = {
