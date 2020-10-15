@@ -38,9 +38,9 @@ import SendScreen, { SEND_SCREEN } from '../screens/Send'
 import ReceiveScreen, { RECEIVE_SCREEN } from '../screens/Receive'
 import Debug, { DEBUG } from '../screens/Debug'
 import UserScreen from '../screens/User'
-
-import * as Routes from '../routes'
+import NodeInfo, { NODE_INFO } from '../screens/node-info'
 import LNURL, { LNURL_SCREEN } from '../screens/LNURL'
+import * as Routes from '../routes'
 
 import CustomDrawer from '../components/CustomDrawer'
 
@@ -91,6 +91,7 @@ const WalletNav = createStackNavigator(
     initialRouteName: BOTTOM_NAV,
     defaultNavigationOptions: {
       header: () => null,
+      headerTitleAlign: 'center',
     },
   },
 )
@@ -286,6 +287,7 @@ const App = createStackNavigator(
     [ADVANCED_SCREEN]: Advanced,
     [CHAT_ROUTE]: Chat,
     [MAIN_DRAWER]: MainDrawer,
+    [NODE_INFO]: NodeInfo,
   },
   {
     initialRouteName: MAIN_DRAWER,

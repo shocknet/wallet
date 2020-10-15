@@ -138,7 +138,22 @@ export class UnifiedTransaction extends React.PureComponent<Props> {
         <View style={styles.valuesContainer}>
           <Text style={styles.timestamp}>{formattedTimestamp + ' ago'}</Text>
           <Text style={styles.value}>
-            +{value.toString().replace(/(\d)(?=(\d{3})+$)/g, '$1,')}
+            {(() => {
+              if (status === 'sent' || status === 'process') {
+                return '-'
+              }
+
+              if (status === 'err') {
+                return ''
+              }
+
+              if (status === 'received') {
+                return '+'
+              }
+
+              return ''
+            })()}
+            {value.toString().replace(/(\d)(?=(\d{3})+$)/g, '$1,')}
           </Text>
           <Text style={styles.USDValue}>{convertedBalance} USD</Text>
         </View>
