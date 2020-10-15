@@ -18,7 +18,10 @@ import * as R from 'ramda'
 import Logger from 'react-native-file-log'
 
 import { SafeAreaView } from 'react-navigation'
-import { NavigationStackOptions, NavigationStackScreenProps } from "react-navigation-stack"
+import {
+  NavigationStackOptions,
+  NavigationStackScreenProps,
+} from 'react-navigation-stack'
 
 import { SET_LAST_SEEN_APP_INTERVAL } from '../../services/utils'
 import * as CSS from '../../res/css'
@@ -32,13 +35,13 @@ import Post from '../../components/Post/Wall'
 import TipBtn from '../../components/TipBtn'
 
 type UserType = Common.Schema.User
-type Navigation = NavigationStackScreenProps<{}, Routes.UserParams>
+type Navigation = NavigationStackScreenProps<Routes.UserParams, {}>
 
 interface ConnectedProps {
   users: UserType[]
 }
 
-type Props = ConnectedProps & Navigation;
+type Props = ConnectedProps & Navigation
 
 interface State {
   posts: Common.Schema.Post[]
@@ -79,8 +82,8 @@ class User extends React.Component<Props, State> {
 
   fetchNextPage = async () => {
     // getParam is deprecated
-    // const publicKey = this.props.navigation.getParam('publicKey')
-    const publicKey = this.props.navigation.state.params?.publicKey
+    const publicKey = this.props.navigation.getParam('publicKey')
+
     if (!publicKey) {
       return
     }
@@ -161,15 +164,11 @@ class User extends React.Component<Props, State> {
     // TODO fix this
     return (
       this.props.users.find(
-        u => u.publicKey === this.props.navigation.state.params?.publicKey,
-      ) || {
-        avatar: null,
-        bio: null,
-        displayName: null,
-        lastSeenApp: 0,
-        lastSeenNode: 0,
-        publicKey: this.props.navigation.state.params?.publicKey,
-      }
+        u => u.publicKey === this.props.navigation.getParam('publicKey', ''),
+      ) ||
+      Common.Schema.createEmptyUser(
+        this.props.navigation.getParam('publicKey', ''),
+      )
     )
   }
 
@@ -230,7 +229,7 @@ class User extends React.Component<Props, State> {
           videos={videos}
           paragraphs={paragraphhs}
           parentScrollViewRef={undefined}
-          deletePost={()=>{}}
+          deletePost={() => {}}
           postId={item.id}
           //@ts-ignore
           postPage={item.page ? item.page : '0'}
@@ -238,7 +237,6 @@ class User extends React.Component<Props, State> {
           tipCounter={item.tipCounter ? item.tipCounter : 0}
           //@ts-ignore
           tipValue={item.tipValue ? item.tipValue : 0}
-
         />
       )
     }

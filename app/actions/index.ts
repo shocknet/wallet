@@ -67,6 +67,7 @@ export type InvoicesBatchDecodeReqAction = _InvoicesBatchDecodeReqAction
 export type InvoicesBatchDecodeResAction = _InvoicesBatchDecodeResAction
 export * from './payments'
 export * from './chain-txs'
+export * from './me'
 
 export {
   ChatActions,

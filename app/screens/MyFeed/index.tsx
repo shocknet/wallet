@@ -13,7 +13,6 @@ import { NavigationScreenProp } from 'react-navigation'
 import { NavigationBottomTabOptions } from 'react-navigation-tabs'
 type Navigation = NavigationScreenProp<{}>
 
-import * as API from '../../services/contact-api'
 import * as CSS from '../../res/css'
 import ShockAvatar from '../../components/ShockAvatar'
 import moment from 'moment'
@@ -23,6 +22,7 @@ import UnpinPostIcon from '../../assets/images/feed/unpin.svg'
 import GotoDetailIcon from '../../assets/images/feed/gotodetail.svg'
 import AddonIcon from '../../assets/images/feed/addon.svg'
 import ShockIcon from '../../res/icons'
+import * as Store from '../../../store'
 
 export const MY_FEED = 'MY_FEED'
 
@@ -46,10 +46,16 @@ export default class MyFeed extends React.Component<Props, State> {
     ),
   }
 
-  state: State = {
-    avatar: API.Events.getAvatar(),
-    selectedTab: 'all',
-  }
+  state: State = (() => {
+    const {
+      users,
+      auth: { gunPublicKey },
+    } = Store.getStore().getState()
+    return {
+      avatar: users[gunPublicKey].avatar,
+      selectedTab: 'all',
+    }
+  })()
 
   onPressAvatar = () => {}
 
