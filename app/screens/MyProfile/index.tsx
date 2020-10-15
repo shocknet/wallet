@@ -21,7 +21,7 @@ import Logger from 'react-native-file-log'
 import { NavigationScreenProp } from 'react-navigation'
 import { NavigationBottomTabOptions } from 'react-navigation-tabs'
 import * as Common from 'shock-common'
-import Http from 'axios'
+import _ from 'lodash'
 import Modal from 'react-native-modal'
 import { connect } from 'react-redux'
 import { Color } from 'shock-common/dist/constants'
@@ -68,12 +68,17 @@ interface OwnProps {
 
 interface StateProps {
   myWall: import('../../../reducers/myWall').State | undefined
+  
   headerImage: string | null
   avatar: string | null
 }
 
 interface DispatchProps {
-  DeletePost: (postInfo: { postId: string; page: string }) => void
+  DeletePost: (postInfo: {
+    postId: string
+    page: number
+    posts: Common.Schema.Post[]
+  }) => void
   FetchPage: (page: number, posts: Common.Schema.Post[]) => void
 }
 
@@ -94,6 +99,8 @@ interface State {
   showQrCodeModal: boolean
   showMetaConfigModal: boolean
   scrollY: Animated.Value
+
+  fetching: boolean
 
   postIdToDelete: string | null
   postPageToDelete: string | null
@@ -140,6 +147,9 @@ class MyProfile extends React.PureComponent<Props, State> {
     showQrCodeModal: false,
     showMetaConfigModal: false,
     scrollY: new Animated.Value(0),
+
+    fetching: false,
+
     postIdToDelete: null,
     postPageToDelete: null,
     sendingDelete: false,
@@ -147,8 +157,12 @@ class MyProfile extends React.PureComponent<Props, State> {
   }
 
   fetchNextPage = async () => {
+    if (this.state.fetching) {
+      return
+    }
     this.setState({
       loadingNextPage: true,
+      fetching: true,
     })
     const { myWall } = this.props
     if (!myWall) {
@@ -159,12 +173,17 @@ class MyProfile extends React.PureComponent<Props, State> {
     } finally {
       this.setState({
         loadingNextPage: false,
+        fetching: false,
       })
     }
   }
   resetPages = async () => {
+    if (this.state.fetching) {
+      return
+    }
     this.setState({
       loadingNextPage: true,
+      fetching: true,
     })
     const { myWall } = this.props
     if (!myWall) {
@@ -175,6 +194,7 @@ class MyProfile extends React.PureComponent<Props, State> {
     } finally {
       this.setState({
         loadingNextPage: false,
+        fetching: false,
       })
     }
   }
@@ -197,6 +217,7 @@ class MyProfile extends React.PureComponent<Props, State> {
   onBioUnsub = () => {}
 
   didFocus = { remove() {} }
+  componentDidUpdate() {}
 
   async componentDidMount() {
     const { myWall } = this.props
@@ -229,7 +250,7 @@ class MyProfile extends React.PureComponent<Props, State> {
     this.setState({
       authData: authData.authData,
     })
-    this.fetchNextPage()
+    //this.fetchNextPage()
   }
 
   componentWillUnmount() {
@@ -404,14 +425,25 @@ class MyProfile extends React.PureComponent<Props, State> {
   }
   confirmDeletePost = async () => {
     try {
+      const { postIdToDelete: postId, postPageToDelete: _page } = this.state
+      //@ts-expect-error not sure why will dig into this later
+      const { posts } = this.props.myWall
+      const page = Number(_page)
+      //const res = await Http.delete(`/api/gun/wall/${page}&${id}`)
+      //if (res.status !== 200) {
+      //  throw new Error('status not 200 deletePost')
+      //}
+      if (isNaN(page) || !postId) {
+        return
+      }
       this.setState({
         sendingDelete: true,
       })
-      const { postIdToDelete: id, postPageToDelete: page } = this.state
-      const res = await Http.delete(`/api/gun/wall/${page}&${id}`)
-      if (res.status !== 200) {
-        throw new Error('status not 200 deletePost')
-      }
+      await this.props.DeletePost({
+        page,
+        postId,
+        posts,
+      })
       this.setState({
         sendingDelete: false,
         postIdToDelete: null,
@@ -419,7 +451,7 @@ class MyProfile extends React.PureComponent<Props, State> {
     } catch (e) {
       this.setState({
         sendingDelete: false,
-        postIdToDelete: null,
+        //postIdToDelete: null,
         deleteError: e.errorMessage ? e.errorMessage : e.message,
       })
     }
@@ -551,6 +583,7 @@ class MyProfile extends React.PureComponent<Props, State> {
     this.props.navigation.navigate(PUBLISH_CONTENT_DARK)
   }
 
+  debouncedFetchNextPage = _.debounce(this.fetchNextPage, 1000)
   onPressHeader = async () => {
     try {
       const HEADER_LONG_EDGE = 480
@@ -784,26 +817,27 @@ class MyProfile extends React.PureComponent<Props, State> {
             </Animated.View>
           </Animated.View>
 
-          <FlatList
-            style={{ width: '100%' }}
-            overScrollMode={'never'}
-            scrollEventThrottle={16}
-            //contentOffset={{x:0,y:-100}}
-            onScroll={Animated.event([
-              { nativeEvent: { contentOffset: { y: this.state.scrollY } } },
-            ])}
-            renderItem={this.renderItem}
-            data={this.getData()}
-            keyExtractor={this.keyExtractor}
-            onEndReached={this.resetPages}
-            refreshControl={
-              <RefreshControl
-                renderToHardwareTextureAndroid
-                refreshing={this.state.loadingNextPage}
-                onRefresh={this.fetchNextPage}
-              />
-            }
-          />
+          {
+            <FlatList
+              style={{ width: '100%' }}
+              overScrollMode={'never'}
+              scrollEventThrottle={16}
+              //contentOffset={{x:0,y:-100}}
+              onScroll={Animated.event([
+                { nativeEvent: { contentOffset: { y: this.state.scrollY } } },
+              ])}
+              renderItem={this.renderItem}
+              data={this.getData()}
+              keyExtractor={this.keyExtractor}
+              onEndReached={this.debouncedFetchNextPage}
+              refreshControl={
+                <RefreshControl
+                  refreshing={this.state.loadingNextPage}
+                  onRefresh={this.resetPages}
+                />
+              }
+            />
+          }
           <TouchableOpacity
             style={styles.createBtn}
             onPress={this.onPressShowMyQrCodeModal}
@@ -825,6 +859,7 @@ class MyProfile extends React.PureComponent<Props, State> {
             title="Delete this post?"
           >
             {this.state.sendingDelete && <ActivityIndicator />}
+            {this.state.deleteError && <Text>{this.state.deleteError}</Text>}
             {!this.state.sendingDelete && (
               <IGDialogBtn title="OK" onPress={this.confirmDeletePost} />
             )}
@@ -897,8 +932,12 @@ const makeMapStateToProps = () => {
   }
 }
 
-const mapDispatchToProps = (dispatch: any): DispatchProps => ({
-  DeletePost: (postInfo: { postId: string; page: string }) => {
+const mapDispatchToProps = (dispatch: any) => ({
+  DeletePost: (postInfo: {
+    postId: string
+    page: number
+    posts: Common.Schema.Post[]
+  }) => {
     dispatch(Thunks.MyWall.DeletePost(postInfo))
   },
   FetchPage: (page: number, posts: Common.Schema.Post[]) => {

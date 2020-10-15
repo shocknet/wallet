@@ -17,15 +17,20 @@ export const FetchPage = (
     }
 
     const { posts: postsRecord } = res.data
+    const isEmptyPage =
+      Object.keys(postsRecord).length === 0 &&
+      postsRecord.constructor === Object
     const fetchedPosts: Common.Schema.Post[] = Object.values(postsRecord)
     const mixedWithExisting = [...currentPosts, ...fetchedPosts]
     const dedupped = R.uniqBy(R.prop('id'), mixedWithExisting)
     const sorted = R.sort((a, b) => b.date - a.date, dedupped)
-    dispatch(Actions.finishedFetchPage(pageToFetch, sorted))
+    dispatch(
+      Actions.finishedFetchPage(isEmptyPage ? page : pageToFetch, sorted),
+    )
   } catch (err) {
     dispatch(
       Actions.errorFetchPage(
-        pageToFetch,
+        page,
         err.message || err.errorMessage || 'Unknown error',
       ),
     )
@@ -45,19 +50,22 @@ export const PinPost = (contentID: string) => async (dispatch: any) => {
 export const DeletePost = ({
   postId,
   page,
+  posts,
 }: {
   postId: string
-  page: string
+  page: number
+  posts: Common.Schema.Post[]
 }) => async (dispatch: any) => {
   const contentID = `${page}&${postId}`
-  dispatch(Actions.beganDeletePost(1, contentID))
+  dispatch(Actions.beganDeletePost(page, postId))
+  const deletedIndex = posts.findIndex(p => p.id === postId)
   try {
     const res = await Http.delete(`/api/gun/wall/${contentID}`)
     if (res.status !== 200) {
       throw new Error(`Status not OK`)
     }
-    dispatch(Actions.finishedDeletePost(1, contentID))
+    dispatch(Actions.finishedDeletePost(deletedIndex, postId))
   } catch (e) {
-    dispatch(Actions.ErrorDeletePost(1, contentID, e))
+    dispatch(Actions.ErrorDeletePost(deletedIndex, postId, e))
   }
 }
