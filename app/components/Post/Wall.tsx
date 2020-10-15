@@ -393,7 +393,7 @@ const styles = StyleSheet.create({
   postContainerTop: {
     width: '100%',
     flexDirection: 'row',
-    margin: 15,
+    padding: 15,
   },
   postItemAvatar: {
     width: 48,

@@ -263,7 +263,7 @@ class Feed extends React.Component<Props, State> {
   onPressVideoFeeds = () => {
     this.setState({ selectedTab: 'videos' })
   }
-
+  debouncedOnEndReached = _.debounce(this.onEndReached,1000)
   render() {
     const { posts, myFeed } = this.props
     return (
@@ -281,7 +281,7 @@ class Feed extends React.Component<Props, State> {
           data={myFeed.posts}
           keyExtractor={keyExtractor}
           ListEmptyComponent={listEmptyElement}
-          onEndReached={this.onEndReached}
+          onEndReached={this.debouncedOnEndReached}
           onEndReachedThreshold={0.5}
           refreshControl={
             <RefreshControl

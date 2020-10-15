@@ -54,10 +54,21 @@ const reducer = (state:State = INITIAL_STATE,action:Action) => {
             })
         }
         case 'myWall/finishedDeletePost':{
-            return state
+            const {data} = action
+            return produce(state,draft =>{
+                draft.postToDeleteID = null
+                draft.status = ''
+                if(data.index !== -1){
+                    draft.posts.splice(data.index,1)
+                }
+            })
         }
         case 'myWall/ErrorDeletePost':{
-            return state
+            const {data} = action
+            return produce(state,draft => {
+                draft.error = data.error
+                draft.postToDeleteID = null
+            })
         }
         default:{
             return state
