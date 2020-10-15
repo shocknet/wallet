@@ -263,7 +263,7 @@ class Feed extends React.Component<Props, State> {
   onPressVideoFeeds = () => {
     this.setState({ selectedTab: 'videos' })
   }
-  debouncedOnEndReached = _.debounce(this.onEndReached,1000)
+  debouncedOnEndReached = _.debounce(this.onEndReached, 1000)
   render() {
     const { posts, myFeed } = this.props
     return (

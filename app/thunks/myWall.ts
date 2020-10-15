@@ -17,12 +17,16 @@ export const FetchPage = (
     }
 
     const { posts: postsRecord } = res.data
-    const isEmptyPage = Object.keys(postsRecord).length === 0 && postsRecord.constructor === Object
+    const isEmptyPage =
+      Object.keys(postsRecord).length === 0 &&
+      postsRecord.constructor === Object
     const fetchedPosts: Common.Schema.Post[] = Object.values(postsRecord)
     const mixedWithExisting = [...currentPosts, ...fetchedPosts]
     const dedupped = R.uniqBy(R.prop('id'), mixedWithExisting)
     const sorted = R.sort((a, b) => b.date - a.date, dedupped)
-    dispatch(Actions.finishedFetchPage(isEmptyPage ? page : pageToFetch, sorted))
+    dispatch(
+      Actions.finishedFetchPage(isEmptyPage ? page : pageToFetch, sorted),
+    )
   } catch (err) {
     dispatch(
       Actions.errorFetchPage(
@@ -50,7 +54,7 @@ export const DeletePost = ({
 }: {
   postId: string
   page: number
-  posts:Common.Schema.Post[]
+  posts: Common.Schema.Post[]
 }) => async (dispatch: any) => {
   const contentID = `${page}&${postId}`
   dispatch(Actions.beganDeletePost(page, postId))

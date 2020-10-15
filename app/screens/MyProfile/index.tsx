@@ -66,7 +66,11 @@ const showCopiedToClipboardToast = () => {
 interface Props {
   navigation: Navigation
   myWall: import('../../../reducers/myWall').State | undefined
-  DeletePost: (postInfo: { postId: string; page: number,posts: Common.Schema.Post[] }) => void
+  DeletePost: (postInfo: {
+    postId: string
+    page: number
+    posts: Common.Schema.Post[]
+  }) => void
   FetchPage: (page: number, posts: Common.Schema.Post[]) => void
 }
 
@@ -87,7 +91,7 @@ interface State {
   showMetaConfigModal: boolean
   scrollY: Animated.Value
 
-  fetching:boolean
+  fetching: boolean
 
   postIdToDelete: string | null
   postPageToDelete: string | null
@@ -147,7 +151,7 @@ class MyProfile extends React.Component<Props, State> {
     showMetaConfigModal: false,
     scrollY: new Animated.Value(0),
 
-    fetching:false,
+    fetching: false,
 
     postIdToDelete: null,
     postPageToDelete: null,
@@ -155,15 +159,13 @@ class MyProfile extends React.Component<Props, State> {
     deleteError: null,
   }
 
-  
-
   fetchNextPage = async () => {
-    if(this.state.fetching){
+    if (this.state.fetching) {
       return
     }
     this.setState({
       loadingNextPage: true,
-      fetching:true,
+      fetching: true,
     })
     const { myWall } = this.props
     if (!myWall) {
@@ -172,10 +174,9 @@ class MyProfile extends React.Component<Props, State> {
     try {
       await this.props.FetchPage(myWall.lastPageFetched, myWall.posts)
     } finally {
-      
       this.setState({
         loadingNextPage: false,
-        fetching:false
+        fetching: false,
       })
     }
     /*
@@ -216,12 +217,12 @@ class MyProfile extends React.Component<Props, State> {
     }*/
   }
   resetPages = async () => {
-    if(this.state.fetching){
+    if (this.state.fetching) {
       return
     }
     this.setState({
       loadingNextPage: true,
-      fetching:true
+      fetching: true,
     })
     const { myWall } = this.props
     if (!myWall) {
@@ -232,7 +233,7 @@ class MyProfile extends React.Component<Props, State> {
     } finally {
       this.setState({
         loadingNextPage: false,
-        fetching:false
+        fetching: false,
       })
     }
   }
@@ -255,9 +256,7 @@ class MyProfile extends React.Component<Props, State> {
   onBioUnsub = () => {}
 
   didFocus = { remove() {} }
-  componentDidUpdate(){
-    
-  }
+  componentDidUpdate() {}
 
   async componentDidMount() {
     const { myWall } = this.props
@@ -465,7 +464,6 @@ class MyProfile extends React.Component<Props, State> {
   }
   confirmDeletePost = async () => {
     try {
-      
       const { postIdToDelete: postId, postPageToDelete: _page } = this.state
       //@ts-expect-error not sure why will dig into this later
       const { posts } = this.props.myWall
@@ -474,14 +472,17 @@ class MyProfile extends React.Component<Props, State> {
       //if (res.status !== 200) {
       //  throw new Error('status not 200 deletePost')
       //}
-      if(isNaN(page) || !postId){return}
+      if (isNaN(page) || !postId) {
+        return
+      }
       this.setState({
         sendingDelete: true,
       })
       await this.props.DeletePost({
         page,
         postId,
-        posts})
+        posts,
+      })
       this.setState({
         sendingDelete: false,
         postIdToDelete: null,
@@ -716,7 +717,7 @@ class MyProfile extends React.Component<Props, State> {
     this.props.navigation.navigate(PUBLISH_CONTENT_DARK)
   }
 
-  debouncedFetchNextPage = _.debounce(this.fetchNextPage,1000)
+  debouncedFetchNextPage = _.debounce(this.fetchNextPage, 1000)
 
   render() {
     const {
@@ -901,25 +902,27 @@ class MyProfile extends React.Component<Props, State> {
             </Animated.View>
           </Animated.View>
 
-          {<FlatList
-            style={{ width: '100%' }}
-            overScrollMode={'never'}
-            scrollEventThrottle={16}
-            //contentOffset={{x:0,y:-100}}
-            onScroll={Animated.event([
-              { nativeEvent: { contentOffset: { y: this.state.scrollY } } },
-            ])}
-            renderItem={this.renderItem}
-            data={this.getData()}
-            keyExtractor={this.keyExtractor}
-            onEndReached={this.debouncedFetchNextPage}
-            refreshControl={
-              <RefreshControl
-                refreshing={this.state.loadingNextPage}
-                onRefresh={this.resetPages}
-              />
-            }
-          />}
+          {
+            <FlatList
+              style={{ width: '100%' }}
+              overScrollMode={'never'}
+              scrollEventThrottle={16}
+              //contentOffset={{x:0,y:-100}}
+              onScroll={Animated.event([
+                { nativeEvent: { contentOffset: { y: this.state.scrollY } } },
+              ])}
+              renderItem={this.renderItem}
+              data={this.getData()}
+              keyExtractor={this.keyExtractor}
+              onEndReached={this.debouncedFetchNextPage}
+              refreshControl={
+                <RefreshControl
+                  refreshing={this.state.loadingNextPage}
+                  onRefresh={this.resetPages}
+                />
+              }
+            />
+          }
           <TouchableOpacity
             style={styles.createBtn}
             onPress={this.onPressShowMyQrCodeModal}
@@ -1007,7 +1010,11 @@ const mapStateToProps = ({ myWall }: import('../../../reducers').State) => ({
 })
 
 const mapDispatchToProps = (dispatch: any) => ({
-  DeletePost: (postInfo: { postId: string; page: number,posts:Common.Schema.Post[] }) => {
+  DeletePost: (postInfo: {
+    postId: string
+    page: number
+    posts: Common.Schema.Post[]
+  }) => {
     dispatch(Thunks.MyWall.DeletePost(postInfo))
   },
   FetchPage: (page: number, posts: Common.Schema.Post[]) => {
