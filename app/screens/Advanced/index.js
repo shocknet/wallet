@@ -35,6 +35,7 @@ import {
 import { fetchNodeInfo } from '../../actions/NodeActions'
 import { disconnectPeer } from '../../services/wallet'
 import * as Store from '../../../store'
+import { NODE_INFO } from '../node-info'
 
 import AccordionItem from './Accordion'
 import Transaction from './Accordion/Transaction'
@@ -115,6 +116,7 @@ export const ADVANCED_SCREEN = 'ADVANCED_SCREEN'
  *  @prop {()=>void} fetchRecentTransactions,
  *  @prop {()=>void} fetchHistory,
  *  @prop {()=>void} fetchNodeInfo,
+ * @prop {import('react-navigation').NavigationScreenProp<{}>} navigation
  */
 /**
  * @typedef {ConnectedRedux & TmpProps} Props
@@ -547,9 +549,7 @@ class AdvancedScreen extends React.PureComponent {
   }
 
   openNodeInfo = () => {
-    this.setState({
-      nodeInfoModal: true,
-    })
+    this.props.navigation.navigate(NODE_INFO)
   }
 
   closeNodeInfo = () => {
