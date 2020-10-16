@@ -307,7 +307,7 @@ Http.interceptors.request.use(async config => {
  */
 const decryptResponse = async response => {
   try {
-    const decryptionTime = Date.now()
+    // const decryptionTime = Date.now()
     const { connection } = store.getState()
     const path = url.parse(response?.config.url).pathname
     // Logger.log('[ENCRYPTION] Decrypting Path:', path)
