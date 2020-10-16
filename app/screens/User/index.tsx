@@ -98,7 +98,7 @@ class User extends React.Component<Props, State> {
       )
 
       if (res.status !== 200) {
-        throw new Error(`Not 200`)
+        throw new Error(`Not 200: ${JSON.stringify(res.data)}`)
       }
       this.setState(({ posts, lastPageFetched }) => {
         const { posts: postsRecord } = res.data
