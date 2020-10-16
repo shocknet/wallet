@@ -136,7 +136,7 @@ class Socket {
   decryptSocketData = async data => {
     if (data && data.encryptedKey && this.store) {
       // const decryptionTime = Date.now()
-      Logger.log('[LND SOCKET] Decrypting Daobjectta...', data)
+      Logger.log('[LND SOCKET] Decrypting Daobjectta...' /*, data*/)
       const { sessionId } = this.store.getState().connection
       const decryptedKey = await Encryption.decryptKey(
         data.encryptedKey,

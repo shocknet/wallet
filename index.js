@@ -340,7 +340,7 @@ const decryptResponse = async response => {
         key: decryptedKey,
         iv: response.data.iv,
       })
-      Logger.log(`[HTTP] Decrypted data in: ${Date.now() - decryptionTime}ms`)
+      // Logger.log(`[HTTP] Decrypted data in: ${Date.now() - decryptionTime}ms`)
       const decryptedResponse = {
         ...response,
         data: JSON.parse(decryptedData),
