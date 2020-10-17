@@ -2,6 +2,7 @@ import produce from 'immer'
 import { Schema } from 'shock-common'
 import uniqBy from 'lodash/uniqBy'
 import { Reducer } from 'redux'
+import Logger from 'react-native-file-log'
 
 import { Action } from '../app/actions'
 
@@ -22,13 +23,17 @@ const reducer: Reducer<State, Action> = (
   switch (action.type) {
     case 'users/receivedUsersData':
       return produce(state, draft => {
-        action.data.usersData.forEach(partialUser => {
+        action.payload.usersData.forEach(partialUser => {
           const { publicKey: pk } = partialUser
 
-          draft[pk] = {
-            ...Schema.createEmptyUser(pk),
-            ...(draft[pk] || {}),
-            ...partialUser,
+          Logger.log('Received partial user without public key???')
+
+          if (pk) {
+            draft[pk] = {
+              ...Schema.createEmptyUser(pk),
+              ...(draft[pk] || {}),
+              ...partialUser,
+            }
           }
         })
       })
