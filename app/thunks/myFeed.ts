@@ -13,7 +13,7 @@ export const FetchPage = (
     const res = await Http.get(`api/gun/feed?page=${pageToFetch}`)
 
     if (res.status !== 200) {
-      throw new Error(`Not 200`)
+      throw new Error(`Not 200: ${JSON.stringify(res.data)}`)
     }
 
     const { posts: postsRecord } = res.data
