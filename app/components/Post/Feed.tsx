@@ -70,16 +70,7 @@ export default class Post extends React.Component<Props, State> {
   state = DEFAULT_STATE
 
   async componentDidMount() {
-    const {
-      images = [],
-      videos = [],
-      //parentScrollViewRef,
-    } = this.props
-    /*const carouselWidth = Math.round(width) - 20
-    const dataCarousel = images.map(image => ({
-      id: image.id,
-      imagePath: image.data,
-    }))*/
+    const { images = [], videos = [] } = this.props
 
     const imagePreviews: typeof images = []
     const imageMedias: typeof images = []
