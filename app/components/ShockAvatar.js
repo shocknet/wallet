@@ -99,6 +99,7 @@ const styles = StyleSheet.create({
  * @prop {number} height
  * @prop {string} publicKey
  * @prop {(() => void)=} onPress
+ * @prop {boolean=} disableOnlineRing
  */
 
 /**
