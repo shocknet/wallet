@@ -89,7 +89,6 @@ const WalletNav = createStackNavigator(
   {
     initialRouteName: BOTTOM_NAV,
     defaultNavigationOptions: {
-      header: () => null,
       headerTitleAlign: 'center',
     },
   },
