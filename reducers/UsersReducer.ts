@@ -20,6 +20,17 @@ const reducer: Reducer<State, Action> = (
   action: Action,
 ) => {
   switch (action.type) {
+    case 'users/receivedSingleUserData':
+      return produce(state, draft => {
+        const { singleUserData } = action.payload
+
+        draft[singleUserData.publicKey] = {
+          ...Schema.createEmptyUser(singleUserData.publicKey),
+          ...(draft[singleUserData.publicKey] || {}),
+          ...singleUserData,
+        }
+      })
+
     case 'users/receivedUsersData':
       return produce(state, draft => {
         action.payload.usersData.forEach(partialUser => {
