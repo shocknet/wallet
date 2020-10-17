@@ -20,3 +20,16 @@ export const makeGetUser = () =>
       return Schema.createEmptyUser(publicKey)
     },
   )
+
+export const getAllOtherPublicKeys = createSelector<
+  State,
+  State['users'],
+  string[]
+>(
+  getUsers,
+  users => {
+    return Object.keys(users).filter(
+      publicKey => publicKey !== users.myPublicKey,
+    )
+  },
+)
