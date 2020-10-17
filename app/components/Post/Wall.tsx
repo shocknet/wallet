@@ -15,7 +15,7 @@ import * as CSS from '../../res/css'
 //import UserInfo from './UserInfo'
 import ShockWebView from '../ShockWebView'
 import moment from 'moment'
-import ShockAvatar from '../ShockAvatar'
+import { ConnectedShockAvatar } from '../ShockAvatar'
 import * as MediaLib from '../../services/mediaLib'
 import PopupMenu from '../popUpMenu'
 
@@ -302,14 +302,12 @@ export default class Post extends React.Component<Props, State> {
     return (
       <View style={styles.postContainer}>
         <View style={styles.postContainerTop}>
-          <ShockAvatar
+          <ConnectedShockAvatar
             height={44}
-            image={author.avatar ? author.avatar : null}
-            //onPress={this.onPressAvatar}
-            lastSeenApp={Date.now()}
-            avatarStyle={styles.avatarStyle}
+            publicKey={author.publicKey}
             disableOnlineRing
           />
+
           <View style={styles.postItemTitle}>
             <Text style={styles.postItemTitleText}>{author.displayName}</Text>
             <Text style={styles.postItemTimestamp}>{diffString + ' ago'}</Text>
