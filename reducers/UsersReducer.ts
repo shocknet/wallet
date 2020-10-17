@@ -6,15 +6,14 @@ import Logger from 'react-native-file-log'
 
 import { Action } from '../app/actions'
 
-type State = Record<string, Schema.User> & {
-  // TODO get this out of here
-  myPublicKey: string
-}
+type State = Record<string, Schema.User>
 
-const INITIAL_STATE = {
-  // We don't want to type this as nullable anyways. Will set it at auth
-  myPublicKey: '',
-} as State
+/**
+ * Super hacky but works and does not tain the real state.
+ */
+let myPublicKey = ''
+
+const INITIAL_STATE = {} as State
 
 const reducer: Reducer<State, Action> = (
   state = INITIAL_STATE,
@@ -108,21 +107,16 @@ const reducer: Reducer<State, Action> = (
 
     case 'me/receivedMeData':
       return produce(state, draft => {
-        if (action.data.publicKey) {
-          draft.myPublicKey = action.data.publicKey
+        const { publicKey } = action.data
+        myPublicKey = publicKey || myPublicKey
+
+        if (myPublicKey) {
+          if (!draft[myPublicKey]) {
+            draft[myPublicKey] = Schema.createEmptyUser(myPublicKey)
+          }
+
+          Object.assign(draft[myPublicKey], action.data)
         }
-
-        const publicKey = action.data.publicKey || state.myPublicKey
-
-        if (!publicKey) {
-          return
-        }
-
-        if (!draft[publicKey]) {
-          draft[publicKey] = Schema.createEmptyUser(publicKey)
-        }
-
-        Object.assign(draft[publicKey], action.data)
       })
 
     case 'receivedBackfeed':
@@ -144,7 +138,9 @@ const reducer: Reducer<State, Action> = (
     case 'authed':
       return produce(state, draft => {
         const { gunPublicKey } = action.data
-        draft.myPublicKey = gunPublicKey
+
+        myPublicKey = gunPublicKey
+
         if (!draft[gunPublicKey]) {
           draft[gunPublicKey] = Schema.createEmptyUser(gunPublicKey)
         }
