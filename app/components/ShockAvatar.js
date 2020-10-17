@@ -29,6 +29,7 @@ const DEFAULT_USER_IMAGE =
  */
 
 /**
+ * @deprecated
  * @augments React.PureComponent<Props>
  */
 export default class ShockAvatar extends React.PureComponent {

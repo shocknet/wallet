@@ -139,46 +139,12 @@ class Feed extends React.Component<Props, State> {
   onEndReached = () => {
     const { myFeed } = this.props
     this.props.FetchPage(myFeed.lastPageFetched, myFeed.posts)
-    // todo: move this check to redux in a way that makes sense
-    /*if (!this.state.awaitingMoreFeed) {
-      this.setState(
-        {
-          awaitingMoreFeed: true,
-        },
-        () => {
-          this.props.requestMoreFeed()
-        },
-      )
-    }*/
   }
 
   onRefresh = () => {
     this.props.FetchPage(0, []) //clear and reload
-    /*const { awaitingBackfeed, awaitingMoreFeed } = this.state
-
-    if (!awaitingBackfeed && !awaitingMoreFeed) {
-      this.setState(
-        {
-          awaitingBackfeed: true,
-        },
-        () => {
-          if (this.props.posts.length === 0) {
-            this.props.requestMoreFeed()
-          } else {
-            this.props.requestBackfeed()
-          }
-
-          // TODO: redux-side auto retry
-          setTimeout(() => {
-            this.setState({
-              awaitingBackfeed: false,
-              awaitingMoreFeed: false,
-            })
-          }, 10000)
-        },
-      )
-    }*/
   }
+
   renderItem = ({ item }: ListRenderItemInfo<Item>) => {
     if (!Common.Schema.isPost(item)) return null
     const imageCIEntries = Object.entries(item.contentItems).filter(
@@ -429,8 +395,6 @@ class Feed extends React.Component<Props, State> {
           </TouchableOpacity>
         </View>
         <FlatList
-          //style={CSS.styles.flex}
-          //contentContainerStyle={CSS.styles.flex}
           renderItem={this.renderItem}
           data={myFeed.posts}
           keyExtractor={keyExtractor}
@@ -486,17 +450,7 @@ const mapStateToProps = (state: Reducers.State): StateProps => {
     follows: state.follows,
   }
 }
-/*
-const mapDispatchToProps: Record<
-  keyof DispatchProps,
-  (...args: any[]) => Common.Store.Actions.FeedAction
-> = {
-  onViewportChanged: Common.Store.Actions.viewportChanged,
-  requestBackfeed: Common.Store.Actions.getMoreBackfeed,
-  requestMoreFeed: Common.Store.Actions.getMoreFeed,
 
-
-}*/
 const mapDispatchToProps = (dispatch: any) => ({
   FetchPage: (page: number, currentPosts: Common.Schema.Post[]) => {
     dispatch(Thunks.myFeed.FetchPage(page, currentPosts))

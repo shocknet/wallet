@@ -70,10 +70,6 @@ const DEFAULT_STATE: State = {
 const popupMenuOptions: ['Pin', 'Remove'] = ['Pin', 'Remove']
 
 export default class Post extends React.Component<Props, State> {
-  //shouldComponentUpdate() {
-  //return false why?
-  //}
-
   gotoPostDetail = (_item: any) => {}
 
   state = DEFAULT_STATE
