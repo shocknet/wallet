@@ -2,6 +2,8 @@ import { takeEvery, select } from 'redux-saga/effects'
 import Logger from 'react-native-file-log'
 import SocketIO from 'socket.io-client'
 import difference from 'lodash/difference'
+import isEqual from 'lodash/isEqual'
+import { Constants } from 'shock-common'
 
 import * as Actions from '../../app/actions'
 import * as Selectors from '../selectors'
@@ -30,12 +32,25 @@ function* users() {
     const authed = !wasAuthed && isAuth
     const unauthed = wasAuthed && !isAuth
     const allPublicKeys = Selectors.getAllOtherPublicKeys(state)
-    const publicKeysChanged = allPublicKeys !== oldPublicKeys
+
+    const publicKeysChanged = (() => {
+      // Cheap but results in false positives when any user is updated (the
+      // selector recomputes based on the whole users tree changing)
+      if (allPublicKeys === oldPublicKeys) {
+        return false
+      }
+
+      // Expensive but accurate
+      return !isEqual(
+        allPublicKeys.slice().sort(),
+        oldPublicKeys.slice().sort(),
+      )
+    })()
+
     let newPublicKeys: string[] = []
 
     if (publicKeysChanged) {
       newPublicKeys = difference(allPublicKeys, oldPublicKeys)
-      console.warn(`newPublicKeys: ${JSON.stringify(newPublicKeys)}`)
     }
 
     oldPublicKeys = allPublicKeys
@@ -76,6 +91,8 @@ function* users() {
       if (!isAuth) {
         return
       }
+
+      assignSocketsToPublicKeys(allPublicKeys)
     } else if (isAuth && isOnline && publicKeysChanged) {
       assignSocketsToPublicKeys(newPublicKeys)
     }
@@ -110,6 +127,10 @@ const assignSocketsToPublicKeys = (publicKeys: string[]) => {
     })
 
     sockets[normalSocketName]!.on('$error', (err: unknown) => {
+      if (err === Constants.ErrorCode.NOT_AUTH) {
+        getStore().dispatch(Actions.tokenDidInvalidate())
+        return
+      }
       Logger.log('Error inside users* ()')
       Logger.log(err)
     })
@@ -144,6 +165,10 @@ const assignSocketsToPublicKeys = (publicKeys: string[]) => {
     })
 
     sockets[binarySocketName]!.on('$error', (err: unknown) => {
+      if (err === Constants.ErrorCode.NOT_AUTH) {
+        getStore().dispatch(Actions.tokenDidInvalidate())
+        return
+      }
       Logger.log('Error inside users* ()')
       Logger.log(err)
     })
