@@ -10,8 +10,10 @@ import {
   ActivityIndicator,
   StatusBar,
   FlatListProps,
+  TouchableOpacity,
 } from 'react-native'
 import { connect } from 'react-redux'
+import Http from 'axios'
 import { NavigationScreenProp } from 'react-navigation'
 import { NavigationBottomTabOptions } from 'react-navigation-tabs'
 import _ from 'lodash'
@@ -23,8 +25,12 @@ import * as Routes from '../../routes'
 import * as CSS from '../../res/css'
 import * as Thunks from '../../thunks'
 
+import * as Follows from '../../../reducers/follows'
 import ShockIconWhite from '../../assets/images/shockW.svg'
 import ShockIconBlue from '../../assets/images/shockB.svg'
+import ShockAvatar from '../../components/ShockAvatar'
+import AddonIcon from '../../assets/images/feed/addon.svg'
+import { CREATE_POST_DARK } from '../CreatePostDark'
 
 type Navigation = NavigationScreenProp<{}, Routes.UserParams>
 type Item = Common.Schema.Post
@@ -32,6 +38,7 @@ type Item = Common.Schema.Post
 interface StateProps {
   posts: Common.Schema.Post[]
   myFeed: import('../../../reducers/myFeed').State
+  follows: Follows.State
   avatar: string | null
 }
 
@@ -45,11 +52,16 @@ interface DispatchProps {
 interface OwnProps {
   navigation: Navigation
 }
-
+interface FollowInfo {
+  publicKey: string
+  avatar: string | null
+  displayName: string
+}
 interface State {
   awaitingBackfeed: boolean
   awaitingMoreFeed: boolean
   selectedTab: 'all' | 'saved' | 'videos'
+  followsInfo: Record<string, FollowInfo>
 }
 
 type Props = StateProps & DispatchProps & OwnProps
@@ -71,6 +83,57 @@ class Feed extends React.Component<Props, State> {
     awaitingBackfeed: false,
     awaitingMoreFeed: false,
     selectedTab: 'all',
+    followsInfo: {},
+  }
+
+  componentDidMount() {
+    const { follows } = this.props
+
+    const pubs = Object.entries(follows).map(
+      ([_, follow]: [string, Follows.Follow]) => {
+        return follow.user
+      },
+    )
+    if (pubs.length === 0) {
+      return
+    }
+    Http.post('/api/gun/userInfo', { pubs })
+      .then(res => {
+        const rec: Record<string, FollowInfo> = {}
+        const { pubInfos }: { pubInfos: FollowInfo[] } = res.data
+        pubInfos.forEach(follow => {
+          rec[follow.publicKey] = follow
+        })
+        this.setState({ followsInfo: rec })
+      })
+      .catch(() => {})
+  }
+  componentDidUpdate(prevProps: Props) {
+    const currLen = Object.entries(this.props.follows).length
+    const oldLen = Object.entries(prevProps.follows).length
+    if (currLen !== oldLen) {
+      //TMP
+      const { follows } = this.props
+
+      const pubs = Object.entries(follows).map(
+        ([_, follow]: [string, Follows.Follow]) => {
+          return follow.user
+        },
+      )
+      if (pubs.length === 0) {
+        return
+      }
+      Http.post('/api/gun/userInfo', { pubs })
+        .then(res => {
+          const rec: Record<string, FollowInfo> = {}
+          const { pubInfos }: { pubInfos: FollowInfo[] } = res.data
+          pubInfos.forEach(follow => {
+            rec[follow.publicKey] = follow
+          })
+          this.setState({ followsInfo: rec })
+        })
+        .catch(() => {})
+    }
   }
 
   onEndReached = () => {
@@ -248,22 +311,53 @@ class Feed extends React.Component<Props, State> {
       })
     }
   }*/
-  onPressAvatar = () => {}
+  onPressMyAvatar = () => this.props.navigation.navigate(CREATE_POST_DARK)
+  onPressUserAvatar = (publicKey: string) => () =>
+    this.props.navigation.navigate(Routes.USER, { publicKey })
 
   onPressAllFeeds = () => {
     this.setState({ selectedTab: 'all' })
   }
 
   onPressSavedFeeds = () => {
-    this.setState({ selectedTab: 'saved' })
+    //this.setState({ selectedTab: 'saved' })
   }
 
   onPressVideoFeeds = () => {
-    this.setState({ selectedTab: 'videos' })
+    //this.setState({ selectedTab: 'videos' })
   }
+
+  renderFollow({ item }: ListRenderItemInfo<[() => boolean, FollowInfo]>) {
+    const [onPress, info] = item
+    return (
+      <View style={styles.otherUserContainer}>
+        <ShockAvatar
+          height={63}
+          image={info.avatar || null}
+          onPress={onPress}
+          lastSeenApp={null}
+          avatarStyle={styles.avatarStyle}
+          disableOnlineRing
+        />
+        <Text style={styles.otherUserName}>{info.displayName}</Text>
+      </View>
+    )
+  }
+  prepareFollowsInfo(): [() => boolean, FollowInfo][] {
+    const { followsInfo } = this.state
+    const infos: [() => boolean, FollowInfo][] = []
+    const folArr = Object.values(followsInfo)
+    folArr.forEach(info => {
+      infos.push([this.onPressUserAvatar(info.publicKey), info])
+    })
+
+    return infos
+  }
+
   debouncedOnEndReached = _.debounce(this.onEndReached, 1000)
   render() {
-    const { posts, myFeed } = this.props
+    const { posts, myFeed, avatar } = this.props
+    const { selectedTab } = this.state
     return (
       <SafeAreaView style={styles.container}>
         <StatusBar
@@ -271,7 +365,69 @@ class Feed extends React.Component<Props, State> {
           backgroundColor="transparent"
           barStyle="light-content"
         />
+        <View style={styles.usersContainer}>
+          <TouchableOpacity style={styles.avatarContainer}>
+            <ShockAvatar
+              height={63}
+              image={avatar}
+              onPress={this.onPressMyAvatar}
+              lastSeenApp={Date.now()}
+              avatarStyle={styles.avatarStyle}
+              disableOnlineRing
+            />
+            <AddonIcon size={25} style={styles.avatarAddon} />
+          </TouchableOpacity>
 
+          <FlatList
+            data={this.prepareFollowsInfo()}
+            renderItem={this.renderFollow}
+            horizontal
+          />
+        </View>
+        <View style={styles.tabsContainer}>
+          <TouchableOpacity
+            style={styles.tabButton}
+            onPress={this.onPressAllFeeds}
+          >
+            <Text
+              style={
+                selectedTab === 'all'
+                  ? styles.tabButtonTextSelected
+                  : styles.tabButtonText
+              }
+            >
+              Feed
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.tabButton}
+            onPress={this.onPressSavedFeeds}
+          >
+            <Text
+              style={
+                selectedTab === 'saved'
+                  ? styles.tabButtonTextSelected
+                  : styles.tabButtonText
+              }
+            >
+              Saved
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.tabButton}
+            onPress={this.onPressVideoFeeds}
+          >
+            <Text
+              style={
+                selectedTab === 'videos'
+                  ? styles.tabButtonTextSelected
+                  : styles.tabButtonText
+              }
+            >
+              Videos
+            </Text>
+          </TouchableOpacity>
+        </View>
         <FlatList
           //style={CSS.styles.flex}
           //contentContainerStyle={CSS.styles.flex}
@@ -327,6 +483,7 @@ const mapStateToProps = (state: Reducers.State): StateProps => {
     posts,
     avatar: state.users[state.auth.gunPublicKey].avatar,
     myFeed: state.myFeed,
+    follows: state.follows,
   }
 }
 /*
@@ -426,7 +583,7 @@ const styles = StyleSheet.create({
   tabButtonText: {
     fontFamily: 'Montserrat-700',
     fontSize: 15,
-    color: '#F3EFEF',
+    color: CSS.Colors.GRAY_LIGHT,
   },
   tabButtonTextSelected: {
     fontFamily: 'Montserrat-700',

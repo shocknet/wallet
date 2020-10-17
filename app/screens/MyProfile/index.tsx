@@ -68,7 +68,7 @@ interface OwnProps {
 
 interface StateProps {
   myWall: import('../../../reducers/myWall').State | undefined
-  
+
   headerImage: string | null
   avatar: string | null
 }
