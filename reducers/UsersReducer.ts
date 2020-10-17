@@ -146,6 +146,37 @@ const reducer: Reducer<State, Action> = (
         }
       })
 
+    case 'myFeed/finishedFetchPage':
+      return produce(state, draft => {
+        const { posts } = action.data
+
+        posts.forEach(
+          ({
+            author: {
+              avatar,
+              bio,
+              displayName,
+              header,
+              lastSeenApp,
+              lastSeenNode,
+              publicKey,
+            },
+          }) => {
+            if (!draft[publicKey]) {
+              // @ts-expect-error
+              draft[publicKey] = {}
+            }
+
+            draft[publicKey].avatar = avatar
+            draft[publicKey].bio = bio
+            draft[publicKey].displayName = displayName
+            draft[publicKey].header = header
+            draft[publicKey].lastSeenApp = lastSeenApp
+            draft[publicKey].lastSeenNode = lastSeenNode
+          },
+        )
+      })
+
     default:
       return state
   }
