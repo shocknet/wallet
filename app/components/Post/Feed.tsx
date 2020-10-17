@@ -372,16 +372,17 @@ export default class Post extends React.Component<Props, State> {
 const styles = StyleSheet.create({
   postContainer: {
     width: '100%',
+    padding: 7,
     backgroundColor: '#16191C',
   },
   paragraphBase: {
-    margin: 10,
+    padding: 7,
     color: '#F3EFEF',
   },
   postContainerTop: {
     width: '100%',
     flexDirection: 'row',
-    margin: 15,
+    padding: 7,
   },
   postItemAvatar: {
     width: 48,
