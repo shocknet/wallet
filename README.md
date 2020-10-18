@@ -6,6 +6,7 @@
 [![Chat](https://img.shields.io/badge/chat-on%20Telegram-blue?style=flat-square)](https://t.me/Shockwallet)
 [![Twitter Follow](https://img.shields.io/twitter/follow/ShockBTC?style=flat-square)](https://twitter.com/shockbtc)
 
+![Banner](https://pbs.twimg.com/profile_banners/971667736978972673/1598594052)
 Shockwallet connects to your remote Lightning node, it overlays [graph user nodes](https://gun.eco/) for a decentralized social network.
 
 Running a Shockwallet node requires the [Shock API](https://github.com/shocknet/api) backend, and [LND](https://github.com/lightningnetwork/lnd)
@@ -14,27 +15,25 @@ Running a Shockwallet node requires the [Shock API](https://github.com/shocknet/
 
 
 - [X] Basic LND Channel and Peer Management
-- [X] Fee Control
+- [X] Fee Control from [mempool.space](https://github.com/mempool/mempool) source
 - [X] LNURL-Pay, Withdraw and Channel
-- [X] Social Personas
+- [X] Social Personas, Presence Indication and Feeds
+- [X] E2EEncrypted Chat/Messaging
 - [X] Automatic Seed and Channel Backup
-- [X] E2EEncrypted Chat Messaging
-- [X] Online Presence Indication
-- [X] Sender-Initiated Payments
-- [X] Provider-less Notifications
-- [X] Node-Disconnected Notification Settings
-- [X] LND 10 with Keysend & Multi-Shard Payments
-- [X] Liquidity Pre-Checks
+- [X] Sender-Initiated Payments (Keysend-less)
+- [X] Provider-less Notifications with node monitor (Android only)
+- [X] LND 11 with Keysend & MPP (sharded payments)
+- [X] Invoice liquidity intercept
 - [X] Torrent Content Streaming
 - [X] Torrent Publishing and Seed Service
 - [X] Guest Webclient (prototype)
-- [ ] Advanced Coin Control
+- [ ] Advanced Coin Control and PSBT 
 - [ ] Advanced Channel Management
 - [ ] Automatic Swaps
 - [ ] Portable LNURL-Auth Keyring
 
 
-## [Download Android APK](https://github.com/shocknet/wallet/releases/download/untagged-e06d5aabe676fed3731b/APK-RELEASE.apk)
+## [Download Android APK](https://github.com/shocknet/wallet/releases/download/2020.09.12/app-release.apk)
 
 _Node installer available at [shocknet/Wizard](https://github.com/shocknet/wizard)_
 

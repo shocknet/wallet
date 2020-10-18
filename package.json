@@ -19,7 +19,7 @@
     "build:release:delete-bad-res": "find android/app/src/main/res/drawable-* -type f -not -name 'launch_screen.png' -delete"
   },
   "dependencies": {
-    "@react-native-community/async-storage": "^1.8.1",
+    "@react-native-community/async-storage": "^1.12.1",
     "@react-native-community/masked-view": "^0.1.10",
     "@react-native-community/netinfo": "2.x.x",
     "@tradle/react-native-http": "^2.0.0",
