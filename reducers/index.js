@@ -1,6 +1,5 @@
 import * as Common from 'shock-common'
 
-import AuthReducer from './AuthReducer'
 import HistoryReducer from './HistoryReducer'
 import WalletReducer from './WalletReducer'
 import NodeReducer from './NodeReducer'
@@ -16,9 +15,16 @@ import SettingsReducer from './SettingsReducer'
 import paymentsV2s from './paymentV2s'
 import tips from './tips'
 import decodedInvoices from './decoded-invoices'
+import mediaLib from './mediaLib'
+import myWall from './myWall'
+import myFeed from './myFeed'
+import auth from './auth'
+import invoicesListed from './invoices-listed'
+import invoicesAdded from './invoices-added'
+import chainTXs from './chain-txs'
 
 const rootReducer = {
-  auth: AuthReducer,
+  auth,
   history: HistoryReducer,
   wallet: WalletReducer,
   node: NodeReducer,
@@ -36,6 +42,12 @@ const rootReducer = {
   paymentsV2s,
   tips,
   decodedInvoices,
+  mediaLib,
+  myWall,
+  myFeed,
+  invoicesListed,
+  invoicesAdded,
+  chainTXs,
 }
 
 /**

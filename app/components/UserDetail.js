@@ -91,8 +91,9 @@ export default class UserDetail extends React.Component {
 }
 
 const nameTextStyle = {
-  color: CSS.Colors.TEXT_STANDARD,
+  color: CSS.Colors.DARK_MODE_TEXT_NEAR_WHITE,
   fontSize: 16,
+  fontFamily: 'Montserrat-700',
 }
 
 /**
@@ -130,7 +131,6 @@ const styles = StyleSheet.create({
 
   nameBold: {
     ...nameTextStyle,
-    color: CSS.Colors.TEXT_STANDARD,
     fontWeight: 'bold',
   },
 

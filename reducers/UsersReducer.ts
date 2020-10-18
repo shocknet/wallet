@@ -15,15 +15,6 @@ const INITIAL_STATE = {
   myPublicKey: '',
 } as State
 
-const createEmptyUser = (publicKey: string): Schema.User => ({
-  avatar: null,
-  bio: null,
-  displayName: null,
-  lastSeenApp: 0,
-  lastSeenNode: 0,
-  publicKey,
-})
-
 const reducer: Reducer<State, Action> = (
   state = INITIAL_STATE,
   action: Action,
@@ -35,7 +26,7 @@ const reducer: Reducer<State, Action> = (
           const { publicKey: pk } = partialUser
 
           draft[pk] = {
-            ...createEmptyUser(pk),
+            ...Schema.createEmptyUser(pk),
             ...(draft[pk] || {}),
             ...partialUser,
           }
@@ -48,7 +39,7 @@ const reducer: Reducer<State, Action> = (
           const { recipientPublicKey: pk } = chat
 
           draft[pk] = {
-            ...createEmptyUser(pk),
+            ...Schema.createEmptyUser(pk),
             ...(draft[pk] || {}),
             avatar: chat.recipientAvatar,
             displayName: chat.recipientDisplayName,
@@ -63,7 +54,7 @@ const reducer: Reducer<State, Action> = (
           const { pk } = receivedRequest
 
           draft[pk] = {
-            ...createEmptyUser(pk),
+            ...Schema.createEmptyUser(pk),
             ...(draft[pk] || {}),
             avatar: receivedRequest.avatar,
             displayName: receivedRequest.displayName,
@@ -77,7 +68,7 @@ const reducer: Reducer<State, Action> = (
           const { pk } = sentRequest
 
           draft[pk] = {
-            ...createEmptyUser(pk),
+            ...Schema.createEmptyUser(pk),
             ...(draft[pk] || {}),
             avatar: sentRequest.avatar,
             displayName: sentRequest.displayName,
@@ -94,7 +85,7 @@ const reducer: Reducer<State, Action> = (
 
         users.forEach(u => {
           draft[u.publicKey] = {
-            ...createEmptyUser(u.publicKey),
+            ...Schema.createEmptyUser(u.publicKey),
             ...(draft[u.publicKey] || {}),
             ...u,
           }
@@ -123,7 +114,7 @@ const reducer: Reducer<State, Action> = (
         }
 
         if (!draft[publicKey]) {
-          draft[publicKey] = createEmptyUser(publicKey)
+          draft[publicKey] = Schema.createEmptyUser(publicKey)
         }
 
         Object.assign(draft[publicKey], action.data)
@@ -138,11 +129,20 @@ const reducer: Reducer<State, Action> = (
 
         users.forEach(u => {
           draft[u.publicKey] = {
-            ...createEmptyUser(u.publicKey),
+            ...Schema.createEmptyUser(u.publicKey),
             ...(draft[u.publicKey] || {}),
             ...u,
           }
         })
+      })
+
+    case 'authed':
+      return produce(state, draft => {
+        const { gunPublicKey } = action.data
+        draft.myPublicKey = gunPublicKey
+        if (!draft[gunPublicKey]) {
+          draft[gunPublicKey] = Schema.createEmptyUser(gunPublicKey)
+        }
       })
 
     default:
@@ -162,7 +162,7 @@ export const selectUser = (
 ): Schema.User => {
   const user = users[publicKey]
 
-  return user || createEmptyUser(publicKey)
+  return user || Schema.createEmptyUser(publicKey)
 }
 
 export default reducer

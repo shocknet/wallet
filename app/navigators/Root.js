@@ -2,12 +2,11 @@
  * @prettier
  */
 
-import {
-  createBottomTabNavigator,
-  createStackNavigator,
-  createSwitchNavigator,
-  createDrawerNavigator,
-} from 'react-navigation'
+import { Dimensions } from 'react-native'
+import { createSwitchNavigator, createAppContainer } from 'react-navigation'
+import { createDrawerNavigator } from 'react-navigation-drawer'
+import { createStackNavigator } from 'react-navigation-stack'
+import { createBottomTabNavigator } from 'react-navigation-tabs'
 import * as CSS from '../res/css'
 
 import Chat, { CHAT_ROUTE } from '../screens/Chat'
@@ -39,26 +38,11 @@ import SendScreen, { SEND_SCREEN } from '../screens/Send'
 import ReceiveScreen, { RECEIVE_SCREEN } from '../screens/Receive'
 import Debug, { DEBUG } from '../screens/Debug'
 import UserScreen from '../screens/User'
-
-import * as Routes from '../routes'
+import NodeInfo, { NODE_INFO } from '../screens/node-info'
 import LNURL, { LNURL_SCREEN } from '../screens/LNURL'
+import * as Routes from '../routes'
 
 import CustomDrawer from '../components/CustomDrawer'
-//@ts-ignore
-import IconDrawerProfile from '../assets/images/drawer-icons/icon-drawer-profile.svg'
-//@ts-ignore
-import IconDrawerWalletSettings from '../assets/images/drawer-icons/icon-drawer-wallet.svg'
-//@ts-ignore
-import IconDrawerSpendingRules from '../assets/images/drawer-icons/icon-drawer-spending-rule.svg'
-//@ts-ignore
-import IconDrawerAdvancedLightning from '../assets/images/drawer-icons/icon-drawer-advanced-lightning.svg'
-//@ts-ignore
-import IconDrawerHelp from '../assets/images/drawer-icons/icon-drawer-help.svg'
-//@ts-ignore
-import IconDrawerScan from '../assets/images/drawer-icons/icon-drawer-scan.svg'
-//@ts-ignore
-import IconDrawerPower from '../assets/images/drawer-icons/icon-drawer-power.svg'
-// import IconDrawerHome from '../assets/images/drawer-icons/icon-drawer-help.svg'
 
 export const APP = 'APP'
 export const BOTTOM_NAV = 'BOTTOM_NAV'
@@ -105,14 +89,15 @@ const WalletNav = createStackNavigator(
   },
   {
     initialRouteName: BOTTOM_NAV,
-    navigationOptions: {
-      header: null,
+    defaultNavigationOptions: {
+      header: () => null,
+      headerTitleAlign: 'center',
     },
   },
 )
 
 BottomNav.navigationOptions = {
-  header: null,
+  header: () => null,
   // drawerIcon: () => {
   //   return <IconDrawerHome />
   // },
@@ -121,8 +106,13 @@ BottomNav.navigationOptions = {
 const MAIN_DRAWER = 'MAIN_DRAWER'
 const theme = 'dark'
 
-/** @type {import('react-navigation').NavigationRouteConfigMap} */
+/** @typedef {import('react-navigation-drawer').NavigationDrawerOptions} NavigationDrawerOptions */
+/** @typedef {import('react-navigation').NavigationParams} NavigationParams */
+/** @typedef {import('react-navigation').NavigationRoute<NavigationParams>} NavigationRoute */
+/** @typedef {import('react-navigation-drawer').NavigationDrawerProp<NavigationRoute, any>} NavigationDrawerProp */
+/** @typedef {import('react-navigation').NavigationRouteConfigMap<NavigationDrawerOptions, NavigationDrawerProp, unknown>} NavigationRouteConfigMap */
 
+/** @type {NavigationRouteConfigMap} */
 const drawerScreens = {
   [WALLET_NAV]: {
     screen: WalletNav,
@@ -198,7 +188,7 @@ if (theme === 'dark') {
   delete drawerScreens[ADD_POST_TO_FEED]
   //delete drawerScreens[CREATE_POST]
   //delete drawerScreens[LNURL_SCREEN]
-  delete drawerScreens[PUBLISH_CONTENT_DARK]
+  //delete drawerScreens[PUBLISH_CONTENT_DARK]
 }
 //
 // const drawerScreens = {
@@ -273,10 +263,14 @@ if (__DEV__) {
   }
 }
 
+const EDGE_WIDTH = Dimensions.get('screen').width
+
 const MainDrawer = createDrawerNavigator(drawerScreens, {
   initialRouteName: WALLET_NAV,
   drawerPosition: 'right',
   contentComponent: CustomDrawer,
+  edgeWidth: EDGE_WIDTH,
+  drawerBackgroundColor: 'transparent',
   contentOptions: {
     labelStyle: {
       textAlign: 'right',
@@ -285,7 +279,7 @@ const MainDrawer = createDrawerNavigator(drawerScreens, {
 })
 
 MainDrawer.navigationOptions = {
-  header: null,
+  headerShown: false,
 }
 
 const App = createStackNavigator(
@@ -293,9 +287,9 @@ const App = createStackNavigator(
     [ADVANCED_SCREEN]: Advanced,
     [CHAT_ROUTE]: Chat,
     [MAIN_DRAWER]: MainDrawer,
+    [NODE_INFO]: NodeInfo,
   },
   {
-    headerLayoutPreset: 'center',
     initialRouteName: MAIN_DRAWER,
   },
 )
@@ -324,4 +318,4 @@ const MainSwitch = createSwitchNavigator(
   },
 )
 
-export default MainSwitch
+export default createAppContainer(MainSwitch)

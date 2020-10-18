@@ -8,11 +8,12 @@ import {
   ToastAndroid,
 } from 'react-native'
 import Http from 'axios'
-import { onSeedBackup, currentSeedBackup } from '../services/contact-api/events'
+import Ionicons from 'react-native-vector-icons/Ionicons'
+
 import { nodeInfo } from '../services/wallet'
 import * as CSS from '../res/css'
 import Pad from '../components/Pad'
-import Ionicons from 'react-native-vector-icons/Ionicons'
+import { getStore } from '../../store'
 /**
  * @typedef {import('../services/wallet').NodeInfo} NodeInfo
  */
@@ -27,13 +28,13 @@ export const SEED_BACKUP = 'SEED_BACKUP'
  */
 
 /**
- * @augments React.Component<{}, State>
+ * @augments React.PureComponent<{}, State>
  */
-export default class SeedBackup extends React.Component {
+export default class SeedBackup extends React.PureComponent {
   /** @type {State} */
   state = {
     nodeInfo: null,
-    seedBackup: currentSeedBackup,
+    seedBackup: null,
     chansBackup: null,
   }
 
@@ -56,28 +57,28 @@ export default class SeedBackup extends React.Component {
     }).join('')
   }
 
-  fetchBackup = async () => {
-    const { data } = await Http.get(`/api/gun/lndchanbackups`)
-    const obj = JSON.parse(data.data)
-    const bytes = obj.multi_chan_backup.multi_chan_backup.data
-    const backup = this.toHexString(bytes)
-    this.setState({ chansBackup: backup })
-  }
-
   componentDidMount() {
-    this.fetchBackup()
     this.mounted = true
+
+    const { gunPublicKey } = getStore().getState().auth
+    Http.get(`/api/gun/user/once/seedBackup`, {
+      headers: {
+        'public-key-for-decryption': gunPublicKey,
+      },
+    }).then(({ data: { data: seedBackup } }) => {
+      this.mounted &&
+        this.setState({
+          seedBackup,
+        })
+    })
+
     nodeInfo().then(nodeInfo => {
       this.mounted && this.setState({ nodeInfo })
     })
-    this.unsub = onSeedBackup(
-      seedBackup => this.mounted && this.setState({ seedBackup }),
-    )
   }
 
   componentWillUnmount() {
     this.mounted = false
-    this.unsub && this.unsub()
   }
 
   render() {
@@ -114,11 +115,9 @@ export default class SeedBackup extends React.Component {
             onPress={this.copyPubToClipboard}
           />
         )}
-        {!chansBackup && (
-          <Text style={CSS.styles.fontMontserrat}>
-            Channels backup not available on this node
-          </Text>
-        )}
+        <Text style={CSS.styles.fontMontserrat}>
+          Channels backup not available on this node
+        </Text>
       </View>
     )
   }

@@ -1,8 +1,6 @@
 /* eslint-disable  */
 import React from 'react'
 import {
-  Animated,
-  Easing,
   ImageBackground,
   StatusBar,
   StyleSheet,
@@ -224,20 +222,17 @@ export const linkTextStyle = [
 ]
 
 /**
- * @type {import('react-navigation').StackNavigatorConfig}
+ * @type {import('react-navigation-stack').NavigationStackOptions}
  */
 export const stackNavConfigMixin = {
-  headerLayoutPreset: 'center',
+  header: () => null,
 
-  navigationOptions: {
-    header: null,
-  },
-
-  transitionConfig: () => ({
-    transitionSpec: {
-      duration: 0,
-      timing: Animated.timing,
-      easing: Easing.step0,
-    },
-  }),
+  // Deprecated in react-navigation v4
+  // transitionConfig: () => ({
+  //   transitionSpec: {
+  //     duration: 0,
+  //     timing: Animated.timing,
+  //     easing: Easing.step0,
+  //   },
+  // }),
 }

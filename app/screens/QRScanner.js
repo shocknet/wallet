@@ -32,7 +32,7 @@ import * as CSS from '../res/css'
  */
 export default class QRScanner extends React.Component {
   static navigationOptions = {
-    header: null,
+    headerShown: false,
   }
 
   onBackBtn = () => {
@@ -101,75 +101,7 @@ export default class QRScanner extends React.Component {
   render() {
     const { type = 'nodeIP' } = this.props
     const content = this.getPromptText(type)
-    const theme = 'dark'
-    if (theme === 'dark') {
-      return (
-        <View style={styles.container}>
-          <View style={styles.toolbar}>
-            <LinearGradient
-              start={GRADIENT_ZERO_ZERO}
-              end={GRADIENT_ZERO_POINT_NINE}
-              colors={GRADIENT_COLORS}
-              style={styles.topSection}
-            />
-            <LinearGradient
-              start={GRADIENT_ZERO_ZERO}
-              end={GRADIENT_ZERO_POINT_NINE}
-              colors={GRADIENT_COLORS}
-              style={styles.topSection}
-            />
-            <TouchableOpacity
-              onPress={this.props.toggleQRScreen}
-              style={[styles.topSection, styles.topSectionTextContainer]}
-            >
-              <Ionicons
-                name="md-close"
-                color="white"
-                size={30}
-                style={styles.topSectionBtn}
-              />
-            </TouchableOpacity>
-          </View>
 
-          <View style={styles.targetSquare} />
-
-          <QRCodeScanner
-            onRead={this.onQRRead}
-            cameraProps={CAMERA_PROPS}
-            cameraStyle={styles.cameraStyle}
-          />
-
-          <View style={styles.explanation}>
-            <LinearGradient
-              start={GRADIENT_ZERO_POINT_NINE}
-              end={GRADIENT_ZERO_ZERO}
-              colors={GRADIENT_COLORS}
-              style={styles.bottomSection}
-            />
-            <LinearGradient
-              start={GRADIENT_ZERO_POINT_NINE}
-              end={GRADIENT_ZERO_ZERO}
-              colors={GRADIENT_COLORS}
-              style={styles.bottomSection}
-            />
-            <View
-              style={[styles.bottomSection, styles.bottomSectionTextContainer]}
-            >
-              <Text style={styles.bottomSectionTextHead}>{content.title}</Text>
-              <Text style={styles.bottomSectionTextDescription}>
-                {content.description}
-              </Text>
-              <TouchableOpacity
-                onPress={this.props.toggleQRScreen}
-                style={styles.bottomSectionCancelBtn}
-              >
-                <Text style={styles.bottomSectionCancelBtnText}>Cancel</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      )
-    }
     return (
       <View style={styles.container}>
         <View style={styles.toolbar}>

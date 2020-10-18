@@ -3,11 +3,11 @@
  */
 import React from 'react'
 import { StyleSheet, Text, TextInput, View, ToastAndroid } from 'react-native'
+import { connect } from 'react-redux'
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation
  */
 
-import * as API from '../services/contact-api'
 import * as Cache from '../services/cache'
 import * as Auth from '../services/auth'
 import * as CSS from '../res/css'
@@ -24,6 +24,7 @@ import { WALLET_MANAGER } from '../navigators/WalletManager'
 import Pad from '../components/Pad'
 import OnboardingInput from '../components/OnboardingInput'
 import OnboardingBtn from '../components/OnboardingBtn'
+import * as Actions from '../actions'
 
 export const LOGIN = 'LOGIN'
 
@@ -34,6 +35,7 @@ const shockBG = require('../assets/images/shock-bg.png')
 /**
  * @typedef {object} Props
  * @prop {Navigation} navigation
+ * @prop {import('redux').Dispatch} dispatch
  */
 
 /**
@@ -50,12 +52,12 @@ const shockBG = require('../assets/images/shock-bg.png')
 /**
  * @augments React.Component<Props, State>
  */
-export default class Login extends React.Component {
+export class Login extends React.Component {
   /**
-   * @type {import('react-navigation').NavigationScreenOptions}
+   * @type {import('react-navigation-stack').NavigationStackOptions}
    */
   static navigationOptions = {
-    header: null,
+    header: () => null,
   }
 
   /** @type {State} */
@@ -208,7 +210,14 @@ export default class Login extends React.Component {
               token: res.token,
             })
 
-            return API.Socket.connect()
+            this.props.dispatch(Actions.Follows.receivedFollows(res.follows))
+            this.props.dispatch(
+              Actions.authed({
+                alias: aliasToUse,
+                gunPublicKey: res.publicKey,
+                token: res.token,
+              }),
+            )
           })
           .then(() => {
             this.setState({
@@ -318,3 +327,5 @@ const xStyles = {
   createAliasText: [styles.textInputFieldLabel, CSS.styles.textAlignCenter],
   changeText: [CSS.styles.textUnderlined, styles.textInputFieldLabel],
 }
+
+export default connect()(Login)

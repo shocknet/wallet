@@ -3,30 +3,11 @@
  */
 
 import Logger from 'react-native-file-log'
-import { Constants, Schema } from 'shock-common'
+import { Schema } from 'shock-common'
 import Http from 'axios'
 import { ToastAndroid } from 'react-native'
 
-import * as Cache from '../../services/cache'
-
 import * as Events from './events'
-import { socket } from './socket'
-
-const { Action } = Constants
-
-/**
- * @throws {Error} If no data is cached.
- * @returns {Promise<string>}
- */
-const getToken = async () => {
-  const authData = await Cache.getStoredAuthData()
-
-  if (authData === null) {
-    throw new Error('Subscribed to event without having auth data cached.')
-  }
-
-  return authData.authData.token
-}
 
 /**
  * @param {string} requestID
@@ -47,15 +28,7 @@ export const acceptRequest = async requestID => {
  * @returns {Promise<void>}
  */
 export const generateNewHandshakeNode = () => {
-  return getToken().then(token => {
-    if (!socket || !(socket && socket.connected)) {
-      throw new Error('NOT_CONNECTED')
-    }
-
-    socket.emit(Action.GENERATE_NEW_HANDSHAKE_NODE, {
-      token,
-    })
-  })
+  throw new Error('generateNewHandshakeNode() pending new impl')
 }
 
 /**

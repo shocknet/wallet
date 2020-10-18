@@ -1,27 +1,75 @@
 import React, { Component } from 'react'
-import { DrawerItems } from 'react-navigation'
-import { View, StyleSheet, TouchableOpacity, ScrollView } from 'react-native'
+import {
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  Text,
+} from 'react-native'
+import { DrawerActions } from 'react-navigation-drawer'
 import { LNURL_SCREEN } from '../screens/LNURL'
+import Pad from './Pad'
 // import ShockAvatar from './ShockAvatar'
+import { ADVANCED_SCREEN } from '../screens/Advanced'
+import { SEED_BACKUP } from '../screens/SeedBackup'
+import { WALLET_SETTINGS } from '../screens/WalletSettings'
 
-//@ts-ignore
-import IconDrawerScan from '../assets/images/drawer-icons/icon-drawer-scan.svg'
-//@ts-ignore
-import IconDrawerPower from '../assets/images/drawer-icons/icon-drawer-power.svg'
-import ShockAvatar from './ShockAvatar'
-import * as ContactAPI from '../services/contact-api'
+import { Colors } from '../res/css'
+import ShockIcon from '../res/icons'
+
+// import * as ContactAPI from '../services/contact-api'
 
 /**
- * @typedef {import('react-navigation').DrawerItemsProps} DrawerItemsProps
+ * @typedef {object} DrawerItem
+ * @prop {string} name
+ * @prop {string} iconName
+ * @prop {(string)=} screen
+ */
+
+/** @type {DrawerItem[]} */
+const drawerTopItems = [
+  {
+    name: 'Wallet Settings',
+    iconName: 'solid-wallet',
+    screen: WALLET_SETTINGS,
+  },
+  {
+    name: 'Spending Rules',
+    iconName: 'solid-spending-rule',
+    screen: WALLET_SETTINGS,
+  },
+  {
+    name: 'Advanced Lightning',
+    iconName: 'solid-lightning',
+    screen: ADVANCED_SCREEN,
+  },
+  {
+    name: 'Seed Backup',
+    iconName: 'solid-help',
+    screen: SEED_BACKUP,
+  },
+]
+
+/** @type {DrawerItem[]} */
+const drawerBottomItems = [
+  {
+    name: 'Help Resources',
+    iconName: 'solid-help',
+  },
+  {
+    name: 'Buy Bitcoins',
+    iconName: 'solid-help',
+  },
+]
+
+/**
+ * @typedef {import('react-navigation-drawer').DrawerContentComponentProps} DrawerContentComponentProps
  */
 /**
- * @extends Component<DrawerItemsProps>
+ * @extends Component<DrawerContentComponentProps>
  */
+
 export default class CustomDrawer extends Component {
-  state = {
-    avatar: ContactAPI.Events.getAvatar(),
-  }
-
   moveToQr = () => {
     this.props.navigation.navigate(LNURL_SCREEN, { qrRequest: true })
   }
@@ -30,13 +78,46 @@ export default class CustomDrawer extends Component {
     this.props.navigation.navigate(LNURL_SCREEN, { clipboardRequest: true })
   }
 
-  render() {
-    const { avatar } = this.state
+  /**
+   * @argument {(string)=} screenName
+   * @returns {() => void}
+   */
+  navigateScreen = screenName => () => {
+    const { navigation } = this.props
 
+    if (!screenName) {
+      return
+    }
+
+    navigation.navigate(screenName)
+    navigation.dispatch(DrawerActions.closeDrawer())
+  }
+
+  /** @argument {DrawerItem[]} items */
+  renderDrawerItems = (items = []) => {
+    return items.map(({ name, iconName, screen }) => (
+      <TouchableOpacity
+        style={[
+          styles.drawerItemContainer,
+          !screen ? styles.drawerItemDisabled : null,
+        ]}
+        key={name}
+        disabled={!screen}
+        onPress={this.navigateScreen(screen)}
+      >
+        <Text style={styles.drawerItemTitle}>{name}</Text>
+        <View style={styles.drawerItemIcon}>
+          <ShockIcon name={iconName} size={18} color={Colors.BUTTON_BLUE} />
+        </View>
+      </TouchableOpacity>
+    ))
+  }
+
+  render() {
     return (
       // <View style={styles.flexBetween}>
       <View style={styles.flexBetweenDark}>
-        <View style={styles.customDrawerContainer}>
+        {/* <View style={styles.customDrawerContainer}>
           <TouchableOpacity>
             <ShockAvatar
               height={40}
@@ -46,40 +127,34 @@ export default class CustomDrawer extends Component {
               lastSeenApp={null}
             />
           </TouchableOpacity>
-        </View>
+        </View> */}
+        <Pad amount={50} />
 
         <ScrollView style={styles.customDrawerScrollView}>
-          <DrawerItems
-            {...this.props}
-            labelStyle={styles.drawItemLabelDark}
-            itemsContainerStyle={styles.drawerItemContainer}
-            itemStyle={styles.drawerItem}
-          />
+          {this.renderDrawerItems(drawerTopItems)}
         </ScrollView>
+        <View style={styles.pinnedDrawerItems}>
+          {this.renderDrawerItems(drawerBottomItems)}
+        </View>
         <View style={styles.extraBitDark}>
           <View style={styles.extraBitDarkView}>
             <TouchableOpacity onPress={this.moveToQr}>
-              <IconDrawerScan />
+              <ShockIcon
+                name="solid-scan"
+                color={Colors.BUTTON_BLUE}
+                size={20}
+              />
             </TouchableOpacity>
           </View>
           <View style={styles.extraBitDarViewFlexEnd}>
             <TouchableOpacity onPress={this.moveToClip}>
-              <IconDrawerPower />
+              <ShockIcon
+                name="solid-power"
+                color={Colors.BUTTON_BLUE}
+                size={20}
+              />
             </TouchableOpacity>
           </View>
-
-          {/*<AntDesign*/}
-          {/*  name="qrcode"*/}
-          {/*  size={25}*/}
-          {/*  style={styles.icon}*/}
-          {/*  onPress={this.moveToQr}*/}
-          {/*/>*/}
-          {/*<AntDesign*/}
-          {/*  name="copy1"*/}
-          {/*  size={25}*/}
-          {/*  style={styles.icon}*/}
-          {/*  onPress={this.moveToClip}*/}
-          {/*/>*/}
         </View>
       </View>
     )
@@ -93,15 +168,7 @@ const styles = StyleSheet.create({
   //   justifyContent: 'space-between',
   //   height: '100%',
   // },
-  drawItemLabelDark: {
-    color: '#ffffff',
-    textAlign: 'right',
-    fontFamily: 'Montserrat-700',
-    fontSize: 15,
-  },
   flexBetweenDark: {
-    display: 'flex',
-    flexDirection: 'column',
     justifyContent: 'space-between',
     height: '100%',
     backgroundColor: '#16191c',
@@ -125,26 +192,36 @@ const styles = StyleSheet.create({
   // icon: {
   //   margin: 5,
   // },
-  avatarStyle: {
-    borderRadius: 20,
-    width: 40,
-    height: 40,
+  customDrawerScrollView: { flex: 1, paddingRight: 20 },
+  drawerItemDisabled: {
+    opacity: 0.5,
   },
-  customDrawerContainer: {
-    alignItems: 'flex-end',
-    marginTop: 60,
-    marginBottom: 40,
-    paddingRight: 50,
-  },
-  customDrawerScrollView: { flex: 1, paddingRight: 30 },
   drawerItemContainer: {
-    alignItems: 'flex-end',
-    justifyContent: 'center',
-  },
-  drawerItem: {
-    flexDirection: 'row-reverse',
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-end',
+    paddingVertical: 10,
+    paddingHorizontal: 0,
+    width: '100%',
+  },
+  drawerItemTitle: {
+    fontSize: 14,
+    color: Colors.TEXT_WHITE,
+    fontFamily: 'Montserrat-600',
+    opacity: 0.8,
+  },
+  pinnedDrawerItems: {
+    flexShrink: 0,
+    borderTopColor: Colors.BORDER_WHITE,
+    borderTopWidth: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+  },
+  drawerItemIcon: {
+    width: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 15,
   },
   extraBitDarkView: { flex: 1, alignItems: 'flex-start' },
   extraBitDarViewFlexEnd: { flex: 1, alignItems: 'flex-end' },

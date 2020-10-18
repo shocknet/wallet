@@ -17,7 +17,11 @@ import Http from 'axios'
 import * as R from 'ramda'
 import Logger from 'react-native-file-log'
 
-import { NavigationScreenProp, NavigationScreenOptions } from 'react-navigation'
+import { SafeAreaView } from 'react-navigation'
+import {
+  NavigationStackOptions,
+  NavigationStackScreenProps,
+} from 'react-navigation-stack'
 
 import { SET_LAST_SEEN_APP_INTERVAL } from '../../services/utils'
 import * as CSS from '../../res/css'
@@ -26,21 +30,18 @@ import QR from '../WalletOverview/QR'
 import Pad from '../../components/Pad'
 import * as Reducers from '../../../reducers'
 import * as Routes from '../../routes'
-import { SafeAreaView } from 'react-navigation'
 import FollowBtn from '../../components/FollowBtn'
-import Post from '../../components/Post'
+import Post from '../../components/Post/Wall'
 import TipBtn from '../../components/TipBtn'
 
 type UserType = Common.Schema.User
-type Navigation = NavigationScreenProp<{}, Routes.UserParams>
+type Navigation = NavigationStackScreenProps<Routes.UserParams, {}>
 
 interface ConnectedProps {
   users: UserType[]
 }
 
-export interface Props extends ConnectedProps {
-  navigation: Navigation
-}
+type Props = ConnectedProps & Navigation
 
 interface State {
   posts: Common.Schema.Post[]
@@ -59,7 +60,7 @@ interface Sentinel {
 type Item = Sentinel | Common.Schema.Post
 
 class User extends React.Component<Props, State> {
-  static navigationOptions: NavigationScreenOptions = {
+  static navigationOptions: NavigationStackOptions = {
     header: undefined,
     headerStyle: {
       elevation: 0,
@@ -80,7 +81,9 @@ class User extends React.Component<Props, State> {
   }
 
   fetchNextPage = async () => {
+    // getParam is deprecated
     const publicKey = this.props.navigation.getParam('publicKey')
+
     if (!publicKey) {
       return
     }
@@ -95,7 +98,7 @@ class User extends React.Component<Props, State> {
       )
 
       if (res.status !== 200) {
-        throw new Error(`Not 200`)
+        throw new Error(`Not 200: ${JSON.stringify(res.data)}`)
       }
       this.setState(({ posts, lastPageFetched }) => {
         const { posts: postsRecord } = res.data
@@ -161,15 +164,11 @@ class User extends React.Component<Props, State> {
     // TODO fix this
     return (
       this.props.users.find(
-        u => u.publicKey === this.props.navigation.getParam('publicKey'),
-      ) || {
-        avatar: null,
-        bio: null,
-        displayName: null,
-        lastSeenApp: 0,
-        lastSeenNode: 0,
-        publicKey: this.props.navigation.getParam('publicKey'),
-      }
+        u => u.publicKey === this.props.navigation.getParam('publicKey', ''),
+      ) ||
+      Common.Schema.createEmptyUser(
+        this.props.navigation.getParam('publicKey', ''),
+      )
     )
   }
 
@@ -177,11 +176,23 @@ class User extends React.Component<Props, State> {
     if (Common.Schema.isPost(item)) {
       const imageCIEntries = Object.entries(item.contentItems).filter(
         ([_, ci]) => ci.type === 'image/embedded',
-      ) as [string, Common.Schema.EmbeddedImage][]
+      ) as [
+        string,
+        Common.Schema.EmbeddedImage & {
+          isPreview: boolean
+          isPrivate: boolean
+        },
+      ][]
 
       const videoCIEntries = Object.entries(item.contentItems).filter(
         ([_, ci]) => ci.type === 'video/embedded',
-      ) as [string, Common.Schema.EmbeddedVideo][]
+      ) as [
+        string,
+        Common.Schema.EmbeddedVideo & {
+          isPreview: boolean
+          isPrivate: boolean
+        },
+      ][]
 
       const paragraphCIEntries = Object.entries(item.contentItems).filter(
         ([_, ci]) => ci.type === 'text/paragraph',
@@ -190,15 +201,19 @@ class User extends React.Component<Props, State> {
       const images = imageCIEntries.map(([key, imageCI]) => ({
         id: key,
         data: imageCI.magnetURI,
-        width:Number(imageCI.width),
-        height:Number(imageCI.height)
+        width: Number(imageCI.width),
+        height: Number(imageCI.height),
+        isPreview: imageCI.isPreview,
+        isPrivate: imageCI.isPrivate,
       }))
-      
+
       const videos = videoCIEntries.map(([key, videoCI]) => ({
         id: key,
         data: videoCI.magnetURI,
-        width:Number(videoCI.width),
-        height:Number(videoCI.height)
+        width: Number(videoCI.width),
+        height: Number(videoCI.height),
+        isPreview: videoCI.isPreview,
+        isPrivate: videoCI.isPrivate,
       }))
 
       const paragraphhs = paragraphCIEntries.map(([key, paragraphCI]) => ({
@@ -214,6 +229,14 @@ class User extends React.Component<Props, State> {
           videos={videos}
           paragraphs={paragraphhs}
           parentScrollViewRef={undefined}
+          deletePost={() => {}}
+          postId={item.id}
+          //@ts-ignore
+          postPage={item.page ? item.page : '0'}
+          //@ts-ignore
+          tipCounter={item.tipCounter ? item.tipCounter : 0}
+          //@ts-ignore
+          tipValue={item.tipValue ? item.tipValue : 0}
         />
       )
     }

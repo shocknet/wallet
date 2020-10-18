@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 /**
  * @prettier
  */
@@ -14,6 +13,7 @@ import InAppBrowser from 'react-native-inappbrowser-reborn'
 import * as CSS from '../res/css'
 import * as Cache from '../services/cache'
 import * as Conn from '../services/connection'
+import { isValidURL as isValidIP } from '../services/utils'
 import Pad from '../components/Pad'
 import QRScanner from './QRScanner'
 import { WALLET_MANAGER } from '../navigators/WalletManager'
@@ -22,14 +22,15 @@ import OnboardingScreen, {
   titleTextStyle,
   linkTextStyle,
 } from '../components/OnboardingScreen'
+import OnboardingInput from '../components/OnboardingInput'
+import OnboardingBtn from '../components/OnboardingBtn'
 import { throttledExchangeKeyPair } from '../actions/ConnectionActions'
-import InvitationLogin from '../components/InvitationLogin'
-
 /** @type {number} */
 // @ts-ignore
 const shockBG = require('../assets/images/shock-bg.png')
 
 export const CONNECT_TO_NODE = 'CONNECT_TO_NODE'
+const HOSTING_SERVER = '167.88.11.204:8080'
 
 /**
  * @typedef {object} Params
@@ -77,10 +78,10 @@ const DEFAULT_STATE = {
  */
 class ConnectToNode extends React.Component {
   /**
-   * @type {import('react-navigation').NavigationScreenOptions}
+   * @type {import('react-navigation-stack').NavigationStackOptions}
    */
   static navigationOptions = {
-    header: null,
+    header: () => null,
   }
 
   theme = 'dark'
@@ -131,6 +132,73 @@ class ConnectToNode extends React.Component {
         checkingCacheForNodeURL: false,
       })
     }
+  }
+
+  /**
+   * @private
+   * @param {string} invitationCode
+   */
+  onChangeInvitationCode = invitationCode => {
+    this.setState({
+      invitationCode,
+    })
+  }
+
+  /** @private */
+  onPressConnectViaInvite = async () => {
+    const { invitationCode, externalURL } = this.state
+    try {
+      Logger.log('requesting with', invitationCode)
+      const resp = await fetch(`http://${HOSTING_SERVER}/mainnet`, {
+        headers: {
+          Accept: 'application/json',
+          Authorization: invitationCode,
+        },
+      })
+      Logger.log(resp)
+      this.setState({ nodeURL: (await resp.json()).data.address })
+    } catch (error) {
+      Logger.log(error)
+    }
+
+    setTimeout(() => {
+      this.mounted &&
+        this.setState(
+          {
+            pinging: true,
+          },
+          async () => {
+            try {
+              Logger.log('received response', this.state.nodeURL)
+              await this.connectURL(this.state.nodeURL)
+            } catch (err) {
+              try {
+                Logger.log(
+                  'CONNECTURL FAILED, TRYING ONCE MORE TIME, ERR: ' +
+                    err.message,
+                )
+                await this.connectURL(externalURL)
+              } catch (err) {
+                this.mounted &&
+                  this.setState({
+                    pinging: false,
+                    wasBadPing: true,
+                  })
+              }
+            }
+          },
+        )
+    }, 5000)
+  }
+
+  /**
+   * @private
+   * @param {string} nodeURL
+   */
+  onChangeNodeURL = nodeURL => {
+    this.setState({
+      nodeURL,
+    })
   }
 
   connectURL = async (url = '') => {
@@ -236,12 +304,20 @@ class ConnectToNode extends React.Component {
     }
   }
 
+  toggleInvitation = () => {
+    this.setState(({ isUsingInvitation }) => ({
+      isUsingInvitation: !isUsingInvitation,
+    }))
+  }
+
   render() {
     const {
       checkingCacheForNodeURL,
+      nodeURL,
       wasBadPing,
       pinging,
       scanningQR,
+      isUsingInvitation,
     } = this.state
 
     const err = this.props.navigation.getParam('err')
@@ -261,15 +337,72 @@ class ConnectToNode extends React.Component {
     return (
       <OnboardingScreen loading={checkingCacheForNodeURL || pinging}>
         <Text style={titleTextStyle}>
-          {this.state.isUsingInvitation ? 'Invitation Code' : 'Node Address'}
+          {isUsingInvitation ? 'Invitation Code' : 'Node Address'}
         </Text>
 
         <Pad amount={ITEM_SPACING} />
 
-        <InvitationLogin
-          navigation={this.props.navigation}
-          mounted={this.mounted}
-        />
+        {isUsingInvitation ? (
+          <OnboardingInput
+            autoCapitalize="none"
+            autoCorrect={false}
+            disable={pinging || wasBadPing || !!err}
+            onChangeText={this.onChangeInvitationCode}
+            placeholder="Enter your invitation code"
+            value={this.state.invitationCode}
+          />
+        ) : (
+          <OnboardingInput
+            autoCapitalize="none"
+            autoCorrect={false}
+            disable={pinging || wasBadPing || !!err}
+            onChangeText={this.onChangeNodeURL}
+            onPressQRBtn={this.toggleQRScreen}
+            placeholder="Enter your node IP"
+            value={nodeURL}
+          />
+        )}
+
+        <Pad amount={ITEM_SPACING} />
+
+        {!(wasBadPing || !!err) && (
+          <>
+            {isUsingInvitation ? (
+              <OnboardingBtn
+                onPress={this.onPressConnectViaInvite}
+                title={wasBadPing || err ? 'Continue' : 'Create and Connect'}
+              />
+            ) : (
+              <OnboardingBtn
+                disabled={!isValidIP(nodeURL) || pinging}
+                onPress={
+                  wasBadPing || err ? this.onPressTryAgain : this.onPressConnect
+                }
+                title={wasBadPing || err ? 'Continue' : 'Connect'}
+              />
+            )}
+
+            <Pad amount={ITEM_SPACING} />
+
+            {isUsingInvitation ? (
+              <Text style={linkTextStyle} onPress={this.toggleInvitation}>
+                Use Node Address
+              </Text>
+            ) : (
+              <>
+                <Text style={linkTextStyle} onPress={this.openDocsLink}>
+                  Don't have a node?
+                </Text>
+
+                <Pad amount={ITEM_SPACING} />
+
+                <Text style={linkTextStyle} onPress={this.toggleInvitation}>
+                  Use Invitation Code
+                </Text>
+              </>
+            )}
+          </>
+        )}
 
         {wasBadPing && (
           <Text style={titleTextStyle}>

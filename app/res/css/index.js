@@ -7,7 +7,13 @@ export const BOTTOM_BAR_HEIGHT = Math.round(HEIGHT * 0.085)
 
 import * as Common from 'shock-common'
 
-export const { Color: Colors } = Common.Constants
+export const Colors = {
+  ...Common.Constants.Color,
+  DARK_MODE_TEXT_NEAR_WHITE: '#EBEBEB',
+  DARK_MODE_TEXT_GRAY: '#9C9C9C',
+  DARK_MODE_BACKGROUND_DARK: '#16191C',
+  DARK_MODE_CYAN: '#4285B9',
+}
 
 export const styles = StyleSheet.create({
   absolutelyCentered: {

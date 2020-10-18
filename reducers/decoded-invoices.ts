@@ -13,6 +13,16 @@ const reducer: Reducer<State, Action> = (state = {}, action) =>
 
       draft[payment_request] = decodedInvoice
     }
+
+    if (action.type === 'invoices/batchDecodeReceived') {
+      const { invoices, payReqs } = action.data
+
+      for (let i = 0; i < invoices.length; i++) {
+        const [invoice, payReq] = [invoices[i], payReqs[i]]
+
+        draft[payReq] = invoice
+      }
+    }
   })
 
 export default reducer
