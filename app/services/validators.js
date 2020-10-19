@@ -50,11 +50,13 @@ export const isShockPubKey = data => data.startsWith('$$__SHOCKWALLET__USER__')
 
 /** @param {string} data */
 export const findlnurl = data => {
-  var res = /^(http.*[&?]lightning=)?((lnurl)([0-9]{1,}[a-z0-9]+){1})/.exec(data.toLowerCase());
+  const res = /^(http.*[&?]lightning=)?((lnurl)([0-9]{1,}[a-z0-9]+){1})/.exec(
+    data.toLowerCase(),
+  )
   if (res) {
-    return res[2];
+    return res[2]
   }
-  return null;
+  return null
 }
 
 /**
@@ -125,7 +127,7 @@ export default data => {
   if (found) {
     return {
       type: 'lnurl',
-      lnurl: found,
+      lnurl: found.toUpperCase(),
     }
   }
   return { type: 'unknown' }
