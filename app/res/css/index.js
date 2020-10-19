@@ -13,6 +13,7 @@ export const Colors = {
   DARK_MODE_TEXT_GRAY: '#9C9C9C',
   DARK_MODE_BACKGROUND_DARK: '#16191C',
   DARK_MODE_CYAN: '#4285B9',
+  DARK_MODE_BACKGROUND_BLUEISH_GRAY: '#212937',
 }
 
 export const styles = StyleSheet.create({
