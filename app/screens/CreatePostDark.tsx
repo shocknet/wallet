@@ -14,17 +14,15 @@ import { connect } from 'react-redux'
 import Http from 'axios'
 import Logger from 'react-native-file-log'
 import FontAwesome from 'react-native-vector-icons/FontAwesome'
+import DropDownPicker from 'react-native-dropdown-picker'
+
 import * as CSS from '../res/css'
 import Pad from '../components/Pad'
 import InputGroup from '../components/InputGroup'
-
 import ArrowLeft from '../assets/images/arrow-left.svg'
 import PublicIcon from '../assets/images/create-post/public.svg'
 import SubscribersIcon from '../assets/images/create-post/subscribers.svg'
 import PaywallIcon from '../assets/images/create-post/paywall.svg'
-
-import DropDownPicker from 'react-native-dropdown-picker'
-//import Icon from 'react-native-vector-icons/Feather'
 import ShockWebView from '../components/ShockWebView'
 import { CompleteAnyMedia } from '../services/mediaLib'
 
