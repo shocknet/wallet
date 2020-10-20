@@ -7,7 +7,7 @@ import {
   Switch,
   ScrollView,
   StatusBar,
-  Animated,
+  TouchableHighlight,
 } from 'react-native'
 import { connect } from 'react-redux'
 import Logger from 'react-native-file-log'
@@ -82,6 +82,7 @@ export const WALLET_SETTINGS = 'WALLET_SETTINGS'
  * @prop {string} tmpRelativeFee
  * @prop {boolean} tmpNotifyDisconnect
  * @prop {string} tmpNotifyDisconnectAfter
+ * @prop {boolean} somethingChanged
  */
 
 import notificationService from '../../notificationService'
@@ -104,8 +105,6 @@ class WalletSettings extends React.Component {
     // },
   }
 
-  fadeAnim = new Animated.Value(-75)
-
   /** @type {State} */
   state = {
     fetchedFees: {
@@ -118,6 +117,24 @@ class WalletSettings extends React.Component {
     tmpRelativeFee: this.props.fees.relativeFee,
     tmpNotifyDisconnect: this.props.settings.notifyDisconnect,
     tmpNotifyDisconnectAfter: this.props.settings.notifyDisconnectAfterSeconds.toString(),
+    somethingChanged: false,
+  }
+
+  goBack = () => {
+    this.setState({
+      fetchedFees: {
+        fastestFee: 0,
+        halfHourFee: 0,
+        hourFee: 0,
+      },
+      tmpSource: this.props.fees.feesSource,
+      tmpAbsoluteFee: this.props.fees.absoluteFee,
+      tmpRelativeFee: this.props.fees.relativeFee,
+      tmpNotifyDisconnect: this.props.settings.notifyDisconnect,
+      tmpNotifyDisconnectAfter: this.props.settings.notifyDisconnectAfterSeconds.toString(),
+      somethingChanged: false,
+    })
+    this.props.navigation.goBack()
   }
 
   componentDidMount() {
@@ -240,7 +257,7 @@ class WalletSettings extends React.Component {
 
   somethingChanged = () => {
     notificationService.Log('TESTING', 'DOIIDSF')
-    Animated.timing(this.fadeAnim, { toValue: 20, duration: 500 }).start()
+    this.setState({ somethingChanged: true })
   }
 
   render() {
@@ -252,6 +269,7 @@ class WalletSettings extends React.Component {
       tmpRelativeFee,
       tmpNotifyDisconnect,
       tmpNotifyDisconnectAfter,
+      somethingChanged,
     } = this.state
     let level = 1
     switch (fees.feesLevel) {
@@ -483,38 +501,49 @@ class WalletSettings extends React.Component {
                   </View>
                 </View>
                 <Pad amount={20} />
-                <View style={styles.balanceSetting}>
-                  <View style={styles.balanceSettingContent}>
-                    <Text style={styles.balanceSettingContentTitle}>
-                      Time to reconnect
-                    </Text>
-                    <Text style={styles.balanceSettingContentDescription}>
-                      Seconds of no connection before assuming connection is
-                      lost
-                    </Text>
+                {tmpNotifyDisconnect && (
+                  <View style={styles.balanceSetting}>
+                    <View style={styles.balanceSettingContent}>
+                      <Text style={styles.balanceSettingContentTitle}>
+                        Time to reconnect
+                      </Text>
+                      <Text style={styles.balanceSettingContentDescription}>
+                        Seconds of no connection before assuming connection is
+                        lost
+                      </Text>
+                    </View>
+                    <View style={styles.balanceSettingCheckBoxContainer}>
+                      <ShockInput
+                        value={tmpNotifyDisconnectAfter}
+                        onChangeText={this.updateTmpNotifyDisconnectAfter}
+                        keyboardType="numeric"
+                      />
+                    </View>
                   </View>
-                  <View style={styles.balanceSettingCheckBoxContainer}>
-                    <ShockInput
-                      value={tmpNotifyDisconnectAfter}
-                      onChangeText={this.updateTmpNotifyDisconnectAfter}
-                      keyboardType="numeric"
-                    />
-                  </View>
-                </View>
+                )}
               </View>
             </View>
+
+            {somethingChanged && (
+              <View style={styles.actionButtonsDark}>
+                <TouchableHighlight
+                  underlayColor="transparent"
+                  style={styles.actionButtonDark1}
+                  onPress={this.goBack}
+                >
+                  <Text style={styles.actionButtonTextDark1}>Cancel</Text>
+                </TouchableHighlight>
+                <TouchableHighlight
+                  underlayColor="transparent"
+                  style={styles.actionButtonDark2}
+                  onPress={this.submitSourceToStore}
+                >
+                  <Text style={styles.actionButtonTextDark2}>Save</Text>
+                </TouchableHighlight>
+              </View>
+            )}
           </View>
         </ScrollView>
-        <Animated.View // Special animatable View
-          style={{ ...styles.createBtn, bottom: this.fadeAnim }}
-        >
-          <FontAwesome5
-            name="save"
-            size={45}
-            color="black"
-            onPress={this.submitSourceToStore}
-          />
-        </Animated.View>
       </View>
     )
     //}
@@ -657,20 +686,46 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     width: '85%',
   },
+  actionButtonsDark: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+  },
+  actionButtonDark1: {
+    width: '48%',
+    height: 54,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 13,
+    backgroundColor: '#001220',
+    borderColor: '#4285B9',
+    borderWidth: 1,
+  },
+  actionButtonDark2: {
+    width: '48%',
+    height: 54,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 13,
+    backgroundColor: '#4285B9',
+    borderColor: CSS.Colors.BACKGROUND_WHITE,
+    borderWidth: 1,
+  },
+  actionButtonTextDark1: {
+    color: '#4285B9',
+    fontFamily: 'Montserrat-700',
+    fontSize: 14,
+  },
+  actionButtonTextDark2: {
+    color: '#212937',
+    fontFamily: 'Montserrat-700',
+    fontSize: 14,
+  },
   /*balanceSettingCheckBoxView: {
     backgroundColor: 'transparent',
     borderWidth: 0,
   },*/
-  createBtn: {
-    height: 75,
-    width: 75,
-    borderRadius: 38,
-    backgroundColor: CSS.Colors.CAUTION_YELLOW,
-    position: 'absolute',
-    right: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   /*feePreferenceText: {
     fontFamily: 'Montserrat-600',
     fontSize: 15,
