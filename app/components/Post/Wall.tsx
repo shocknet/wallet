@@ -329,8 +329,6 @@ export default class Post extends React.Component<Props, State> {
               width={videosToDisplay[0].width}
               height={videosToDisplay[0].height}
               magnet={videosToDisplay[0].data}
-              permission={'private'}
-              //selectedView={'preview'}
               updateToMedia={null}
             />
           )}
@@ -340,8 +338,6 @@ export default class Post extends React.Component<Props, State> {
               width={imagesToDisplay[0].width}
               height={imagesToDisplay[0].height}
               magnet={imagesToDisplay[0].data}
-              permission={'private'}
-              //selectedView={'preview'}
               updateToMedia={null}
             />
           )}
@@ -351,18 +347,13 @@ export default class Post extends React.Component<Props, State> {
               width={publicMedia.width}
               height={publicMedia.height}
               magnet={publicMedia.data}
-              permission={'public'}
-              //selectedView={selectedView}
               updateToMedia={this.handlePublicClick}
             />
           )}
           {this.renderRibbon()}
         </View>
         <View>
-          <View
-            style={styles.configButtonDark}
-            //onPress={this.onPressMetaConfigModal}
-          >
+          <View style={styles.configButtonDark}>
             <Text style={styles.configButtonTextDark}>
               {tipCounter} Tips - {tipValue} Sats
             </Text>

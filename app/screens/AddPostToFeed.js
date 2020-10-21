@@ -7,21 +7,13 @@ import {
   ScrollView,
 } from 'react-native'
 import { connect } from 'react-redux'
-//import ShockWebView from '../components/ShockWebView'
-//import { WebView } from 'react-native-webview'
-//import FeedItem from '../components/FeedItem'
-//import notificationService from '../../notificationService'
-//import Http from 'axios'
 import ShockInput from '../components/ShockInput'
 import ShockButton from '../components/ShockButton'
 import Pad from '../components/Pad'
 import * as Thunks from '../thunks'
 import notificationService from '../../notificationService'
 
-//import { updateSelectedFee, updateFeesSource } from '../actions/FeesActions'
-//import ShockInput from '../components/ShockInput'
 /** @type {number} */
-// @ts-ignore
 const shockBG = require('../assets/images/shock-bg.png')
 
 export const ADD_POST_TO_FEED = 'ADD_POST_TO_FEED'

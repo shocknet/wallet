@@ -8,7 +8,6 @@ type Props = {
   height: number
   magnet: string
   type: 'video' | 'image'
-  permission: 'private' | 'public'
   updateToMedia: (() => void) | null
 }
 
@@ -24,7 +23,7 @@ export default class ShockWebView extends React.Component<Props, State> {
   }
 
   componentDidMount() {
-    const { magnet, type: finalType, permission } = this.props
+    const { magnet, type: finalType } = this.props
 
     const playerString =
       finalType === 'video'
@@ -53,7 +52,6 @@ export default class ShockWebView extends React.Component<Props, State> {
     var client = new WebTorrent()
     
     var torrentId = '${magnet}'
-    var permission = '${permission}'
     client.add(torrentId, function (torrent) {
       let cont = 0
       let infoBuff = ''
@@ -120,6 +118,7 @@ export default class ShockWebView extends React.Component<Props, State> {
   assignRef = (ref: WebView) => {
     this.webview = ref as CompleteWebView
   }
+
   render() {
     const { width, height } = this.props
 
