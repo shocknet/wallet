@@ -24,14 +24,14 @@ export const receivedRawPost = (
 
 export const receivedRawPosts = (
   posts: Schema.RawPost[],
-  id: string,
+  ids: string[],
   authorPublicKey: string,
 ) =>
   ({
     type: 'posts/receivedSeveralRaw',
     payload: {
       authorPublicKey,
-      id,
+      ids,
       posts,
     },
   } as const)

@@ -51,9 +51,12 @@ const reducer: Reducer<State, Action> = (state = {}, action) =>
     }
 
     if (action.type === 'posts/receivedSeveralRaw') {
-      const { authorPublicKey, id, posts } = action.payload
+      const { authorPublicKey, ids, posts } = action.payload
 
-      for (const { contentItems, date, status, tags, title } of posts) {
+      for (let i = 0; i < ids.length; i++) {
+        const { contentItems, date, status, tags, title } = posts[i]
+        const id = ids[i]
+
         if (draft[id]) {
           continue
         }
