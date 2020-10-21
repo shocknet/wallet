@@ -7818,6 +7818,14 @@ react-native-screens@^2.11.0:
   resolved "https://registry.yarnpkg.com/react-native-screens/-/react-native-screens-2.11.0.tgz#34b30b07c2d04aa100cba984b944b303bfa43ea6"
   integrity sha512-vJzJE3zI1XUtqthrX3Dh2TBQWB+xFyaGhF52KBq9FjJUN5ws4xpLZJxBWa1KbGV3DilmcSZ4jmZR5LGordwE7w==
 
+react-native-see-more-inline@^1.2.1:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/react-native-see-more-inline/-/react-native-see-more-inline-1.2.1.tgz#5e1a5c0e4b4641973dc3e8674bfe971d0a53ef8e"
+  integrity sha512-AKfWpIcV54399iZT5p/z/IeMvKjB2yCHO11bamsmrnxvrU6jTNapZkXEyOp98PwF/bxETbx0qQtYwa1G41/Cjw==
+  dependencies:
+    lodash "^4.17.15"
+    prop-types "^15.7.2"
+
 react-native-sensitive-info@^5.5.3:
   version "5.5.3"
   resolved "https://registry.yarnpkg.com/react-native-sensitive-info/-/react-native-sensitive-info-5.5.3.tgz#0e1d19b0cb290bf86e37b855f4272c641ebbeb0f"
@@ -7869,6 +7877,11 @@ react-native-tcp@^3.2.1:
     ip-regex "^1.0.3"
     process "^0.11.9"
     util "^0.10.3"
+
+react-native-text-size@4.0.0-rc.1:
+  version "4.0.0-rc.1"
+  resolved "https://registry.yarnpkg.com/react-native-text-size/-/react-native-text-size-4.0.0-rc.1.tgz#1e048d345dd6a5a8e1269e0585c1a5948c478da5"
+  integrity sha512-CysqjU2jK6Yc+a+kEI222pUyTY2ywcU2HqbFqf1KHymW6OPTdvBBHqbEJKL0QiLhQaFYDbqicM+h990s9TP00g==
 
 react-native-udp@^2.1.0:
   version "2.7.0"
