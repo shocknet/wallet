@@ -11,7 +11,6 @@ import * as Common from 'shock-common'
 
 import * as CSS from '../../res/css'
 
-//import UserInfo from './UserInfo'
 import ShockWebView from '../ShockWebView'
 import moment from 'moment'
 import { ConnectedShockAvatar } from '../ShockAvatar'
