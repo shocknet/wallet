@@ -14,6 +14,7 @@ export const Colors = {
   DARK_MODE_BACKGROUND_DARK: '#16191C',
   DARK_MODE_CYAN: '#4285B9',
   DARK_MODE_BACKGROUND_BLUEISH_GRAY: '#212937',
+  DARK_MODE_BORDER_GRAY: '#707070',
 }
 
 export const styles = StyleSheet.create({
