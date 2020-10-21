@@ -6,8 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
 } from 'react-native'
-// @ts-ignore
-import Carousel from 'react-native-smart-carousel'
+
 import * as Common from 'shock-common'
 
 import * as CSS from '../../res/css'
