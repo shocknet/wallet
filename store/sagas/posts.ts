@@ -4,6 +4,7 @@ import SocketIO from 'socket.io-client'
 import difference from 'lodash/difference'
 import isEqual from 'lodash/isEqual'
 import { Constants, Schema } from 'shock-common'
+import pickBy from 'lodash/pickBy'
 
 import * as Actions from '../../app/actions'
 import * as Selectors from '../selectors'
@@ -37,7 +38,7 @@ function* posts() {
     const isAuth = !!state.auth.token
     const authed = !wasAuthed && isAuth
     const unauthed = wasAuthed && !isAuth
-    const allPublicKeys = Selectors.getAllOtherPublicKeys(state)
+    const allPublicKeys = Selectors.getAllPublicKeys(state)
 
     const publicKeysChanged = (() => {
       // Cheap but results in false positives when any user is updated (the
@@ -114,7 +115,10 @@ const assignSocketToPublicKeys = (publicKeys: string[]) => {
 
         const existingPosts = Object.keys(getStore().getState().posts)
 
-        const postsReceived = Object.keys(data)
+        const postsReceived = Object.keys(
+          // filter deleted posts
+          pickBy(data, v => v !== null),
+        ).filter(k => k !== '_')
 
         // posts can't get edited for now
         const newPosts = difference(postsReceived, existingPosts)
@@ -128,7 +132,7 @@ const assignSocketToPublicKeys = (publicKeys: string[]) => {
                 return 'not an object'
               }
               if (!Schema.isRawPost(v.data)) {
-                return `not a raw post (sometimes expected): ${JSON.stringify(
+                return `id: ${postKey} not a raw post (sometimes expected): ${JSON.stringify(
                   v.data,
                 )}`
               }

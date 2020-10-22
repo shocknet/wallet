@@ -145,7 +145,7 @@ class Post extends React.PureComponent<Props, State> {
           {text}
         </SeeMore>
 
-        {numOfMediaItems && mediaWidth && (
+        {!!numOfMediaItems && !!mediaWidth && (
           <>
             <Pad amount={8} />
             <View>
