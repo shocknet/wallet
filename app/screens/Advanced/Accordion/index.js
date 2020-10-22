@@ -265,6 +265,7 @@ export default class Accordion extends Component {
 const styles = StyleSheet.create({
   accordionItem: {
     width: '100%',
+    backgroundColor: '#16191C',
   },
   accordionHeaderTopBorder: {
     borderTopWidth: 1,

@@ -60,6 +60,7 @@ const styles = StyleSheet.create({
   pubKey: {
     fontSize: 10,
     opacity: 0.7,
+    color: CSS.Colors.TEXT_WHITE,
   },
   transactionItem: {
     flexDirection: 'row',
@@ -82,10 +83,11 @@ const styles = StyleSheet.create({
   transactionHashText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: CSS.Colors.TEXT_GRAY_LIGHT,
+    color: CSS.Colors.TEXT_WHITE,
   },
   transactionTime: {
     textAlign: 'right',
     fontSize: 10,
+    color: CSS.Colors.TEXT_WHITE,
   },
 })

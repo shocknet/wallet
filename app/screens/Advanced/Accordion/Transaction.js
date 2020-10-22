@@ -1,12 +1,5 @@
 import React from 'react'
-import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  Clipboard,
-  ToastAndroid,
-} from 'react-native'
+import { View, Text, StyleSheet, Clipboard, ToastAndroid } from 'react-native'
 import Moment from 'moment'
 import EntypoIcons from 'react-native-vector-icons/Entypo'
 
@@ -45,10 +38,11 @@ const _Transaction = ({ data }) => ((
     }
   >
     <View style={styles.transactionDetails}>
-      <Image
+      <EntypoIcons
+        name="link"
+        color="white"
+        size={40}
         style={styles.transactionIcon}
-        source={paymentIcon}
-        resizeMode="contain"
       />
       <View>
         <Text
@@ -63,7 +57,7 @@ const _Transaction = ({ data }) => ((
         >
           {data.tx_hash}
         </Text>
-        <Text>
+        <Text style={styles.textWhite}>
           Payment{' '}
           {parseInt(data.num_confirmations, 10) === 0 ? (
             <EntypoIcons name="clock" color="red" size={10} />
@@ -93,6 +87,9 @@ const Transaction = React.memo(_Transaction)
 export default Transaction
 
 const styles = StyleSheet.create({
+  textWhite: {
+    color: CSS.Colors.TEXT_WHITE,
+  },
   transactionItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -144,5 +141,6 @@ const styles = StyleSheet.create({
   transactionTime: {
     textAlign: 'right',
     fontSize: 10,
+    color: CSS.Colors.TEXT_WHITE,
   },
 })
