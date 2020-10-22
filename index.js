@@ -32,6 +32,7 @@ import { LNURL_SCREEN } from './app/screens/LNURL'
 import { feedPage } from './app/services/feed'
 import WithConnWarning from './app/components/WithConnWarning'
 import { hostWasSet } from './app/actions'
+import { LOGIN } from './app/screens/Login'
 
 Logger.setTag('ShockWallet')
 Logger.setFileLogEnabled(true)
@@ -437,7 +438,18 @@ Http.interceptors.response.use(
       ) {
         Logger.log('An error has occurred:', decryptedResponse.data)
         Logger.log('Clearing auth data')
-        await Cache.writeStoredAuthData(null)
+        if (
+          decryptedResponse.data.field &&
+          decryptedResponse.data.field === 'lnd_locked'
+        ) {
+          const addr = await Cache.getNodeURL()
+          await Cache.writeStoredAuthData(null)
+          await Cache.writeNodeURLOrIP(addr)
+          NavigationService.navigate(LOGIN)
+        } else {
+          await Cache.writeStoredAuthData(null)
+        }
+        //
       }
 
       if (encryptionErrors.includes(decryptedResponse.data.field)) {
