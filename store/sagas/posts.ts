@@ -38,7 +38,7 @@ function* posts() {
     const isAuth = !!state.auth.token
     const authed = !wasAuthed && isAuth
     const unauthed = wasAuthed && !isAuth
-    const allPublicKeys = Selectors.getAllOtherPublicKeys(state)
+    const allPublicKeys = Selectors.getAllPublicKeys(state)
 
     const publicKeysChanged = (() => {
       // Cheap but results in false positives when any user is updated (the
