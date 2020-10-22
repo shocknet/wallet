@@ -35,3 +35,10 @@ export const getAllOtherPublicKeys = createSelector<
     return Object.keys(users).filter(publicKey => publicKey !== myPublicKey)
   },
 )
+
+export const getAllPublicKeys = createSelector<State, State['users'], string[]>(
+  getUsers,
+  users => {
+    return Object.keys(users)
+  },
+)
