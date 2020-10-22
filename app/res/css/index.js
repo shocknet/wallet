@@ -71,6 +71,13 @@ export const styles = StyleSheet.create({
   width0: { width: '0%' },
   width100: { width: '100%' },
   empty: {},
+  opacityZero: { opacity: 0 },
+  rowCentered: { flexDirection: 'row', alignItems: 'center' },
+  rowCenteredSpaceBetween: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
 })
 
 export const SCREEN_PADDING = 30
