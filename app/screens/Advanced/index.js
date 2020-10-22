@@ -48,6 +48,7 @@ import AddPeerModal from './Modals/AddPeer'
 import CloseChannelModal from './Modals/CloseChannel'
 import ShockDialog from '../../components/ShockDialog'
 import InfoPeerModal from './Modals/infoPeer'
+import { WALLET_OVERVIEW } from '../WalletOverview'
 
 export const ADVANCED_SCREEN = 'ADVANCED_SCREEN'
 /**
@@ -172,6 +173,8 @@ class AdvancedScreen extends React.PureComponent {
     refreshingChannels: false,
     refreshingTransactions: false,
   }
+
+  backToOverview = () => this.props.navigation.navigate(WALLET_OVERVIEW)
 
   addChannelModal = React.createRef()
 
@@ -748,7 +751,12 @@ class AdvancedScreen extends React.PureComponent {
             resizeMode="cover"
             style={styles.statsHeader}
           >
-            <Nav title="Advanced" style={styles.nav} showAvatar={avatar} />
+            <Nav
+              title="Advanced"
+              style={styles.nav}
+              showAvatar={avatar}
+              onPressAvatar={this.backToOverview}
+            />
             <View style={styles.statsContainer}>
               <View style={xStyles.channelBalanceContainer}>
                 <View style={styles.statIcon}>

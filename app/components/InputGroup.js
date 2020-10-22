@@ -89,7 +89,7 @@ class InputGroup extends PureComponent {
               multiline={multiline}
               placeholder={placeholder}
               onChangeText={onChange}
-              placeholderTextColor="white"
+              placeholderTextColor="rgba(255, 255, 255, 0.6)"
             />
           </View>
         )}

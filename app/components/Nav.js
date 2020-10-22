@@ -16,12 +16,20 @@ import ShockAvatar from './ShockAvatar'
  * @prop {(boolean)=} backButton
  * @prop {(string|null)=} showAvatar
  * @prop {(Navigation)=} navigation
+ * @prop {(()=>void)=} onPressAvatar
  */
 
 /**
  * @type {React.FC<Props>}
  */
-const Nav = ({ title, style, backButton, showAvatar, navigation }) => {
+const Nav = ({
+  title,
+  style,
+  backButton,
+  showAvatar,
+  navigation,
+  onPressAvatar,
+}) => {
   const goBack = () => {
     if (navigation) {
       return navigation.goBack()
@@ -51,6 +59,7 @@ const Nav = ({ title, style, backButton, showAvatar, navigation }) => {
             height={40}
             image={showAvatar || null}
             lastSeenApp={null}
+            onPress={onPressAvatar}
           />
         </View>
       )}
