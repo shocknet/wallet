@@ -236,7 +236,7 @@ export const onChats = listener => {
   }
 }
 
-export const setupEvents = async () => {
+export const setupEvents = () => {
   // TODO: Setup or replace seed backup event
   const store = Store.getStore()
 
@@ -244,20 +244,10 @@ export const setupEvents = async () => {
   onSentRequests(() => {})()
   onReceivedRequests(() => {})()
 
-  // @ts-ignore
+  // @ts-expect-error
   store.dispatch(Actions.ChatActions.subscribeOnChats())
-  // @ts-ignore
+  // @ts-expect-error
   store.dispatch(Actions.RequestActions.subscribeReceivedRequests())
-  // @ts-ignore
+  // @ts-expect-error
   store.dispatch(Actions.RequestActions.subscribeSentRequests())
-
-  const ad = await Cache.getStoredAuthData()
-
-  if (ad) {
-    store.dispatch(
-      Actions.Me.receivedMeData({
-        publicKey: ad.authData.publicKey,
-      }),
-    )
-  }
 }
