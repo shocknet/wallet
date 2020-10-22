@@ -8,7 +8,6 @@ import * as Follows from './follows'
 import * as Feed from './feed'
 import * as FeedWall from './FeedAction'
 import * as SingleFeed from './singleFeed'
-import * as Me from './me'
 import * as MediaLib from './mediaLib'
 import * as myWall from './myWall'
 import * as myFeed from './myFeed'
@@ -30,7 +29,6 @@ export type Action =
   | RequestActions.ReceivedRequestsAction
   | RequestActions.SentRequestsAction
   | Follows.FollowsAction
-  | Me.MeAction
   | Common.Store.Actions.FeedAction
   | Common.Store.Actions.PostsAction
   | Feed.FeedActions
@@ -69,9 +67,8 @@ export type InvoicesBatchDecodeReqAction = _InvoicesBatchDecodeReqAction
 export type InvoicesBatchDecodeResAction = _InvoicesBatchDecodeResAction
 export * from './payments'
 export * from './chain-txs'
-export * from './me'
 export { fetchNodeInfo } from './NodeActions'
 export * from './users'
 export * from './posts'
 
-export { ChatActions, RequestActions, Follows, Feed, SingleFeed, FeedWall, Me }
+export { ChatActions, RequestActions, Follows, Feed, SingleFeed, FeedWall }
