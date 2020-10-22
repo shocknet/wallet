@@ -16,9 +16,9 @@ interface Props {
   title: string
 }
 
-const SpaceBtn: React.FC<Props> = ({ iconLeft, onPress, title }) => (
+const SpaceBtn: React.FC<Props> = ({ iconLeft, onPress, title, slim }) => (
   <TouchableOpacity onPress={onPress}>
-    <View style={styles.container}>
+    <View style={slim ? styles.containerSlim : styles.container}>
       {iconLeft === 'bolt' && (
         <>
           <ShockIcon width={20} height={20} />
@@ -50,6 +50,7 @@ const styles = StyleSheet.create({
     ...containerBase,
   },
   containerSlim: {
+    ...containerBase,
     paddingVertical: 6,
   },
 
