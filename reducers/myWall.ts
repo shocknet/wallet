@@ -1,5 +1,5 @@
 import produce from 'immer'
-import { ToastAndroid } from 'react-native'
+//import { ToastAndroid } from 'react-native'
 import * as Common from 'shock-common'
 import {Action} from '../app/actions'
 export type State = {
@@ -33,8 +33,8 @@ const reducer = (state:State = INITIAL_STATE,action:Action) => {
             })
         }
         case 'myWall/errorFetchPage':{
-            const {data} = action
-            ToastAndroid.show(data.error,800)
+            //const {data} = action
+            //ToastAndroid.show(data.error,800)
             return state
         }
         case 'myWall/beganSettingPinned':{
