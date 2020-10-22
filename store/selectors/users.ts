@@ -7,6 +7,9 @@ import { getMyPublicKey } from './auth'
 
 const getUsers = (state: State) => state.users
 const getPublicKey = (_: State, props: string) => props
+export const getMe = (state: State) =>
+  state.users[getMyPublicKey(state)] ||
+  Schema.createEmptyUser(getMyPublicKey(state))
 
 export const makeGetUser = () =>
   createSelector<State, string, State['users'], string, Schema.User>(

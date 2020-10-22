@@ -19,7 +19,8 @@ export const DEBUG = 'DEBUG'
 /** @augments React.Component<Props, Record<string, any>> */
 class Debug extends React.Component {
   state = {
-    addr: Events.getHandshakeAddr(),
+    // TODO
+    addr: '',
     chats: [],
     sreqs: [],
     rreqs: [],
@@ -57,7 +58,6 @@ class Debug extends React.Component {
     this.setupSub()
 
     this.subs.push(
-      Events.onHandshakeAddr(addr => this.setState({ addr })),
       Events.onChats(chats => this.setState({ chats })),
       Events.onSentRequests(sreqs => this.setState({ sreqs })),
       Events.onReceivedRequests(rreqs => this.setState({ rreqs })),
