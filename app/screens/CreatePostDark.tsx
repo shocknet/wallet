@@ -14,17 +14,15 @@ import { connect } from 'react-redux'
 import Http from 'axios'
 import Logger from 'react-native-file-log'
 import FontAwesome from 'react-native-vector-icons/FontAwesome'
+import DropDownPicker from 'react-native-dropdown-picker'
+
 import * as CSS from '../res/css'
 import Pad from '../components/Pad'
 import InputGroup from '../components/InputGroup'
-
 import ArrowLeft from '../assets/images/arrow-left.svg'
 import PublicIcon from '../assets/images/create-post/public.svg'
 import SubscribersIcon from '../assets/images/create-post/subscribers.svg'
 import PaywallIcon from '../assets/images/create-post/paywall.svg'
-
-import DropDownPicker from 'react-native-dropdown-picker'
-//import Icon from 'react-native-vector-icons/Feather'
 import ShockWebView from '../components/ShockWebView'
 import { CompleteAnyMedia } from '../services/mediaLib'
 
@@ -193,7 +191,6 @@ class CreatePostDark extends React.Component<Props, State> {
       )
     }
     const ref: CompleteAnyMedia = previewMedia ? previewMedia : mainMedia
-    const permission = mainMedia.isPrivate ? 'private' : 'public'
     return (
       <View style={{ marginRight: 20 }}>
         <View
@@ -208,8 +205,6 @@ class CreatePostDark extends React.Component<Props, State> {
               width={Number(ref.width)}
               height={Number(ref.height)}
               magnet={ref.magnetURI}
-              permission={permission}
-              //selectedView={'preview'}
               updateToMedia={null}
             />
           )}
@@ -219,24 +214,11 @@ class CreatePostDark extends React.Component<Props, State> {
               width={Number(ref.width)}
               height={Number(ref.height)}
               magnet={ref.magnetURI}
-              permission={permission}
-              //selectedView={'preview'}
               updateToMedia={null}
             />
           )}
         </View>
         <FontAwesome name="plus" size={20} color="white" onPress={selectThis} />
-        {/*<ImageBackground
-          source={item.image}
-          resizeMode="cover"
-          style={styles.postImageBackground}
-        >
-          {item.offer && (
-            <View style={styles.offerPost}>
-              <FontAwesome name="check-circle" size={36} color="white" />
-            </View>
-          )}
-        </ImageBackground>*/}
       </View>
     )
   }
@@ -374,8 +356,6 @@ class CreatePostDark extends React.Component<Props, State> {
                       type={
                         preview.type === 'image/embedded' ? 'image' : 'video'
                       }
-                      permission={'private'}
-                      //selectedView={'preview'}
                       updateToMedia={null}
                     />
                   </View>
@@ -398,10 +378,6 @@ class CreatePostDark extends React.Component<Props, State> {
                           ? 'image'
                           : 'video'
                       }
-                      permission={
-                        media && media.isPrivate ? 'private' : 'public'
-                      }
-                      //selectedView={selectedView}
                       updateToMedia={this.togglePublicMedia}
                     />
                   </View>

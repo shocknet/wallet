@@ -24,13 +24,14 @@ import Post from '../../components/Post/Feed'
 import * as Routes from '../../routes'
 import * as CSS from '../../res/css'
 import * as Thunks from '../../thunks'
-
+import Tabs from '../../components/tabs'
 import * as Follows from '../../../reducers/follows'
 import ShockIconWhite from '../../assets/images/shockW.svg'
 import ShockIconBlue from '../../assets/images/shockB.svg'
 import ShockAvatar from '../../components/ShockAvatar'
 import AddonIcon from '../../assets/images/feed/addon.svg'
 import { CREATE_POST_DARK } from '../CreatePostDark'
+import Pad from '../../components/Pad'
 
 type Navigation = NavigationScreenProp<{}, Routes.UserParams>
 type Item = Common.Schema.Post
@@ -60,7 +61,6 @@ interface FollowInfo {
 interface State {
   awaitingBackfeed: boolean
   awaitingMoreFeed: boolean
-  selectedTab: 'all' | 'saved' | 'videos'
   followsInfo: Record<string, FollowInfo>
 }
 
@@ -82,7 +82,6 @@ class Feed extends React.Component<Props, State> {
   state: State = {
     awaitingBackfeed: false,
     awaitingMoreFeed: false,
-    selectedTab: 'all',
     followsInfo: {},
   }
 
@@ -139,46 +138,12 @@ class Feed extends React.Component<Props, State> {
   onEndReached = () => {
     const { myFeed } = this.props
     this.props.FetchPage(myFeed.lastPageFetched, myFeed.posts)
-    // todo: move this check to redux in a way that makes sense
-    /*if (!this.state.awaitingMoreFeed) {
-      this.setState(
-        {
-          awaitingMoreFeed: true,
-        },
-        () => {
-          this.props.requestMoreFeed()
-        },
-      )
-    }*/
   }
 
   onRefresh = () => {
     this.props.FetchPage(0, []) //clear and reload
-    /*const { awaitingBackfeed, awaitingMoreFeed } = this.state
-
-    if (!awaitingBackfeed && !awaitingMoreFeed) {
-      this.setState(
-        {
-          awaitingBackfeed: true,
-        },
-        () => {
-          if (this.props.posts.length === 0) {
-            this.props.requestMoreFeed()
-          } else {
-            this.props.requestBackfeed()
-          }
-
-          // TODO: redux-side auto retry
-          setTimeout(() => {
-            this.setState({
-              awaitingBackfeed: false,
-              awaitingMoreFeed: false,
-            })
-          }, 10000)
-        },
-      )
-    }*/
   }
+
   renderItem = ({ item }: ListRenderItemInfo<Item>) => {
     if (!Common.Schema.isPost(item)) return null
     const imageCIEntries = Object.entries(item.contentItems).filter(
@@ -238,94 +203,9 @@ class Feed extends React.Component<Props, State> {
     )
   }
 
-  /*_renderUserItem({ item }) {
-    return (
-      <View style={styles.otherUserContainer}>
-        <Image
-          source={item.avatar}
-          resizeMode="cover"
-          style={styles.otherUserAvatar}
-        />
-        <Text style={styles.otherUserName}>{item.name}</Text>
-      </View>
-    )
-  }*/
-
-  /*_onViewableItemsChanged: FlatListProps<
-    Common.Schema.Post
-  >['onViewableItemsChanged'] = ({ viewableItems }) => {
-    const posts = viewableItems.map(
-      viewToken => viewToken.item,
-    ) as Common.Schema.Post[]
-
-    const ids = posts.map(p => p.id)
-
-    //this.props.onViewportChanged(ids)
-  }*/
-
-  // TODO: debounce in redux
-  /*onViewableItemsChanged: FlatListProps<
-    Common.Schema.Post
-  >['onViewableItemsChanged'] = _.debounce(this
-    ._onViewableItemsChanged as () => {})*/
-
-  /*componentDidUpdate(prevProps: Readonly<Props>) {
-    const { posts: prevPosts } = prevProps
-    const { posts: currentPosts } = this.props
-    const postsChanged = currentPosts !== prevPosts
-    const wasLoadingBackfeed = this.state.awaitingBackfeed
-    const wasLoadingFeed = this.state.awaitingMoreFeed
-
-    if (!postsChanged) {
-      return
-    }
-
-    if (prevPosts.length === 0 && currentPosts.length === 0) {
-      // `TODO: update perf optimization`)
-      return
-    }
-
-    // initial load
-    if (prevPosts.length === 0 && currentPosts.length !== 0) {
-      this.setState({
-        awaitingBackfeed: false,
-        awaitingMoreFeed: false,
-      })
-      return
-    }
-
-    const didLoadBackfeed = prevPosts[0].id !== currentPosts[0].id
-    const didLoadFeed =
-      prevPosts[prevPosts.length - 1].id !==
-      currentPosts[currentPosts.length - 1].id
-
-    if (wasLoadingBackfeed && didLoadBackfeed) {
-      this.setState({
-        awaitingBackfeed: false,
-      })
-    }
-
-    if (wasLoadingFeed && didLoadFeed) {
-      this.setState({
-        awaitingMoreFeed: false,
-      })
-    }
-  }*/
   onPressMyAvatar = () => this.props.navigation.navigate(CREATE_POST_DARK)
   onPressUserAvatar = (publicKey: string) => () =>
     this.props.navigation.navigate(Routes.USER, { publicKey })
-
-  onPressAllFeeds = () => {
-    this.setState({ selectedTab: 'all' })
-  }
-
-  onPressSavedFeeds = () => {
-    //this.setState({ selectedTab: 'saved' })
-  }
-
-  onPressVideoFeeds = () => {
-    //this.setState({ selectedTab: 'videos' })
-  }
 
   renderFollow({ item }: ListRenderItemInfo<[() => boolean, FollowInfo]>) {
     const [onPress, info] = item
@@ -357,7 +237,7 @@ class Feed extends React.Component<Props, State> {
   debouncedOnEndReached = _.debounce(this.onEndReached, 1000)
   render() {
     const { posts, myFeed, avatar } = this.props
-    const { selectedTab } = this.state
+
     return (
       <SafeAreaView style={styles.container}>
         <StatusBar
@@ -384,53 +264,12 @@ class Feed extends React.Component<Props, State> {
             horizontal
           />
         </View>
-        <View style={styles.tabsContainer}>
-          <TouchableOpacity
-            style={styles.tabButton}
-            onPress={this.onPressAllFeeds}
-          >
-            <Text
-              style={
-                selectedTab === 'all'
-                  ? styles.tabButtonTextSelected
-                  : styles.tabButtonText
-              }
-            >
-              Feed
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.tabButton}
-            onPress={this.onPressSavedFeeds}
-          >
-            <Text
-              style={
-                selectedTab === 'saved'
-                  ? styles.tabButtonTextSelected
-                  : styles.tabButtonText
-              }
-            >
-              Saved
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.tabButton}
-            onPress={this.onPressVideoFeeds}
-          >
-            <Text
-              style={
-                selectedTab === 'videos'
-                  ? styles.tabButtonTextSelected
-                  : styles.tabButtonText
-              }
-            >
-              Videos
-            </Text>
-          </TouchableOpacity>
-        </View>
+
+        <Pad amount={8} />
+        <Tabs texts={TABS} selectedTabIndex={0} />
+        <Pad amount={8} />
+
         <FlatList
-          //style={CSS.styles.flex}
-          //contentContainerStyle={CSS.styles.flex}
           renderItem={this.renderItem}
           data={myFeed.posts}
           keyExtractor={keyExtractor}
@@ -451,6 +290,8 @@ class Feed extends React.Component<Props, State> {
     )
   }
 }
+
+const TABS = ['Feed', 'Saved', 'Videos']
 
 const listFooterElement = <ActivityIndicator />
 
@@ -486,17 +327,7 @@ const mapStateToProps = (state: Reducers.State): StateProps => {
     follows: state.follows,
   }
 }
-/*
-const mapDispatchToProps: Record<
-  keyof DispatchProps,
-  (...args: any[]) => Common.Store.Actions.FeedAction
-> = {
-  onViewportChanged: Common.Store.Actions.viewportChanged,
-  requestBackfeed: Common.Store.Actions.getMoreBackfeed,
-  requestMoreFeed: Common.Store.Actions.getMoreFeed,
 
-
-}*/
 const mapDispatchToProps = (dispatch: any) => ({
   FetchPage: (page: number, currentPosts: Common.Schema.Post[]) => {
     dispatch(Thunks.myFeed.FetchPage(page, currentPosts))
@@ -567,28 +398,6 @@ const styles = StyleSheet.create({
     width: 53,
     height: 53,
     borderRadius: 27,
-  },
-  tabsContainer: {
-    width: '100%',
-    borderBottomWidth: 1,
-    borderColor: '#707070',
-    height: 37,
-    flexDirection: 'row',
-  },
-  tabButton: {
-    width: '30%',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  tabButtonText: {
-    fontFamily: 'Montserrat-700',
-    fontSize: 15,
-    color: CSS.Colors.GRAY_LIGHT,
-  },
-  tabButtonTextSelected: {
-    fontFamily: 'Montserrat-700',
-    fontSize: 15,
-    color: '#4285B9',
   },
 })
 

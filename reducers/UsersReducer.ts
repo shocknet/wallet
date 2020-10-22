@@ -2,33 +2,48 @@ import produce from 'immer'
 import { Schema } from 'shock-common'
 import uniqBy from 'lodash/uniqBy'
 import { Reducer } from 'redux'
+import Logger from 'react-native-file-log'
 
 import { Action } from '../app/actions'
 
-type State = Record<string, Schema.User> & {
-  // TODO get this out of here
-  myPublicKey: string
-}
+type State = Record<string, Schema.User>
 
-const INITIAL_STATE = {
-  // We don't want to type this as nullable anyways. Will set it at auth
-  myPublicKey: '',
-} as State
+/**
+ * Super hacky but works and does not tain the real state.
+ */
+let myPublicKey = ''
+
+const INITIAL_STATE = {} as State
 
 const reducer: Reducer<State, Action> = (
   state = INITIAL_STATE,
   action: Action,
 ) => {
   switch (action.type) {
+    case 'users/receivedSingleUserData':
+      return produce(state, draft => {
+        const { singleUserData } = action.payload
+
+        draft[singleUserData.publicKey] = {
+          ...Schema.createEmptyUser(singleUserData.publicKey),
+          ...(draft[singleUserData.publicKey] || {}),
+          ...singleUserData,
+        }
+      })
+
     case 'users/receivedUsersData':
       return produce(state, draft => {
-        action.data.usersData.forEach(partialUser => {
+        action.payload.usersData.forEach(partialUser => {
           const { publicKey: pk } = partialUser
 
-          draft[pk] = {
-            ...Schema.createEmptyUser(pk),
-            ...(draft[pk] || {}),
-            ...partialUser,
+          Logger.log('Received partial user without public key???')
+
+          if (pk) {
+            draft[pk] = {
+              ...Schema.createEmptyUser(pk),
+              ...(draft[pk] || {}),
+              ...partialUser,
+            }
           }
         })
       })
@@ -103,21 +118,16 @@ const reducer: Reducer<State, Action> = (
 
     case 'me/receivedMeData':
       return produce(state, draft => {
-        if (action.data.publicKey) {
-          draft.myPublicKey = action.data.publicKey
+        const { publicKey } = action.data
+        myPublicKey = publicKey || myPublicKey
+
+        if (myPublicKey) {
+          if (!draft[myPublicKey]) {
+            draft[myPublicKey] = Schema.createEmptyUser(myPublicKey)
+          }
+
+          Object.assign(draft[myPublicKey], action.data)
         }
-
-        const publicKey = action.data.publicKey || state.myPublicKey
-
-        if (!publicKey) {
-          return
-        }
-
-        if (!draft[publicKey]) {
-          draft[publicKey] = Schema.createEmptyUser(publicKey)
-        }
-
-        Object.assign(draft[publicKey], action.data)
       })
 
     case 'receivedBackfeed':
@@ -139,10 +149,43 @@ const reducer: Reducer<State, Action> = (
     case 'authed':
       return produce(state, draft => {
         const { gunPublicKey } = action.data
-        draft.myPublicKey = gunPublicKey
+
+        myPublicKey = gunPublicKey
+
         if (!draft[gunPublicKey]) {
           draft[gunPublicKey] = Schema.createEmptyUser(gunPublicKey)
         }
+      })
+
+    case 'myFeed/finishedFetchPage':
+      return produce(state, draft => {
+        const { posts } = action.data
+
+        posts.forEach(
+          ({
+            author: {
+              avatar,
+              bio,
+              displayName,
+              header,
+              lastSeenApp,
+              lastSeenNode,
+              publicKey,
+            },
+          }) => {
+            if (!draft[publicKey]) {
+              // @ts-expect-error
+              draft[publicKey] = {}
+            }
+
+            draft[publicKey].avatar = avatar
+            draft[publicKey].bio = bio
+            draft[publicKey].displayName = displayName
+            draft[publicKey].header = header
+            draft[publicKey].lastSeenApp = lastSeenApp
+            draft[publicKey].lastSeenNode = lastSeenNode
+          },
+        )
       })
 
     default:

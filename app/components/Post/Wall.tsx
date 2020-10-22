@@ -6,16 +6,14 @@ import {
   ScrollView,
   TouchableOpacity,
 } from 'react-native'
-// @ts-ignore
-import Carousel from 'react-native-smart-carousel'
+
 import * as Common from 'shock-common'
 
 import * as CSS from '../../res/css'
 
-//import UserInfo from './UserInfo'
 import ShockWebView from '../ShockWebView'
 import moment from 'moment'
-import ShockAvatar from '../ShockAvatar'
+import { ConnectedShockAvatar } from '../ShockAvatar'
 import * as MediaLib from '../../services/mediaLib'
 import PopupMenu from '../popUpMenu'
 
@@ -70,10 +68,6 @@ const DEFAULT_STATE: State = {
 const popupMenuOptions: ['Pin', 'Remove'] = ['Pin', 'Remove']
 
 export default class Post extends React.Component<Props, State> {
-  //shouldComponentUpdate() {
-  //return false why?
-  //}
-
   gotoPostDetail = (_item: any) => {}
 
   state = DEFAULT_STATE
@@ -306,14 +300,12 @@ export default class Post extends React.Component<Props, State> {
     return (
       <View style={styles.postContainer}>
         <View style={styles.postContainerTop}>
-          <ShockAvatar
+          <ConnectedShockAvatar
             height={44}
-            image={author.avatar ? author.avatar : null}
-            //onPress={this.onPressAvatar}
-            lastSeenApp={Date.now()}
-            avatarStyle={styles.avatarStyle}
+            publicKey={author.publicKey}
             disableOnlineRing
           />
+
           <View style={styles.postItemTitle}>
             <Text style={styles.postItemTitleText}>{author.displayName}</Text>
             <Text style={styles.postItemTimestamp}>{diffString + ' ago'}</Text>
@@ -337,8 +329,6 @@ export default class Post extends React.Component<Props, State> {
               width={videosToDisplay[0].width}
               height={videosToDisplay[0].height}
               magnet={videosToDisplay[0].data}
-              permission={'private'}
-              //selectedView={'preview'}
               updateToMedia={null}
             />
           )}
@@ -348,8 +338,6 @@ export default class Post extends React.Component<Props, State> {
               width={imagesToDisplay[0].width}
               height={imagesToDisplay[0].height}
               magnet={imagesToDisplay[0].data}
-              permission={'private'}
-              //selectedView={'preview'}
               updateToMedia={null}
             />
           )}
@@ -359,18 +347,13 @@ export default class Post extends React.Component<Props, State> {
               width={publicMedia.width}
               height={publicMedia.height}
               magnet={publicMedia.data}
-              permission={'public'}
-              //selectedView={selectedView}
               updateToMedia={this.handlePublicClick}
             />
           )}
           {this.renderRibbon()}
         </View>
         <View>
-          <View
-            style={styles.configButtonDark}
-            //onPress={this.onPressMetaConfigModal}
-          >
+          <View style={styles.configButtonDark}>
             <Text style={styles.configButtonTextDark}>
               {tipCounter} Tips - {tipValue} Sats
             </Text>

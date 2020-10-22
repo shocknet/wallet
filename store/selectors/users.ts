@@ -3,6 +3,8 @@ import { createSelector } from 'reselect'
 
 import { State } from '../../reducers'
 
+import { getMyPublicKey } from './auth'
+
 const getUsers = (state: State) => state.users
 const getPublicKey = (_: State, props: string) => props
 
@@ -20,3 +22,16 @@ export const makeGetUser = () =>
       return Schema.createEmptyUser(publicKey)
     },
   )
+
+export const getAllOtherPublicKeys = createSelector<
+  State,
+  State['users'],
+  string,
+  string[]
+>(
+  getUsers,
+  getMyPublicKey,
+  (users, myPublicKey) => {
+    return Object.keys(users).filter(publicKey => publicKey !== myPublicKey)
+  },
+)

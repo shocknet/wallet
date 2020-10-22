@@ -105,12 +105,12 @@ class ConnectToNode extends React.Component {
   }
 
   componentWillUnmount() {
-    this.mounted = true
+    this.mounted = false
     this.didFocusSub.remove()
   }
 
   checkCacheForNodeURL = async () => {
-    this.setState(DEFAULT_STATE)
+    this.mounted && this.setState(DEFAULT_STATE)
     try {
       const nodeURL = await Cache.getNodeURL()
       const err = this.props.navigation.getParam('err')
@@ -118,19 +118,21 @@ class ConnectToNode extends React.Component {
       if (nodeURL !== null && !err) {
         this.props.navigation.navigate(WALLET_MANAGER)
       } else {
-        this.setState({
-          checkingCacheForNodeURL: false,
-          nodeURL: nodeURL || '',
-        })
+        this.mounted &&
+          this.setState({
+            checkingCacheForNodeURL: false,
+            nodeURL: nodeURL || '',
+          })
       }
     } catch (err) {
       this.props.navigation.setParams({
         err: err.message,
       })
     } finally {
-      this.setState({
-        checkingCacheForNodeURL: false,
-      })
+      this.mounted &&
+        this.setState({
+          checkingCacheForNodeURL: false,
+        })
     }
   }
 
@@ -139,9 +141,10 @@ class ConnectToNode extends React.Component {
    * @param {string} invitationCode
    */
   onChangeInvitationCode = invitationCode => {
-    this.setState({
-      invitationCode,
-    })
+    this.mounted &&
+      this.setState({
+        invitationCode,
+      })
   }
 
   /** @private */
@@ -156,7 +159,8 @@ class ConnectToNode extends React.Component {
         },
       })
       Logger.log(resp)
-      this.setState({ nodeURL: (await resp.json()).data.address })
+      this.mounted &&
+        this.setState({ nodeURL: (await resp.json()).data.address })
     } catch (error) {
       Logger.log(error)
     }
@@ -196,9 +200,10 @@ class ConnectToNode extends React.Component {
    * @param {string} nodeURL
    */
   onChangeNodeURL = nodeURL => {
-    this.setState({
-      nodeURL,
-    })
+    this.mounted &&
+      this.setState({
+        nodeURL,
+      })
   }
 
   connectURL = async (url = '') => {
@@ -262,9 +267,10 @@ class ConnectToNode extends React.Component {
   }
 
   toggleQRScreen = () => {
-    this.setState(({ scanningQR }) => ({
-      scanningQR: !scanningQR,
-    }))
+    this.mounted &&
+      this.setState(({ scanningQR }) => ({
+        scanningQR: !scanningQR,
+      }))
   }
 
   /**
@@ -273,16 +279,17 @@ class ConnectToNode extends React.Component {
   onQRRead = data => {
     if (data && typeof data === 'object') {
       const { internalIP, externalIP, walletPort } = data
-      this.setState(
-        {
-          scanningQR: false,
-          nodeURL: internalIP + ':' + walletPort,
-          externalURL: `${externalIP}:${walletPort}`,
-        },
-        () => {
-          this.onPressConnect()
-        },
-      )
+      this.mounted &&
+        this.setState(
+          {
+            scanningQR: false,
+            nodeURL: internalIP + ':' + walletPort,
+            externalURL: `${externalIP}:${walletPort}`,
+          },
+          () => {
+            this.onPressConnect()
+          },
+        )
     }
   }
 
@@ -305,9 +312,10 @@ class ConnectToNode extends React.Component {
   }
 
   toggleInvitation = () => {
-    this.setState(({ isUsingInvitation }) => ({
-      isUsingInvitation: !isUsingInvitation,
-    }))
+    this.mounted &&
+      this.setState(({ isUsingInvitation }) => ({
+        isUsingInvitation: !isUsingInvitation,
+      }))
   }
 
   render() {

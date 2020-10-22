@@ -1,8 +1,3 @@
-/**
- * @prettier
- */
-
-import { Dimensions } from 'react-native'
 import { createSwitchNavigator, createAppContainer } from 'react-navigation'
 import { createDrawerNavigator } from 'react-navigation-drawer'
 import { createStackNavigator } from 'react-navigation-stack'
@@ -14,7 +9,6 @@ import Chats, { CHATS_ROUTE } from '../screens/Chats'
 import Advanced, { ADVANCED_SCREEN } from '../screens/Advanced'
 import WalletOverview, { WALLET_OVERVIEW } from '../screens/WalletOverview'
 import SeedBackup, { SEED_BACKUP } from '../screens/SeedBackup'
-//@ts-ignore
 import WalletSettings, { WALLET_SETTINGS } from '../screens/WalletSettings'
 import Feed from '../screens/Feed'
 import AddPostToFeed, { ADD_POST_TO_FEED } from '../screens/AddPostToFeed'
@@ -29,7 +23,6 @@ import {
 import Login, { LOGIN } from '../screens/Login'
 
 import MyProfile, { MY_PROFILE } from '../screens/MyProfile'
-//import MyFeed, { MY_FEED } from '../screens/MyFeed'
 import Loading, { LOADING } from '../screens/Loading'
 
 import WalletManager, { WALLET_MANAGER } from './WalletManager'
@@ -63,7 +56,6 @@ const BottomNav = createBottomTabNavigator(
       showLabel: false,
       style: {
         borderTopWidth: 0,
-        // backgroundColor: CSS.Colors.BACKGROUND_WHITE,
         backgroundColor: CSS.Colors.BACKGROUND_BLACK,
         height: CSS.BOTTOM_BAR_HEIGHT,
         shadowColor: '#000',
@@ -90,7 +82,6 @@ const WalletNav = createStackNavigator(
   {
     initialRouteName: BOTTOM_NAV,
     defaultNavigationOptions: {
-      header: () => null,
       headerTitleAlign: 'center',
     },
   },
@@ -98,9 +89,6 @@ const WalletNav = createStackNavigator(
 
 BottomNav.navigationOptions = {
   header: () => null,
-  // drawerIcon: () => {
-  //   return <IconDrawerHome />
-  // },
 }
 
 const MAIN_DRAWER = 'MAIN_DRAWER'
@@ -144,12 +132,7 @@ const drawerScreens = {
       title: 'Seed Backup',
     },
   },
-  /*[FEED]: {
-    screen: Feed,
-    navigationOptions: {
-      title: 'Feed POC',
-    },
-  },*/
+
   [ADD_POST_TO_FEED]: {
     screen: AddPostToFeed,
     navigationOptions: {
@@ -174,85 +157,11 @@ const drawerScreens = {
       title: 'Publish Content',
     },
   },
-  /*[CREATE_POST]: { already declared
-    screen: CreatePost,
-    navigationOptions: {
-      title: 'Publish Content Dark',
-    },
-  },*/
 }
 
 if (theme === 'dark') {
-  //delete drawerScreens[SEED_BACKUP]
-  //delete drawerScreens[FEED]
   delete drawerScreens[ADD_POST_TO_FEED]
-  //delete drawerScreens[CREATE_POST]
-  //delete drawerScreens[LNURL_SCREEN]
-  //delete drawerScreens[PUBLISH_CONTENT_DARK]
 }
-//
-// const drawerScreens = {
-//   [WALLET_NAV]: {
-//     screen: WalletNav,
-//     navigationOptions: {
-//       title: 'Home',
-//     },
-//   },
-//   [ADVANCED_SCREEN]: {
-//     screen: Advanced,
-//     navigationOptions: {
-//       title: 'Advanced Lightning',
-//     },
-//   },
-//   [SEED_BACKUP]: {
-//     screen: SeedBackup,
-//     navigationOptions: {
-//       title: 'Seed Backup',
-//     },
-//   },
-//   [WALLET_SETTINGS]: {
-//     screen: WalletSettings,
-//     navigationOptions: {
-//       title: 'Wallet Settings',
-//     },
-//   },
-//   [FEED]: {
-//     screen: Feed,
-//     navigationOptions: {
-//       title: 'Feed POC',
-//     },
-//   },
-//   [ADD_POST_TO_FEED]: {
-//     screen: AddPostToFeed,
-//     navigationOptions: {
-//       title: 'Add Post to Feed',
-//     },
-//   },
-//   [CREATE_POST]: {
-//     screen: CreatePost,
-//     navigationOptions: {
-//       title: 'Add Post to Feed',
-//     },
-//   },
-//   [LNURL_SCREEN]: {
-//     screen: LNURL,
-//     navigationOptions: {
-//       title: 'LNURL utils',
-//     },
-//   },
-//   [PUBLISH_CONTENT_DARK]: {
-//     screen: PublishContentDark,
-//     navigationOptions: {
-//       title: 'Publish Content',
-//     },
-//   },
-//   [CREATE_POST_DARK]: {
-//     screen: CreatePostDark,
-//     navigationOptions: {
-//       title: 'Publish Content Dark',
-//     },
-//   },
-// }
 
 if (__DEV__) {
   drawerScreens[DEBUG] = {
@@ -263,13 +172,10 @@ if (__DEV__) {
   }
 }
 
-const EDGE_WIDTH = Dimensions.get('screen').width
-
 const MainDrawer = createDrawerNavigator(drawerScreens, {
   initialRouteName: WALLET_NAV,
   drawerPosition: 'right',
   contentComponent: CustomDrawer,
-  edgeWidth: EDGE_WIDTH,
   drawerBackgroundColor: 'transparent',
   contentOptions: {
     labelStyle: {

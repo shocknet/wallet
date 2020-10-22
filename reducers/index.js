@@ -22,6 +22,7 @@ import auth from './auth'
 import invoicesListed from './invoices-listed'
 import invoicesAdded from './invoices-added'
 import chainTXs from './chain-txs'
+import posts from './posts'
 
 const rootReducer = {
   auth,
@@ -37,7 +38,7 @@ const rootReducer = {
   feedWall: FeedWallReducer,
   follows: FollowsReducer,
   singleFeed: SingleFeedReducer,
-  posts: Common.Store.reducersObj.posts,
+  posts,
   settings: SettingsReducer,
   paymentsV2s,
   tips,

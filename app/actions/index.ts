@@ -3,7 +3,7 @@ import { RehydrateAction } from 'redux-persist'
 
 import * as ChatActions from './ChatActions'
 import * as RequestActions from './RequestActions'
-import * as UsersActions from './UsersActions'
+import { UsersAction } from './users'
 import * as Follows from './follows'
 import * as Feed from './feed'
 import * as FeedWall from './FeedAction'
@@ -22,9 +22,10 @@ import { ConnectionAction } from './ConnectionActions'
 import { AuthAction } from './auth'
 import { PaymentsAction } from './payments'
 import { ChainTXsAction } from './chain-txs'
+import { PostsAction } from './posts'
 
 export type Action =
-  | UsersActions.ReceivedUsersDataAction
+  | UsersAction
   | ChatActions.ReceivedChatsAction
   | RequestActions.ReceivedRequestsAction
   | RequestActions.SentRequestsAction
@@ -44,6 +45,7 @@ export type Action =
   | PaymentsAction
   | ChainTXsAction
   | RehydrateAction
+  | PostsAction
 
 export const receivedBackfeed = Common.Store.Actions.receivedBackfeed
 export const receivedFeed = Common.Store.Actions.receivedFeed
@@ -69,14 +71,7 @@ export * from './payments'
 export * from './chain-txs'
 export * from './me'
 export { fetchNodeInfo } from './NodeActions'
+export * from './users'
+export * from './posts'
 
-export {
-  ChatActions,
-  RequestActions,
-  UsersActions,
-  Follows,
-  Feed,
-  SingleFeed,
-  FeedWall,
-  Me,
-}
+export { ChatActions, RequestActions, Follows, Feed, SingleFeed, FeedWall, Me }

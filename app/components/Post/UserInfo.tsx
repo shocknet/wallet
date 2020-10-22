@@ -12,10 +12,6 @@ interface Props {
 }
 
 export default class UserInfo extends React.Component<Props> {
-  shouldComponentUpdate() {
-    return false
-  }
-
   render() {
     const { author, date } = this.props
     return (

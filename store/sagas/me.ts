@@ -60,17 +60,22 @@ function* me() {
         setSocket('header', rifle('$user::profileBinary.header::on'))
 
         sockets['header']!.on('$shock', (header: unknown) => {
-          if (typeof header !== 'string') {
-            Logger.log('Error inside me* ()')
-            Logger.log("typeof header !== 'string'")
-            return
-          }
+          try {
+            if (typeof header !== 'string') {
+              Logger.log('Error inside me* ()')
+              Logger.log("typeof header !== 'string'")
+              return
+            }
 
-          getStore().dispatch(
-            Actions.receivedMeData({
-              header,
-            }),
-          )
+            getStore().dispatch(
+              Actions.receivedMeData({
+                header,
+              }),
+            )
+          } catch (err) {
+            Logger.log('Error inside me* ()')
+            Logger.log(err)
+          }
         })
 
         sockets['header']!.on('$error', (err: unknown) => {
@@ -81,17 +86,22 @@ function* me() {
         setSocket('avatar', rifle('$user::profileBinary.avatar::on'))
 
         sockets['avatar']!.on('$shock', (avatar: unknown) => {
-          if (typeof avatar !== 'string' && avatar !== null) {
-            Logger.log('Error inside me* ()')
-            Logger.log("typeof avatar !== 'string' && avatar !== null")
-            return
-          }
+          try {
+            if (typeof avatar !== 'string' && avatar !== null) {
+              throw new TypeError(
+                "typeof avatar !== 'string' && avatar !== null",
+              )
+            }
 
-          getStore().dispatch(
-            Actions.receivedMeData({
-              avatar,
-            }),
-          )
+            getStore().dispatch(
+              Actions.receivedMeData({
+                avatar,
+              }),
+            )
+          } catch (err) {
+            Logger.log('Error inside me* ()')
+            Logger.log(err.message)
+          }
         })
 
         sockets['avatar']!.on('$error', (err: unknown) => {

@@ -9,7 +9,6 @@ import {
 import { DrawerActions } from 'react-navigation-drawer'
 import { LNURL_SCREEN } from '../screens/LNURL'
 import Pad from './Pad'
-// import ShockAvatar from './ShockAvatar'
 import { ADVANCED_SCREEN } from '../screens/Advanced'
 import { SEED_BACKUP } from '../screens/SeedBackup'
 import { WALLET_SETTINGS } from '../screens/WalletSettings'
@@ -115,19 +114,7 @@ export default class CustomDrawer extends Component {
 
   render() {
     return (
-      // <View style={styles.flexBetween}>
       <View style={styles.flexBetweenDark}>
-        {/* <View style={styles.customDrawerContainer}>
-          <TouchableOpacity>
-            <ShockAvatar
-              height={40}
-              image={avatar}
-              avatarStyle={styles.avatarStyle}
-              disableOnlineRing
-              lastSeenApp={null}
-            />
-          </TouchableOpacity>
-        </View> */}
         <Pad amount={50} />
 
         <ScrollView style={styles.customDrawerScrollView}>

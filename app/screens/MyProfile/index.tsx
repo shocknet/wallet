@@ -429,10 +429,7 @@ class MyProfile extends React.PureComponent<Props, State> {
       //@ts-expect-error not sure why will dig into this later
       const { posts } = this.props.myWall
       const page = Number(_page)
-      //const res = await Http.delete(`/api/gun/wall/${page}&${id}`)
-      //if (res.status !== 200) {
-      //  throw new Error('status not 200 deletePost')
-      //}
+
       if (isNaN(page) || !postId) {
         return
       }

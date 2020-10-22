@@ -1,5 +1,6 @@
 import React from 'react'
 import { WebView } from 'react-native-webview'
+
 import notificationService from '../../../notificationService'
 
 type Props = {
@@ -7,22 +8,23 @@ type Props = {
   height: number
   magnet: string
   type: 'video' | 'image'
-  permission: 'private' | 'public'
-  //selectedView:'preview'|'media',
   updateToMedia: (() => void) | null
 }
+
 type State = {
   html: string
 }
+
 type CompleteWebView = WebView & { postMessage: (message: string) => void }
 
 export default class ShockWebView extends React.Component<Props, State> {
   state = {
     html: '',
   }
+
   componentDidMount() {
-    const { magnet, type, permission } = this.props
-    const finalType = /*permission === 'public' ? 'image' :*/ type
+    const { magnet, type: finalType } = this.props
+
     const playerString =
       finalType === 'video'
         ? `<video id="player" style="width:100%"></video>`
@@ -47,14 +49,9 @@ export default class ShockWebView extends React.Component<Props, State> {
   <script src="https://cdn.jsdelivr.net/npm/webtorrent@latest/webtorrent.min.js"></script>
     <script type="text/javascript">
     
-    //document.getElementById("input").addEventListener("focus", function() {  
-      //window.ReactNativeWebView.postMessage("THIS IS IT");
-    // });
     var client = new WebTorrent()
     
-    //var torrentId = 'magnet:?xt=urn:btih:08ada5a7a6183aae1e09d831df6748d566095a10&dn=Sintel&tr=udp%3A%2F%2Fexplodie.org%3A6969&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969&tr=udp%3A%2F%2Ftracker.empire-js.us%3A1337&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337&tr=wss%3A%2F%2Ftracker.btorrent.xyz&tr=wss%3A%2F%2Ftracker.fastcast.nz&tr=wss%3A%2F%2Ftracker.openwebtorrent.com&ws=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2F&xs=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2Fsintel.torrent'
     var torrentId = '${magnet}'
-    var permission = '${permission}'
     client.add(torrentId, function (torrent) {
       let cont = 0
       let infoBuff = ''
@@ -66,7 +63,6 @@ export default class ShockWebView extends React.Component<Props, State> {
       try{
         infoBuff = JSON.parse(infoBuff)
       } catch(e){}
-      //window.ReactNativeWebView.postMessage("E"+JSON.stringify(infoBuff))
       if(typeof infoBuff === 'object'){
         const previewFile = !!infoBuff.previewName && torrent.files.find(function (file) {
           return (file.name == infoBuff.previewName) 
@@ -92,21 +88,16 @@ export default class ShockWebView extends React.Component<Props, State> {
               document.getElementById("body").appendChild(node)
               mainFile.renderTo(id)
               if(element === "video"){
-                //window.ReactNativeWebView.postMessage("YE!!!P");
                 node.play()
               }
             }
           
           })
         }
-        //this.document.addEventListener('message',)
-        //document.getElementById("swag").innerText =  (!!check1).toString() +" " + (!!check2).toString() +" " + (!!check3).toString() +" " + (!!check4).toString() +" "
       } else {
-        //window.ReactNativeWebView.postMessage("YEAH")
         var file = torrent.files.find(function (file) {
           return ${fileExtension}
         })
-        //file.appendTo('body') // append the file to the DOM
         file.renderTo('${domID}')
         if("${finalType}" === 'video'){
           const video = document.getElementById("player")
@@ -123,23 +114,17 @@ export default class ShockWebView extends React.Component<Props, State> {
   }
 
   webview: CompleteWebView | null = null
-  /*componentDidUpdate(prevProps:Props){
-    if(prevProps.selectedView !== this.props.selectedView){
-      if(this.webview){
-        this.webview.postMessage( this.props.selectedView );
-      }
-    }
-  }*/
+
   assignRef = (ref: WebView) => {
     this.webview = ref as CompleteWebView
   }
+
   render() {
     const { width, height } = this.props
 
     return (
       <WebView
         ref={this.assignRef}
-        // eslint-disable-next-line
         style={{ width: '100%', aspectRatio: width / height }}
         allowUniversalAccessFromFileURLs
         mediaPlaybackRequiresUserAction={false}
@@ -147,7 +132,6 @@ export default class ShockWebView extends React.Component<Props, State> {
         allowsFullscreenVideo
         mixedContentMode="always"
         originWhitelist={['*']}
-        // eslint-disable-next-line
         onMessage={event => {
           const { data } = event.nativeEvent
           if (data === 'updateSelectedMediaSizes') {

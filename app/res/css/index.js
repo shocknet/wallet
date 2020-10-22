@@ -13,6 +13,8 @@ export const Colors = {
   DARK_MODE_TEXT_GRAY: '#9C9C9C',
   DARK_MODE_BACKGROUND_DARK: '#16191C',
   DARK_MODE_CYAN: '#4285B9',
+  DARK_MODE_BACKGROUND_BLUEISH_GRAY: '#212937',
+  DARK_MODE_BORDER_GRAY: '#707070',
 }
 
 export const styles = StyleSheet.create({
@@ -69,6 +71,13 @@ export const styles = StyleSheet.create({
   width0: { width: '0%' },
   width100: { width: '100%' },
   empty: {},
+  opacityZero: { opacity: 0 },
+  rowCentered: { flexDirection: 'row', alignItems: 'center' },
+  rowCenteredSpaceBetween: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
 })
 
 export const SCREEN_PADDING = 30

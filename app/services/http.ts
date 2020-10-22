@@ -74,6 +74,10 @@ export const post = async <T>(
 
     return dataReceived
   } catch (err) {
+    if (typeof err.message === 'string') {
+      throw err
+    }
+
     if (err.response && err.response.data) {
       if (typeof err.response.data === 'object') {
         const { message, errorMessage } = err.response.data
@@ -91,6 +95,72 @@ export const post = async <T>(
       }
     }
 
-    throw new Error(`Unknown Error (Malformed)`)
+    throw new Error(`Unknown Error (Malformed): ${JSON.stringify(err)}`)
+  }
+}
+
+/**
+ * @param url
+ * @param headers
+ * @param validator
+ * @throws {Error}
+ * @throws {TypeError}
+ */
+export const get = async <T>(
+  url: string,
+  headers?: Record<string, string>,
+  validator?: (data: unknown) => string,
+): Promise<T> => {
+  try {
+    const axiosRes: AxiosResponse<T | ErrorResponse> = await Http.get(url, {
+      headers,
+    })
+
+    const { data: dataReceived, status } = axiosRes
+
+    if (isErrResponse(dataReceived)) {
+      throw new Error(
+        dataReceived.errorMessage ||
+          dataReceived.message ||
+          'Unknown Error (Not a valid error response)',
+      )
+    }
+
+    if (status !== 200) {
+      throw new Error(`Non OK response, no error message.`)
+    }
+
+    if (validator) {
+      const msg = validator(dataReceived)
+
+      if (msg) {
+        throw new TypeError(msg)
+      }
+    }
+
+    return dataReceived
+  } catch (err) {
+    if (typeof err.message === 'string') {
+      throw err
+    }
+
+    if (err.response && err.response.data) {
+      if (typeof err.response.data === 'object') {
+        const { message, errorMessage } = err.response.data
+        if (errorMessage) {
+          throw new Error(errorMessage)
+        }
+
+        if (message) {
+          throw new Error(message)
+        }
+      }
+
+      if (typeof err.response.data === 'string') {
+        throw new Error(err.response.data)
+      }
+    }
+
+    throw new Error(`Unknown Error (Malformed): ${JSON.stringify(err)}`)
   }
 }

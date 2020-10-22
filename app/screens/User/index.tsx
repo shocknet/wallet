@@ -1,347 +1,299 @@
 import React from 'react'
 import {
-  Clipboard,
   Text,
   StyleSheet,
-  ToastAndroid,
   TouchableOpacity,
   View,
+  StatusBar,
   FlatList,
   ListRenderItemInfo,
-  // RefreshControl,
+  ImageBackground,
+  Animated,
+  Platform,
 } from 'react-native'
-import moment from 'moment'
-import { connect } from 'react-redux'
+import Ionicons from 'react-native-vector-icons/Ionicons'
+import { NavigationStackScreenProps } from 'react-navigation-stack'
 import * as Common from 'shock-common'
-import Http from 'axios'
-import * as R from 'ramda'
-import Logger from 'react-native-file-log'
+import _ from 'lodash'
+import { connect } from 'react-redux'
+import { StackNavigationOptions } from 'react-navigation-stack/lib/typescript/src/vendor/types'
 
-import { SafeAreaView } from 'react-navigation'
-import {
-  NavigationStackOptions,
-  NavigationStackScreenProps,
-} from 'react-navigation-stack'
-
-import { SET_LAST_SEEN_APP_INTERVAL } from '../../services/utils'
 import * as CSS from '../../res/css'
-import { ConnectedShockAvatar } from '../../components/ShockAvatar'
-import QR from '../WalletOverview/QR'
 import Pad from '../../components/Pad'
-import * as Reducers from '../../../reducers'
+import Post from '../../components/Post'
+import * as Thunks from '../../thunks'
+import * as Store from '../../../store'
 import * as Routes from '../../routes'
-import FollowBtn from '../../components/FollowBtn'
-import Post from '../../components/Post/Wall'
-import TipBtn from '../../components/TipBtn'
+import Tabs from '../../components/tabs'
 
-type UserType = Common.Schema.User
-type Navigation = NavigationStackScreenProps<Routes.UserParams, {}>
+export const MY_PROFILE = 'MY_PROFILE'
 
-interface ConnectedProps {
-  users: UserType[]
+const DEFAULT_USER_IMAGE = ''
+
+interface OwnProps {
+  navigation: NavigationStackScreenProps<Routes.UserParams, {}>['navigation']
 }
 
-type Props = ConnectedProps & Navigation
+interface StateProps {
+  avatar: string | null
+  header: string | null
+  displayName: string | null
+  bio: string | null
+  posts: Common.Schema.PostN[]
+}
+
+interface DispatchProps {}
+
+type Props = OwnProps & StateProps & DispatchProps
 
 interface State {
-  posts: Common.Schema.Post[]
-  lastPageFetched: number
-  loadingNextPage: boolean
+  scrollY: Animated.Value
+  showQrCodeModal: boolean
+  numOfPages: number
 }
 
-const showCopiedToClipboardToast = () => {
-  ToastAndroid.show('Copied to clipboard!', 800)
-}
-
-interface Sentinel {
-  type: '@@Sentinel'
-}
-
-type Item = Sentinel | Common.Schema.Post
-
-class User extends React.Component<Props, State> {
-  static navigationOptions: NavigationStackOptions = {
-    header: undefined,
-    headerStyle: {
-      elevation: 0,
-      shadowOpacity: 0,
-      shadowOffset: {
-        height: 0,
-        width: 0,
-      },
+class User extends React.PureComponent<Props, State> {
+  static navigationOptions: StackNavigationOptions = {
+    headerTransparent: true,
+    headerBackImage: () => (
+      <Ionicons
+        name="ios-arrow-round-back"
+        color={CSS.Colors.BORDER_WHITE}
+        size={40}
+      />
+    ),
+    headerTitleStyle: {
+      display: 'none',
     },
   }
 
-  intervalID: number | null = 0
-
   state: State = {
-    lastPageFetched: 0,
-    posts: [],
-    loadingNextPage: true,
+    scrollY: new Animated.Value(0),
+    showQrCodeModal: false,
+    numOfPages: 0,
   }
 
-  fetchNextPage = async () => {
-    // getParam is deprecated
-    const publicKey = this.props.navigation.getParam('publicKey')
-
-    if (!publicKey) {
-      return
-    }
-
-    this.setState({
-      loadingNextPage: true,
-    })
-
-    try {
-      const res = await Http.get(
-        `/api/gun/wall/${publicKey}?page=${this.state.lastPageFetched - 1}`,
-      )
-
-      if (res.status !== 200) {
-        throw new Error(`Not 200: ${JSON.stringify(res.data)}`)
-      }
-      this.setState(({ posts, lastPageFetched }) => {
-        const { posts: postsRecord } = res.data
-        const fetchedPosts: Common.Schema.Post[] = Object.values(postsRecord)
-        const mixedWithExisting = [...posts, ...fetchedPosts]
-        const dedupped = R.uniqBy(R.prop('id'), mixedWithExisting)
-
-        const sorted = R.sort((a, b) => b.date - a.date, dedupped)
-
-        return {
-          posts: sorted,
-          lastPageFetched: lastPageFetched - 1,
-        }
-      })
-    } catch (err) {
-      Logger.log(err)
-      ToastAndroid.show(
-        `Error fetching posts: ${err.message ||
-          err.errorMessage ||
-          'Unknown error'}`,
-        800,
-      )
-    } finally {
-      this.setState({
-        loadingNextPage: false,
-      })
-    }
-  }
-
-  reload = () => {
-    this.setState(
-      {
-        lastPageFetched: 0,
-      },
-      this.fetchNextPage,
-    )
-  }
-
-  componentDidMount() {
-    this.intervalID = setInterval(() => {
-      this.forceUpdate()
-    }, SET_LAST_SEEN_APP_INTERVAL)
-
-    this.fetchNextPage()
-  }
-
-  componentWillUnmount() {
-    if (this.intervalID !== null) {
-      clearInterval(this.intervalID)
-      this.intervalID = null
-    }
-  }
-
-  copyDataToClipboard = () => {
-    const data = `$$__SHOCKWALLET__USER__${this.getUser().publicKey}`
-
-    Clipboard.setString(data)
-
-    showCopiedToClipboardToast()
-  }
-
-  getUser(): UserType {
-    // TODO fix this
-    return (
-      this.props.users.find(
-        u => u.publicKey === this.props.navigation.getParam('publicKey', ''),
-      ) ||
-      Common.Schema.createEmptyUser(
-        this.props.navigation.getParam('publicKey', ''),
-      )
-    )
-  }
-
-  renderItem = ({ item }: ListRenderItemInfo<Item>) => {
-    if (Common.Schema.isPost(item)) {
-      const imageCIEntries = Object.entries(item.contentItems).filter(
-        ([_, ci]) => ci.type === 'image/embedded',
-      ) as [
-        string,
-        Common.Schema.EmbeddedImage & {
-          isPreview: boolean
-          isPrivate: boolean
-        },
-      ][]
-
-      const videoCIEntries = Object.entries(item.contentItems).filter(
-        ([_, ci]) => ci.type === 'video/embedded',
-      ) as [
-        string,
-        Common.Schema.EmbeddedVideo & {
-          isPreview: boolean
-          isPrivate: boolean
-        },
-      ][]
-
-      const paragraphCIEntries = Object.entries(item.contentItems).filter(
-        ([_, ci]) => ci.type === 'text/paragraph',
-      ) as [string, Common.Schema.Paragraph][]
-
-      const images = imageCIEntries.map(([key, imageCI]) => ({
-        id: key,
-        data: imageCI.magnetURI,
-        width: Number(imageCI.width),
-        height: Number(imageCI.height),
-        isPreview: imageCI.isPreview,
-        isPrivate: imageCI.isPrivate,
-      }))
-
-      const videos = videoCIEntries.map(([key, videoCI]) => ({
-        id: key,
-        data: videoCI.magnetURI,
-        width: Number(videoCI.width),
-        height: Number(videoCI.height),
-        isPreview: videoCI.isPreview,
-        isPrivate: videoCI.isPrivate,
-      }))
-
-      const paragraphhs = paragraphCIEntries.map(([key, paragraphCI]) => ({
-        id: key,
-        text: paragraphCI.text,
-      }))
-
-      return (
-        <Post
-          author={item.author}
-          date={item.date}
-          images={images}
-          videos={videos}
-          paragraphs={paragraphhs}
-          parentScrollViewRef={undefined}
-          deletePost={() => {}}
-          postId={item.id}
-          //@ts-ignore
-          postPage={item.page ? item.page : '0'}
-          //@ts-ignore
-          tipCounter={item.tipCounter ? item.tipCounter : 0}
-          //@ts-ignore
-          tipValue={item.tipValue ? item.tipValue : 0}
-        />
-      )
-    }
-
-    const { displayName, lastSeenApp, publicKey } = this.getUser()
-
+  renderItem = ({ item }: ListRenderItemInfo<Common.Schema.PostBase>) => {
     return (
       <View>
-        <View style={styles.subContainer}>
-          <TouchableOpacity>
-            <ConnectedShockAvatar height={100} publicKey={publicKey} />
-          </TouchableOpacity>
-
-          <Pad amount={4} />
-
-          <Text style={styles.displayName}>
-            {displayName === null ? 'Loading...' : displayName}
-          </Text>
-
-          {/* <Pad amount={8} /> */}
-
-          {/* <Text style={styles.bodyText}>{bio || 'Loading...'}</Text> */}
-
-          <Text>
-            {lastSeenApp === 0
-              ? 'Not seen recently'
-              : `Seen ${moment(lastSeenApp).fromNow()} ago`}
-          </Text>
-        </View>
-
-        <View style={styles.subContainer}>
-          <TouchableOpacity onPress={this.copyDataToClipboard}>
-            <QR
-              size={256}
-              logoToShow="shock"
-              value={`$$__SHOCKWALLET__USER__${publicKey}`}
-            />
-          </TouchableOpacity>
-        </View>
-
-        <TipBtn recipientsPublicKey={publicKey} />
-        <FollowBtn publicKey={publicKey} />
+        <Post id={item.id} showTipBtn />
+        <Pad amount={12} />
       </View>
     )
   }
 
-  getData = (): Item[] => {
-    return [{ type: '@@Sentinel' }, ...this.state.posts]
-  }
-
-  keyExtractor = (item: Item) => {
-    return (item as Common.Schema.Post).id || (item as Sentinel).type
-  }
-
   render() {
+    const { avatar, header, bio, displayName } = this.props
+
+    const headerHeight = this.state.scrollY.interpolate({
+      inputRange: [0, HEADER_SCROLL_DISTANCE],
+      outputRange: [HEADER_MAX_HEIGHT, HEADER_MIN_HEIGHT],
+      extrapolate: 'clamp',
+    })
+    const avatarWidth = this.state.scrollY.interpolate({
+      inputRange: [0, HEADER_SCROLL_DISTANCE],
+      outputRange: [130, 50],
+      extrapolate: 'clamp',
+    })
+    const avatarRadius = this.state.scrollY.interpolate({
+      inputRange: [0, HEADER_SCROLL_DISTANCE],
+      outputRange: [65, 25],
+      extrapolate: 'clamp',
+    })
+    const imgMargin = this.state.scrollY.interpolate({
+      inputRange: [0, HEADER_SCROLL_DISTANCE],
+      outputRange: [-30, -200],
+      extrapolate: 'clamp',
+    })
+    const extrasOpacity = this.state.scrollY.interpolate({
+      inputRange: [0, HEADER_SCROLL_DISTANCE],
+      outputRange: [1, 0],
+      extrapolate: 'clamp',
+    })
+
     return (
-      <SafeAreaView style={styles.container}>
-        <FlatList
-          renderItem={this.renderItem}
-          data={this.getData()}
-          keyExtractor={this.keyExtractor}
-          onEndReached={this.fetchNextPage}
-          // refreshControl={
-          //   <RefreshControl
-          //     refreshing={this.state.loadingNextPage}
-          //     onRefresh={this.fetchNextPage}
-          //   />
-          // }
+      <>
+        <StatusBar
+          translucent
+          backgroundColor="transparent"
+          barStyle="light-content"
         />
-      </SafeAreaView>
+
+        <View style={styles.container}>
+          <Animated.View
+            style={{
+              position: 'absolute',
+              zIndex: 9,
+              width: '100%',
+              height: headerHeight,
+              overflow: 'hidden',
+            }}
+          >
+            <ImageBackground
+              source={{
+                uri: 'data:image/jpeg;base64,' + (header || ''),
+              }}
+              resizeMode="cover"
+              style={styles.backImage}
+            />
+
+            <Animated.View style={[styles.overview, { marginTop: imgMargin }]}>
+              <Animated.Image
+                source={
+                  avatar === null || avatar.length === 0
+                    ? {
+                        uri: 'data:image/jpeg;base64,' + DEFAULT_USER_IMAGE,
+                      }
+                    : {
+                        uri: 'data:image/jpeg;base64,' + avatar,
+                      }
+                }
+                style={{
+                  width: avatarWidth,
+                  height: avatarWidth,
+                  borderRadius: avatarRadius,
+                  overflow: 'hidden',
+                }}
+              />
+
+              <View style={styles.bio}>
+                <TouchableOpacity disabled={displayName === null}>
+                  <Text style={styles.displayNameDark}>
+                    {displayName || 'Loading...'}
+                  </Text>
+                </TouchableOpacity>
+
+                <Pad amount={8} />
+
+                <Animated.View style={{ opacity: extrasOpacity }}>
+                  <Text style={styles.bodyTextDark}>{bio || 'Loading...'}</Text>
+                </Animated.View>
+              </View>
+            </Animated.View>
+          </Animated.View>
+
+          <Tabs selectedTabIndex={0} texts={TABS} />
+
+          <FlatList
+            style={CSS.styles.width100}
+            overScrollMode={'never'}
+            scrollEventThrottle={16}
+            onScroll={Animated.event([
+              { nativeEvent: { contentOffset: { y: this.state.scrollY } } },
+            ])}
+            renderItem={this.renderItem}
+            data={this.props.posts}
+            keyExtractor={keyExtractor}
+            // TODO: fix this
+            ListHeaderComponent={listHeader}
+          />
+        </View>
+      </>
     )
   }
 }
 
-const mapStateToProps = (state: Reducers.State): ConnectedProps => {
-  //  TODO: find out a way to get a single user here
-  const users = Reducers.selectAllUsers(state)
-  const usersArr = Object.values(users) as Common.Schema.User[]
-
-  return {
-    users: usersArr,
-  }
-}
-
-const ConnectedUserScreen = connect(mapStateToProps)(User)
-
-export default ConnectedUserScreen
+const HEADER_MAX_HEIGHT = 300
+const HEADER_MIN_HEIGHT = Platform.OS === 'ios' ? 60 : 73
+const HEADER_SCROLL_DISTANCE = HEADER_MAX_HEIGHT - HEADER_MIN_HEIGHT
 
 const styles = StyleSheet.create({
-  displayName: {
-    color: CSS.Colors.TEXT_GRAY,
+  bodyTextDark: {
+    color: '#F3EFEF',
+    fontFamily: 'Montserrat-600',
+    fontSize: 12,
+    textAlign: 'left',
+  },
+
+  displayNameDark: {
+    textShadowColor: '#16191C',
+    textShadowRadius: 3,
+    color: '#F3EFEF',
     fontFamily: 'Montserrat-700',
     fontSize: 16,
+    textShadowOffset: { width: 0.5, height: 0.5 },
   },
 
   container: {
     alignItems: 'center',
-    backgroundColor: CSS.Colors.TEXT_WHITE,
+    backgroundColor: CSS.Colors.DARK_MODE_BACKGROUND_DARK,
     flex: 1,
-
-    paddingBottom: 20,
-    paddingTop: 20,
+    margin: 0,
+    justifyContent: 'flex-start',
   },
 
-  subContainer: {
+  backImage: {
+    width: '100%',
+    height: 170,
+    backgroundColor: CSS.Colors.FUN_BLUE,
+  },
+  overview: {
+    flexDirection: 'row',
     alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  avatarStyle: {
+    borderWidth: 5,
+    borderRadius: 100,
+    borderColor: '#707070',
+  },
+  bio: {
+    flexDirection: 'column',
+    flex: 2,
+    marginLeft: 20,
+    paddingTop: 55,
   },
 })
+
+const TABS = ['Wall', 'Items', 'Product']
+
+const mapDispatchToProps = (dispatch: any) => ({
+  DeletePost: (postInfo: {
+    postId: string
+    page: number
+    posts: Common.Schema.Post[]
+  }) => {
+    dispatch(Thunks.MyWall.DeletePost(postInfo))
+  },
+  FetchPage: (page: number, posts: Common.Schema.Post[]) => {
+    dispatch(Thunks.MyWall.FetchPage(page, posts))
+  },
+})
+
+const makeMapStateToProps = () => {
+  const getUser = Store.makeGetUser()
+  const getPostsForPublicKey = Store.makeGetPostsForPublicKey()
+
+  return (state: Store.State, { navigation }: OwnProps): StateProps => {
+    const publicKey = navigation.getParam('publicKey')
+    const { avatar, bio, header, displayName } = getUser(state, publicKey)
+    const posts = getPostsForPublicKey(state, publicKey)
+
+    return {
+      avatar,
+      bio,
+      header,
+      displayName,
+      posts,
+    }
+  }
+}
+
+const keyExtractor = (item: Common.Schema.PostBase) => {
+  return item.id
+}
+
+// TODO: fix this
+const listHeader = (
+  <View
+    style={{
+      height: 300,
+      backgroundColor: CSS.Colors.DARK_MODE_BACKGROUND_BLUEISH_GRAY,
+    }}
+  ></View>
+)
+
+export default connect(
+  makeMapStateToProps,
+  mapDispatchToProps,
+)(User)

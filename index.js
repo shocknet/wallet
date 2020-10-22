@@ -65,7 +65,7 @@ if (Platform.OS === 'android') {
 moment.locale('en', {
   relativeTime: {
     future: 'in %s',
-    past: '%s',
+    past: '%s ago',
     s: 'just now',
     ss: '%ss',
     m: '1m',
