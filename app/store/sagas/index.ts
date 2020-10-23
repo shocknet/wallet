@@ -1,4 +1,3 @@
-import * as Common from 'shock-common'
 import { all, call } from 'redux-saga/effects'
 
 import invoices from './invoices'
@@ -10,7 +9,6 @@ import follows from './follows'
 
 function* rootSaga() {
   yield all([
-    call(Common.Store.rootSaga),
     call(invoices),
     call(payments),
     call(chainTXs),
