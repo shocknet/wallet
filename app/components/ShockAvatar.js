@@ -136,7 +136,7 @@ const makeMapStateToProps = () => {
 /**
  * @type {React.FC<ConnectedProps>}
  */
-// @ts-ignore TODO
+// @ts-expect-error TODO
 const _ConnectedShockAvatar = connect(makeMapStateToProps)(ShockAvatar)
 
 export const ConnectedShockAvatar = withNavigation(_ConnectedShockAvatar)

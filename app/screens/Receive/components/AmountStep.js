@@ -1,7 +1,7 @@
 import React from 'react'
 import { View, StyleSheet, Text } from 'react-native'
 import { connect } from 'react-redux'
-// @ts-ignore
+// @ts-expect-error
 import { Dropdown } from 'react-native-material-dropdown'
 import * as CSS from '../../../res/css'
 import InputGroup from '../../../components/InputGroup'

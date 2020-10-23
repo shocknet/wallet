@@ -42,7 +42,7 @@ export const beganLoadFeed = page => ({
  * @return {FinishedLoadFeedAction}
  */
 export const finishedLoadFeed = data => ({
-  // @ts-ignore
+  // @ts-expect-error
   data,
   type: 'feedWall/finishedLoadFeed',
 })

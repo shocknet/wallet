@@ -2,7 +2,7 @@ import { createStore, applyMiddleware, Store as ReduxStore } from 'redux'
 import { persistStore, persistCombineReducers } from 'redux-persist'
 import * as Common from 'shock-common'
 import createSagaMiddleware from 'redux-saga'
-// @ts-ignore
+// @ts-expect-error
 import createSensitiveStorage from 'redux-persist-sensitive-storage'
 import thunk from 'redux-thunk'
 
@@ -30,7 +30,7 @@ const config = {
   storage,
 }
 
-// @ts-ignore TODO
+// @ts-expect-error TODO
 const persistedReducers = persistCombineReducers(config, reducers)
 
 // eslint-disable-next-line init-declarations

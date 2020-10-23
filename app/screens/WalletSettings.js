@@ -27,14 +27,13 @@ import {
 import {
   updateNotifyDisconnect,
   updateNotifyDisconnectAfter,
-  //@ts-ignore
 } from '../store/actions/SettingsActions'
 import ShockInput from '../components/ShockInput'
 import Pad from '../components/Pad'
 import Nav from '../components/Nav'
 import InputGroup from '../components/InputGroup'
 /** @type {number} */
-// @ts-ignore
+// @ts-expect-error
 const shockBG = require('../assets/images/shock-bg.png')
 
 export const WALLET_SETTINGS = 'WALLET_SETTINGS'
@@ -355,7 +354,6 @@ class WalletSettings extends React.Component {
                 <View style={styles.feeSourceInputGroupContainer}>
                   <InputGroup
                     label="Fee Source"
-                    //@ts-ignore
                     labelStyle={styles.feeSourceLabel}
                     value={tmpSource}
                     style={styles.feeSourceContainerInputGroup}

@@ -1,6 +1,3 @@
-/**
- * @format
- */
 import React from 'react'
 import {
   ActivityIndicator,
@@ -23,7 +20,6 @@ export const LOADING = 'LOADING'
 const SHOCK_LOGO_STYLE = { width: 100, height: 100 }
 
 /** @type {number} */
-// @ts-ignore
 const shockBG = require('../assets/images/shock-bg.png')
 
 /**

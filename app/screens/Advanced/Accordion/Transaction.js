@@ -8,7 +8,7 @@ import * as CSS from '../../../res/css'
  * @typedef {import('../../../services/wallet').Transaction} ITransaction
  */
 /** @type {number} */
-//@ts-ignore
+//@ts-expect-error
 const paymentIcon = require('../../../assets/images/payment-icon.png')
 //const blockExplorer = 'https://blockstream.info/tx/'
 

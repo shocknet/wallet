@@ -178,7 +178,7 @@ export default class ChatView extends React.Component {
    */
   componentDidUpdate(_, prevState) {
     if (prevState.inputToolbarHeight !== this.state.inputToolbarHeight) {
-      // @ts-ignore
+      // @ts-expect-error
       this.actionSheetStyle[1].bottom = this.state.inputToolbarHeight
       this.forceUpdate()
     }

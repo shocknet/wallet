@@ -26,7 +26,7 @@ import OnboardingInput from '../components/OnboardingInput'
 import OnboardingBtn from '../components/OnboardingBtn'
 import { throttledExchangeKeyPair } from '../store/actions/ConnectionActions'
 /** @type {number} */
-// @ts-ignore
+// @ts-expect-error
 const shockBG = require('../assets/images/shock-bg.png')
 
 export const CONNECT_TO_NODE = 'CONNECT_TO_NODE'
