@@ -1,4 +1,3 @@
-import Http from 'axios'
 import { ToastAndroid } from 'react-native'
 import Logger from 'react-native-file-log'
 
@@ -39,27 +38,4 @@ export const unfollow = publicKey => dispatch => {
       Logger.log(`Couldn't unfollow: ${e.message}`)
       dispatch(FollowsActions.unfollowError(publicKey))
     })
-}
-
-/**
- * @returns {(d: (a: any) => void) => void}
- */
-export const fetchFollows = () => async dispatch => {
-  try {
-    const res = await Http.get('/api/gun/follows/')
-
-    if (res.status !== 200) {
-      throw new Error(res.data.errorMessage || res.data || 'Unknown error')
-    }
-
-    dispatch(FollowsActions.receivedFollows(res.data))
-  } catch (err) {
-    ToastAndroid.show(
-      `Could not fetch follows: ${err.message || err.data || 'Unknown error'}`,
-      800,
-    )
-    Logger.log(
-      `Could not fetch follows: ${err.message || err.data || 'Unknown error'}`,
-    )
-  }
 }
