@@ -35,6 +35,10 @@ import Pad from '../../components/Pad'
 type Navigation = NavigationScreenProp<{}, Routes.UserParams>
 type Item = Common.Schema.Post
 
+interface OwnProps {
+  navigation: Navigation
+}
+
 interface StateProps {
   posts: Common.Schema.Post[]
   myFeed: import('../../store/reducers/myFeed').State
@@ -46,21 +50,19 @@ interface DispatchProps {
   FetchPage: (page: number, currentPosts: Common.Schema.Post[]) => void
 }
 
-interface OwnProps {
-  navigation: Navigation
-}
 interface FollowInfo {
   publicKey: string
   avatar: string | null
   displayName: string
 }
+
+type Props = StateProps & DispatchProps & OwnProps
+
 interface State {
   awaitingBackfeed: boolean
   awaitingMoreFeed: boolean
   followsInfo: Record<string, FollowInfo>
 }
-
-type Props = StateProps & DispatchProps & OwnProps
 
 const keyExtractor = (item: Common.Schema.Post) => item.id
 
