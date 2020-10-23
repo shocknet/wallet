@@ -21,7 +21,6 @@ import { StackNavigationOptions } from 'react-navigation-stack/lib/typescript/sr
 import * as CSS from '../../res/css'
 import Pad from '../../components/Pad'
 import Post from '../../components/Post'
-import * as Thunks from '../../store/thunks'
 import * as Store from '../../store'
 import * as Routes from '../../routes'
 import Tabs from '../../components/tabs'
@@ -251,19 +250,6 @@ const styles = StyleSheet.create({
 
 const TABS = ['Wall', 'Items', 'Product']
 
-const mapDispatchToProps = (dispatch: any) => ({
-  DeletePost: (postInfo: {
-    postId: string
-    page: number
-    posts: Common.Schema.Post[]
-  }) => {
-    dispatch(Thunks.MyWall.DeletePost(postInfo))
-  },
-  FetchPage: (page: number, posts: Common.Schema.Post[]) => {
-    dispatch(Thunks.MyWall.FetchPage(page, posts))
-  },
-})
-
 const makeMapStateToProps = () => {
   const getUser = Store.makeGetUser()
   const getPostsForPublicKey = Store.makeGetPostsForPublicKey()
@@ -297,7 +283,4 @@ const listHeader = (
   ></View>
 )
 
-export default connect(
-  makeMapStateToProps,
-  mapDispatchToProps,
-)(User)
+export default connect(makeMapStateToProps)(User)

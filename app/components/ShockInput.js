@@ -43,7 +43,7 @@ const ShockInput = ({
     style: styles.input,
     value,
 
-    // @ts-ignore TODO
+    // @ts-expect-error TODO
     paddingLeft: INPUT_PADDING_LEFT,
   }
 

@@ -277,7 +277,7 @@ class AdvancedScreen extends React.PureComponent {
     const updatedAccordions = { ...accordions }
 
     for (const key of Object.keys(updatedAccordions)) {
-      // @ts-ignore
+      // @ts-expect-error
       updatedAccordions[key] = key === name
     }
 
@@ -315,7 +315,7 @@ class AdvancedScreen extends React.PureComponent {
       fetchPayments,
       fetchTransactions,
     } = this.props
-    //@ts-ignore
+    //@ts-expect-error
     const currentData = history[routeName]
     const { page } = currentData
     const pageInt = typeof page === 'number' ? page : parseInt(page, 10)
@@ -337,7 +337,7 @@ class AdvancedScreen extends React.PureComponent {
    * @param {string} value
    */
   handleInputChange = (key, value) => {
-    // @ts-ignore
+    // @ts-expect-error
     this.setState({
       [key]: value,
     })
@@ -407,7 +407,7 @@ class AdvancedScreen extends React.PureComponent {
         channelPushAmount,
       } = this.state
       const { fetchChannels, fees } = this.props
-      //@ts-ignore
+      //@ts-expect-error
       if (isNaN(channelCapacity)) {
         return
       }
@@ -860,7 +860,7 @@ class AdvancedScreen extends React.PureComponent {
           </ImageBackground>
           <View style={styles.accordionsContainer}>
             <AccordionItem
-              //@ts-ignore
+              //@ts-expect-error
               data={[...history.pendingChannels, ...history.channels]}
               Item={Channel}
               keyExtractor={channelKeyExtractor}
@@ -886,7 +886,6 @@ class AdvancedScreen extends React.PureComponent {
             />
             <AccordionItem
               fetchNextPage={this.fetchNextPage('transactions')}
-              //@ts-ignore
               data={history.recentTransactions}
               Item={Transaction}
               title="Transactions"

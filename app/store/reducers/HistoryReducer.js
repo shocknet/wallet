@@ -72,7 +72,7 @@ const history = (state = INITIAL_STATE, action) => {
       }
       return {
         ...state,
-        //@ts-ignore
+        //@ts-expect-error
         channels: data,
       }
     }
@@ -83,7 +83,7 @@ const history = (state = INITIAL_STATE, action) => {
       }
       return {
         ...state,
-        //@ts-ignore
+        //@ts-expect-error
         pendingChannels: data,
       }
     }
@@ -104,7 +104,7 @@ const history = (state = INITIAL_STATE, action) => {
         ...state,
         invoices: {
           ...data,
-          //@ts-ignore
+          //@ts-expect-error
           content: [...invoices.content, ...data.content],
         },
       }
@@ -116,7 +116,7 @@ const history = (state = INITIAL_STATE, action) => {
       }
       return {
         ...state,
-        //@ts-ignore
+        //@ts-expect-error
         peers: data,
       }
     }
@@ -137,7 +137,7 @@ const history = (state = INITIAL_STATE, action) => {
         ...state,
         payments: {
           ...data,
-          //@ts-ignore
+          //@ts-expect-error
           content: [...payments.content, ...data.content],
         },
       }
@@ -159,7 +159,7 @@ const history = (state = INITIAL_STATE, action) => {
         ...state,
         transactions: {
           ...data,
-          //@ts-ignore
+          //@ts-expect-error
           content: [...transactions.content, ...data.content],
         },
       }
@@ -172,7 +172,7 @@ const history = (state = INITIAL_STATE, action) => {
 
       return {
         ...state,
-        //@ts-ignore
+        //@ts-expect-error
         recentTransactions: data.content,
       }
     }
@@ -184,7 +184,7 @@ const history = (state = INITIAL_STATE, action) => {
 
       return {
         ...state,
-        //@ts-ignore
+        //@ts-expect-error
         recentPayments: data,
       }
     }
@@ -195,7 +195,7 @@ const history = (state = INITIAL_STATE, action) => {
       }
       return {
         ...state,
-        //@ts-ignore
+        //@ts-expect-error
         recentInvoices: [data, ...state.recentInvoices],
       }
     }
@@ -276,7 +276,7 @@ const history = (state = INITIAL_STATE, action) => {
       /**
        * @type {{data:import('../../services/wallet').Transaction}}
        */
-      //@ts-ignore
+      //@ts-expect-error
       const { data } = action
       const { recentTransactions } = state
       const { tx_hash: txHash } = data
@@ -294,7 +294,6 @@ const history = (state = INITIAL_STATE, action) => {
       }
       return {
         ...state,
-        //@ts-ignore
         recentTransactions: newContent,
       }
     }
@@ -305,7 +304,7 @@ const history = (state = INITIAL_STATE, action) => {
       }
       return {
         ...state,
-        //@ts-ignore
+        //@ts-expect-error
         recentInvoices: reverse(data),
       }
     }

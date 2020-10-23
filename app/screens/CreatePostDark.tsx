@@ -117,7 +117,7 @@ class CreatePostDark extends React.Component<Props, State> {
       ]
       if (mediaContent) {
         mediaContent.forEach(e => {
-          //@ts-ignore
+          //@ts-expect-error
           contentItems.push(e)
         })
       }

@@ -47,9 +47,9 @@ export const uploadMedia = (media: MediaToUpload) => async (dispatch: any) => {
         previewParams,
       )
       mediaComplete.push({
-        //@ts-ignore
+        //@ts-expect-error
         height: media.previewMediaHeight,
-        //@ts-ignore
+        //@ts-expect-error
         width: media.previewMediaWidth,
         isPreview: true,
         magnetURI: preview.torrent,
@@ -86,9 +86,9 @@ export const uploadMedia = (media: MediaToUpload) => async (dispatch: any) => {
       mainParams,
     )
     mediaComplete.push({
-      //@ts-ignore
+      //@ts-expect-error
       height: media.mainMediaHeight,
-      //@ts-ignore
+      //@ts-expect-error
       width: media.mainMediaWidth,
       isPreview: false,
       magnetURI: main.torrent,
@@ -97,9 +97,9 @@ export const uploadMedia = (media: MediaToUpload) => async (dispatch: any) => {
     })
     if (previewMedia && !media.privateContent) {
       mediaComplete.unshift({
-        //@ts-ignore
+        //@ts-expect-error
         height: media.previewMediaHeight,
-        //@ts-ignore
+        //@ts-expect-error
         width: media.previewMediaWidth,
         isPreview: true,
         magnetURI: main.torrent,

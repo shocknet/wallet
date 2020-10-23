@@ -1,5 +1,5 @@
 import { NativeModules } from 'react-native'
-// @ts-ignore
+// @ts-expect-error
 import Crypto from 'react-native-crypto'
 import { RSA, RSAKeychain } from 'react-native-rsa-native'
 import Logger from 'react-native-file-log'

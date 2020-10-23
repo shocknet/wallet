@@ -173,7 +173,7 @@ class Debug extends React.Component {
   }
 }
 
-// @ts-ignore
+// @ts-expect-error
 const mapStateToProps = ({ connection }) => ({
   deviceID: connection.deviceId,
 })

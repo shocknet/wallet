@@ -129,7 +129,7 @@ class WalletOverview extends Component {
    * @param {Schema.InvoiceWhenListed} invoice
    */
   loadNewInvoice = invoice => {
-    // @ts-ignore
+    // @ts-expect-error
     this.props.loadNewInvoice(invoice)
   }
 
@@ -490,7 +490,7 @@ const mapDispatchToProps = {
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-  // @ts-ignore
+  // @ts-expect-error
 )(WalletOverview)
 
 const styles = StyleSheet.create({

@@ -38,13 +38,13 @@ class Socket {
     get connected() {
       return socket.connected
     },
-    // @ts-ignore
+    // @ts-expect-error
     off: () => socket.off(),
     disconnect: () => socket.disconnect(),
     get disconnected() {
       return socket.disconnected
     },
-    // @ts-ignore
+    // @ts-expect-error
     binary: b => this.encryptSocketInstance(socket.binary(b)),
     /**
      * @param {string} eventName
@@ -90,7 +90,6 @@ class Socket {
       const encryptedData = await this.encryptSocketData(data)
       // Logger.log('Encrypted Socket Data:', encryptedData)
       socket.emit(eventName, encryptedData)
-      // @ts-ignore
       return this.encryptSocketInstance(socket)
     },
   })

@@ -13,7 +13,7 @@ import {
 } from 'react-native'
 import { connect } from 'react-redux'
 import Ionicons from 'react-native-vector-icons/Ionicons'
-// @ts-ignore
+// @ts-expect-error
 import SwipeVerify from 'react-native-swipe-verify'
 import Logger from 'react-native-file-log'
 
@@ -105,7 +105,6 @@ class SendStep extends Component {
     /**
      * @type {Pick<State, keyof State>}
      */
-    // @ts-ignore TODO: fix typing
     const updatedState = {
       [key]: value,
     }

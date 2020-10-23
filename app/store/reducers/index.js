@@ -1,5 +1,3 @@
-import * as Common from 'shock-common'
-
 import HistoryReducer from './HistoryReducer'
 import WalletReducer from './WalletReducer'
 import NodeReducer from './NodeReducer'
@@ -8,7 +6,6 @@ import InvoiceReducer from './InvoiceReducer'
 import ConnectionReducer from './ConnectionReducer'
 import FeesReducer from './FeesReducer'
 import UsersReducer, * as Users from './UsersReducer'
-import FeedWallReducer from './FeedReducer'
 import FollowsReducer from './follows'
 import SingleFeedReducer from './singleFeed'
 import SettingsReducer from './SettingsReducer'
@@ -16,8 +13,6 @@ import paymentsV2s from './paymentV2s'
 import tips from './tips'
 import decodedInvoices from './decoded-invoices'
 import mediaLib from './mediaLib'
-import myWall from './myWall'
-import myFeed from './myFeed'
 import auth from './auth'
 import invoicesListed from './invoices-listed'
 import invoicesAdded from './invoices-added'
@@ -34,8 +29,6 @@ const rootReducer = {
   invoice: InvoiceReducer,
   fees: FeesReducer,
   users: UsersReducer,
-  feed: Common.Store.reducersObj.feed,
-  feedWall: FeedWallReducer,
   follows: FollowsReducer,
   singleFeed: SingleFeedReducer,
   posts,
@@ -44,8 +37,6 @@ const rootReducer = {
   tips,
   decodedInvoices,
   mediaLib,
-  myWall,
-  myFeed,
   invoicesListed,
   invoicesAdded,
   chainTXs,

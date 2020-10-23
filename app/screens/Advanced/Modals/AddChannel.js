@@ -1,6 +1,6 @@
 import React from 'react'
 import { View, StyleSheet, Text, ActivityIndicator } from 'react-native'
-// @ts-ignore
+// @ts-expect-error
 import { Dropdown } from 'react-native-material-dropdown'
 import Modal from 'react-native-modalbox'
 import ModalInput from '../../../components/PopupModal/Input'

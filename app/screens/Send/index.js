@@ -16,9 +16,9 @@ import {
   Switch,
 } from 'react-native'
 import Logger from 'react-native-file-log'
-// @ts-ignore
+// @ts-expect-error
 import { Dropdown } from 'react-native-material-dropdown'
-// @ts-ignore
+// @ts-expect-error
 import SwipeVerify from 'react-native-swipe-verify'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 import { connect } from 'react-redux'
@@ -209,7 +209,7 @@ class SendScreen extends Component {
     /**
      * @type {Pick<State, keyof State>}
      */
-    // @ts-ignore TODO: fix typing
+    // @ts-expect-error TODO: fix typing
     const updatedState = {
       [key]: value,
     }
@@ -221,7 +221,7 @@ class SendScreen extends Component {
     const { paymentRequest } = this.props.invoice
     const { selectedContact } = this.props.chat
     return (
-      // @ts-ignore
+      // @ts-expect-error
       ((selectedContact?.address?.length > 0 ||
         selectedContact?.type === 'keysend' ||
         selectedContact?.type === 'contact') &&
@@ -236,7 +236,7 @@ class SendScreen extends Component {
       const { selectedContact } = this.props.chat
       const { amount, sendAll } = this.state
 
-      // @ts-ignore
+      // @ts-expect-error
       if (!selectedContact.address) {
         return
       }
@@ -245,9 +245,8 @@ class SendScreen extends Component {
         sending: true,
       })
 
-      // @ts-ignore
       const transactionId = await Wallet.sendCoins({
-        // @ts-ignore
+        // @ts-expect-error
         addr: selectedContact.address,
         amount: sendAll ? undefined : parseInt(amount, 10),
         send_all: sendAll,
@@ -350,7 +349,7 @@ class SendScreen extends Component {
         sending: true,
       })
       await API.Actions.sendPayment(
-        // @ts-ignore
+        // @ts-expect-error
         selectedContact.pk,
         amount,
         description,
@@ -432,7 +431,6 @@ class SendScreen extends Component {
     if (chat.selectedContact.type === 'btc') {
       return (
         <Suggestion
-          // @ts-ignore
           name={chat.selectedContact.address}
           onPress={this.resetSearchState}
           type="btc"
@@ -443,9 +441,9 @@ class SendScreen extends Component {
 
     return (
       <Suggestion
-        // @ts-ignore
+        // @ts-expect-error
         name={chat.selectedContact.displayName}
-        // @ts-ignore
+        // @ts-expect-error
         avatar={chat.selectedContact.avatar}
         onPress={this.resetSearchState}
         style={styles.suggestion}
@@ -463,14 +461,14 @@ class SendScreen extends Component {
       return error.message
     }
     if (
-      // @ts-ignore
+      // @ts-expect-error
       error.response &&
-      // @ts-ignore
+      // @ts-expect-error
       error.response.data &&
-      // @ts-ignore
+      // @ts-expect-error
       error.response.data.errorMessage
     ) {
-      // @ts-ignore
+      // @ts-expect-error
       return error.response.data.errorMessage
     }
 

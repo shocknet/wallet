@@ -16,7 +16,7 @@ import { Provider } from 'react-redux'
 import Loading from './app/screens/Loading'
 import React from 'react'
 import RNBootSplash from 'react-native-bootsplash'
-// @ts-ignore
+// @ts-expect-error
 import url from 'url'
 
 import { throttledExchangeKeyPair } from './app/store/actions/ConnectionActions'
@@ -260,7 +260,7 @@ Http.interceptors.request.use(async config => {
         token: encryptedToken,
         iv,
       }
-      // @ts-ignore
+      // @ts-expect-error
       // eslint-disable-next-line require-atomic-updates
       config.originalData = stringifiedData
     }
@@ -470,15 +470,15 @@ Http.interceptors.response.use(
           connection.deviceId
 
         if (
-          // @ts-ignore
+          // @ts-expect-error
           decryptedResponse.config.originalData
         ) {
-          // @ts-ignore
+          // @ts-expect-error
           const response = await Http[
             decryptedResponse.config.method?.toLowerCase() ?? 'get'
           ](
             decryptedResponse.config.url,
-            // @ts-ignore
+            // @ts-expect-error
             JSON.parse(decryptedResponse.config.originalData),
             decryptedResponse.config.headers,
           )

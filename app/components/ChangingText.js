@@ -28,7 +28,7 @@ export default class ChangingText extends React.Component {
     this.setState(
       (
         { i },
-        // @ts-ignore
+        // @ts-expect-error
         { children, cycle },
       ) => {
         const len = size(children)
@@ -50,7 +50,7 @@ export default class ChangingText extends React.Component {
         }
       },
       () => {
-        // @ts-ignore
+        // @ts-expect-error
         const len = size(this.props.children)
         if (
           this.state.i === len - 1 &&

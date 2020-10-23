@@ -40,7 +40,7 @@ const Suggestion = ({
               ? styles.suggestionAvatarDark
               : styles.suggestionAvatar
           }
-          //@ts-ignore
+          //@ts-expect-error
           source={avatar}
           resizeMode="cover"
         />

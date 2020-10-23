@@ -14,7 +14,7 @@ import ShockButton from '../components/ShockButton'
 import ShockInput from '../components/ShockInput'
 import Pad from '../components/Pad'
 import * as CSS from '../res/css'
-//@ts-ignore
+//@ts-expect-error
 import bech32 from 'bech32'
 import { connect } from 'react-redux'
 import * as Cache from '../services/cache'

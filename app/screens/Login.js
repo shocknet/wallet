@@ -29,7 +29,7 @@ import * as Actions from '../store/actions'
 export const LOGIN = 'LOGIN'
 
 /** @type {number} */
-// @ts-ignore
+// @ts-expect-error
 const shockBG = require('../assets/images/shock-bg.png')
 
 /**
