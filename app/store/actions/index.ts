@@ -5,7 +5,6 @@ import * as ChatActions from './ChatActions'
 import * as RequestActions from './RequestActions'
 import { UsersAction } from './users'
 import * as Follows from './follows'
-import * as Feed from './feed'
 import * as MediaLib from './mediaLib'
 import { TipsAction } from './tips'
 import {
@@ -27,7 +26,6 @@ export type Action =
   | Follows.FollowsAction
   | Common.Store.Actions.FeedAction
   | Common.Store.Actions.PostsAction
-  | Feed.FeedActions
   | MediaLib.MediaLibAction
   | TipsAction
   | InvoicesAction
@@ -64,4 +62,4 @@ export { fetchNodeInfo } from './NodeActions'
 export * from './users'
 export * from './posts'
 
-export { ChatActions, RequestActions, Follows, Feed }
+export { ChatActions, RequestActions, Follows }

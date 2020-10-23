@@ -7,7 +7,6 @@ import ConnectionReducer from './ConnectionReducer'
 import FeesReducer from './FeesReducer'
 import UsersReducer, * as Users from './UsersReducer'
 import FollowsReducer from './follows'
-import SingleFeedReducer from './singleFeed'
 import SettingsReducer from './SettingsReducer'
 import paymentsV2s from './paymentV2s'
 import tips from './tips'
@@ -30,7 +29,6 @@ const rootReducer = {
   fees: FeesReducer,
   users: UsersReducer,
   follows: FollowsReducer,
-  singleFeed: SingleFeedReducer,
   posts,
   settings: SettingsReducer,
   paymentsV2s,
