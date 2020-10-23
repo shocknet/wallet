@@ -57,9 +57,9 @@ function* follows() {
 
       const socket = rifle('$user::follows::map.on')
 
-      socket.on('$shock', dataHandler)
+      setSocket(socket)
 
-      socket.on('$error', (err: string) => {
+      socket.on('$shock', dataHandler).on('$error', (err: string) => {
         Logger.log('Error inside follows* ()')
         Logger.log(err)
       })
