@@ -10,6 +10,7 @@ export * from './chain-txs'
 export * from './tips'
 export * from './auth'
 export * from './posts'
+export * from './follows'
 
 /**
  * For use inside sagas, allows typing of the return value from the select
