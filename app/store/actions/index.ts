@@ -6,11 +6,7 @@ import * as RequestActions from './RequestActions'
 import { UsersAction } from './users'
 import * as Follows from './follows'
 import * as Feed from './feed'
-import * as FeedWall from './FeedAction'
-import * as SingleFeed from './singleFeed'
 import * as MediaLib from './mediaLib'
-import * as myWall from './myWall'
-import * as myFeed from './myFeed'
 import { TipsAction } from './tips'
 import {
   InvoicesAction,
@@ -32,10 +28,7 @@ export type Action =
   | Common.Store.Actions.FeedAction
   | Common.Store.Actions.PostsAction
   | Feed.FeedActions
-  | FeedWall.FeedActions
   | MediaLib.MediaLibAction
-  | myWall.WallActions
-  | myFeed.FeedActions
   | TipsAction
   | InvoicesAction
   | ConnectionAction
@@ -71,4 +64,4 @@ export { fetchNodeInfo } from './NodeActions'
 export * from './users'
 export * from './posts'
 
-export { ChatActions, RequestActions, Follows, Feed, SingleFeed, FeedWall }
+export { ChatActions, RequestActions, Follows, Feed }

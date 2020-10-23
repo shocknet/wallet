@@ -14,8 +14,7 @@ import Pad from '../../components/Pad'
 import InputGroup from '../../components/InputGroup'
 import ArrowLeft from '../../assets/images/arrow-left.svg'
 
-// @ts-expect-error
-export default function MetaConfigModal(props) {
+export default function MetaConfigModal(props: any) {
   return (
     <View style={{ flex: 1 }}>
       <Modal

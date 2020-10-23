@@ -32,9 +32,6 @@ import ShockInput from '../components/ShockInput'
 import Pad from '../components/Pad'
 import Nav from '../components/Nav'
 import InputGroup from '../components/InputGroup'
-/** @type {number} */
-// @ts-expect-error
-const shockBG = require('../assets/images/shock-bg.png')
 
 export const WALLET_SETTINGS = 'WALLET_SETTINGS'
 
