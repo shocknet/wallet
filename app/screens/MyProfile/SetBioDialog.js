@@ -5,7 +5,7 @@ import { View } from 'react-native'
 import BasicDialog from '../../components/BasicDialog'
 import ShockInput from '../../components/ShockInput'
 import IGDialogBtn from '../../components/IGDialogBtn'
-import { getStore, getMe } from '../../../store'
+import { getStore, getMe } from '../../store'
 
 /**
  * @typedef {object} Props

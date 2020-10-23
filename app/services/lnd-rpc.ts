@@ -1,8 +1,8 @@
 import { default as SocketIO } from 'socket.io-client'
 
 import Logger from 'react-native-file-log'
-import { getStore } from '../../store'
-import { tokenDidInvalidate } from '../actions'
+import { getStore } from '../store'
+import { tokenDidInvalidate } from '../store/actions'
 
 export const rod = (
   service: string,

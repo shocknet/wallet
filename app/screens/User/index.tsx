@@ -21,8 +21,8 @@ import { StackNavigationOptions } from 'react-navigation-stack/lib/typescript/sr
 import * as CSS from '../../res/css'
 import Pad from '../../components/Pad'
 import Post from '../../components/Post'
-import * as Thunks from '../../thunks'
-import * as Store from '../../../store'
+import * as Thunks from '../../store/thunks'
+import * as Store from '../../store'
 import * as Routes from '../../routes'
 import Tabs from '../../components/tabs'
 

@@ -10,7 +10,7 @@ import { connect } from 'react-redux'
 import ShockInput from '../components/ShockInput'
 import ShockButton from '../components/ShockButton'
 import Pad from '../components/Pad'
-import * as Thunks from '../thunks'
+import * as Thunks from '../store/thunks'
 import notificationService from '../../notificationService'
 
 /** @type {number} */
@@ -139,7 +139,7 @@ class AddPostToFeed extends React.Component {
 }
 
 /**
- * @param {typeof import('../../reducers/index').default} state
+ * @param {typeof import('../store/reducers/index').default} state
  */
 const mapStateToProps = ({ follows }) => ({ follows })
 

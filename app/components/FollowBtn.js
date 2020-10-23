@@ -2,9 +2,9 @@ import React from 'react'
 import { Button } from 'react-native-elements'
 import { connect } from 'react-redux'
 import * as Common from 'shock-common'
-import * as Store from '../../store'
-import * as Actions from '../actions'
-import * as Thunks from '../thunks'
+import * as Store from '../store'
+import * as Actions from '../store/actions'
+import * as Thunks from '../store/thunks'
 
 /**
  * @typedef {object} StateProps

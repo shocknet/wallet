@@ -5,9 +5,9 @@ import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 import Logger from 'react-native-file-log'
 
-import * as Store from '../../store'
-import * as Actions from '../actions'
-import * as Thunks from '../thunks'
+import * as Store from '../store'
+import * as Actions from '../store/actions'
+import * as Thunks from '../store/thunks'
 import PaymentDialog from '../components/PaymentDialog'
 
 interface OwnProps {

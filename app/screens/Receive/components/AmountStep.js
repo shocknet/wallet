@@ -9,7 +9,7 @@ import {
   setAmount,
   setDescription,
   setUnitSelected,
-} from '../../../actions/InvoiceActions'
+} from '../../../store/actions/InvoiceActions'
 
 /**
  * @typedef {ReturnType<typeof mapStateToProps>} ConnectedRedux
@@ -23,7 +23,7 @@ import {
  * @prop {Navigation} navigation
  * @prop {(amount:string)=>void} setAmount
  * @prop {(description:string)=>void} setDescription
- * @prop {(unit:import('../../../actions/InvoiceActions').SelectedUnit)=>void} setUnitSelected
+ * @prop {(unit:import('../../../store/actions/InvoiceActions').SelectedUnit)=>void} setUnitSelected
  * @prop {(string)=} theme
  */
 /**
@@ -109,7 +109,7 @@ const AmountStep = ({
 
 /**
  * @param {{
- * invoice:import('../../../../reducers/InvoiceReducer').State}} state
+ * invoice:import('../../../store/reducers/InvoiceReducer').State}} state
  */
 const mapStateToProps = ({ invoice }) => ({ invoice })
 

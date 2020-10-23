@@ -19,11 +19,11 @@ import RNBootSplash from 'react-native-bootsplash'
 // @ts-ignore
 import url from 'url'
 
-import { throttledExchangeKeyPair } from './app/actions/ConnectionActions'
+import { throttledExchangeKeyPair } from './app/store/actions/ConnectionActions'
 import * as NavigationService from './app/services/navigation'
 import * as Cache from './app/services/cache'
 import * as Encryption from './app/services/encryption'
-import configureStore from './store'
+import configureStore from './app/store'
 import { PersistGate } from 'redux-persist/integration/react'
 
 import RootStack from './app/navigators/Root'
@@ -31,7 +31,7 @@ import RootStack from './app/navigators/Root'
 import { LNURL_SCREEN } from './app/screens/LNURL'
 import { feedPage } from './app/services/feed'
 import WithConnWarning from './app/components/WithConnWarning'
-import { hostWasSet } from './app/actions'
+import { hostWasSet } from './app/store/actions'
 import { LOGIN } from './app/screens/Login'
 
 Logger.setTag('ShockWallet')

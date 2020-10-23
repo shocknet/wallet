@@ -13,7 +13,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons'
 import { nodeInfo } from '../services/wallet'
 import * as CSS from '../res/css'
 import Pad from '../components/Pad'
-import { getStore } from '../../store'
+import { getStore } from '../store'
 /**
  * @typedef {import('../services/wallet').NodeInfo} NodeInfo
  */

@@ -4,8 +4,8 @@ import { isEqual } from 'lodash'
 import { Constants, Schema } from 'shock-common'
 
 import * as Cache from '../cache'
-import * as Store from '../../../store'
-import * as Actions from '../../actions'
+import * as Store from '../../store'
+import * as Actions from '../../store/actions'
 
 // eslint-disable-next-line no-unused-vars
 
