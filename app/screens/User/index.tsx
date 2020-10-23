@@ -25,6 +25,7 @@ import * as Thunks from '../../store/thunks'
 import * as Store from '../../store'
 import * as Routes from '../../routes'
 import Tabs from '../../components/tabs'
+import FollowBtn from '../../components/FollowBtn'
 
 export const MY_PROFILE = 'MY_PROFILE'
 
@@ -83,7 +84,8 @@ class User extends React.PureComponent<Props, State> {
   }
 
   render() {
-    const { avatar, header, bio, displayName } = this.props
+    const { avatar, header, bio, displayName, navigation } = this.props
+    const publicKey = navigation.getParam('publicKey')
 
     const headerHeight = this.state.scrollY.interpolate({
       inputRange: [0, HEADER_SCROLL_DISTANCE],
@@ -169,6 +171,8 @@ class User extends React.PureComponent<Props, State> {
                   <Text style={styles.bodyTextDark}>{bio || 'Loading...'}</Text>
                 </Animated.View>
               </View>
+
+              <FollowBtn publicKey={publicKey} />
             </Animated.View>
           </Animated.View>
 

@@ -3,6 +3,8 @@ import { Schema } from 'shock-common'
 
 import { State } from '../reducers'
 
+import { getFollowedPublicKeys } from './follows'
+
 export const getPosts = (state: State) => state.posts
 
 export const getPost = (state: State, id: string): Schema.PostN | null =>
@@ -26,3 +28,18 @@ export const makeGetPostsForPublicKey = () =>
         .sort((a, b) => b.date - a.date)
     },
   )
+
+export const getPostsFromFollowed = createSelector<
+  State,
+  ReturnType<typeof getPosts>,
+  ReturnType<typeof getFollowedPublicKeys>,
+  Schema.PostN[] // Return type
+>(
+  getPosts,
+  getFollowedPublicKeys,
+  (posts, publicKeys) => {
+    return Object.values(posts)
+      .filter(p => publicKeys.includes(p.author))
+      .sort((a, b) => b.date - a.date)
+  },
+)

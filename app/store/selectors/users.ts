@@ -4,6 +4,7 @@ import { createSelector } from 'reselect'
 import { State } from '../reducers'
 
 import { getMyPublicKey } from './auth'
+import { getFollowedPublicKeys } from './follows'
 
 const getUsers = (state: State) => state.users
 const getPublicKey = (_: State, props: string) => props
@@ -43,5 +44,18 @@ export const getAllPublicKeys = createSelector<State, State['users'], string[]>(
   getUsers,
   users => {
     return Object.keys(users)
+  },
+)
+
+export const getFollowedUsers = createSelector<
+  State,
+  State['users'],
+  string[],
+  Schema.User[]
+>(
+  getUsers,
+  getFollowedPublicKeys,
+  (users, publicKeys) => {
+    return Object.values(users).filter(u => publicKeys.includes(u.publicKey))
   },
 )

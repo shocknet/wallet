@@ -81,6 +81,26 @@ const reducer: Reducer<State, Action> = (
         }
       })
 
+    case 'follows/finishedFollow':
+      return produce(state, draft => {
+        const { publicKey } = action.data
+
+        if (!draft[publicKey]) {
+          draft[publicKey] = Schema.createEmptyUser(publicKey)
+        }
+      })
+
+    case 'follows/receivedFollow':
+      return produce(state, draft => {
+        const { follows } = action.data
+
+        for (const publicKey of Object.keys(follows)) {
+          if (!draft[publicKey]) {
+            draft[publicKey] = Schema.createEmptyUser(publicKey)
+          }
+        }
+      })
+
     default:
       return state
   }

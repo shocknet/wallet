@@ -6,6 +6,7 @@ import payments from './payments'
 import chainTXs from './chain-txs'
 import users from './users'
 import posts from './posts'
+import follows from './follows'
 
 function* rootSaga() {
   yield all([
@@ -15,6 +16,7 @@ function* rootSaga() {
     call(chainTXs),
     call(users),
     call(posts),
+    call(follows),
   ])
 }
 

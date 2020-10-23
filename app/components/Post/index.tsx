@@ -75,8 +75,14 @@ class Post extends React.PureComponent<Props, State> {
       layout: { width },
     },
   }) => {
-    this.setState({
-      mediaWidth: (width || 0) - PADDING * 2,
+    this.setState(({ mediaWidth }) => {
+      if (mediaWidth) {
+        return null
+      }
+
+      return {
+        mediaWidth: (width || 0) - PADDING * 2,
+      }
     })
   }
 
