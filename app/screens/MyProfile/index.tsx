@@ -357,7 +357,12 @@ class MyProfile extends React.PureComponent<Props, State> {
       )
     }
 
-    return <Post id={item.id} />
+    return (
+      <View>
+        <Post id={item.id} />
+        <Pad amount={12} />
+      </View>
+    )
   }
 
   keyExtractor = (item: Common.Schema.PostN | string) => {
