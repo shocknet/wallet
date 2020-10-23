@@ -1,7 +1,7 @@
 import { default as SocketIO } from 'socket.io-client'
 
-import { getStore } from '../../store'
-import { tokenDidInvalidate } from '../actions'
+import { getStore } from '../store'
+import { tokenDidInvalidate } from '../store/actions'
 
 /**
  * Returns a socket wired up to the given query. Use `.on('$shock')` for values.

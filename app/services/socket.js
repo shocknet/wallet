@@ -3,13 +3,13 @@ import isEmpty from 'lodash/isEmpty'
 import Logger from 'react-native-file-log'
 
 import { DISABLE_ENCRYPTION } from '../config'
-import * as Actions from '../actions'
+import * as Actions from '../store/actions'
 
 import * as Cache from './cache'
 import * as Encryption from './encryption'
 
 /**
- * @typedef {import('../../store').Store} ReduxStore
+ * @typedef {import('../store').Store} ReduxStore
  */
 
 class Socket {

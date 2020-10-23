@@ -5,7 +5,7 @@ import { connect } from 'react-redux'
 import * as CSS from '../res/css'
 import * as Cache from '../services/cache'
 import { Actions, Events } from '../services/contact-api'
-import * as Store from '../../store'
+import * as Store from '../store'
 
 import QR from './WalletOverview/QR'
 

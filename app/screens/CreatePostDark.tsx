@@ -30,7 +30,7 @@ export const CREATE_POST_DARK = 'CREATE_POST_DARK'
 
 type Props = {
   navigation: import('react-navigation').NavigationScreenProp<{}, {}>
-  mediaLib: import('../../reducers/mediaLib').State
+  mediaLib: import('../store/reducers/mediaLib').State
 }
 
 /**
@@ -426,7 +426,7 @@ class CreatePostDark extends React.Component<Props, State> {
   }
 }
 
-const mapStateToProps = ({ mediaLib }: import('../../reducers').State) => ({
+const mapStateToProps = ({ mediaLib }: import('../store/reducers').State) => ({
   mediaLib,
 })
 

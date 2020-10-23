@@ -34,15 +34,15 @@ import ContentMusic from '../assets/images/publish-content/music.svg'
 import ContentFile from '../assets/images/publish-content/file.svg'
 import CheckBox from 'react-native-check-box'
 import { pickFile } from '../services/seedServer'
-import * as Thunks from '../thunks'
-import { MediaToUpload } from '../thunks/mediaLib'
-import { clearContentUpload } from '../actions/mediaLib'
+import * as Thunks from '../store/thunks'
+import { MediaToUpload } from '../store/thunks/mediaLib'
+import { clearContentUpload } from '../store/actions/mediaLib'
 
 export const PUBLISH_CONTENT_DARK = 'PUBLISH_CONTENT_DARK'
 type FileReady = FilePickerFile & { name: string }
 type Props = {
   navigation: import('react-navigation').NavigationScreenProp<{}, {}>
-  mediaLib: import('../../reducers/mediaLib').State
+  mediaLib: import('../store/reducers/mediaLib').State
   publishMedia: (media: MediaToUpload) => void
   clearContentUpload: () => void
 }
@@ -541,7 +541,7 @@ class PublishContentDark extends React.Component<Props, State> {
   }
 }
 
-const mapStateToProps = ({ mediaLib }: import('../../reducers').State) => ({
+const mapStateToProps = ({ mediaLib }: import('../store/reducers').State) => ({
   mediaLib,
 })
 

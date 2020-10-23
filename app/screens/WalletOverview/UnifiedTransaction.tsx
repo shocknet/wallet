@@ -24,7 +24,7 @@ import { ConnectedShockAvatar } from '../../components/ShockAvatar'
 import * as CSS from '../../res/css'
 import btcConvert from '../../services/convertBitcoin'
 import Pad from '../../components/Pad'
-import * as Store from '../../../store'
+import * as Store from '../../store'
 import { Tip } from '../../schema'
 
 const OUTBOUND_INDICATOR_RADIUS = 20

@@ -25,8 +25,8 @@ import {
   setInvoiceMode,
   addInvoice,
   newAddress,
-} from '../../../actions/InvoiceActions'
-import { resetSelectedContact } from '../../../actions/ChatActions'
+} from '../../../store/actions/InvoiceActions'
+import { resetSelectedContact } from '../../../store/actions/ChatActions'
 import QR from './QR'
 import BitcoinAccepted from '../../../assets/images/bitcoin-accepted.png'
 import { CHATS_ROUTE } from '../../Chats'
@@ -386,8 +386,8 @@ class SendStep extends Component {
 
 /**
  * @param {{
- * invoice: import('../../../../reducers/InvoiceReducer').State,
- * chat: import('../../../../reducers/ChatReducer').State
+ * invoice: import('../../../store/reducers/InvoiceReducer').State,
+ * chat: import('../../../store/reducers/ChatReducer').State
  * }} state
  */
 const mapStateToProps = ({ invoice, chat }) => ({ invoice, chat })

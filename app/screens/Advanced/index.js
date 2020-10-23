@@ -31,10 +31,10 @@ import {
   fetchTransactions,
   fetchRecentTransactions,
   fetchHistory,
-} from '../../actions/HistoryActions'
-import { fetchNodeInfo } from '../../actions/NodeActions'
+} from '../../store/actions/HistoryActions'
+import { fetchNodeInfo } from '../../store/actions/NodeActions'
 import { disconnectPeer } from '../../services/wallet'
-import * as Store from '../../../store'
+import * as Store from '../../store'
 import { NODE_INFO } from '../node-info'
 
 import AccordionItem from './Accordion'

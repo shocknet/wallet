@@ -23,12 +23,12 @@ import {
   updateFeesSource,
   updateRoutingFeeAbsolute,
   updateRoutingFeeRelative,
-} from '../actions/FeesActions'
+} from '../store/actions/FeesActions'
 import {
   updateNotifyDisconnect,
   updateNotifyDisconnectAfter,
   //@ts-ignore
-} from '../actions/SettingsActions'
+} from '../store/actions/SettingsActions'
 import ShockInput from '../components/ShockInput'
 import Pad from '../components/Pad'
 import Nav from '../components/Nav'
@@ -41,8 +41,8 @@ export const WALLET_SETTINGS = 'WALLET_SETTINGS'
 
 /**
  * @typedef {object} Fees
- * @prop {import('../actions/FeesActions').feeLevel} feesLevel
- * @prop {import('../actions/FeesActions').feeSource} feesSource
+ * @prop {import('../store/actions/FeesActions').feeLevel} feesLevel
+ * @prop {import('../store/actions/FeesActions').feeSource} feesSource
  */
 
 /**
@@ -55,7 +55,7 @@ export const WALLET_SETTINGS = 'WALLET_SETTINGS'
 /**
  * @typedef {object} TmpProps
  *  @prop {(feeSource:string)=>void} updateFeesSource
- *  @prop {(feesLevel:import('../actions/FeesActions').feeLevel)=>void} updateSelectedFee
+ *  @prop {(feesLevel:import('../store/actions/FeesActions').feeLevel)=>void} updateSelectedFee
  *  @prop {(val:string)=>void} updateRoutingFeeAbsolute
  *  @prop {(val:string)=>void} updateRoutingFeeRelative
  *  @prop {(val:boolean)=>void} updateNotifyDisconnect
@@ -235,7 +235,7 @@ class WalletSettings extends React.Component {
    */
   handleSlider = n => {
     /**
-     * @type {import('../actions/FeesActions').feeLevel} level
+     * @type {import('../store/actions/FeesActions').feeLevel} level
      */
     let level = 'MID'
     switch (n) {
@@ -552,8 +552,8 @@ class WalletSettings extends React.Component {
 
 /**
  * @param {{
- * fees:import('../../reducers/FeesReducer').State
- * settings:import('../../reducers/SettingsReducer').State
+ * fees:import('../store/reducers/FeesReducer').State
+ * settings:import('../store/reducers/SettingsReducer').State
  * }} state
  */
 const mapStateToProps = ({ fees, settings }) => ({ fees, settings })

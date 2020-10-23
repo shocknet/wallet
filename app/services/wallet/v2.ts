@@ -3,7 +3,7 @@ import Logger from 'react-native-file-log'
 import { Schema } from 'shock-common'
 import { ToastAndroid } from 'react-native'
 
-import { getStore } from '../../../store'
+import { getStore } from '../../store'
 
 // TODO: Move to common repo
 interface ErrResponse {

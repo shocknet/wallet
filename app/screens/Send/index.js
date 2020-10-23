@@ -35,11 +35,14 @@ import BitcoinAccepted from '../../assets/images/bitcoin-accepted.png'
 import * as CSS from '../../res/css'
 import * as Wallet from '../../services/wallet'
 import * as API from '../../services/contact-api/index'
-import { selectContact, resetSelectedContact } from '../../actions/ChatActions'
+import {
+  selectContact,
+  resetSelectedContact,
+} from '../../store/actions/ChatActions'
 import {
   resetInvoice,
   decodePaymentRequest,
-} from '../../actions/InvoiceActions'
+} from '../../store/actions/InvoiceActions'
 import { WALLET_OVERVIEW } from '../WalletOverview'
 export const SEND_SCREEN = 'SEND_SCREEN'
 /**
@@ -64,7 +67,7 @@ export const SEND_SCREEN = 'SEND_SCREEN'
  */
 
 /**
- * @typedef {import('../../actions/ChatActions').Contact | import('../../actions/ChatActions').BTCAddress | import('../../actions/ChatActions').Keysend} ContactTypes
+ * @typedef {import('../../store/actions/ChatActions').Contact | import('../../store/actions/ChatActions').BTCAddress | import('../../store/actions/ChatActions').Keysend} ContactTypes
  */
 
 /**
@@ -74,13 +77,13 @@ export const SEND_SCREEN = 'SEND_SCREEN'
 /**
  * @typedef {object} Props
  * @prop {Navigation} navigation
- * @prop {import('../../../reducers/ChatReducer').State} chat
- * @prop {import('../../../reducers/InvoiceReducer').State} invoice
+ * @prop {import('../../store/reducers/ChatReducer').State} chat
+ * @prop {import('../../store/reducers/InvoiceReducer').State} invoice
  * @prop {(contact: ContactTypes) => ContactTypes} selectContact
  * @prop {() => void} resetSelectedContact
  * @prop {() => void} resetInvoice
  * @prop {(invoice: string) => Promise<DecodeResponse>} decodePaymentRequest
- * @prop {import('../../../reducers/FeesReducer').State} fees
+ * @prop {import('../../store/reducers/FeesReducer').State} fees
  */
 
 /**
@@ -911,9 +914,9 @@ class SendScreen extends Component {
 }
 
 /** @param {{
- * invoice: import('../../../reducers/InvoiceReducer').State,
- * chat: import('../../../reducers/ChatReducer').State,
- * fees: import('../../../reducers/FeesReducer').State,
+ * invoice: import('../../store/reducers/InvoiceReducer').State,
+ * chat: import('../../store/reducers/ChatReducer').State,
+ * fees: import('../../store/reducers/FeesReducer').State,
  * }} state */
 const mapStateToProps = ({ chat, invoice, fees }) => ({ chat, invoice, fees })
 

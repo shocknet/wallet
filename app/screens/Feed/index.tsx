@@ -19,13 +19,13 @@ import { NavigationBottomTabOptions } from 'react-navigation-tabs'
 import _ from 'lodash'
 import * as Common from 'shock-common'
 
-import * as Reducers from '../../../reducers'
+import * as Reducers from '../../store/reducers'
 import Post from '../../components/Post/Feed'
 import * as Routes from '../../routes'
 import * as CSS from '../../res/css'
-import * as Thunks from '../../thunks'
+import * as Thunks from '../../store/thunks'
 import Tabs from '../../components/tabs'
-import * as Follows from '../../../reducers/follows'
+import * as Follows from '../../store/reducers/follows'
 import ShockIconWhite from '../../assets/images/shockW.svg'
 import ShockIconBlue from '../../assets/images/shockB.svg'
 import ShockAvatar from '../../components/ShockAvatar'
@@ -38,7 +38,7 @@ type Item = Common.Schema.Post
 
 interface StateProps {
   posts: Common.Schema.Post[]
-  myFeed: import('../../../reducers/myFeed').State
+  myFeed: import('../../store/reducers/myFeed').State
   follows: Follows.State
   avatar: string | null
 }

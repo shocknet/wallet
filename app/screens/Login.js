@@ -24,7 +24,7 @@ import { WALLET_MANAGER } from '../navigators/WalletManager'
 import Pad from '../components/Pad'
 import OnboardingInput from '../components/OnboardingInput'
 import OnboardingBtn from '../components/OnboardingBtn'
-import * as Actions from '../actions'
+import * as Actions from '../store/actions'
 
 export const LOGIN = 'LOGIN'
 
