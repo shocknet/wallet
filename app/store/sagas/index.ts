@@ -6,6 +6,7 @@ import chainTXs from './chain-txs'
 import users from './users'
 import posts from './posts'
 import follows from './follows'
+import ping from './ping'
 
 function* rootSaga() {
   yield all([
@@ -15,6 +16,7 @@ function* rootSaga() {
     call(users),
     call(posts),
     call(follows),
+    call(ping),
   ])
 }
 
