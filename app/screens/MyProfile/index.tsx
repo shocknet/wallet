@@ -274,7 +274,7 @@ class MyProfile extends React.PureComponent<Props, State> {
       })
 
       await post(`api/gun/put`, {
-        path: '$user.profileBinary.avatar',
+        path: '$user>profileBinary>avatar',
         value: image.data,
       })
     } catch (err) {
@@ -424,7 +424,7 @@ class MyProfile extends React.PureComponent<Props, State> {
       }
 
       await post(`api/gun/put`, {
-        path: '$user.profileBinary.header',
+        path: '$user>profileBinary>header',
         value: image.data,
       })
     } catch (err) {

@@ -64,7 +64,7 @@ const assignSocketToPublicKeys = (publicKeys: string[]) => {
 
         for (const postKey of newPosts) {
           httpGet<{ data: Schema.RawPost }>(
-            `api/gun/otheruser/${publicKey}/load/posts.${postKey}`,
+            `api/gun/otheruser/${publicKey}/load/posts>${postKey}`,
             {},
             v => {
               if (!Schema.isObj(v)) {

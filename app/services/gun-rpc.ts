@@ -8,7 +8,7 @@ import { tokenDidInvalidate } from '../store/actions'
  * Returns a socket wired up to the given query. Use `.on('$shock')` for values.
  * Query example:
  * ```js
- * rifle(`$user::Profile.displayName::on`)
+ * rifle(`$user::Profile>displayName::on`)
  * // results in:
  * gun.user().get('Profile').get('displayName').on(...)
  *
