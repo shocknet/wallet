@@ -31,7 +31,7 @@ type Props = DispatchProps & StateProps & OwnProps
 
 class NodeInfo extends React.PureComponent<Props> {
   static navigationOptions: StackNavigationOptions = {
-    title: 'WALLET SETTINGS',
+    title: 'NODE INFO',
 
     headerStyle,
 
