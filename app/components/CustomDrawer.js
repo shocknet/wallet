@@ -56,7 +56,7 @@ const drawerBottomItems = [
     iconName: 'solid-help',
   },
   {
-    name: 'Buy Bitcoins',
+    name: 'Buy Bitcoin',
     iconName: 'solid-help',
   },
 ]
