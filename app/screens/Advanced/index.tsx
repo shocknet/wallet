@@ -10,6 +10,7 @@ import {
   ImageBackground,
   Keyboard,
   Clipboard,
+  EmitterSubscription,
 } from 'react-native'
 import EntypoIcons from 'react-native-vector-icons/Entypo'
 import Feather from 'react-native-vector-icons/Feather'
@@ -17,6 +18,7 @@ import Http from 'axios'
 import Big from 'big.js'
 import { connect } from 'react-redux'
 import Logger from 'react-native-file-log'
+import Modal from 'react-native-modalbox'
 
 import wavesBGDark from '../../assets/images/waves-bg-dark.png'
 import * as CSS from '../../res/css'
@@ -49,94 +51,86 @@ import CloseChannelModal from './Modals/CloseChannel'
 import ShockDialog from '../../components/ShockDialog'
 import InfoPeerModal from './Modals/infoPeer'
 import { WALLET_OVERVIEW } from '../WalletOverview'
+import { NavigationEventSubscription } from 'react-navigation'
 
 export const ADVANCED_SCREEN = 'ADVANCED_SCREEN'
-/**
- * @typedef {import('../../services/wallet').Channel} Channel
- * @typedef {import('../../services/wallet').PendingChannel} PendingChannel
- */
-/**
- * @typedef {object} Accordions
- * @prop {boolean} transactions
- * @prop {boolean} peers
- * @prop {boolean} invoices
- * @prop {boolean} channels
- */
 
-/**
- * @typedef {object} ChannelParsed
- * @prop {string} fundingTX
- * @prop {string} outputIndex
- * @prop {string} chan_id
- * @prop {string} local_balance
- * @prop {string} remote_balance
- */
+type Channel = import('../../services/wallet').Channel
+type PendingChannel = import('../../services/wallet').PendingChannel
 
-/**
- * @typedef {object} State
- * @prop {Accordions} accordions
- * @prop {string} peerURI
- * @prop {string} channelPublicKey
- * @prop {string} channelCapacity
- * @prop {string} channelPushAmount
- * @prop {string} err
- * @prop {boolean} modalLoading
- * @prop {boolean} keyboardOpen
- * @prop {number} keyboardHeight
- * @prop {ChannelParsed|null} willCloseChannelPoint
- *
- * @prop {boolean} nodeInfoModal
- * @prop {boolean} forceCloseChannel
- *
- * @prop {Channel} channelInfo
- * @prop {{pubKey:string}} peerInfo
- * @prop {boolean} confirmCloseChannel
- * @prop {string} confirmCloseChannelText
- * @prop {boolean} refreshingChannels
- * @prop {boolean} refreshingTransactions
- */
+interface Accordions  {
+  transactions:boolean
+  peers:boolean
+  invoices:boolean
+  channels:boolean
+}
 
-/**
- * @typedef {ReturnType<typeof mapStateToProps>} ConnectedRedux
- */
-/**
- * @typedef {object} PageToFetch
- * @prop {(number)=} page
- * @prop {(number)=} itemsPerPage
- * @prop {(boolean)=} reset
- */
+interface ChannelParsed {
+  fundingTX:string
+  outputIndex:string
+  chan_id:string
+  local_balance:string
+  remote_balance:string
+}
 
-/**
- * @typedef {object} TmpProps
- *  @prop {()=>void} fetchChannels,
- *  @prop {()=>void} fetchPendingChannels,
- *  @prop {(invoice:PageToFetch)=>void} fetchInvoices,
- *  @prop {(payment:PageToFetch)=>void} fetchPayments,
- *  @prop {()=>void} fetchPeers,
- *  @prop {(transaction:PageToFetch)=>void} fetchTransactions,
- *  @prop {()=>void} fetchRecentTransactions,
- *  @prop {()=>void} fetchHistory,
- *  @prop {()=>void} fetchNodeInfo,
- * @prop {import('react-navigation').NavigationScreenProp<{}>} navigation
- */
-/**
- * @typedef {ConnectedRedux & TmpProps} Props
- */
+export interface State {
+  accordions:Accordions
+  peerURI:string
+  channelPublicKey:string
+  channelCapacity:string
+  channelPushAmount:string
+  err:string
+  modalLoading:boolean
+  keyboardOpen:boolean
+  keyboardHeight:number
+  willCloseChannelPoint:ChannelParsed|null
+  nodeInfoModal:boolean
+  forceCloseChannel:boolean
+  channelInfo:Channel
+  peerInfo:{pubKey:string}
+  confirmCloseChannel:boolean
+  confirmCloseChannelText:string
+  refreshingChannels:boolean
+  refreshingTransactions:boolean
 
-/**
- * @augments React.PureComponent<Props, State, never>
- */
-class AdvancedScreen extends React.PureComponent {
-  /** @type {import('react-navigation-stack').NavigationStackOptions} */
-  static navigationOptions = {
+
+}
+
+type ConnectedRedux = ReturnType<typeof mapStateToProps>
+
+interface PageToFetch {
+  page?:number
+  itemsPerPage?:number
+  reset?:boolean
+}
+
+type Navigation = import('react-navigation').NavigationScreenProp<{}>
+interface TmpProps {
+  fetchChannels:()=>void
+  fetchPendingChannels:()=>void
+  fetchInvoices:(invoice:PageToFetch)=>void
+  fetchPayments:(payment:PageToFetch)=>void
+  fetchPeers:()=>void
+  fetchTransactions:(transaction:PageToFetch)=>void
+  fetchRecentTransactions:()=>void
+  fetchHistory:()=>void
+  fetchNodeInfo:()=>void
+  navigation:Navigation
+} 
+
+type Props = ConnectedRedux & TmpProps
+
+type NavigationStackOptions = import('react-navigation-stack').NavigationStackOptions
+
+class AdvancedScreen extends React.PureComponent<Props,State> {
+  static navigationOptions:NavigationStackOptions = {
     header: () => null,
     // drawerIcon: () => {
     //   return <IconDrawerAdvancedLightning />
     // },
   }
 
-  /** @type {State} */
-  state = {
+  state:State = {
     accordions: {
       transactions: false,
       peers: false,
@@ -176,26 +170,28 @@ class AdvancedScreen extends React.PureComponent {
 
   backToOverview = () => this.props.navigation.navigate(WALLET_OVERVIEW)
 
-  addChannelModal = React.createRef()
+  addChannelModal:React.RefObject<Modal> = React.createRef()
 
-  infoChannelModal = React.createRef()
+  infoChannelModal:React.RefObject<Modal> = React.createRef()
 
-  closeChannelModal = React.createRef()
+  closeChannelModal:React.RefObject<Modal> = React.createRef()
 
-  addPeerModal = React.createRef()
+  addPeerModal:React.RefObject<Modal> = React.createRef()
 
-  infoPeerModal = React.createRef()
+  infoPeerModal:React.RefObject<Modal> = React.createRef()
 
-  /**
-   * @param {keyof State} key
-   * @returns {(value: any) => void}
-   */
-  onChange = key => value => {
+  onChange = (key:keyof State) => (value:any) => {
     this.setState(prevState => ({
       ...prevState,
       [key]: value,
     }))
   }
+
+  keyboardDidShow:EmitterSubscription|null = null
+
+  keyboardDidHide:EmitterSubscription|null = null
+
+  didPageFocus:NavigationEventSubscription|null = null
 
   componentDidMount() {
     this.fetchData()
@@ -212,6 +208,7 @@ class AdvancedScreen extends React.PureComponent {
         keyboardHeight: 0,
       })
     })
+    this.didPageFocus = this.props.navigation.addListener('didFocus', this.props.fetchPendingChannels)
   }
 
   componentWillUnmount() {
@@ -222,6 +219,9 @@ class AdvancedScreen extends React.PureComponent {
     if (this.keyboardDidHide) {
       this.keyboardDidHide.remove()
     }
+    if(this.didPageFocus){
+      this.didPageFocus.remove()
+    }
   }
 
   convertBTCToUSD = () => {
@@ -229,7 +229,7 @@ class AdvancedScreen extends React.PureComponent {
     if (USDRate !== null) {
       const parsedConfirmedBalance = new Big(confirmedBalance)
       const parsedChannelBalance = new Big(channelBalance)
-      // @ts-expect-error
+      //@ts-expect-error
       const parsedUSDRate = new Big(USDRate)
       const satoshiUnit = new Big(0.00000001)
       const confirmedBalanceUSD = parsedConfirmedBalance
@@ -264,10 +264,7 @@ class AdvancedScreen extends React.PureComponent {
     }
   }
 
-  /**
-   * @param {keyof Accordions} name
-   */
-  toggleAccordion = name => () => {
+  toggleAccordion = (name:keyof Accordions) => () => {
     const { accordions } = this.state
     if (!(name in accordions)) {
       throw new Error(
@@ -294,21 +291,14 @@ class AdvancedScreen extends React.PureComponent {
     this.toggleAccordion('peers')
   }
 
-  /**
-   * @param {number} ms
-   */
-  wait = ms =>
+  wait = (ms:number) =>
     new Promise(resolve => {
       setTimeout(() => {
         resolve(true)
       }, ms)
     })
 
-  /**
-   *
-   * @param {string} routeName
-   */
-  fetchNextPage = routeName => () => {
+  fetchNextPage = (routeName:string) => () => {
     const {
       history,
       fetchInvoices,
@@ -332,11 +322,7 @@ class AdvancedScreen extends React.PureComponent {
     }
   }
 
-  /**
-   * @param {'peerURI'|'channelPublicKey'|'channelPushAmount'|'channelCapacity'} key
-   * @param {string} value
-   */
-  handleInputChange = (key, value) => {
+  handleInputChange = (key:'peerURI'|'channelPublicKey'|'channelPushAmount'|'channelCapacity', value:string) => {
     // @ts-expect-error
     this.setState({
       [key]: value,
@@ -365,7 +351,9 @@ class AdvancedScreen extends React.PureComponent {
       ToastAndroid.show('Added successfully', 800)
 
       fetchPeers()
-      this.addPeerModal.current.close()
+      if(this.addPeerModal.current){
+        this.addPeerModal.current.close()
+      }
     } catch (err) {
       this.showErr(err.response.data.errorMessage)
       Logger.log(Http.defaults.baseURL, err.response)
@@ -388,7 +376,9 @@ class AdvancedScreen extends React.PureComponent {
       }
       await disconnectPeer(pubKey)
       ToastAndroid.show('Peer disconnected', 800)
-      this.infoPeerModal.current.close()
+      if(this.infoPeerModal.current){
+        this.infoPeerModal.current.close()
+      }
     } catch (e) {
       this.setState({ err: e })
     } finally {
@@ -448,8 +438,9 @@ class AdvancedScreen extends React.PureComponent {
       ToastAndroid.show('Added successfully', 800)
 
       fetchChannels()
-
-      this.addChannelModal.current.close()
+      if(this.addChannelModal.current){
+        this.addChannelModal.current.close()
+      }
     } catch (err) {
       this.showErr(err.response.data.errorMessage)
     } finally {
@@ -462,11 +453,10 @@ class AdvancedScreen extends React.PureComponent {
     }
   }
 
-  /**
-   * @param {ChannelParsed} channel
-   */
-  willCloseChannel = channel => {
-    this.closeChannelModal.current.open()
+  willCloseChannel = (channel:ChannelParsed) => {
+    if(this.closeChannelModal.current){
+      this.closeChannelModal.current.open()
+    }
     this.setState({
       willCloseChannelPoint: channel,
     })
@@ -524,7 +514,9 @@ class AdvancedScreen extends React.PureComponent {
           throw new Error(res.data.errorMessage || 'Unknown error.')
         }
         this.setState({ modalLoading: false })
-        this.closeChannelModal.current.close()
+        if(this.closeChannelModal.current){
+          this.closeChannelModal.current.close()
+        }
         fetchChannels()
 
         ToastAndroid.show('Closed successfully', 800)
@@ -535,10 +527,7 @@ class AdvancedScreen extends React.PureComponent {
     }
   }
 
-  /**
-   * @param {string} err
-   */
-  showErr = err => {
+  showErr = (err:string) => {
     Logger.log('Setting Error message:', err)
     this.setState({
       err,
@@ -561,18 +550,19 @@ class AdvancedScreen extends React.PureComponent {
     })
   }
 
-  /**
-   * @param {string} pubKey
-   */
-  openInfoPeer = pubKey => {
-    this.infoPeerModal.current.open()
+  openInfoPeer = (pubKey:string) => {
+    if(this.infoPeerModal.current){
+      this.infoPeerModal.current.open()
+    }
     this.setState({
       peerInfo: { pubKey },
     })
   }
 
   closeInfoPeer = () => {
-    this.infoPeerModal.current.close()
+    if(this.infoPeerModal.current){
+      this.infoPeerModal.current.close()
+    }
   }
 
   closeCloseChannelDialog = () => {
@@ -582,7 +572,9 @@ class AdvancedScreen extends React.PureComponent {
   }
 
   closeAddChannelModal = () => {
-    this.addChannelModal.current.close()
+    if(this.addChannelModal.current){
+      this.addChannelModal.current.close()
+    }
     this.setState({
       modalLoading: true,
       channelPublicKey: '',
@@ -592,7 +584,9 @@ class AdvancedScreen extends React.PureComponent {
   }
 
   closeAddPeerModal = () => {
-    this.addPeerModal.current.close()
+    if(this.addPeerModal.current){
+      this.addPeerModal.current.close()
+    }
     this.setState({
       peerURI: '',
     })
@@ -604,7 +598,9 @@ class AdvancedScreen extends React.PureComponent {
   }
 
   onPressCloseChannel = () => {
-    this.infoChannelModal.current.close()
+    if(this.infoChannelModal.current){
+      this.infoChannelModal.current.close()
+    }
     const { channelInfo } = this.state
     Logger.log('close channel')
     Logger.log(channelInfo)
@@ -622,15 +618,13 @@ class AdvancedScreen extends React.PureComponent {
     })
   }
 
-  /**
-   * @param {string} channelString
-   *
-   */
-  onPressChannel = channelString => {
+  onPressChannel = (channelString:string) => {
     /**@type {Channel|PendingChannel} channel*/
     const channel = JSON.parse(channelString)
     if (channel.type === 'channel') {
-      this.infoChannelModal.current.open()
+      if(this.infoChannelModal.current){
+        this.infoChannelModal.current.open()
+      }
       this.setState({
         channelInfo: channel,
       })
@@ -641,7 +635,9 @@ class AdvancedScreen extends React.PureComponent {
   }
 
   closeInfoChannelModal = () => {
-    this.infoChannelModal.current.close()
+    if(this.infoChannelModal.current){
+      this.infoChannelModal.current.close()
+    }
     this.setState({
       channelInfo: {
         type: 'channel',
@@ -662,7 +658,6 @@ class AdvancedScreen extends React.PureComponent {
     })
     const { fetchChannels, fetchPendingChannels } = this.props
     await Promise.all([fetchChannels(), fetchPendingChannels()])
-    //notificationService.Log("TESTING","ALL"+JSON.stringify(this.props.history.))
     this.setState({ refreshingChannels: false })
   }
 
@@ -675,21 +670,17 @@ class AdvancedScreen extends React.PureComponent {
     this.setState({ refreshingTransactions: false })
   }
 
-  /** @param {string} text */
-  onChangePeerURI = text => this.handleInputChange('peerURI', text)
+  onChangePeerURI = (text:string) => this.handleInputChange('peerURI', text)
 
-  /** @param {string} text */
-  onChangeChannelPublicKey = text => {
+  onChangeChannelPublicKey = (text:string) => {
     this.handleInputChange('channelPublicKey', text)
   }
 
-  /** @param {string} text */
-  onChangeChannelCapacity = text => {
+  onChangeChannelCapacity = (text:string) => {
     this.handleInputChange('channelCapacity', text)
   }
 
-  /** @param {string} text */
-  onChangeChannelPushAmount = text => {
+  onChangeChannelPushAmount = (text:string) => {
     this.handleInputChange('channelPushAmount', text)
   }
 
@@ -701,10 +692,7 @@ class AdvancedScreen extends React.PureComponent {
     this.setState({ modalLoading: false })
   }
 
-  /**
-   * @param {import('../../services/wallet').Transaction} transaction
-   */
-  transactionKeyExtractor = transaction => transaction.tx_hash
+  transactionKeyExtractor = (transaction:import('../../services/wallet').Transaction) => transaction.tx_hash
 
   render() {
     const { node, wallet, history, avatar } = this.props
@@ -871,7 +859,9 @@ class AdvancedScreen extends React.PureComponent {
                   name: 'Add Channel',
                   icon: 'link',
                   action: () => {
-                    this.addChannelModal.current.open()
+                    if(this.addChannelModal.current){
+                      this.addChannelModal.current.open()
+                    }
                     this.setState({
                       err: '',
                     })
@@ -906,7 +896,9 @@ class AdvancedScreen extends React.PureComponent {
                   icon: 'link',
                   action: () => {
                     Logger.log('addPeerOpen')
-                    this.addPeerModal.current.open()
+                    if(this.addPeerModal.current){
+                      this.addPeerModal.current.open()
+                    }
                   },
                 },
               ]}
@@ -987,10 +979,7 @@ class AdvancedScreen extends React.PureComponent {
   }
 }
 
-/**
- * @param {Store.State} state
- */
-const mapStateToProps = ({ history, node, wallet, fees, users, auth }) => ({
+const mapStateToProps = ({ history, node, wallet, fees, users, auth }:Store.State) => ({
   history,
   node,
   wallet,
@@ -1097,12 +1086,8 @@ const xStyles = {
   channelBalanceContainer: [styles.stat, styles.marginBottom15],
 }
 
-/**
- * @param {Channel|PendingChannel} channel
- */
-const channelKeyExtractor = channel => JSON.stringify(channel) //channel.channel_point
 
-/**
- * @param {import('../../services/wallet').Peer} p
- */
-const peerKeyExtractor = p => p.pub_key
+const channelKeyExtractor = (channel:Channel|PendingChannel) => JSON.stringify(channel) //channel.channel_point
+
+type Peer = import('../../services/wallet').Peer
+const peerKeyExtractor = (p:Peer) => p.pub_key
