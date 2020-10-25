@@ -9,31 +9,23 @@ import { getStore } from '../store'
 
 let socket: ReturnType<typeof SocketIO> | null = null
 
-const setSocket = (s: ReturnType<typeof SocketIO> | null) => {
-  if (socket && !!s) throw new Error('Tried to set socket twice')
-  if (!socket && !s) throw new Error('Tried to null out socket twice')
-  socket = s
-}
-
 function* ping() {
   try {
     const state = Selectors.getStateRoot(yield select())
     const { token, host } = state.auth
 
     if (token && !socket) {
-      const _socket = SocketIO(`http://${host}/shockping`, {
+      socket = SocketIO(`http://${host}/shockping`, {
         query: {
           token,
         },
       })
 
-      setSocket(_socket)
-
-      _socket.on('shockping', () => {
+      socket.on('shockping', () => {
         getStore().dispatch(Actions.ping(Date.now()))
       })
 
-      _socket.on(Constants.ErrorCode.NOT_AUTH, () => {
+      socket.on(Constants.ErrorCode.NOT_AUTH, () => {
         getStore().dispatch(Actions.tokenDidInvalidate())
       })
     }
@@ -41,7 +33,7 @@ function* ping() {
     if (!token && socket) {
       socket.off('*')
       socket.close()
-      setSocket(null)
+      socket = null
     }
   } catch (err) {
     Logger.log('Error inside ping* ()')

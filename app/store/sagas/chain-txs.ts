@@ -8,72 +8,51 @@ import {
 import SocketIO from 'socket.io-client'
 
 import * as Actions from '../actions'
-import { isOnline, getStateRoot } from '../selectors'
+import * as Selectors from '../selectors'
 import { post, rod } from '../../services'
 import { getStore } from '../store'
 
 let socket: ReturnType<typeof SocketIO> | null = null
 
-const setSocket = (s: ReturnType<typeof SocketIO> | null) => {
-  if (socket && !!s) throw new Error('Tried to set socket twice')
-  socket = s
-}
-
-let oldIsAuth = false
-
 function* chainTXsSocket() {
   try {
-    const state = getStateRoot(yield select())
+    const state = Selectors.getStateRoot(yield select())
+    const isReady = Selectors.isOnline(state) && Selectors.isAuth(state)
 
-    if (!isOnline(state)) {
-      oldIsAuth = false
-      // We have no way of knowing if we'll be really authenticated (wallet
-      // unlocked) when we connect again
-      if (socket) {
-        socket.off('*')
-        socket.close()
-        setSocket(null)
-      }
-      return
-    }
-
-    const newIsAuth = !!state.auth.token
-    const authed = !oldIsAuth && newIsAuth
-
-    oldIsAuth = newIsAuth
-
-    if (!authed) {
-      return
-    }
-
-    setSocket(
-      rod('lightning', 'subscribeTransactions', {
+    if (isReady && !socket) {
+      socket = rod('lightning', 'subscribeTransactions', {
         end_height: -1,
-      }),
-    )
+      })
 
-    socket!.on('data', (chainTX: unknown) => {
-      if (!Schema.isChainTransaction(chainTX)) {
+      socket.on('data', (chainTX: unknown) => {
+        if (!Schema.isChainTransaction(chainTX)) {
+          Logger.log(`Error inside chainTXsSocket* ()`)
+          Logger.log(
+            `data received from subscribeTransactions() not a ChainTransaction`,
+          )
+          Logger.log(chainTX)
+          return
+        }
+
+        const store = getStore()
+        const state = store.getState()
+
+        if (state.auth.token) {
+          store.dispatch(Actions.receivedSingleChainTX(chainTX))
+        }
+      })
+
+      socket.on('$error', (err: unknown) => {
         Logger.log(`Error inside chainTXsSocket* ()`)
-        Logger.log(
-          `data received from subscribeTransactions() not a ChainTransaction`,
-        )
-        Logger.log(chainTX)
-        return
-      }
+        Logger.log(err)
+      })
+    }
 
-      const store = getStore()
-      const state = store.getState()
-
-      if (state.auth.token) {
-        store.dispatch(Actions.receivedSingleChainTX(chainTX))
-      }
-    })
-
-    socket!.on('$error', (err: unknown) => {
-      Logger.log(`Error inside chainTXsSocket* ()`)
-      Logger.log(err)
-    })
+    if (!isReady && socket) {
+      socket.off('*')
+      socket.close()
+      socket = null
+    }
   } catch (err) {
     Logger.log(`Error inside chainTXsSocket* ()`)
     Logger.log(err.message)
@@ -84,7 +63,7 @@ let oldIsOnline = false
 
 function* fetchLatestChainTransactions(action: Actions.Action) {
   try {
-    const state = getStateRoot(yield select())
+    const state = Selectors.getStateRoot(yield select())
 
     if (!state.auth.token) {
       // If user was unauthenticated let's reset oldIsOnline to false, to avoid
@@ -97,7 +76,7 @@ function* fetchLatestChainTransactions(action: Actions.Action) {
     }
 
     if (action.type !== 'chainTXs/refreshForced') {
-      const newIsOnline = isOnline(state)
+      const newIsOnline = Selectors.isOnline(state)
       const wentOnline = !oldIsOnline && newIsOnline
 
       oldIsOnline = newIsOnline
