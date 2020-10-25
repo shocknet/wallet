@@ -54,19 +54,10 @@ import { WALLET_OVERVIEW } from '../WalletOverview'
 import { NavigationEventSubscription } from 'react-navigation'
 
 export const ADVANCED_SCREEN = 'ADVANCED_SCREEN'
-/*
- * @typedef {import('../../services/wallet').Channel} Channel
- * @typedef {import('../../services/wallet').PendingChannel} PendingChannel
- */
+
 type Channel = import('../../services/wallet').Channel
 type PendingChannel = import('../../services/wallet').PendingChannel
-/*
- * @typedef {object} Accordions
- * @prop {boolean} transactions
- * @prop {boolean} peers
- * @prop {boolean} invoices
- * @prop {boolean} channels
- */
+
 interface Accordions  {
   transactions:boolean
   peers:boolean
@@ -74,14 +65,6 @@ interface Accordions  {
   channels:boolean
 }
 
-/*
- * @typedef {object} ChannelParsed
- * @prop {string} fundingTX
- * @prop {string} outputIndex
- * @prop {string} chan_id
- * @prop {string} local_balance
- * @prop {string} remote_balance
- */
 interface ChannelParsed {
   fundingTX:string
   outputIndex:string
@@ -89,29 +72,7 @@ interface ChannelParsed {
   local_balance:string
   remote_balance:string
 }
-/*
- * @typedef {object} State
- * @prop {Accordions} accordions
- * @prop {string} peerURI
- * @prop {string} channelPublicKey
- * @prop {string} channelCapacity
- * @prop {string} channelPushAmount
- * @prop {string} err
- * @prop {boolean} modalLoading
- * @prop {boolean} keyboardOpen
- * @prop {number} keyboardHeight
- * @prop {ChannelParsed|null} willCloseChannelPoint
- *
- * @prop {boolean} nodeInfoModal
- * @prop {boolean} forceCloseChannel
- *
- * @prop {Channel} channelInfo
- * @prop {{pubKey:string}} peerInfo
- * @prop {boolean} confirmCloseChannel
- * @prop {string} confirmCloseChannelText
- * @prop {boolean} refreshingChannels
- * @prop {boolean} refreshingTransactions
- */
+
 export interface State {
   accordions:Accordions
   peerURI:string
@@ -135,35 +96,14 @@ export interface State {
 
 }
 
-/*
- * @typedef {ReturnType<typeof mapStateToProps>} ConnectedRedux
- */
 type ConnectedRedux = ReturnType<typeof mapStateToProps>
-/**
- * @typedef {object} PageToFetch
- * @prop {(number)=} page
- * @prop {(number)=} itemsPerPage
- * @prop {(boolean)=} reset
- */
+
 interface PageToFetch {
   page?:number
   itemsPerPage?:number
   reset?:boolean
 }
 
-/*
- * @typedef {object} TmpProps
- *  @prop {()=>void} fetchChannels,
- *  @prop {()=>void} fetchPendingChannels,
- *  @prop {(invoice:PageToFetch)=>void} fetchInvoices,
- *  @prop {(payment:PageToFetch)=>void} fetchPayments,
- *  @prop {()=>void} fetchPeers,
- *  @prop {(transaction:PageToFetch)=>void} fetchTransactions,
- *  @prop {()=>void} fetchRecentTransactions,
- *  @prop {()=>void} fetchHistory,
- *  @prop {()=>void} fetchNodeInfo,
- * @prop {import('react-navigation').NavigationScreenProp<{}>} navigation
- */
 type Navigation = import('react-navigation').NavigationScreenProp<{}>
 interface TmpProps {
   fetchChannels:()=>void
@@ -177,17 +117,12 @@ interface TmpProps {
   fetchNodeInfo:()=>void
   navigation:Navigation
 } 
-/*
- * @typedef {ConnectedRedux & TmpProps} Props
- */
+
 type Props = ConnectedRedux & TmpProps
 
 type NavigationStackOptions = import('react-navigation-stack').NavigationStackOptions
-/*
- * @augments React.PureComponent<Props, State, never>
- */
+
 class AdvancedScreen extends React.PureComponent<Props,State> {
-  /* @type {import('react-navigation-stack').NavigationStackOptions} */
   static navigationOptions:NavigationStackOptions = {
     header: () => null,
     // drawerIcon: () => {
@@ -195,7 +130,6 @@ class AdvancedScreen extends React.PureComponent<Props,State> {
     // },
   }
 
-  /* @type {State} */
   state:State = {
     accordions: {
       transactions: false,
@@ -246,10 +180,6 @@ class AdvancedScreen extends React.PureComponent<Props,State> {
 
   infoPeerModal:React.RefObject<Modal> = React.createRef()
 
-  /*
-   * @param {keyof State} key
-   * @returns {(value: any) => void}
-   */
   onChange = (key:keyof State) => (value:any) => {
     this.setState(prevState => ({
       ...prevState,
@@ -334,9 +264,6 @@ class AdvancedScreen extends React.PureComponent<Props,State> {
     }
   }
 
-  /*
-   * @param {keyof Accordions} name
-   */
   toggleAccordion = (name:keyof Accordions) => () => {
     const { accordions } = this.state
     if (!(name in accordions)) {
@@ -364,9 +291,6 @@ class AdvancedScreen extends React.PureComponent<Props,State> {
     this.toggleAccordion('peers')
   }
 
-  /*
-   * @param {number} ms
-   */
   wait = (ms:number) =>
     new Promise(resolve => {
       setTimeout(() => {
@@ -374,10 +298,6 @@ class AdvancedScreen extends React.PureComponent<Props,State> {
       }, ms)
     })
 
-  /*
-   *
-   * @param {string} routeName
-   */
   fetchNextPage = (routeName:string) => () => {
     const {
       history,
@@ -402,10 +322,6 @@ class AdvancedScreen extends React.PureComponent<Props,State> {
     }
   }
 
-  /*
-   * @param {'peerURI'|'channelPublicKey'|'channelPushAmount'|'channelCapacity'} key
-   * @param {string} value
-   */
   handleInputChange = (key:'peerURI'|'channelPublicKey'|'channelPushAmount'|'channelCapacity', value:string) => {
     // @ts-expect-error
     this.setState({
@@ -537,9 +453,6 @@ class AdvancedScreen extends React.PureComponent<Props,State> {
     }
   }
 
-  /*
-   * @param {ChannelParsed} channel
-   */
   willCloseChannel = (channel:ChannelParsed) => {
     if(this.closeChannelModal.current){
       this.closeChannelModal.current.open()
@@ -614,9 +527,6 @@ class AdvancedScreen extends React.PureComponent<Props,State> {
     }
   }
 
-  /*
-   * @param {string} err
-   */
   showErr = (err:string) => {
     Logger.log('Setting Error message:', err)
     this.setState({
@@ -640,9 +550,6 @@ class AdvancedScreen extends React.PureComponent<Props,State> {
     })
   }
 
-  /*
-   * @param {string} pubKey
-   */
   openInfoPeer = (pubKey:string) => {
     if(this.infoPeerModal.current){
       this.infoPeerModal.current.open()
@@ -711,10 +618,6 @@ class AdvancedScreen extends React.PureComponent<Props,State> {
     })
   }
 
-  /*
-   * @param {string} channelString
-   *
-   */
   onPressChannel = (channelString:string) => {
     /**@type {Channel|PendingChannel} channel*/
     const channel = JSON.parse(channelString)
@@ -755,7 +658,6 @@ class AdvancedScreen extends React.PureComponent<Props,State> {
     })
     const { fetchChannels, fetchPendingChannels } = this.props
     await Promise.all([fetchChannels(), fetchPendingChannels()])
-    //notificationService.Log("TESTING","ALL"+JSON.stringify(this.props.history.))
     this.setState({ refreshingChannels: false })
   }
 
@@ -768,20 +670,16 @@ class AdvancedScreen extends React.PureComponent<Props,State> {
     this.setState({ refreshingTransactions: false })
   }
 
-  /* @param {string} text */
   onChangePeerURI = (text:string) => this.handleInputChange('peerURI', text)
 
-  /* @param {string} text */
   onChangeChannelPublicKey = (text:string) => {
     this.handleInputChange('channelPublicKey', text)
   }
 
-  /* @param {string} text */
   onChangeChannelCapacity = (text:string) => {
     this.handleInputChange('channelCapacity', text)
   }
 
-  /* @param {string} text */
   onChangeChannelPushAmount = (text:string) => {
     this.handleInputChange('channelPushAmount', text)
   }
@@ -794,9 +692,6 @@ class AdvancedScreen extends React.PureComponent<Props,State> {
     this.setState({ modalLoading: false })
   }
 
-  /*
-   * @param {import('../../services/wallet').Transaction} transaction
-   */
   transactionKeyExtractor = (transaction:import('../../services/wallet').Transaction) => transaction.tx_hash
 
   render() {
@@ -1084,9 +979,6 @@ class AdvancedScreen extends React.PureComponent<Props,State> {
   }
 }
 
-/*
- * @param {Store.State} state
- */
 const mapStateToProps = ({ history, node, wallet, fees, users, auth }:Store.State) => ({
   history,
   node,
@@ -1194,13 +1086,8 @@ const xStyles = {
   channelBalanceContainer: [styles.stat, styles.marginBottom15],
 }
 
-/*
- * @param {Channel|PendingChannel} channel
- */
+
 const channelKeyExtractor = (channel:Channel|PendingChannel) => JSON.stringify(channel) //channel.channel_point
 
-/*
- * @param {import('../../services/wallet').Peer} p
- */
 type Peer = import('../../services/wallet').Peer
 const peerKeyExtractor = (p:Peer) => p.pub_key
