@@ -3,13 +3,13 @@ import Logger from 'react-native-file-log'
 
 import * as Actions from '../actions'
 import { ListPaymentsReq, ListPaymentsRes, post } from '../../services'
-import { isOnline, getStateRoot } from '../selectors'
+import * as Selectors from '../selectors'
 
 let oldIsOnline = false
 
 function* fetchLatestPayments(action: Actions.Action) {
   try {
-    const state = getStateRoot(yield select())
+    const state = Selectors.getStateRoot(yield select())
 
     if (!state.auth.token) {
       // If user was unauthenticated let's reset oldIsOnline to false, to avoid
@@ -20,7 +20,7 @@ function* fetchLatestPayments(action: Actions.Action) {
     }
 
     if (action.type !== 'payments/refreshForced') {
-      const newIsOnline = isOnline(state)
+      const newIsOnline = Selectors.isOnline(state)
       const wentOnline = !oldIsOnline && newIsOnline
 
       oldIsOnline = newIsOnline

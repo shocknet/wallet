@@ -1,4 +1,5 @@
 import { default as SocketIO } from 'socket.io-client'
+import { Constants } from 'shock-common'
 
 import { getStore } from '../store'
 import { tokenDidInvalidate } from '../store/actions'
@@ -38,7 +39,7 @@ export const rifle = (
     },
   })
 
-  socket.on('NOT_AUTH', () => {
+  socket.on(Constants.ErrorCode.NOT_AUTH, () => {
     getStore().dispatch(tokenDidInvalidate())
     socket.off('*')
     socket.close()

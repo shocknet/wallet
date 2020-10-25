@@ -10,59 +10,27 @@ import { getStore } from '../store'
 
 let socket: ReturnType<typeof SocketIO> | null = null
 
-const setSocket = (s: ReturnType<typeof SocketIO> | null) => {
-  if (socket && !!s) throw new Error('Tried to set socket twice')
-  if (!socket && !s) throw new Error('Tried to null out socket twice')
-  socket = s
-}
-
-let wasOnline = false
-let wasAuthed = false
-
 function* follows() {
   try {
     const state = Selectors.getStateRoot(yield select())
-    const isOnline = Selectors.isOnline(state)
-    const wentOnline = !wasOnline && isOnline
-    const wentOffline = wasOnline && !isOnline
-    const isAuth = !!state.auth.token
-    const authed = !wasAuthed && isAuth
-    const unauthed = wasAuthed && !isAuth
+    const isReady = Selectors.isOnline(state) && Selectors.isAuth(state)
 
-    if (wentOffline || unauthed) {
-      // If user was unauthenticated let's reset oldIsOnline to false, to avoid
-      // wentOnline from being a false negative (and thus not fetching data).
-      // Some false positives will occur but this is ok. In other words
-      // unauthenticated is equivalent to disconnected from the server (no
-      // interactions whatsoever).
-      wasOnline = false
+    if (isReady && !socket) {
+      socket = rifle('$user::follows::map.on')
 
-      // We have no way of knowing if we'll be really authenticated (or wallet
-      // unlocked or gun authed) when we connect again
-      wasAuthed = false
+      socket.on('$shock', dataHandler)
 
-      if (socket) {
-        socket.off('*')
-        socket.close()
-        setSocket(null)
-      }
-    } else if (authed || wentOnline) {
-      wasAuthed = isAuth
-      // if authed then it's online
-      wasOnline = true
-
-      if (!isAuth) {
-        return
-      }
-
-      const socket = rifle('$user::follows::map.on')
-
-      setSocket(socket)
-
-      socket.on('$shock', dataHandler).on('$error', (err: string) => {
+      socket.on('$error', (err: string) => {
         Logger.log('Error inside follows* ()')
+
         Logger.log(err)
       })
+    }
+
+    if (!isReady && socket) {
+      socket.off('*')
+      socket.close()
+      socket = null
     }
   } catch (err) {
     Logger.log('Error inside follows* ()')

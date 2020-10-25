@@ -10,65 +10,42 @@ import {
   batchDecodePayReqs,
   rod,
 } from '../../services'
-import { isOnline, getStateRoot } from '../selectors'
+import * as Selectors from '../selectors'
 import { getStore } from '../store'
 
 let socket: ReturnType<typeof SocketIO> | null = null
 
-const setSockedt = (s: ReturnType<typeof SocketIO> | null) => {
-  if (socket && !!s) throw new Error('Tried to set socket twice')
-  socket = s
-}
-
-let oldIsAuth = false
-
 function* invoicesSocket() {
   try {
-    const state = getStateRoot(yield select())
+    const state = Selectors.getStateRoot(yield select())
+    const isReady = Selectors.isOnline(state) && Selectors.isAuth(state)
 
-    if (!isOnline(state)) {
-      oldIsAuth = false
-      // We have no way of knowing if we'll be really authenticated (wallet
-      // unlocked) when we connect again
-      if (socket) {
-        socket.off('*')
-        socket.close()
-        setSockedt(null)
-      }
-      return
-    }
+    if (isReady && !socket) {
+      socket = rod('lightning', 'subscribeInvoices', {})
 
-    const newIsAuth = !!state.auth.token
-    const authed = !oldIsAuth && newIsAuth
+      socket.on('data', (invoice: unknown) => {
+        if (!Schema.isInvoiceWhenListed(invoice)) {
+          Logger.log(`Error inside invoicesSocket* ()`)
+          Logger.log(
+            `data received from subscribeInvoices() not a InvoiceLIsted`,
+          )
+          Logger.log(invoice)
+          return
+        }
 
-    oldIsAuth = newIsAuth
+        const store = getStore()
+        const state = store.getState()
 
-    if (!authed) {
-      return
-    }
+        if (state.auth.token) {
+          store.dispatch(Actions.receivedSingleInvoice(invoice))
+        }
+      })
 
-    setSockedt(rod('lightning', 'subscribeInvoices', {}))
-
-    socket!.on('data', (invoice: unknown) => {
-      if (!Schema.isInvoiceWhenListed(invoice)) {
+      socket.on('$error', (err: unknown) => {
         Logger.log(`Error inside invoicesSocket* ()`)
-        Logger.log(`data received from subscribeInvoices() not a InvoiceLIsted`)
-        Logger.log(invoice)
-        return
-      }
-
-      const store = getStore()
-      const state = store.getState()
-
-      if (state.auth.token) {
-        store.dispatch(Actions.receivedSingleInvoice(invoice))
-      }
-    })
-
-    socket!.on('$error', (err: unknown) => {
-      Logger.log(`Error inside invoicesSocket* ()`)
-      Logger.log(err)
-    })
+        Logger.log(err)
+      })
+    }
   } catch (err) {
     Logger.log(`Error inside invoicesSocket* ()`)
     Logger.log(err.message)
@@ -79,7 +56,7 @@ let oldIsOnline = false
 
 function* fetchLatestInvoices(action: Actions.Action) {
   try {
-    const state = getStateRoot(yield select())
+    const state = Selectors.getStateRoot(yield select())
 
     if (!state.auth.token) {
       // If user was unauthenticated let's reset oldIsOnline to false, to avoid
@@ -92,7 +69,7 @@ function* fetchLatestInvoices(action: Actions.Action) {
     }
 
     if (action.type !== 'invoicesRefreshForced') {
-      const newIsOnline = isOnline(state)
+      const newIsOnline = Selectors.isOnline(state)
       const wentOnline = !oldIsOnline && newIsOnline
 
       oldIsOnline = newIsOnline
