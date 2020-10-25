@@ -3,7 +3,7 @@ import { StyleSheet, Text, View, SafeAreaView } from 'react-native'
 import { connect } from 'react-redux'
 
 import { Colors } from '../res/css'
-import { isOnline, State as StoreState } from '../../store'
+import { isOnline, State as StoreState } from '../store'
 
 interface DispatchProps {}
 

@@ -1,7 +1,6 @@
 import React from 'react'
 import {
   ListRenderItemInfo,
-  RefreshControl,
   SafeAreaView,
   StyleSheet,
   FlatList,
@@ -9,197 +8,63 @@ import {
   View,
   ActivityIndicator,
   StatusBar,
-  FlatListProps,
   TouchableOpacity,
 } from 'react-native'
 import { connect } from 'react-redux'
-import Http from 'axios'
+
 import { NavigationScreenProp } from 'react-navigation'
 import { NavigationBottomTabOptions } from 'react-navigation-tabs'
 import _ from 'lodash'
 import * as Common from 'shock-common'
 
-import * as Reducers from '../../../reducers'
-import Post from '../../components/Post/Feed'
+import * as Reducers from '../../store/reducers'
+import Post from '../../components/Post'
 import * as Routes from '../../routes'
 import * as CSS from '../../res/css'
-import * as Thunks from '../../thunks'
 import Tabs from '../../components/tabs'
-import * as Follows from '../../../reducers/follows'
 import ShockIconWhite from '../../assets/images/shockW.svg'
 import ShockIconBlue from '../../assets/images/shockB.svg'
-import ShockAvatar from '../../components/ShockAvatar'
+import ShockAvatar, { ConnectedShockAvatar } from '../../components/ShockAvatar'
 import AddonIcon from '../../assets/images/feed/addon.svg'
 import { CREATE_POST_DARK } from '../CreatePostDark'
 import Pad from '../../components/Pad'
+import * as Store from '../../store'
 
 type Navigation = NavigationScreenProp<{}, Routes.UserParams>
-type Item = Common.Schema.Post
-
-interface StateProps {
-  posts: Common.Schema.Post[]
-  myFeed: import('../../../reducers/myFeed').State
-  follows: Follows.State
-  avatar: string | null
-}
-
-interface DispatchProps {
-  //requestBackfeed: () => void
-  //requestMoreFeed: () => void
-  //onViewportChanged: (newViewport: string[]) => void
-  FetchPage: (page: number, currentPosts: Common.Schema.Post[]) => void
-}
 
 interface OwnProps {
   navigation: Navigation
 }
-interface FollowInfo {
-  publicKey: string
+
+interface StateProps {
+  posts: Common.Schema.PostN[]
   avatar: string | null
-  displayName: string
+  usersFollowed: Common.Schema.User[]
 }
-interface State {
-  awaitingBackfeed: boolean
-  awaitingMoreFeed: boolean
-  followsInfo: Record<string, FollowInfo>
-}
+
+interface DispatchProps {}
 
 type Props = StateProps & DispatchProps & OwnProps
 
-const keyExtractor = (item: Common.Schema.Post) => item.id
+const keyExtractor = (item: Common.Schema.PostN) => item.id
 
-class Feed extends React.Component<Props, State> {
+class Feed extends React.Component<Props> {
   static navigationOptions: NavigationBottomTabOptions = {
     tabBarIcon: ({ focused }) => {
       if (focused) {
-        return <ShockIconBlue style={{ width: 32, height: 32 }} />
+        return <ShockIconBlue style={CSS.styles.square32} />
       } else {
-        return <ShockIconWhite style={{ width: 32, height: 32 }} />
+        return <ShockIconWhite style={CSS.styles.square32} />
       }
     },
   }
 
-  state: State = {
-    awaitingBackfeed: false,
-    awaitingMoreFeed: false,
-    followsInfo: {},
-  }
-
-  componentDidMount() {
-    const { follows } = this.props
-
-    const pubs = Object.entries(follows).map(
-      ([_, follow]: [string, Follows.Follow]) => {
-        return follow.user
-      },
-    )
-    if (pubs.length === 0) {
-      return
-    }
-    Http.post('/api/gun/userInfo', { pubs })
-      .then(res => {
-        const rec: Record<string, FollowInfo> = {}
-        const { pubInfos }: { pubInfos: FollowInfo[] } = res.data
-        pubInfos.forEach(follow => {
-          rec[follow.publicKey] = follow
-        })
-        this.setState({ followsInfo: rec })
-      })
-      .catch(() => {})
-  }
-  componentDidUpdate(prevProps: Props) {
-    const currLen = Object.entries(this.props.follows).length
-    const oldLen = Object.entries(prevProps.follows).length
-    if (currLen !== oldLen) {
-      //TMP
-      const { follows } = this.props
-
-      const pubs = Object.entries(follows).map(
-        ([_, follow]: [string, Follows.Follow]) => {
-          return follow.user
-        },
-      )
-      if (pubs.length === 0) {
-        return
-      }
-      Http.post('/api/gun/userInfo', { pubs })
-        .then(res => {
-          const rec: Record<string, FollowInfo> = {}
-          const { pubInfos }: { pubInfos: FollowInfo[] } = res.data
-          pubInfos.forEach(follow => {
-            rec[follow.publicKey] = follow
-          })
-          this.setState({ followsInfo: rec })
-        })
-        .catch(() => {})
-    }
-  }
-
-  onEndReached = () => {
-    const { myFeed } = this.props
-    this.props.FetchPage(myFeed.lastPageFetched, myFeed.posts)
-  }
-
-  onRefresh = () => {
-    this.props.FetchPage(0, []) //clear and reload
-  }
-
-  renderItem = ({ item }: ListRenderItemInfo<Item>) => {
-    if (!Common.Schema.isPost(item)) return null
-    const imageCIEntries = Object.entries(item.contentItems).filter(
-      ([_, ci]) => ci.type === 'image/embedded',
-    ) as [
-      string,
-      Common.Schema.EmbeddedImage & { isPreview: boolean; isPrivate: boolean },
-    ][]
-
-    const videoCIEntries = Object.entries(item.contentItems).filter(
-      ([_, ci]) => ci.type === 'video/embedded',
-    ) as [
-      string,
-      Common.Schema.EmbeddedVideo & { isPreview: boolean; isPrivate: boolean },
-    ][]
-
-    const paragraphCIEntries = Object.entries(item.contentItems).filter(
-      ([_, ci]) => ci.type === 'text/paragraph',
-    ) as [string, Common.Schema.Paragraph][]
-
-    const images = imageCIEntries.map(([key, imageCI]) => ({
-      id: key,
-      data: imageCI.magnetURI,
-      width: Number(imageCI.width),
-      height: Number(imageCI.height),
-      isPreview: imageCI.isPreview,
-      isPrivate: imageCI.isPrivate,
-    }))
-
-    const videos = videoCIEntries.map(([key, videoCI]) => ({
-      id: key,
-      data: videoCI.magnetURI,
-      width: Number(videoCI.width),
-      height: Number(videoCI.height),
-      isPreview: videoCI.isPreview,
-      isPrivate: videoCI.isPrivate,
-    }))
-
-    const paragraphs = paragraphCIEntries.map(([key, paragraphCI]) => ({
-      id: key,
-      text: paragraphCI.text,
-    }))
-
+  renderItem = ({ item }: ListRenderItemInfo<Common.Schema.PostN>) => {
     return (
-      <Post
-        author={item.author}
-        date={item.date}
-        images={images}
-        videos={videos}
-        paragraphs={paragraphs}
-        parentScrollViewRef={undefined}
-        //@ts-ignore
-        tipValue={item.tipValue ? item.tipValue : 0}
-        //@ts-ignore
-        tipCounter={item.tipCounter ? item.tipCounter : 0}
-      />
+      <View>
+        <Post id={item.id} showTipBtn />
+        <Pad amount={12} />
+      </View>
     )
   }
 
@@ -207,36 +72,24 @@ class Feed extends React.Component<Props, State> {
   onPressUserAvatar = (publicKey: string) => () =>
     this.props.navigation.navigate(Routes.USER, { publicKey })
 
-  renderFollow({ item }: ListRenderItemInfo<[() => boolean, FollowInfo]>) {
-    const [onPress, info] = item
+  renderFollow({ item }: ListRenderItemInfo<Common.Schema.User>) {
     return (
       <View style={styles.otherUserContainer}>
-        <ShockAvatar
-          height={63}
-          image={info.avatar || null}
-          onPress={onPress}
-          lastSeenApp={null}
-          avatarStyle={styles.avatarStyle}
-          disableOnlineRing
-        />
-        <Text style={styles.otherUserName}>{info.displayName}</Text>
+        <View style={styles.avatarStyle}>
+          <ConnectedShockAvatar
+            height={63}
+            disableOnlineRing
+            publicKey={item.publicKey}
+          />
+        </View>
+
+        <Text style={styles.otherUserName}>{item.displayName}</Text>
       </View>
     )
   }
-  prepareFollowsInfo(): [() => boolean, FollowInfo][] {
-    const { followsInfo } = this.state
-    const infos: [() => boolean, FollowInfo][] = []
-    const folArr = Object.values(followsInfo)
-    folArr.forEach(info => {
-      infos.push([this.onPressUserAvatar(info.publicKey), info])
-    })
 
-    return infos
-  }
-
-  debouncedOnEndReached = _.debounce(this.onEndReached, 1000)
   render() {
-    const { posts, myFeed, avatar } = this.props
+    const { posts, avatar } = this.props
 
     return (
       <SafeAreaView style={styles.container}>
@@ -259,7 +112,7 @@ class Feed extends React.Component<Props, State> {
           </TouchableOpacity>
 
           <FlatList
-            data={this.prepareFollowsInfo()}
+            data={this.props.usersFollowed}
             renderItem={this.renderFollow}
             horizontal
           />
@@ -270,21 +123,12 @@ class Feed extends React.Component<Props, State> {
         <Pad amount={8} />
 
         <FlatList
+          style={CSS.styles.width100}
           renderItem={this.renderItem}
-          data={myFeed.posts}
+          data={this.props.posts}
           keyExtractor={keyExtractor}
           ListEmptyComponent={listEmptyElement}
-          onEndReached={this.debouncedOnEndReached}
-          onEndReachedThreshold={0.5}
-          refreshControl={
-            <RefreshControl
-              refreshing={this.state.awaitingBackfeed}
-              onRefresh={this.onRefresh}
-            />
-          }
           ListFooterComponent={posts.length ? listFooterElement : null}
-          //onViewableItemsChanged={this.onViewableItemsChanged}
-          viewabilityConfig={VIEWABILITY_CONFIG}
         />
       </SafeAreaView>
     )
@@ -295,48 +139,17 @@ const TABS = ['Feed', 'Saved', 'Videos']
 
 const listFooterElement = <ActivityIndicator />
 
-const VIEWABILITY_CONFIG: FlatListProps<
-  Common.Schema.Post
->['viewabilityConfig'] = {
-  /**
-   * Minimum amount of time (in milliseconds) that an item must be physically viewable before the
-   * viewability callback will be fired. A high number means that scrolling through content without
-   * stopping will not mark the content as viewable.
-   */
-  minimumViewTime: 100,
-
-  /**
-   * Percent of viewport that must be covered for a partially occluded item to count as
-   * "viewable", 0-100. Fully visible items are always considered viewable. A value of 0 means
-   * that a single pixel in the viewport makes the item viewable, and a value of 100 means that
-   * an item must be either entirely visible or cover the entire viewport to count as viewable.
-   */
-  viewAreaCoveragePercentThreshold: 10,
-}
-
 const mapStateToProps = (state: Reducers.State): StateProps => {
-  const postsIDs = _.flattenDeep(state.feed.currentFeed)
-  const noRepeats = _.uniq(postsIDs)
-
-  const posts = Common.Schema.denormalizePosts(noRepeats, state)
+  const posts = Store.getPostsFromFollowed(state)
 
   return {
     posts,
     avatar: state.users[state.auth.gunPublicKey].avatar,
-    myFeed: state.myFeed,
-    follows: state.follows,
+    usersFollowed: Store.getFollowedUsers(state),
   }
 }
 
-const mapDispatchToProps = (dispatch: any) => ({
-  FetchPage: (page: number, currentPosts: Common.Schema.Post[]) => {
-    dispatch(Thunks.myFeed.FetchPage(page, currentPosts))
-  },
-})
-const ConnectedFeed = connect(
-  mapStateToProps,
-  mapDispatchToProps,
-)(Feed)
+const ConnectedFeed = connect(mapStateToProps)(Feed)
 
 export default ConnectedFeed
 

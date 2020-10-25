@@ -27,7 +27,7 @@ export default class PopupMenu extends Component<Props, State> {
   onPress = () => {
     if (this.state.icon) {
       UIManager.showPopupMenu(
-        //@ts-ignore
+        //@ts-expect-error
         findNodeHandle(this.state.icon),
         this.props.actions,
         this.onError,

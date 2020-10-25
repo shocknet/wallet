@@ -9,7 +9,7 @@ import { TextInput as TextInputRN } from 'react-native'
 const TextInput = React.memo(
   React.forwardRef((props, ref) => (
     <TextInputRN
-      // @ts-ignore
+      // @ts-expect-error
       paddingTop={0}
       paddingBottom={0}
       paddingLeft={0}

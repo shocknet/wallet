@@ -26,27 +26,27 @@ import ShockIcon from '../../res/icons'
 import btcConvert from '../../services/convertBitcoin'
 import * as CSS from '../../res/css'
 import * as Wallet from '../../services/wallet'
-import { getUSDRate, getWalletBalance } from '../../actions/WalletActions'
-import { fetchNodeInfo } from '../../actions/NodeActions'
+import { getUSDRate, getWalletBalance } from '../../store/actions/WalletActions'
+import { fetchNodeInfo } from '../../store/actions/NodeActions'
 import {
   fetchRecentTransactions,
   fetchRecentPayments,
   fetchRecentInvoices,
   loadNewInvoice,
   loadNewTransaction,
-} from '../../actions/HistoryActions'
-import { subscribeOnChats } from '../../actions/ChatActions'
+} from '../../store/actions/HistoryActions'
+import { subscribeOnChats } from '../../store/actions/ChatActions'
 import {
   invoicesRefreshForced,
   paymentsRefreshForced,
   getMoreFeed,
   chainTXsRefreshForced,
-} from '../../actions'
+} from '../../store/actions'
 import { SEND_SCREEN } from '../Send'
 import { RECEIVE_SCREEN } from '../Receive'
 import notificationService from '../../../notificationService'
 import * as Cache from '../../services/cache'
-import * as Store from '../../../store'
+import * as Store from '../../store'
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}, {}>} Navigation
  */
@@ -63,12 +63,12 @@ import { Color } from 'shock-common/dist/constants'
  * @prop {Navigation} navigation
  * @prop {{ USDRate: number, totalBalance: string|null }} wallet
  * @prop {{ unifiedTransactions: (Wallet.Invoice|Wallet.Payment|Wallet.Transaction)[] }} history
- * @prop {{ nodeInfo: import('../../actions/NodeActions').GetInfo }} node
+ * @prop {{ nodeInfo: import('../../store/actions/NodeActions').GetInfo }} node
  * @prop {() => Promise<void>} fetchRecentTransactions
  * @prop {() => Promise<void>} fetchRecentPayments
  * @prop {() => Promise<void>} fetchRecentInvoices
- * @prop {() => Promise<import('../../actions/WalletActions').WalletBalance>} getWalletBalance
- * @prop {() => Promise<import('../../actions/NodeActions').GetInfo>} fetchNodeInfo
+ * @prop {() => Promise<import('../../store/actions/WalletActions').WalletBalance>} getWalletBalance
+ * @prop {() => Promise<import('../../store/actions/NodeActions').GetInfo>} fetchNodeInfo
  * @prop {() => Promise<Schema.Chat[]>} subscribeOnChats
  * @prop {() => Promise<number>} getUSDRate
  * @prop {(invoice: Wallet.Invoice) => void} loadNewInvoice
@@ -129,7 +129,7 @@ class WalletOverview extends Component {
    * @param {Schema.InvoiceWhenListed} invoice
    */
   loadNewInvoice = invoice => {
-    // @ts-ignore
+    // @ts-expect-error
     this.props.loadNewInvoice(invoice)
   }
 
@@ -490,7 +490,7 @@ const mapDispatchToProps = {
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-  // @ts-ignore
+  // @ts-expect-error
 )(WalletOverview)
 
 const styles = StyleSheet.create({

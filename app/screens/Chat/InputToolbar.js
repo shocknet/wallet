@@ -85,7 +85,7 @@ export default class InputToolbar extends React.Component {
               onChangeText={this.onInput}
               style={styles.textInput}
               value={text}
-              // @ts-ignore
+              // @ts-expect-error
               paddingTop={0}
               paddingBottom={0}
               ref={this.textInputRef}

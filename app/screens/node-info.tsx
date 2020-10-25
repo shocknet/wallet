@@ -13,9 +13,9 @@ import {
   headerBackImage,
 } from '../components/settings'
 import { NodeInfo as INodeInfo } from '../schema'
-import * as Actions from '../actions'
+import * as Actions from '../store/actions'
 import Pad from '../components/Pad'
-import * as Store from '../../store'
+import * as Store from '../store'
 
 export const NODE_INFO = 'NODE_INFO'
 

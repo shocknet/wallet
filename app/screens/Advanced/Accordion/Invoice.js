@@ -6,8 +6,8 @@ import * as CSS from '../../../res/css'
 /**
  * @typedef {import('../../../services/wallet').Invoice} IInvoice
  */
+
 /** @type {number} */
-//@ts-ignore
 const paymentIcon = require('../../../assets/images/payment-icon.png')
 
 /**

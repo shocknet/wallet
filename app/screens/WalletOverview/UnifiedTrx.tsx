@@ -5,7 +5,7 @@ import { connect } from 'react-redux'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 
 import * as CSS from '../../res/css'
-import * as Store from '../../../store'
+import * as Store from '../../store'
 
 import UnifiedTransaction, {
   OwnProps as UnifiedTransactionProps,

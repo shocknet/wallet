@@ -8,7 +8,7 @@ import {
 import moment from 'moment'
 import Http, { AxiosRequestConfig } from 'axios'
 import Logger from 'react-native-file-log'
-import { Logger as CommonLogger, Store } from 'shock-common'
+import { Logger as CommonLogger } from 'shock-common'
 import { DISABLE_ENCRYPTION } from './app/config'
 
 import { Provider } from 'react-redux'
@@ -16,22 +16,22 @@ import { Provider } from 'react-redux'
 import Loading from './app/screens/Loading'
 import React from 'react'
 import RNBootSplash from 'react-native-bootsplash'
-// @ts-ignore
+// @ts-expect-error
 import url from 'url'
 
-import { throttledExchangeKeyPair } from './app/actions/ConnectionActions'
+import { throttledExchangeKeyPair } from './app/store/actions/ConnectionActions'
 import * as NavigationService from './app/services/navigation'
 import * as Cache from './app/services/cache'
 import * as Encryption from './app/services/encryption'
-import configureStore from './store'
+import configureStore from './app/store'
 import { PersistGate } from 'redux-persist/integration/react'
 
 import RootStack from './app/navigators/Root'
 
 import { LNURL_SCREEN } from './app/screens/LNURL'
-import { feedPage } from './app/services/feed'
+
 import WithConnWarning from './app/components/WithConnWarning'
-import { hostWasSet } from './app/actions'
+import { hostWasSet } from './app/store/actions'
 import { LOGIN } from './app/screens/Login'
 
 Logger.setTag('ShockWallet')
@@ -91,8 +91,6 @@ const nonEncryptedRoutes = [
 ]
 
 AppRegistry.registerComponent('shockwallet', () => ShockWallet)
-
-Store.setFeedPage(feedPage)
 
 /**
  * @typedef {object} State
@@ -260,7 +258,7 @@ Http.interceptors.request.use(async config => {
         token: encryptedToken,
         iv,
       }
-      // @ts-ignore
+      // @ts-expect-error
       // eslint-disable-next-line require-atomic-updates
       config.originalData = stringifiedData
     }
@@ -470,15 +468,15 @@ Http.interceptors.response.use(
           connection.deviceId
 
         if (
-          // @ts-ignore
+          // @ts-expect-error
           decryptedResponse.config.originalData
         ) {
-          // @ts-ignore
+          // @ts-expect-error
           const response = await Http[
             decryptedResponse.config.method?.toLowerCase() ?? 'get'
           ](
             decryptedResponse.config.url,
-            // @ts-ignore
+            // @ts-expect-error
             JSON.parse(decryptedResponse.config.originalData),
             decryptedResponse.config.headers,
           )

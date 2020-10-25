@@ -33,10 +33,10 @@ import {
   fetchTransactions,
   fetchRecentTransactions,
   fetchHistory,
-} from '../../actions/HistoryActions'
-import { fetchNodeInfo } from '../../actions/NodeActions'
+} from '../../store/actions/HistoryActions'
+import { fetchNodeInfo } from '../../store/actions/NodeActions'
 import { disconnectPeer } from '../../services/wallet'
-import * as Store from '../../../store'
+import * as Store from '../../store'
 import { NODE_INFO } from '../node-info'
 
 import AccordionItem from './Accordion'
@@ -347,7 +347,7 @@ class AdvancedScreen extends React.PureComponent<Props,State> {
     const updatedAccordions = { ...accordions }
 
     for (const key of Object.keys(updatedAccordions)) {
-      // @ts-ignore
+      // @ts-expect-error
       updatedAccordions[key] = key === name
     }
 
@@ -385,7 +385,7 @@ class AdvancedScreen extends React.PureComponent<Props,State> {
       fetchPayments,
       fetchTransactions,
     } = this.props
-    //@ts-ignore
+    //@ts-expect-error
     const currentData = history[routeName]
     const { page } = currentData
     const pageInt = typeof page === 'number' ? page : parseInt(page, 10)
@@ -407,7 +407,7 @@ class AdvancedScreen extends React.PureComponent<Props,State> {
    * @param {string} value
    */
   handleInputChange = (key:'peerURI'|'channelPublicKey'|'channelPushAmount'|'channelCapacity', value:string) => {
-    // @ts-ignore
+    // @ts-expect-error
     this.setState({
       [key]: value,
     })
@@ -481,7 +481,7 @@ class AdvancedScreen extends React.PureComponent<Props,State> {
         channelPushAmount,
       } = this.state
       const { fetchChannels, fees } = this.props
-      //@ts-ignore
+      //@ts-expect-error
       if (isNaN(channelCapacity)) {
         return
       }
@@ -953,7 +953,7 @@ class AdvancedScreen extends React.PureComponent<Props,State> {
           </ImageBackground>
           <View style={styles.accordionsContainer}>
             <AccordionItem
-              //@ts-ignore
+              //@ts-expect-error
               data={[...history.pendingChannels, ...history.channels]}
               Item={Channel}
               keyExtractor={channelKeyExtractor}
@@ -981,7 +981,6 @@ class AdvancedScreen extends React.PureComponent<Props,State> {
             />
             <AccordionItem
               fetchNextPage={this.fetchNextPage('transactions')}
-              //@ts-ignore
               data={history.recentTransactions}
               Item={Transaction}
               title="Transactions"

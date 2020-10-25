@@ -4,7 +4,7 @@ import { connect } from 'react-redux'
 
 import * as CSS from '../../res/css'
 import { ConnectedShockAvatar } from '../ShockAvatar'
-import * as Store from '../../../store'
+import * as Store from '../../store'
 import Pad from '../Pad'
 import TimeText from '../time-text'
 

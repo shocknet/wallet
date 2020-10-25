@@ -24,12 +24,12 @@ import { WALLET_MANAGER } from '../navigators/WalletManager'
 import Pad from '../components/Pad'
 import OnboardingInput from '../components/OnboardingInput'
 import OnboardingBtn from '../components/OnboardingBtn'
-import * as Actions from '../actions'
+import * as Actions from '../store/actions'
 
 export const LOGIN = 'LOGIN'
 
 /** @type {number} */
-// @ts-ignore
+// @ts-expect-error
 const shockBG = require('../assets/images/shock-bg.png')
 
 /**

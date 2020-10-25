@@ -254,10 +254,10 @@ export default class ChatsView extends React.Component {
    * @returns {React.ReactElement<any>}
    */
   sentRequestRenderer = sentRequest => {
-    // @ts-ignore
+    // @ts-expect-error
     const isSending = sentRequest.state === 'sending'
     const hasError =
-      // @ts-ignore
+      // @ts-expect-error
       typeof sentRequest.state === 'string' && sentRequest.state !== 'sending'
 
     return (
@@ -277,7 +277,7 @@ export default class ChatsView extends React.Component {
               }
 
               if (hasError) {
-                // @ts-ignore
+                // @ts-expect-error
                 return sentRequest.state
               }
 

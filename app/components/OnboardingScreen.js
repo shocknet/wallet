@@ -10,7 +10,7 @@ import {
   ActivityIndicator,
   Dimensions,
 } from 'react-native'
-// @ts-ignore
+// @ts-expect-error
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scrollview'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 

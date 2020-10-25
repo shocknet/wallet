@@ -14,13 +14,13 @@ import ShockButton from '../components/ShockButton'
 import ShockInput from '../components/ShockInput'
 import Pad from '../components/Pad'
 import * as CSS from '../res/css'
-//@ts-ignore
+//@ts-expect-error
 import bech32 from 'bech32'
 import { connect } from 'react-redux'
 import * as Cache from '../services/cache'
 import { WALLET_OVERVIEW } from './WalletOverview'
 import QRScanner from './QRScanner'
-import { fetchPeers } from '../actions/HistoryActions'
+import { fetchPeers } from '../store/actions/HistoryActions'
 import ExtractInfo from '../services/validators'
 import { SEND_SCREEN } from './Send'
 export const LNURL_SCREEN = 'LNURL_SCREEN'
@@ -35,9 +35,9 @@ export const LNURL_SCREEN = 'LNURL_SCREEN'
  * @typedef {import('react-navigation').NavigationScreenProp<{}, Params>} Navigation
  */
 /**
- * @typedef {import('../actions/ChatActions').BTCAddress} BTCAddress
- * @typedef {import('../actions/ChatActions').Contact} Contact
- * @typedef {import('../actions/ChatActions').Keysend} Keysend
+ * @typedef {import('../store/actions/ChatActions').BTCAddress} BTCAddress
+ * @typedef {import('../store/actions/ChatActions').Contact} Contact
+ * @typedef {import('../store/actions/ChatActions').Keysend} Keysend
  */
 
 /**
@@ -72,7 +72,7 @@ export const LNURL_SCREEN = 'LNURL_SCREEN'
 /**
  * @typedef {object} Props
  * @prop {Navigation} navigation
- * @prop {import('../../reducers/HistoryReducer').State} history
+ * @prop {import('../store/reducers/HistoryReducer').State} history
  * @prop {()=>void} fetchPeers
  * @prop {(req:string)=>void} decodePaymentRequest
  * @prop {(contact:Contact|BTCAddress|Keysend)=>void} selectContact
@@ -718,7 +718,7 @@ class LNURL extends React.Component {
   }
 }
 /**
- * @param {{history:import('../../reducers/HistoryReducer').State}} state
+ * @param {{history:import('../store/reducers/HistoryReducer').State}} state
  */
 const mapStateToProps = ({ history }) => ({ history })
 

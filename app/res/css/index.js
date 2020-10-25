@@ -78,6 +78,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+  square32: { width: 32, height: 32 },
 })
 
 export const SCREEN_PADDING = 30

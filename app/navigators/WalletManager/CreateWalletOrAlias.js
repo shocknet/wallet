@@ -31,7 +31,7 @@ import OnboardingScreen, {
 import OnboardingInput from '../../components/OnboardingInput'
 import OnboardingBtn from '../../components/OnboardingBtn'
 import FlexCenter from '../../components/FlexCenter'
-import { throttledExchangeKeyPair } from '../../actions/ConnectionActions'
+import { throttledExchangeKeyPair } from '../../store/actions/ConnectionActions'
 
 export const CREATE_WALLET_OR_ALIAS = 'CREATE_WALLET_OR_ALIAS'
 
@@ -397,7 +397,7 @@ class CreateWalletOrAlias extends React.Component {
 }
 
 /**
- * @param {typeof import('../../../reducers/index').default} state
+ * @param {typeof import('../../store/reducers/index').default} state
  */
 const mapStateToProps = ({ connection }) => ({ connection })
 

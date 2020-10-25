@@ -7,8 +7,8 @@ import Http from 'axios'
 import fromPairs from 'lodash/fromPairs'
 
 import { AUTH } from '../navigators/Root'
-import { getStore } from '../../store'
-import * as Actions from '../actions'
+import { getStore } from '../store'
+import * as Actions from '../store/actions'
 
 import * as Navigation from './navigation'
 import * as Utils from './utils'

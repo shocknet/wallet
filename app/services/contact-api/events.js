@@ -1,18 +1,11 @@
-/**
- * @format
- */
-import debounce from 'lodash/debounce'
 import Http from 'axios'
 import Logger from 'react-native-file-log'
 import { isEqual } from 'lodash'
-import { Constants, Schema, Store as CommonStore } from 'shock-common'
-const {
-  Actions: { getMoreFeed },
-} = CommonStore
+import { Constants, Schema } from 'shock-common'
 
 import * as Cache from '../cache'
-import * as Store from '../../../store'
-import * as Actions from '../../actions'
+import * as Store from '../../store'
+import * as Actions from '../../store/actions'
 
 // eslint-disable-next-line no-unused-vars
 
@@ -36,152 +29,7 @@ const isAuth = async () => {
 // DATA EVENTS /////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-/** @typedef {(handshakeAddress: string|null) => void} HandshakeAddrListener */
 /** @typedef {(receivedRequests: Schema.SimpleReceivedRequest[]) => void} ReceivedRequestsListener */
-
-/**
- * @type {HandshakeAddrListener[]}
- */
-const handshakeAddrListeners = []
-
-////////////////////////////////////////////////////////////////////////////////
-
-/** @type {string|null} */
-let currentAddr = null
-
-export const getHandshakeAddr = () => currentAddr
-
-/** @param {string} addr */
-export const setHandshakeAddress = addr => {
-  currentAddr = addr
-  handshakeAddrListeners.forEach(l => l(currentAddr))
-}
-
-const addrFetcher = async () => {
-  if (!(await isAuth())) {
-    setTimeout(addrFetcher, POLL_INTERVAL)
-    return
-  }
-
-  Http.get(`/api/gun/${Event.ON_HANDSHAKE_ADDRESS}`)
-    .then(res => {
-      if (res.status === 200) {
-        setHandshakeAddress(res.data.data)
-      } else {
-        throw new Error(
-          res.data.errorMessage || res.data.message || JSON.stringify(res.data),
-        )
-      }
-
-      setTimeout(addrFetcher, POLL_INTERVAL)
-    })
-    .catch(e => {
-      Logger.log(`Error in H.address Poll:  ${e.message || 'Unknown error'}`)
-      setTimeout(addrFetcher, POLL_INTERVAL)
-    })
-}
-
-let onHandshakeAddrSubbed = false
-
-/**
- * @param {HandshakeAddrListener} listener
- */
-export const onHandshakeAddr = listener => {
-  if (handshakeAddrListeners.indexOf(listener) > -1) {
-    throw new Error('tried to subscribe twice')
-  }
-
-  handshakeAddrListeners.push(listener)
-
-  listener(currentAddr)
-
-  if (!onHandshakeAddrSubbed) {
-    onHandshakeAddrSubbed = true
-    addrFetcher()
-  }
-
-  return () => {
-    const idx = handshakeAddrListeners.indexOf(listener)
-
-    if (idx < 0) {
-      throw new Error('tried to unsubscribe twice')
-    }
-
-    handshakeAddrListeners.splice(idx, 1)
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-/** @typedef {(displayName: string|null) => void} DisplayNameListener */
-
-/**
- * @type {Set<DisplayNameListener>}
- */
-const displayNameListeners = new Set()
-
-/** @type {string|null} */
-let currentDisplayName = null
-
-export const getDisplayName = () => currentDisplayName
-
-/** @param {string|null} dn */
-export const setDisplayName = dn => {
-  currentDisplayName = dn || null
-  displayNameListeners.forEach(l => {
-    l(currentDisplayName)
-  })
-}
-
-const dnFetcher = async () => {
-  if (!(await isAuth())) {
-    setTimeout(dnFetcher, POLL_INTERVAL)
-    return
-  }
-
-  Http.get(`/api/gun/${Event.ON_DISPLAY_NAME}`)
-    .then(res => {
-      if (res.status === 200) {
-        setDisplayName(res.data.data)
-      } else {
-        throw new Error(
-          res.data.errorMessage || res.data.message || JSON.stringify(res.data),
-        )
-      }
-
-      setTimeout(dnFetcher, POLL_INTERVAL)
-    })
-    .catch(e => {
-      Logger.log(`Error in dn Poll: ${e.message || 'Unknown error'}`)
-      setTimeout(dnFetcher, POLL_INTERVAL)
-    })
-}
-
-let onDnSubbed = false
-
-/**
- * @param {DisplayNameListener} listener
- */
-export const onDisplayName = listener => {
-  if (!displayNameListeners.add(listener)) {
-    throw new Error('tried to subscribe twice')
-  }
-
-  listener(currentDisplayName)
-
-  if (!onDnSubbed) {
-    onDnSubbed = true
-    dnFetcher()
-  }
-
-  return () => {
-    if (!displayNameListeners.delete(listener)) {
-      throw new Error('tried to unsubscribe twice')
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////
 
 /** @type {Set<ReceivedRequestsListener>} */
 const receivedReqsListeners = new Set()
@@ -314,129 +162,6 @@ export const onSentRequests = listener => {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-/** @typedef {(bio: string|null) => void} BioListener*/
-
-/** @type {string|null} */
-export let currentBio = null
-
-/**
- * @type {BioListener[]}
- */
-const bioListeners = []
-
-const notifyBioListeners = debounce(() => {
-  bioListeners.forEach(l => l(currentBio))
-}, 500)
-
-const bioFetcher = async () => {
-  if (!(await isAuth())) {
-    setTimeout(bioFetcher, POLL_INTERVAL)
-    return
-  }
-
-  Http.get(`/api/gun/${Event.ON_BIO}`)
-    .then(res => {
-      if (res.status === 200) {
-        currentBio = res.data.data
-        notifyBioListeners()
-      } else {
-        throw new Error(
-          res.data.errorMessage || res.data.message || JSON.stringify(res.data),
-        )
-      }
-
-      setTimeout(bioFetcher, POLL_INTERVAL)
-    })
-    .catch(e => {
-      Logger.log(`Error in bio Poll:  ${e.message || 'Unknown error'}`)
-      setTimeout(bioFetcher, POLL_INTERVAL)
-    })
-}
-
-let bioSubbed = false
-
-/**
- * @param {BioListener} listener
- */
-export const onBio = listener => {
-  if (bioListeners.indexOf(listener) > -1) {
-    throw new Error('tried to subscribe twice')
-  }
-
-  bioListeners.push(listener)
-  listener(currentBio)
-
-  if (!bioSubbed) {
-    bioSubbed = true
-    bioFetcher()
-  }
-
-  return () => {
-    const idx = bioListeners.indexOf(listener)
-
-    if (idx < 0) {
-      throw new Error('tried to unsubscribe twice')
-    }
-
-    bioListeners.splice(idx, 1)
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////////
-// ACTION EVENTS ///////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-
-/**
- * @typedef {object} _RegisterListenerDataBAD
- * @prop {false} ok
- * @prop {string} msg
- * @prop {string} alias
- * @prop {string} pass
- */
-
-/**
- * @typedef {object} _RegisterListenerDataOK
- * @prop {true} ok
- * @prop {null} msg
- * @prop {string} alias
- * @prop {string} pass
- */
-
-/**
- * @typedef {_RegisterListenerDataBAD|_RegisterListenerDataOK} RegisterListenerData
- */
-
-/** @typedef {(res: RegisterListenerData) => void} RegisterListener  */
-
-/**
- * @type {RegisterListener[]}
- */
-const registerListeners = []
-
-/**
- *
- * @param {RegisterListener} listener
- */
-export const onRegister = listener => {
-  if (registerListeners.indexOf(listener) > -1) {
-    throw new Error('tried to subscribe twice')
-  }
-
-  registerListeners.push(listener)
-
-  return () => {
-    const idx = registerListeners.indexOf(listener)
-
-    if (idx < 0) {
-      throw new Error('tried to unsubscribe twice')
-    }
-
-    registerListeners.splice(idx, 1)
-  }
-}
-
 /** @typedef {(chats: Schema.Chat[]) => void} ChatsListener  */
 
 /**
@@ -511,44 +236,18 @@ export const onChats = listener => {
   }
 }
 
-let feedRequested = false
-
-export const setupEvents = async () => {
+export const setupEvents = () => {
   // TODO: Setup or replace seed backup event
   const store = Store.getStore()
-
-  onDisplayName(displayName => {
-    store.dispatch(Actions.Me.receivedMeData({ displayName }))
-  })
 
   onChats(() => {})()
   onSentRequests(() => {})()
   onReceivedRequests(() => {})()
-  onBio(bio => {
-    store.dispatch(Actions.Me.receivedMeData({ bio }))
-  })()
 
-  // @ts-ignore
+  // @ts-expect-error
   store.dispatch(Actions.ChatActions.subscribeOnChats())
-  // @ts-ignore
+  // @ts-expect-error
   store.dispatch(Actions.RequestActions.subscribeReceivedRequests())
-  // @ts-ignore
+  // @ts-expect-error
   store.dispatch(Actions.RequestActions.subscribeSentRequests())
-
-  // Ensure only one request is ever done, independently of the socket
-  // reconnecting (which calls setupEvents() on every reconnection)
-  if (!feedRequested) {
-    store.dispatch(getMoreFeed())
-    feedRequested = true
-  }
-
-  const ad = await Cache.getStoredAuthData()
-
-  if (ad) {
-    store.dispatch(
-      Actions.Me.receivedMeData({
-        publicKey: ad.authData.publicKey,
-      }),
-    )
-  }
 }

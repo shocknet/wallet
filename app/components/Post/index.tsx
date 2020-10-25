@@ -13,7 +13,7 @@ import pickBy from 'lodash/pickBy'
 import Carousel from 'react-native-snap-carousel'
 import size from 'lodash/size'
 
-import * as Store from '../../../store'
+import * as Store from '../../store'
 import * as CSS from '../../res/css'
 import Pad from '../Pad'
 import Button from '../space-btn'
@@ -75,8 +75,14 @@ class Post extends React.PureComponent<Props, State> {
       layout: { width },
     },
   }) => {
-    this.setState({
-      mediaWidth: (width || 0) - PADDING * 2,
+    this.setState(({ mediaWidth }) => {
+      if (mediaWidth) {
+        return null
+      }
+
+      return {
+        mediaWidth: (width || 0) - PADDING * 2,
+      }
     })
   }
 
@@ -145,7 +151,7 @@ class Post extends React.PureComponent<Props, State> {
           {text}
         </SeeMore>
 
-        {numOfMediaItems && mediaWidth && (
+        {!!numOfMediaItems && !!mediaWidth && (
           <>
             <Pad amount={8} />
             <View>

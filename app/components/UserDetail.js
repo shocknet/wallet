@@ -100,7 +100,7 @@ const nameTextStyle = {
  * @type {import('react-native').ViewStyle}
  */
 const alternateTextStyle = {
-  // @ts-ignore TODO
+  // @ts-expect-error TODO
   color: CSS.Colors.TEXT_LIGHT,
   fontSize: 14,
   fontWeight: '200',

@@ -10,13 +10,11 @@ import {
   StatusBar,
   FlatList,
   ListRenderItemInfo,
-  RefreshControl,
   ImageBackground,
   Animated,
   Platform,
 } from 'react-native'
 import ImagePicker from 'react-native-image-crop-picker'
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'
 import Logger from 'react-native-file-log'
 import { NavigationScreenProp } from 'react-navigation'
 import { NavigationBottomTabOptions } from 'react-navigation-tabs'
@@ -35,11 +33,10 @@ import * as Cache from '../../services/cache'
 import QR from '../WalletOverview/QR'
 import Pad from '../../components/Pad'
 import BasicDialog from '../../components/BasicDialog'
-import Post from '../../components/Post/Wall'
+import Post from '../../components/Post'
 import { PUBLISH_CONTENT_DARK } from '../../screens/PublishContentDark'
 import ShockInput from '../../components/ShockInput'
 import IGDialogBtn from '../../components/IGDialogBtn'
-import * as Thunks from '../../thunks'
 import SettingIcon from '../../assets/images/profile/setting-icon.svg'
 import QrCode from '../../assets/images/qrcode.svg'
 import TapCopy from '../../assets/images/profile/tapcopy.svg'
@@ -48,13 +45,12 @@ import OfferService from '../../assets/images/profile/offer-service.svg'
 import PublishContent from '../../assets/images/profile/publish-content.svg'
 import CreatePost from '../../assets/images/profile/create-post.svg'
 import ShockIcon from '../../res/icons'
-import * as Store from '../../../store'
+import * as Store from '../../store'
 import { post } from '../../services'
+import { CREATE_POST_DARK as CREATE_POST } from '../CreatePostDark'
 
 import SetBioDialog from './SetBioDialog'
 import MetaConfigModal from './MetaConfigModal'
-
-import { CREATE_POST_DARK as CREATE_POST } from '../CreatePostDark'
 
 export const MY_PROFILE = 'MY_PROFILE'
 
@@ -67,10 +63,12 @@ interface OwnProps {
 }
 
 interface StateProps {
-  myWall: import('../../../reducers/myWall').State | undefined
-
   headerImage: string | null
   avatar: string | null
+  displayName: string | null
+  bio: string | null
+
+  posts: Common.Schema.PostN[]
 }
 
 interface DispatchProps {
@@ -79,7 +77,6 @@ interface DispatchProps {
     page: number
     posts: Common.Schema.Post[]
   }) => void
-  FetchPage: (page: number, posts: Common.Schema.Post[]) => void
 }
 
 type Props = OwnProps & StateProps & DispatchProps
@@ -87,15 +84,10 @@ type Props = OwnProps & StateProps & DispatchProps
 interface State {
   authData: Cache.AuthData | null
   settingAvatar: boolean
-  displayName: string | null
   displayNameDialogOpen: boolean
   displayNameInput: string
   settingDisplayName: boolean
-  bio: string | null
   settingBio: boolean
-  posts: Common.Schema.Post[]
-  lastPageFetched: number
-  loadingNextPage: boolean
   showQrCodeModal: boolean
   showMetaConfigModal: boolean
   scrollY: Animated.Value
@@ -103,12 +95,11 @@ interface State {
   fetching: boolean
 
   postIdToDelete: string | null
-  postPageToDelete: string | null
   sendingDelete: boolean
   deleteError: string | null
-}
 
-type Item = Common.Schema.Post & { page: string }
+  data: [string, ...Common.Schema.PostN[]]
+}
 
 const theme = 'dark'
 
@@ -135,15 +126,11 @@ class MyProfile extends React.PureComponent<Props, State> {
   state: State = {
     authData: null,
     settingAvatar: false,
-    displayName: API.Events.getDisplayName(),
+
     displayNameDialogOpen: false,
     displayNameInput: '',
     settingDisplayName: false,
-    bio: API.Events.currentBio,
     settingBio: false,
-    posts: [],
-    lastPageFetched: 0,
-    loadingNextPage: true,
     showQrCodeModal: false,
     showMetaConfigModal: false,
     scrollY: new Animated.Value(0),
@@ -151,79 +138,20 @@ class MyProfile extends React.PureComponent<Props, State> {
     fetching: false,
 
     postIdToDelete: null,
-    postPageToDelete: null,
     sendingDelete: false,
     deleteError: null,
-  }
-
-  fetchNextPage = async () => {
-    if (this.state.fetching) {
-      return
-    }
-    this.setState({
-      loadingNextPage: true,
-      fetching: true,
-    })
-    const { myWall } = this.props
-    if (!myWall) {
-      return
-    }
-    try {
-      await this.props.FetchPage(myWall.lastPageFetched, myWall.posts)
-    } finally {
-      this.setState({
-        loadingNextPage: false,
-        fetching: false,
-      })
-    }
-  }
-  resetPages = async () => {
-    if (this.state.fetching) {
-      return
-    }
-    this.setState({
-      loadingNextPage: true,
-      fetching: true,
-    })
-    const { myWall } = this.props
-    if (!myWall) {
-      return
-    }
-    try {
-      await this.props.FetchPage(0, [])
-    } finally {
-      this.setState({
-        loadingNextPage: false,
-        fetching: false,
-      })
-    }
-  }
-
-  reload = () => {
-    this.setState(
-      {
-        lastPageFetched: 0,
-      },
-      this.fetchNextPage,
-    )
+    data: ['userdata', ...this.props.posts],
   }
 
   setBioDialog: React.RefObject<SetBioDialog> = React.createRef()
-
-  onAvatarUnsub = () => {}
 
   onDisplayNameUnsub = () => {}
 
   onBioUnsub = () => {}
 
   didFocus = { remove() {} }
-  componentDidUpdate() {}
 
   async componentDidMount() {
-    const { myWall } = this.props
-    if (myWall && myWall.posts.length === 0) {
-      this.props.FetchPage(0, [])
-    }
     this.didFocus = this.props.navigation.addListener('didFocus', () => {
       if (theme === 'dark') {
         StatusBar.setBackgroundColor(CSS.Colors.TRANSPARENT)
@@ -233,13 +161,6 @@ class MyProfile extends React.PureComponent<Props, State> {
         StatusBar.setBarStyle('dark-content')
       }
     })
-    this.onDisplayNameUnsub = API.Events.onDisplayName(dn => {
-      this.setState({
-        displayName: dn,
-      })
-    })
-
-    this.onBioUnsub = API.Events.onBio(bio => this.setState({ bio }))
 
     const authData = await Cache.getStoredAuthData()
 
@@ -250,13 +171,12 @@ class MyProfile extends React.PureComponent<Props, State> {
     this.setState({
       authData: authData.authData,
     })
-    //this.fetchNextPage()
   }
 
   componentWillUnmount() {
     this.didFocus.remove()
     this.onDisplayNameUnsub()
-    this.onAvatarUnsub()
+
     this.onBioUnsub()
   }
 
@@ -267,7 +187,7 @@ class MyProfile extends React.PureComponent<Props, State> {
   }
 
   toggleSetupDisplayName = () => {
-    this.setState(({ displayNameDialogOpen, displayName }) => ({
+    this.setState(({ displayNameDialogOpen }, { displayName }) => ({
       displayNameDialogOpen: !displayNameDialogOpen,
       displayNameInput: displayNameDialogOpen ? '' : displayName || '',
     }))
@@ -283,11 +203,7 @@ class MyProfile extends React.PureComponent<Props, State> {
     })
 
     API.Actions.setDisplayName(displayNameInput)
-      .then(() => {
-        this.setState({
-          displayName: displayNameInput,
-        })
-      })
+      .then(() => {})
       .catch(() => {})
       .finally(() => {
         this.setState({
@@ -358,7 +274,7 @@ class MyProfile extends React.PureComponent<Props, State> {
       })
 
       await post(`api/gun/put`, {
-        path: '$user.profileBinary.avatar',
+        path: '$user>profileBinary>avatar',
         value: image.data,
       })
     } catch (err) {
@@ -384,11 +300,7 @@ class MyProfile extends React.PureComponent<Props, State> {
     this.setState({ settingBio: true })
 
     API.Actions.setBio(bio)
-      .then(() => {
-        this.setState({
-          bio,
-        })
-      })
+      .then(() => {})
       .catch()
       .finally(() => {
         this.setState({ settingBio: false })
@@ -410,51 +322,8 @@ class MyProfile extends React.PureComponent<Props, State> {
       this.setState({ showMetaConfigModal: true })
     }
   }
-  deletePost = ({ id, page }: { id: string; page: string }) => {
-    this.setState({
-      postIdToDelete: id,
-      postPageToDelete: page,
-    })
-  }
-  cancelDeletePost = () => {
-    this.setState({
-      postIdToDelete: null,
-      postPageToDelete: null,
-      deleteError: null,
-    })
-  }
-  confirmDeletePost = async () => {
-    try {
-      const { postIdToDelete: postId, postPageToDelete: _page } = this.state
-      //@ts-expect-error not sure why will dig into this later
-      const { posts } = this.props.myWall
-      const page = Number(_page)
 
-      if (isNaN(page) || !postId) {
-        return
-      }
-      this.setState({
-        sendingDelete: true,
-      })
-      await this.props.DeletePost({
-        page,
-        postId,
-        posts,
-      })
-      this.setState({
-        sendingDelete: false,
-        postIdToDelete: null,
-      })
-    } catch (e) {
-      this.setState({
-        sendingDelete: false,
-        //postIdToDelete: null,
-        deleteError: e.errorMessage ? e.errorMessage : e.message,
-      })
-    }
-  }
-
-  renderItem = ({ item }: ListRenderItemInfo<Item | string>) => {
+  renderItem = ({ item }: ListRenderItemInfo<Common.Schema.PostN | string>) => {
     if (typeof item === 'string') {
       return (
         <View>
@@ -487,89 +356,21 @@ class MyProfile extends React.PureComponent<Props, State> {
         </View>
       )
     }
-    if (Common.Schema.isPost(item)) {
-      const imageCIEntries = Object.entries(item.contentItems).filter(
-        ([_, ci]) => ci.type === 'image/embedded',
-      ) as [
-        string,
-        (Common.Schema.EmbeddedImage & {
-          isPreview: boolean
-          isPrivate: boolean
-        }),
-      ][]
 
-      const videoCIEntries = Object.entries(item.contentItems).filter(
-        ([_, ci]) => ci.type === 'video/embedded',
-      ) as [
-        string,
-        (Common.Schema.EmbeddedVideo & {
-          isPreview: boolean
-          isPrivate: boolean
-        }),
-      ][]
-
-      const paragraphCIEntries = Object.entries(item.contentItems).filter(
-        ([_, ci]) => ci.type === 'text/paragraph',
-      ) as [string, Common.Schema.Paragraph][]
-
-      const images = imageCIEntries.map(([key, imageCI]) => ({
-        id: key,
-        data: imageCI.magnetURI,
-        width: Number(imageCI.width),
-        height: Number(imageCI.height),
-        isPreview: imageCI.isPreview,
-        isPrivate: imageCI.isPrivate,
-      }))
-
-      const videos = videoCIEntries.map(([key, videoCI]) => ({
-        id: key,
-        data: videoCI.magnetURI,
-        width: Number(videoCI.width),
-        height: Number(videoCI.height),
-        isPreview: videoCI.isPreview,
-        isPrivate: videoCI.isPrivate,
-      }))
-
-      const paragraphhs = paragraphCIEntries.map(([key, paragraphCI]) => ({
-        id: key,
-        text: paragraphCI.text,
-      }))
-
-      return (
-        <Post
-          author={item.author}
-          date={item.date}
-          images={images}
-          videos={videos}
-          paragraphs={paragraphhs}
-          parentScrollViewRef={undefined}
-          deletePost={this.deletePost}
-          postId={item.id}
-          postPage={item.page ? item.page : '0'}
-          //@ts-ignore
-          tipCounter={item.tipCounter ? item.tipCounter : 0}
-          //@ts-ignore
-          tipValue={item.tipValue ? item.tipValue : 0}
-        />
-      )
-    }
-    return <></>
+    return (
+      <View>
+        <Post id={item.id} />
+        <Pad amount={12} />
+      </View>
+    )
   }
 
-  getData = (): (Item | string)[] => {
-    const { myWall } = this.props
-    if (!myWall) {
-      return []
-    }
-    const items = myWall.posts as Item[]
-    return ['selection', ...items]
-  }
-
-  keyExtractor = (item: Item | string) => {
+  keyExtractor = (item: Common.Schema.PostN | string) => {
     if (typeof item === 'string') {
-      return 'o'
+      return 'userdata'
     }
-    return (item as Common.Schema.Post).id
+
+    return item.id
   }
 
   onPressCreate = () => {
@@ -580,7 +381,6 @@ class MyProfile extends React.PureComponent<Props, State> {
     this.props.navigation.navigate(PUBLISH_CONTENT_DARK)
   }
 
-  debouncedFetchNextPage = _.debounce(this.fetchNextPage, 1000)
   onPressHeader = async () => {
     try {
       const HEADER_LONG_EDGE = 480
@@ -624,7 +424,7 @@ class MyProfile extends React.PureComponent<Props, State> {
       }
 
       await post(`api/gun/put`, {
-        path: '$user.profileBinary.header',
+        path: '$user>profileBinary>header',
         value: image.data,
       })
     } catch (err) {
@@ -637,13 +437,12 @@ class MyProfile extends React.PureComponent<Props, State> {
   }
 
   render() {
-    const { avatar } = this.props
+    const { avatar, displayName, bio } = this.props
     const {
       settingAvatar,
       settingBio,
       settingDisplayName,
-      displayName,
-      bio,
+
       authData,
       displayNameDialogOpen,
       displayNameInput,
@@ -686,10 +485,10 @@ class MyProfile extends React.PureComponent<Props, State> {
             barStyle="light-content"
           />
 
-          <View style={{ flex: 1 }}>
+          <View style={CSS.styles.flex}>
             <Modal
               isVisible={this.state.showQrCodeModal}
-              backdropColor="#16191C"
+              backdropColor={CSS.Colors.DARK_MODE_BACKGROUND_DARK}
               backdropOpacity={0.94}
               animationIn="zoomInDown"
               animationOut="zoomOutUp"
@@ -736,7 +535,7 @@ class MyProfile extends React.PureComponent<Props, State> {
             </Modal>
           </View>
 
-          <View style={{ flex: 1 }}>
+          <View style={CSS.styles.flex}>
             <MetaConfigModal
               toggleModal={this.onPressMetaConfigModal}
               isModalVisible={this.state.showMetaConfigModal}
@@ -814,27 +613,19 @@ class MyProfile extends React.PureComponent<Props, State> {
             </Animated.View>
           </Animated.View>
 
-          {
-            <FlatList
-              style={{ width: '100%' }}
-              overScrollMode={'never'}
-              scrollEventThrottle={16}
-              //contentOffset={{x:0,y:-100}}
-              onScroll={Animated.event([
-                { nativeEvent: { contentOffset: { y: this.state.scrollY } } },
-              ])}
-              renderItem={this.renderItem}
-              data={this.getData()}
-              keyExtractor={this.keyExtractor}
-              onEndReached={this.debouncedFetchNextPage}
-              refreshControl={
-                <RefreshControl
-                  refreshing={this.state.loadingNextPage}
-                  onRefresh={this.resetPages}
-                />
-              }
-            />
-          }
+          <FlatList
+            style={CSS.styles.width100}
+            overScrollMode={'never'}
+            scrollEventThrottle={16}
+            onScroll={Animated.event([
+              { nativeEvent: { contentOffset: { y: this.state.scrollY } } },
+            ])}
+            renderItem={this.renderItem}
+            data={this.state.data}
+            keyExtractor={this.keyExtractor}
+            ListFooterComponent={listFooter}
+          />
+
           <TouchableOpacity
             style={styles.createBtn}
             onPress={this.onPressShowMyQrCodeModal}
@@ -849,20 +640,6 @@ class MyProfile extends React.PureComponent<Props, State> {
             onRequestClose={() => {}}
           >
             <ActivityIndicator />
-          </BasicDialog>
-          <BasicDialog
-            visible={!!this.state.postIdToDelete}
-            onRequestClose={this.cancelDeletePost}
-            title="Delete this post?"
-          >
-            {this.state.sendingDelete && <ActivityIndicator />}
-            {this.state.deleteError && <Text>{this.state.deleteError}</Text>}
-            {!this.state.sendingDelete && (
-              <IGDialogBtn title="OK" onPress={this.confirmDeletePost} />
-            )}
-            {!this.state.sendingDelete && (
-              <IGDialogBtn title="CANCEL" onPress={this.cancelDeletePost} />
-            )}
           </BasicDialog>
 
           <BasicDialog
@@ -887,65 +664,28 @@ class MyProfile extends React.PureComponent<Props, State> {
       )
     }
 
-    return (
-      <>
-        <View style={styles.container}>
-          <FlatList
-            renderItem={this.renderItem}
-            data={this.getData()}
-            keyExtractor={this.keyExtractor}
-            onEndReached={this.fetchNextPage}
-            refreshControl={
-              <RefreshControl
-                refreshing={this.state.loadingNextPage}
-                onRefresh={this.fetchNextPage}
-              />
-            }
-          />
-
-          <TouchableOpacity
-            style={styles.createBtn}
-            onPress={this.onPressCreate}
-          >
-            <View>
-              <FontAwesome5 name="pencil-alt" color="white" size={22} />
-            </View>
-          </TouchableOpacity>
-        </View>
-      </>
-    )
+    return null
   }
 }
+
+const listFooter = <Pad amount={75} />
 
 const makeMapStateToProps = () => {
   const getUser = Store.makeGetUser()
+  const getPostsForPublicKey = Store.makeGetPostsForPublicKey()
 
   return (state: Store.State): StateProps => {
+    const user = getUser(state, state.auth.gunPublicKey)
+
     return {
-      myWall: state.myWall,
-      headerImage: getUser(state, state.auth.gunPublicKey).header,
-      avatar: getUser(state, state.auth.gunPublicKey).avatar,
+      avatar: user.avatar,
+      bio: user.bio,
+      displayName: user.displayName,
+      headerImage: user.header,
+      posts: getPostsForPublicKey(state, state.auth.gunPublicKey),
     }
   }
 }
-
-const mapDispatchToProps = (dispatch: any) => ({
-  DeletePost: (postInfo: {
-    postId: string
-    page: number
-    posts: Common.Schema.Post[]
-  }) => {
-    dispatch(Thunks.MyWall.DeletePost(postInfo))
-  },
-  FetchPage: (page: number, posts: Common.Schema.Post[]) => {
-    dispatch(Thunks.MyWall.FetchPage(page, posts))
-  },
-})
-
-export default connect(
-  makeMapStateToProps,
-  mapDispatchToProps,
-)(MyProfile)
 
 const styles = StyleSheet.create({
   bodyText: {
@@ -990,7 +730,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   displayNameDark: {
-    textShadowColor: '#16191C',
+    textShadowColor: CSS.Colors.DARK_MODE_BACKGROUND_DARK,
     textShadowRadius: 3,
     color: '#F3EFEF',
     fontFamily: 'Montserrat-700',
@@ -1000,7 +740,7 @@ const styles = StyleSheet.create({
 
   container: {
     alignItems: 'center',
-    backgroundColor: '#16191C',
+    backgroundColor: CSS.Colors.DARK_MODE_BACKGROUND_DARK,
     flex: 1,
     margin: 0,
     justifyContent: 'flex-start',
@@ -1030,7 +770,7 @@ const styles = StyleSheet.create({
   avatarStyle: {
     borderWidth: 5,
     borderRadius: 100,
-    borderColor: '#707070',
+    borderColor: CSS.Colors.DARK_MODE_BORDER_GRAY,
   },
   bio: {
     flexDirection: 'column',
@@ -1106,3 +846,5 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
 })
+
+export default connect(makeMapStateToProps)(MyProfile)
