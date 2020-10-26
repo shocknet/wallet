@@ -1,15 +1,25 @@
 import React from 'react'
 import { View, SafeAreaView, Text, StyleSheet } from 'react-native'
 import Ionicons from 'react-native-vector-icons/Ionicons'
+import { NavigationScreenProp } from 'react-navigation'
+import { connect } from 'react-redux'
+
 import { toggleDrawer } from '../services/navigation'
 import { Colors } from '../res/css'
-import ShockAvatar from './ShockAvatar'
+import * as Store from '../store'
 
-import { NavigationScreenProp } from 'react-navigation'
+import { ConnectedShockAvatar } from './ShockAvatar'
 
 type Navigation = NavigationScreenProp<{}, {}>
 
-interface Props {
+interface DispatchProps {}
+
+interface StateProps {
+  publicKey: string
+  isOnline: boolean
+}
+
+interface OwnProps {
   title?: string
   style?: object
   backButton?: boolean | null
@@ -18,6 +28,8 @@ interface Props {
   onPressAvatar?: () => void
 }
 
+type Props = DispatchProps & StateProps & OwnProps
+
 const Nav: React.FC<Props> = ({
   title,
   style,
@@ -25,6 +37,8 @@ const Nav: React.FC<Props> = ({
   showAvatar,
   navigation,
   onPressAvatar,
+  isOnline,
+  publicKey,
 }) => {
   const goBack = () => {
     if (navigation) {
@@ -51,11 +65,11 @@ const Nav: React.FC<Props> = ({
         <View
           style={typeof showAvatar === 'undefined' ? navStyles.hidden : null}
         >
-          <ShockAvatar
+          <ConnectedShockAvatar
             height={40}
-            image={showAvatar || null}
-            lastSeenApp={null}
+            publicKey={publicKey}
             onPress={onPressAvatar}
+            disableOnlineRing={!isOnline}
           />
         </View>
       )}
@@ -115,4 +129,16 @@ const navStyles = StyleSheet.create({
   },
 })
 
-export default Nav
+const mapState = (state: Store.State): StateProps => {
+  const isOnline = Store.isOnline(state)
+  const publicKey = Store.getMyPublicKey(state)
+
+  return {
+    isOnline,
+    publicKey,
+  }
+}
+
+const ConnectedNav = connect(mapState)(Nav)
+
+export default ConnectedNav
