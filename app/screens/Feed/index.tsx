@@ -48,7 +48,7 @@ type Props = StateProps & DispatchProps & OwnProps
 
 const keyExtractor = (item: Common.Schema.PostN) => item.id
 
-class Feed extends React.Component<Props> {
+class Feed extends React.PureComponent<Props> {
   static navigationOptions: NavigationBottomTabOptions = {
     tabBarIcon: ({ focused }) => {
       if (focused) {
