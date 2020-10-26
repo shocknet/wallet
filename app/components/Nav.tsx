@@ -5,24 +5,20 @@ import { toggleDrawer } from '../services/navigation'
 import { Colors } from '../res/css'
 import ShockAvatar from './ShockAvatar'
 
-/**
- * @typedef {import('react-navigation').NavigationScreenProp<{}, {}>} Navigation
- */
+import { NavigationScreenProp } from 'react-navigation'
 
-/**
- * @typedef {object} Props
- * @prop {(string)=} title
- * @prop {(object)=} style
- * @prop {(boolean)=} backButton
- * @prop {(string|null)=} showAvatar
- * @prop {(Navigation)=} navigation
- * @prop {(()=>void)=} onPressAvatar
- */
+type Navigation = NavigationScreenProp<{}, {}>
 
-/**
- * @type {React.FC<Props>}
- */
-const Nav = ({
+interface Props {
+  title?: string
+  style?: object
+  backButton?: boolean | null
+  showAvatar?: string | null
+  navigation?: Navigation
+  onPressAvatar?: () => void
+}
+
+const Nav: React.FC<Props> = ({
   title,
   style,
   backButton,
@@ -40,7 +36,7 @@ const Nav = ({
 
   const theme = 'dark'
 
-  return ((
+  return (
     <SafeAreaView style={[navStyles.container, style]}>
       {backButton ? (
         <Ionicons
@@ -80,7 +76,7 @@ const Nav = ({
         <View style={navStyles.balanceComponent} />
       )}
     </SafeAreaView>
-  ))
+  )
 }
 
 const navStyles = StyleSheet.create({
