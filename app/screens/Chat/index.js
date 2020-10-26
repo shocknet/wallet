@@ -3,6 +3,7 @@ import { ToastAndroid, StyleSheet, StatusBar } from 'react-native'
 import Ion from 'react-native-vector-icons/Ionicons'
 import Logger from 'react-native-file-log'
 import { Schema } from 'shock-common'
+import produce from 'immer'
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}, Params>} Navigation
  */
@@ -14,6 +15,9 @@ import * as CSS from '../../res/css'
 const { Colors } = CSS
 import { SEND_SCREEN } from '../Send'
 import PaymentDialog from '../../components/PaymentDialog'
+import { rifle, get } from '../../services'
+import * as Store from '../../store'
+
 /**
  * @typedef {import('../Send').Params} SendScreenParams
  */
@@ -76,6 +80,7 @@ const HeaderLeft = React.memo(({ onPress }) => ((
  * sent but might have not appeared on the onChats() event yet.
  * @prop {Record<string, SpontPaymentInTransit>} spontPaymentsInTransit
  * @prop {Record<string, InvoiceInTransit|null>} invoicesInTransit
+ * @prop {Record<string, { body: string , timestamp: number }>} socketMessages
  */
 
 // TODO: COMPONENT HERE IS A TEMP FIX
@@ -129,6 +134,7 @@ export default class Chat extends React.Component {
     cachedSentMessages: [],
     spontPaymentsInTransit: {},
     invoicesInTransit: {},
+    socketMessages: {},
   }
 
   /** @type {React.RefObject<PaymentDialog>} */
@@ -141,6 +147,9 @@ export default class Chat extends React.Component {
   didFocus = { remove() {} }
 
   willBlur = { remove() {} }
+
+  /** @type {null|ReturnType<typeof rifle>} */
+  otherMsgsSocket = null
 
   /**
    * @type {import('./View').Props['onPressSendInvoice']}
@@ -483,6 +492,64 @@ export default class Chat extends React.Component {
     }
   }
 
+  setupOtherMsgsSocket = async () => {
+    const chat = this.getChat()
+
+    if (!chat) {
+      Logger.log('Could not fetch chat for socket at didMount')
+      return
+    }
+
+    const { recipientPublicKey } = chat
+    const publicKey = Store.getMyPublicKey(Store.getStore().getState())
+
+    const { data: incomingID } = await get(
+      `api/gun/user/once/userToIncoming>${recipientPublicKey}`,
+      { 'public-key-for-decryption': publicKey },
+    )
+
+    if (!this.mounted) {
+      return
+    }
+
+    if (typeof incomingID !== 'string') {
+      Logger.log(
+        `Expected incomingID to be an string instead got: ${incomingID}`,
+      )
+      return
+    }
+
+    this.otherMsgsSocket = rifle(
+      `${recipientPublicKey}::outgoings>${incomingID}>messages::map.on`,
+      recipientPublicKey,
+    )
+
+    this.otherMsgsSocket.on(
+      '$shock',
+      /**
+       * @param {unknown} msg
+       * @param {unknown} msgID
+       */
+      (msg, msgID) => {
+        if (
+          Schema.isObj(msg) &&
+          typeof msg.body === 'string' &&
+          typeof msg.timestamp === 'number' &&
+          typeof msgID === 'string'
+        ) {
+          this.setState(state =>
+            produce(state, draft => {
+              // @ts-expect-error
+              draft.socketMessages[msgID] = msg
+            }),
+          )
+        } else {
+          Logger.log(`Not message: ${msg} - msgID: ${msgID}`)
+        }
+      },
+    )
+  }
+
   async componentDidMount() {
     this.mounted = true
     this.updateLastReadMsg()
@@ -512,6 +579,9 @@ export default class Chat extends React.Component {
     this.updateInvoicesInTransit()
 
     const sad = await Cache.getStoredAuthData()
+    if (!this.mounted) {
+      return
+    }
 
     if (sad === null) {
       throw new Error()
@@ -520,6 +590,8 @@ export default class Chat extends React.Component {
     this.setState({
       ownPublicKey: sad.authData.publicKey,
     })
+
+    this.setupOtherMsgsSocket()
   }
 
   componentWillUnmount() {
@@ -527,6 +599,11 @@ export default class Chat extends React.Component {
     this.chatsUnsub()
     this.didFocus.remove()
     this.willBlur.remove()
+    if (this.otherMsgsSocket) {
+      this.otherMsgsSocket.off('*')
+      this.otherMsgsSocket.close()
+      this.otherMsgsSocket = null
+    }
   }
 
   chatsUnsub = () => {}
@@ -581,7 +658,21 @@ export default class Chat extends React.Component {
       return []
     }
 
-    return [...theChat.messages, ...this.state.cachedSentMessages]
+    /** @type {Schema.ChatMessage[]} */
+    const socketMessages = Object.entries(this.state.socketMessages).map(
+      ([id, { body, timestamp }]) => ({
+        body,
+        id,
+        timestamp,
+        outgoing: false,
+      }),
+    )
+
+    return [
+      ...theChat.messages.filter(m => !this.state.socketMessages[m.id]),
+      ...this.state.cachedSentMessages,
+      ...socketMessages,
+    ]
   }
 
   /** @returns {string|null} */
