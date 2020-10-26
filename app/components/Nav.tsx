@@ -1,34 +1,44 @@
 import React from 'react'
 import { View, SafeAreaView, Text, StyleSheet } from 'react-native'
 import Ionicons from 'react-native-vector-icons/Ionicons'
+import { NavigationScreenProp } from 'react-navigation'
+import { connect } from 'react-redux'
+
 import { toggleDrawer } from '../services/navigation'
 import { Colors } from '../res/css'
-import ShockAvatar from './ShockAvatar'
+import * as Store from '../store'
 
-/**
- * @typedef {import('react-navigation').NavigationScreenProp<{}, {}>} Navigation
- */
+import { ConnectedShockAvatar } from './ShockAvatar'
 
-/**
- * @typedef {object} Props
- * @prop {(string)=} title
- * @prop {(object)=} style
- * @prop {(boolean)=} backButton
- * @prop {(string|null)=} showAvatar
- * @prop {(Navigation)=} navigation
- * @prop {(()=>void)=} onPressAvatar
- */
+type Navigation = NavigationScreenProp<{}, {}>
 
-/**
- * @type {React.FC<Props>}
- */
-const Nav = ({
+interface DispatchProps {}
+
+interface StateProps {
+  publicKey: string
+  isOnline: boolean
+}
+
+interface OwnProps {
+  title?: string
+  style?: object
+  backButton?: boolean | null
+  showAvatar?: string | null
+  navigation?: Navigation
+  onPressAvatar?: () => void
+}
+
+type Props = DispatchProps & StateProps & OwnProps
+
+const Nav: React.FC<Props> = ({
   title,
   style,
   backButton,
   showAvatar,
   navigation,
   onPressAvatar,
+  isOnline,
+  publicKey,
 }) => {
   const goBack = () => {
     if (navigation) {
@@ -40,7 +50,7 @@ const Nav = ({
 
   const theme = 'dark'
 
-  return ((
+  return (
     <SafeAreaView style={[navStyles.container, style]}>
       {backButton ? (
         <Ionicons
@@ -55,11 +65,11 @@ const Nav = ({
         <View
           style={typeof showAvatar === 'undefined' ? navStyles.hidden : null}
         >
-          <ShockAvatar
+          <ConnectedShockAvatar
             height={40}
-            image={showAvatar || null}
-            lastSeenApp={null}
+            publicKey={publicKey}
             onPress={onPressAvatar}
+            disableOnlineRing={!isOnline}
           />
         </View>
       )}
@@ -80,7 +90,7 @@ const Nav = ({
         <View style={navStyles.balanceComponent} />
       )}
     </SafeAreaView>
-  ))
+  )
 }
 
 const navStyles = StyleSheet.create({
@@ -119,4 +129,16 @@ const navStyles = StyleSheet.create({
   },
 })
 
-export default Nav
+const mapState = (state: Store.State): StateProps => {
+  const isOnline = Store.isOnline(state)
+  const publicKey = Store.getMyPublicKey(state)
+
+  return {
+    isOnline,
+    publicKey,
+  }
+}
+
+const ConnectedNav = connect(mapState)(Nav)
+
+export default ConnectedNav
