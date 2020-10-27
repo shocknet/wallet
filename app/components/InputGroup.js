@@ -25,6 +25,7 @@ import * as CSS from '../res/css'
  * @prop {(boolean)=} multiline
  * @prop {(string)=} placeholder
  * @prop {(object)=} labelStyle
+ * @prop {(any)=} reactRef
  * @prop {(import('react-native').KeyboardType)=} type
  */
 
@@ -48,6 +49,7 @@ class InputGroup extends PureComponent {
       multiline,
       placeholder,
       labelStyle,
+      reactRef,
       type = 'default',
     } = this.props
     return (
@@ -83,6 +85,7 @@ class InputGroup extends PureComponent {
                 styles.inputDark,
                 multiline ? styles.multilineInput : null,
               ]}
+              ref={reactRef}
               keyboardType={type}
               value={value}
               editable={!disabled}
@@ -104,6 +107,7 @@ class InputGroup extends PureComponent {
           >
             {icon ? <Ionicons name={icon} color="#CBC5C5" size={22} /> : null}
             <TextInput
+              ref={reactRef}
               style={[styles.input, multiline ? styles.multilineInput : null]}
               keyboardType={type}
               value={value}

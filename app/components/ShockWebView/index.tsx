@@ -8,7 +8,9 @@ type Props = {
   height: number
   magnet: string
   type: 'video' | 'image'
-  updateToMedia: (() => void) | null
+  noControls?: boolean
+  updateToMedia?: () => void
+  onPress?: () => void
 }
 
 type State = {
@@ -23,7 +25,7 @@ export default class ShockWebView extends React.Component<Props, State> {
   }
 
   componentDidMount() {
-    const { magnet, type: finalType } = this.props
+    const { magnet, type: finalType, noControls } = this.props
 
     const playerString =
       finalType === 'video'
@@ -34,6 +36,7 @@ export default class ShockWebView extends React.Component<Props, State> {
         ? `(file.name.endsWith('.mp4') || file.name.endsWith('.webm'))`
         : `(file.name.endsWith('.jpg') || file.name.endsWith('.png'))`
     const domID = finalType === 'video' ? `video#player` : `img#player`
+    const videoControls = noControls ? "video.removeAttribute('controls')" : ''
     const html = `<!DOCTYPE html>
     <html lang="en">
     <head>
@@ -50,6 +53,11 @@ export default class ShockWebView extends React.Component<Props, State> {
     <script type="text/javascript">
     
     var client = new WebTorrent()
+    document.getElementById("player").addEventListener("click", e => {
+      e.preventDefault();
+      window.ReactNativeWebView.postMessage("generalClickOnPlayer");
+    
+    })
     
     var torrentId = '${magnet}'
     client.add(torrentId, function (torrent) {
@@ -103,6 +111,7 @@ export default class ShockWebView extends React.Component<Props, State> {
           const video = document.getElementById("player")
           video.onloadeddata =  (l => video.pause())
           video.play()
+          ${videoControls}
         }
       }
     })
@@ -137,6 +146,12 @@ export default class ShockWebView extends React.Component<Props, State> {
           if (data === 'updateSelectedMediaSizes') {
             if (this.props.updateToMedia) {
               this.props.updateToMedia()
+            }
+            return
+          }
+          if (data === 'generalClickOnPlayer') {
+            if (this.props.onPress) {
+              this.props.onPress()
             }
             return
           }
