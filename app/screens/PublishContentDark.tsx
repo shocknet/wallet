@@ -27,12 +27,10 @@ import * as CSS from '../res/css'
 import Pad from '../components/Pad'
 import InputGroup from '../components/InputGroup'
 import ArrowLeft from '../assets/images/arrow-left.svg'
-import HeroImage from '../assets/images/publish-content/image.svg'
 import ContentImages from '../assets/images/publish-content/images.svg'
 import ContentVideo from '../assets/images/publish-content/video.svg'
 import ContentMusic from '../assets/images/publish-content/music.svg'
 import ContentFile from '../assets/images/publish-content/file.svg'
-import CheckBox from 'react-native-check-box'
 import { pickFile } from '../services/seedServer'
 import * as Thunks from '../store/thunks'
 import { MediaToUpload } from '../store/thunks/mediaLib'
@@ -343,22 +341,22 @@ class PublishContentDark extends React.Component<Props, State> {
     const {
       title,
       description,
-      selectedPreview,
+      //selectedPreview,
       selectedMedia,
       processing,
       isPrivate,
-      isPostOrTeaser,
-      previewImageWidth,
+      //isPostOrTeaser,
+      //previewImageWidth,
       mainImageWidth,
       mainVideoWidth,
     } = this.state
     const { mediaLib } = this.props
-    const previewSource = {
+    /*const previewSource = {
       uri:
         selectedPreview.file && selectedPreview.file.uri
           ? selectedPreview.file.uri
           : '',
-    }
+    }*/
     const mediaSource = {
       uri:
         selectedMedia.file && selectedMedia.file.uri
@@ -387,28 +385,6 @@ class PublishContentDark extends React.Component<Props, State> {
               labelStyle={styles.labelDark}
               placeholder="How I monetized my content with ShockWallet"
             />
-            <View style={styles.heroImage}>
-              <Text style={styles.labelDark}>Hero Image</Text>
-              <HeroImage onPress={this.onPressHeroImage} />
-            </View>
-            {selectedPreview.isImage && (
-              <View
-                onLayout={this.updateMediaContainerWidth('previewImageWidth')}
-                style={{ display: 'flex', alignItems: 'center', width: '100%' }}
-              >
-                <Image
-                  style={getMediaStyle({
-                    w: selectedPreview.width,
-                    h: selectedPreview.height,
-                    parentW: previewImageWidth,
-                  })}
-                  source={previewSource}
-                />
-              </View>
-            )}
-            {selectedPreview.isVideo && (
-              <Text>Unsupported yet, you shouldn't be here anyway</Text>
-            )}
             <View style={styles.contentsContainer}>
               <Text style={styles.labelDark}>Contents</Text>
               <View style={styles.contentIcons}>
@@ -475,48 +451,25 @@ class PublishContentDark extends React.Component<Props, State> {
                 paywall
               </Text>
             )}
-            <View style={styles.checkboxContainer}>
-              <CheckBox
-                style={styles.checkbox}
-                leftText="private content"
-                onClick={this.onPressPrivateContent}
-                isChecked={isPrivate}
-                leftTextStyle={styles.labelCheckbox}
-                checkBoxColor="#BBB8B8"
-              />
 
-              {/*<Text style={styles.labelCheckbox}>Create Post/Teaser</Text>*/}
-            </View>
-
-            <View style={styles.checkboxContainer}>
-              <CheckBox
-                style={styles.checkbox}
-                leftText="Create Post/Teaser"
-                onClick={this.onPressPostOrTeaser}
-                isChecked={isPostOrTeaser}
-                leftTextStyle={styles.labelCheckbox}
-                checkBoxColor="#BBB8B8"
-              />
-
-              {/*<Text style={styles.labelCheckbox}>Create Post/Teaser</Text>*/}
-            </View>
-
-            <View style={styles.actionButtonsDark}>
-              <TouchableHighlight
-                underlayColor="transparent"
-                style={styles.actionButtonDark1}
-                onPress={this.onDiscard}
-              >
-                <Text style={styles.actionButtonTextDark1}>Discard</Text>
-              </TouchableHighlight>
-              <TouchableHighlight
-                underlayColor="transparent"
-                style={styles.actionButtonDark2}
-                onPress={this.onPublish}
-              >
-                <Text style={styles.actionButtonTextDark2}>Publish</Text>
-              </TouchableHighlight>
-            </View>
+            {!processing && (
+              <View style={styles.actionButtonsDark}>
+                <TouchableHighlight
+                  underlayColor="transparent"
+                  style={styles.actionButtonDark1}
+                  onPress={this.onDiscard}
+                >
+                  <Text style={styles.actionButtonTextDark1}>Discard</Text>
+                </TouchableHighlight>
+                <TouchableHighlight
+                  underlayColor="transparent"
+                  style={styles.actionButtonDark2}
+                  onPress={this.onPublish}
+                >
+                  <Text style={styles.actionButtonTextDark2}>Publish</Text>
+                </TouchableHighlight>
+              </View>
+            )}
           </View>
         </ScrollView>
         {processing ? (
