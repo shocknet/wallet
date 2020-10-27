@@ -9,11 +9,12 @@ import {
   ToastAndroid,
   ActivityIndicator,
   ScrollView,
+  Image,
+  TextInput,
 } from 'react-native'
 import { connect } from 'react-redux'
 import Http from 'axios'
 import Logger from 'react-native-file-log'
-import FontAwesome from 'react-native-vector-icons/FontAwesome'
 import DropDownPicker from 'react-native-dropdown-picker'
 
 import * as CSS from '../res/css'
@@ -21,8 +22,8 @@ import Pad from '../components/Pad'
 import InputGroup from '../components/InputGroup'
 import ArrowLeft from '../assets/images/arrow-left.svg'
 import PublicIcon from '../assets/images/create-post/public.svg'
-import SubscribersIcon from '../assets/images/create-post/subscribers.svg'
-import PaywallIcon from '../assets/images/create-post/paywall.svg'
+//import SubscribersIcon from '../assets/images/create-post/subscribers.svg'
+//import PaywallIcon from '../assets/images/create-post/paywall.svg'
 import ShockWebView from '../components/ShockWebView'
 import { CompleteAnyMedia } from '../services/mediaLib'
 
@@ -68,6 +69,13 @@ class CreatePostDark extends React.Component<Props, State> {
   }
 
   state = DEFAULT_STATE
+
+  test: React.RefObject<TextInput> = React.createRef()
+  componentDidMount() {
+    if (this.test.current) {
+      this.test.current.focus()
+    }
+  }
 
   goBack = () => {
     this.props.navigation.goBack()
@@ -146,34 +154,48 @@ class CreatePostDark extends React.Component<Props, State> {
   }
 
   selectMedia = (contentID: string) => () => {
-    this.setState({ selectedContentID: contentID })
+    const contentUpdate =
+      this.state.selectedContentID !== contentID ? contentID : null
+    this.setState({ selectedContentID: contentUpdate })
   }
 
-  prepareMediaItems = (): [() => void, CompleteAnyMedia[]][] => {
+  prepareMediaItems = (): [() => void, boolean, CompleteAnyMedia[]][] => {
     const { medias } = this.props.mediaLib
-    const { shareMode } = this.state
-    const mediaReady: [() => void, CompleteAnyMedia[]][] = []
+    const { shareMode, selectedContentID } = this.state
+    const mediaReady: [() => void, boolean, CompleteAnyMedia[]][] = []
     for (let contentID in medias) {
       const media: CompleteAnyMedia[] = medias[contentID]
       const mainMedia = media[0].isPreview ? media[1] : media[0]
+      const isContentSelected = selectedContentID === contentID
       if (shareMode === 'public') {
         if (!mainMedia.isPrivate) {
-          mediaReady.push([this.selectMedia(contentID), media])
+          mediaReady.push([
+            this.selectMedia(contentID),
+            isContentSelected,
+            media,
+          ])
         }
       }
       if (shareMode === 'paywall' || shareMode === 'subscribers') {
         if (mainMedia.isPrivate) {
-          mediaReady.push([this.selectMedia(contentID), media])
+          mediaReady.push([
+            this.selectMedia(contentID),
+            isContentSelected,
+            media,
+          ])
         }
       }
     }
     return mediaReady.reverse()
   }
 
-  renderPostItem({ item }: { item: [() => void, CompleteAnyMedia[]] }) {
+  renderPostItem({
+    item,
+  }: {
+    item: [() => void, boolean, CompleteAnyMedia[]]
+  }) {
     //const localSelect = this.selectMedia.bind(this)
-    const [selectThis, content] = item
-
+    const [selectThis, selected, content] = item
     const previewMedia: CompleteAnyMedia | undefined = content.find(
       e => e.isPreview,
     )
@@ -202,7 +224,8 @@ class CreatePostDark extends React.Component<Props, State> {
               width={Number(ref.width)}
               height={Number(ref.height)}
               magnet={ref.magnetURI}
-              updateToMedia={null}
+              onPress={selectThis}
+              noControls={true}
             />
           )}
           {ref.type === 'video/embedded' && (
@@ -211,11 +234,24 @@ class CreatePostDark extends React.Component<Props, State> {
               width={Number(ref.width)}
               height={Number(ref.height)}
               magnet={ref.magnetURI}
-              updateToMedia={null}
+              onPress={selectThis}
+              noControls={true}
             />
           )}
         </View>
-        <FontAwesome name="plus" size={20} color="white" onPress={selectThis} />
+        {selected && (
+          <Image
+            style={{
+              height: 100,
+              aspectRatio: Number(ref.width) / Number(ref.height),
+              marginTop: -100,
+              opacity: 0.3,
+            }}
+            source={{
+              uri: 'https://reactnative.dev/img/tiny_logo.png',
+            }}
+          />
+        )}
       </View>
     )
   }
@@ -227,10 +263,10 @@ class CreatePostDark extends React.Component<Props, State> {
   }
 
   render() {
-    const { error, loadingStatus, selectedContentID, selectedView } = this.state
-    const { medias } = this.props.mediaLib
-    let preview = null
-    let media = null
+    const { error, loadingStatus } = this.state
+    //const { medias } = this.props.mediaLib
+    //let preview = null
+    //let media = null
     let availableDropdownItems = [
       {
         label: 'Public',
@@ -248,7 +284,7 @@ class CreatePostDark extends React.Component<Props, State> {
         icon: () => <PaywallIcon />,
       },*/
     ]
-    if (selectedContentID) {
+    /*if (selectedContentID) {
       //notificationService.Log("TESTING",JSON.stringify(medias[selectedContentID]))
       if (medias[selectedContentID][0].isPreview) {
         ;[preview, media] = medias[selectedContentID]
@@ -277,13 +313,13 @@ class CreatePostDark extends React.Component<Props, State> {
           },
         ]
       }
-    }
-    let mediaToShow: CompleteAnyMedia | null = media
-    if (media && preview && !media.isPrivate) {
+    }*/
+    //let mediaToShow: CompleteAnyMedia | null = media
+    /*if (media && preview && !media.isPrivate) {
       if (selectedView === 'preview') {
         mediaToShow = preview
       }
-    }
+    }*/
 
     return (
       <ScrollView style={styles.mainContainer}>
@@ -300,14 +336,14 @@ class CreatePostDark extends React.Component<Props, State> {
             </View>
             <Pad amount={32} />
             <InputGroup
+              reactRef={this.test}
               value={this.state.description}
-              label="Description"
               multiline
               inputStyle={styles.descInputDark}
               //labelStyle={styles.labelDark}
               style={styles.descContainer}
               onChange={this.onChangeText}
-              placeholder="Order our famouse souce and dry rubs"
+              placeholder="What's up?"
             />
             <View style={styles.dropdownContainerView}>
               <DropDownPicker
@@ -334,62 +370,14 @@ class CreatePostDark extends React.Component<Props, State> {
                 <Text style={styles.contentTypeText2}>Content</Text>
               </TouchableOpacity>
             </View>
-            {selectedContentID && (
-              <View>
-                <Text style={{ color: 'white' }}>Content</Text>
-                {preview && media && media.isPrivate && (
-                  <View
-                    style={{
-                      width: '100%',
-                      aspectRatio:
-                        Number(preview.width) / Number(preview.height),
-                    }}
-                  >
-                    <Text style={{ color: 'white' }}>Selected Preview</Text>
-                    <ShockWebView
-                      magnet={preview.magnetURI}
-                      width={Number(preview.width)}
-                      height={Number(preview.height)}
-                      type={
-                        preview.type === 'image/embedded' ? 'image' : 'video'
-                      }
-                      updateToMedia={null}
-                    />
-                  </View>
-                )}
-                {mediaToShow && (
-                  <View
-                    style={{
-                      width: '100%',
-                      aspectRatio:
-                        Number(mediaToShow.width) / Number(mediaToShow.height),
-                    }}
-                  >
-                    <Text style={{ color: 'white' }}>Selected Media</Text>
-                    <ShockWebView
-                      magnet={mediaToShow.magnetURI}
-                      width={Number(mediaToShow.width)}
-                      height={Number(mediaToShow.height)}
-                      type={
-                        mediaToShow.type === 'image/embedded'
-                          ? 'image'
-                          : 'video'
-                      }
-                      updateToMedia={this.togglePublicMedia}
-                    />
-                  </View>
-                )}
-              </View>
-            )}
-            {!selectedContentID && (
-              <View style={styles.postsCarousel}>
-                <FlatList
-                  data={this.prepareMediaItems()}
-                  renderItem={this.renderPostItem}
-                  horizontal
-                />
-              </View>
-            )}
+
+            <View style={styles.postsCarousel}>
+              <FlatList
+                data={this.prepareMediaItems()}
+                renderItem={this.renderPostItem}
+                horizontal
+              />
+            </View>
 
             <Pad amount={10} />
             {this.state.isCreating ? (

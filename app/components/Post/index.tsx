@@ -112,7 +112,6 @@ class Post extends React.PureComponent<Props, State> {
           magnet={item.magnetURI}
           type={item.type === 'image/embedded' ? 'image' : 'video'}
           width={Number(item.width)}
-          updateToMedia={null}
         />
       </View>
     )
