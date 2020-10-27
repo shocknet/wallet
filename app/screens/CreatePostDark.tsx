@@ -91,10 +91,7 @@ class CreatePostDark extends React.Component<Props, State> {
       //mediaContent=
       const { medias } = this.props.mediaLib
       const { selectedContentID } = this.state
-      if (!selectedContentID) {
-        return
-      }
-      const mediaContent = medias[selectedContentID]
+      const mediaContent = selectedContentID ? medias[selectedContentID] : null
       const { description } = this.state
       const dataToSendToService = {
         paragraphs: description.split('\n'),
@@ -240,7 +237,7 @@ class CreatePostDark extends React.Component<Props, State> {
         value: 'public',
         icon: () => <PublicIcon />,
       },
-      {
+      /*{
         label: 'Subscribers',
         value: 'subscribers',
         icon: () => <SubscribersIcon />,
@@ -249,7 +246,7 @@ class CreatePostDark extends React.Component<Props, State> {
         label: 'Paywall',
         value: 'paywall',
         icon: () => <PaywallIcon />,
-      },
+      },*/
     ]
     if (selectedContentID) {
       //notificationService.Log("TESTING",JSON.stringify(medias[selectedContentID]))
