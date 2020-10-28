@@ -14,7 +14,6 @@ import rootSaga from './sagas'
 
 const sagaMiddleware = createSagaMiddleware()
 
-export type Action = _Action
 export type Store = ReduxStore<State, _Action>
 
 const storage = createSensitiveStorage({
