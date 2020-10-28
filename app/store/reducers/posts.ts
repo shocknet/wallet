@@ -36,7 +36,7 @@ const reducer: Reducer<State, Action> = (state = {}, action) =>
       } = action.payload
 
       // Posts can't get edited for now, let's not update unnecessarily
-      if (draft[id]) {
+      if (!!draft[id]) {
         return
       }
 
