@@ -8679,10 +8679,10 @@ shellwords@^0.1.1:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/shellwords/-/shellwords-0.1.1.tgz#d6b9181c1a48d397324c84871efbcfc73fc0654b"
 
-shock-common@^14.2.2:
-  version "14.2.2"
-  resolved "https://registry.yarnpkg.com/shock-common/-/shock-common-14.2.2.tgz#dbed827887a270ca1292a43027dabb03fcce1648"
-  integrity sha512-tIeEAVp9ygrfUVNmeBmBlcaX7lmrMFZNPIAdJP/51FQBMhC0LpcNtOXYAjwbcYz9Ig/OSUxZhDS+EhChEipn6w==
+shock-common@15.x.x:
+  version "15.0.0"
+  resolved "https://registry.yarnpkg.com/shock-common/-/shock-common-15.0.0.tgz#32b5c394eb1937ea2b1bb4f063461c199ec51940"
+  integrity sha512-CLoZo46rDphL1Yv3BuFMLA1LhR9mxX5btoHnG3VgT4daHwEBy6tslwP60VdlBKL7dsasZjc76oicMpEpCZlIMw==
   dependencies:
     immer "^6.0.6"
     lodash "^4.17.19"
