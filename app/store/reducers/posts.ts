@@ -13,6 +13,7 @@ const reducer: Reducer<State, Action> = (state = {}, action) =>
 
       posts.forEach(post => {
         // Posts can't get edited for now, let's not update unnecessarily
+        // They can be deleted however but should be handled via posts/removed
         if (draft[post.id]) {
           return
         }
