@@ -127,7 +127,7 @@ class CreatePostDark extends React.Component<Props, State> {
         })
       }
       // eslint-disable-next-line no-console
-      console.log('onPressCreate dataToSendToService', dataToSendToService)
+      Logger.log('onPressCreate dataToSendToService', dataToSendToService)
       const res = await Http.post(`/api/gun/wall`, {
         tags: [],
         title: 'Post',

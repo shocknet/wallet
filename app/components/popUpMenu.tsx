@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { View, UIManager, findNodeHandle, TouchableOpacity } from 'react-native'
 import Icon from 'react-native-vector-icons/MaterialIcons'
+import Logger from 'react-native-file-log'
 
 const ICON_SIZE = 24
 
@@ -21,7 +22,7 @@ export default class PopupMenu extends Component<Props, State> {
   }
 
   onError() {
-    console.log('Popup Error')
+    Logger.log('Popup Error')
   }
 
   onPress = () => {
