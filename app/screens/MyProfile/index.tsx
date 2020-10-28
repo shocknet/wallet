@@ -71,13 +71,7 @@ interface StateProps {
   posts: Common.Schema.PostN[]
 }
 
-interface DispatchProps {
-  DeletePost: (postInfo: {
-    postId: string
-    page: number
-    posts: Common.Schema.Post[]
-  }) => void
-}
+interface DispatchProps {}
 
 type Props = OwnProps & StateProps & DispatchProps
 
