@@ -180,6 +180,16 @@ class MyProfile extends React.PureComponent<Props, State> {
     this.onBioUnsub()
   }
 
+  componentDidUpdate({ posts: prevPosts }: Props) {
+    const { posts } = this.props
+
+    if (posts !== prevPosts) {
+      this.setState({
+        data: ['userdata', ...posts],
+      })
+    }
+  }
+
   onChangeDisplayNameInput = (dn: string) => {
     this.setState({
       displayNameInput: dn,
