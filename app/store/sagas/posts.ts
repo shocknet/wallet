@@ -104,6 +104,10 @@ const assignSocketToPublicKeys = (publicKeys: string[]) => {
       }
     })
 
+    sockets[publicKey].on(Constants.ErrorCode.NOT_AUTH, () => {
+      getStore().dispatch(Actions.tokenDidInvalidate())
+    })
+
     sockets[publicKey].on('$error', (err: unknown) => {
       if (err === Constants.ErrorCode.NOT_AUTH) {
         getStore().dispatch(Actions.tokenDidInvalidate())
