@@ -62,6 +62,19 @@ const assignSocketToPublicKeys = (publicKeys: string[]) => {
         // posts can't get edited for now
         const newPosts = difference(postsReceived, existingPosts)
 
+        const postsDeleted = Object.keys(
+          // get deleted posts
+          pickBy(data, v => v == null),
+        ).filter(k => k !== '_')
+
+        for (const postKey of postsDeleted) {
+          const store = getStore()
+          const { posts } = store.getState()
+          if (!!posts[postKey]) {
+            store.dispatch(Actions.postRemoved(postKey))
+          }
+        }
+
         for (const postKey of newPosts) {
           httpGet<{ data: Schema.RawPost }>(
             `api/gun/otheruser/${publicKey}/load/posts>${postKey}`,
