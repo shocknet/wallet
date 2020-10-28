@@ -1,4 +1,4 @@
-import { takeEvery, select } from 'redux-saga/effects'
+import { takeEvery, select, all, put } from 'redux-saga/effects'
 import Logger from 'react-native-file-log'
 import SocketIO from 'socket.io-client'
 import difference from 'lodash/difference'
@@ -7,7 +7,7 @@ import pickBy from 'lodash/pickBy'
 
 import * as Actions from '../actions'
 import * as Selectors from '../selectors'
-import { rifle, get as httpGet } from '../../services'
+import { rifle, get as httpGet, post as httpPost } from '../../services'
 import { getStore } from '../store'
 
 /**
@@ -115,8 +115,45 @@ const assignSocketToPublicKeys = (publicKeys: string[]) => {
   }
 }
 
+function* postRemoval({
+  payload: { postID },
+}: ReturnType<typeof Actions.requestedPostRemoval>) {
+  try {
+    httpPost(`api/gun/put`, {
+      path: `$user>posts>${postID}`,
+      value: null,
+    }).catch(e => {
+      Logger.log('Error inside postRemoval* ()')
+      Logger.log(e.message)
+    })
+
+    yield put(Actions.postRemoved(postID))
+  } catch (err) {
+    Logger.log('Error inside postRemoval* ()')
+    Logger.log(err)
+  }
+}
+
+function* postPin({
+  payload: { postID },
+}: ReturnType<typeof Actions.requestedPostPin>) {
+  httpPost(`api/gun/put`, {
+    path: `$user>Profile>pinnedPost`,
+    value: postID,
+  }).catch(e => {
+    Logger.log('Error inside postPin* ()')
+    Logger.log(e.message)
+  })
+
+  yield put(Actions.pinnedPost(postID))
+}
+
 function* rootSaga() {
-  yield takeEvery('*', posts)
+  yield all([
+    takeEvery('*', posts),
+    takeEvery(Actions.requestedPostRemoval, postRemoval),
+    takeEvery(Actions.requestedPostPin, postPin),
+  ])
 }
 
 export default rootSaga
