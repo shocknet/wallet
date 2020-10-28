@@ -72,6 +72,12 @@ const reducer: Reducer<State, Action> = (state = {}, action) =>
         }
       }
     }
+
+    if (action.type === 'posts/removed') {
+      const { postID } = action.payload
+
+      delete draft[postID]
+    }
   })
 
 export default reducer
