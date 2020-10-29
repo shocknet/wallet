@@ -2,6 +2,7 @@ import React from 'react'
 import { View, Text, StyleSheet } from 'react-native'
 import { connect } from 'react-redux'
 import Fontisto from 'react-native-vector-icons/Fontisto'
+import Octicons from 'react-native-vector-icons/Octicons'
 
 import * as CSS from '../../res/css'
 import { ConnectedShockAvatar } from '../ShockAvatar'
@@ -18,6 +19,7 @@ interface StateProps {
   authorDisplayName: string
   authorPublicKey: string
   date: number
+  showPin: boolean
 }
 
 interface DispatchProps {}
@@ -29,6 +31,7 @@ const UserInfoNew: React.FC<Props> = ({
   authorPublicKey,
   date,
   onPressMenuIcon,
+  showPin,
 }) => (
   <View style={CSS.styles.rowCenteredSpaceBetween}>
     <View style={styles.userAndDate}>
@@ -47,13 +50,27 @@ const UserInfoNew: React.FC<Props> = ({
       </View>
     </View>
 
-    <Fontisto
-      name="more-v"
-      size={24}
-      color={CSS.Colors.DARK_MODE_BORDER_GRAY}
-      onPress={onPressMenuIcon}
-      style={onPressMenuIcon ? undefined : CSS.styles.displayNone}
-    />
+    <View style={CSS.styles.rowCentered}>
+      {showPin && (
+        <>
+          <Octicons
+            name="pin"
+            size={24}
+            color={CSS.Colors.DARK_MODE_BORDER_GRAY}
+            style={!showPin && CSS.styles.displayNone}
+          />
+
+          <Pad amount={24} insideRow />
+        </>
+      )}
+      <Fontisto
+        name="more-v"
+        size={24}
+        color={CSS.Colors.DARK_MODE_BORDER_GRAY}
+        onPress={onPressMenuIcon}
+        style={onPressMenuIcon ? undefined : CSS.styles.displayNone}
+      />
+    </View>
   </View>
 )
 
@@ -92,6 +109,7 @@ const makeMapState = () => {
         authorDisplayName: 'Error fetching this post',
         authorPublicKey: state.auth.gunPublicKey,
         date: Date.now(),
+        showPin: false,
       }
     }
 
@@ -101,6 +119,7 @@ const makeMapState = () => {
       authorDisplayName: author.displayName || 'Loading',
       authorPublicKey: author.publicKey,
       date: post.date,
+      showPin: author.pinnedPost === post.id,
     }
   }
 
