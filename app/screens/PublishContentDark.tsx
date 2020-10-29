@@ -221,13 +221,10 @@ class PublishContentDark extends React.Component<Props, State> {
       }
       file.name = file.fileName
       if (file.type.startsWith('image/')) {
-        //{w:file.width,h:file.height}
         const size = {
           w: file.width,
           h: file.height,
-        } /*(await new Promise((res, rej) => {
-          Image.getSize(file.uri, (w, h) => res({ w, h }), err => rej(err))
-        })) as { w: number; h: number }*/
+        }
         if (preview) {
           this.setState({
             selectedPreview: {

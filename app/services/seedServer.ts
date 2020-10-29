@@ -31,19 +31,6 @@ export const pickFile = async (
 ): Promise<
   FilePickerFile & { width: number; height: number; name: string }
 > => {
-  /*return new Promise((res, rej) => {
-    FilePickerManager.showFilePicker(response => {
-      if ((response as FilePickerCancel).didCancel) {
-        rej('User cancelled file picker')
-      } else if ((response as FilePickerError).error) {
-        rej('FilePickerManager Error: ' + (response as FilePickerError).error)
-      } else {
-        const path = 
-        notificationService.LogT(JSON.stringify(response))
-        rej(response as FilePickerFile)
-      }
-    })
-  })*/
   const type = contentType ? contentType : 'video'
   const vid: {
     path: string
