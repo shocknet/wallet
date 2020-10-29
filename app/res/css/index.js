@@ -83,6 +83,10 @@ export const styles = StyleSheet.create({
   displayNone: {
     display: 'none',
   },
+  montserratWhite: {
+    color: Colors.DARK_MODE_TEXT_NEAR_WHITE,
+    fontFamily: 'Montserrat-Regular',
+  },
 })
 
 export const SCREEN_PADDING = 30
