@@ -1,3 +1,5 @@
+import './wdyr'
+
 import {
   AppRegistry,
   Platform,
