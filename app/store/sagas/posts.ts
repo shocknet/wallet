@@ -151,15 +151,31 @@ function* postRemoval({
 function* postPin({
   payload: { postID },
 }: ReturnType<typeof Actions.requestedPostPin>) {
-  httpPost(`api/gun/put`, {
-    path: `$user>Profile>pinnedPost`,
-    value: postID,
-  }).catch(e => {
+  try {
+    yield call(httpPost, `api/gun/put`, {
+      path: `$user>Profile>pinnedPost`,
+      value: postID,
+    })
+
+    yield put(Actions.pinnedPost(postID))
+  } catch (e) {
     Logger.log('Error inside postPin* ()')
     Logger.log(e.message)
-  })
+  }
+}
 
-  yield put(Actions.pinnedPost(postID))
+function* postUnpin() {
+  try {
+    yield call(httpPost, `api/gun/put`, {
+      path: `$user>Profile>pinnedPost`,
+      value: null,
+    })
+
+    yield put(Actions.unpinnedPost())
+  } catch (e) {
+    Logger.log('Error inside postUnpin* ()')
+    Logger.log(e.message)
+  }
 }
 
 function* rootSaga() {
@@ -167,6 +183,7 @@ function* rootSaga() {
     takeEvery('*', posts),
     takeEvery(Actions.requestedPostRemoval, postRemoval),
     takeEvery(Actions.requestedPostPin, postPin),
+    takeEvery(Actions.requestedPostUnpin, postUnpin),
   ])
 }
 
