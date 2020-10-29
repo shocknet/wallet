@@ -1,4 +1,4 @@
-import { takeEvery, select, all, put } from 'redux-saga/effects'
+import { takeEvery, select, all, put, call } from 'redux-saga/effects'
 import Logger from 'react-native-file-log'
 import SocketIO from 'socket.io-client'
 import difference from 'lodash/difference'
@@ -136,12 +136,9 @@ function* postRemoval({
   payload: { postID },
 }: ReturnType<typeof Actions.requestedPostRemoval>) {
   try {
-    httpPost(`api/gun/put`, {
+    yield call(httpPost, `api/gun/put`, {
       path: `$user>posts>${postID}`,
       value: null,
-    }).catch(e => {
-      Logger.log('Error inside postRemoval* ()')
-      Logger.log(e.message)
     })
 
     yield put(Actions.postRemoved(postID))
