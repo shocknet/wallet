@@ -3,6 +3,7 @@ import produce from 'immer'
 import * as MediaLibActions from '../actions/mediaLib'
 import { Action } from '../actions'
 import { CompleteAnyMedia } from '../../services/mediaLib'
+import { ThumbnailFile } from '../thunks/mediaLib'
 export type State = {
   medias: Record<string, CompleteAnyMedia[]>
   currentLocalID: string
@@ -12,6 +13,7 @@ export type State = {
   error: string | null
   seedServerUrl: string
   seedServerToken: string
+  contentThumbnail: Record<string, ThumbnailFile>
 }
 const createEmptyMedia = (): MediaLibActions.MediaBasicInfo => ({
   height: 0,
@@ -29,6 +31,7 @@ const INITIAL_STATE: State = {
   //handle seed server
   seedServerToken: 'jibberish',
   seedServerUrl: 'https://webtorrent.shock.network',
+  contentThumbnail: {},
 }
 
 const reducer = (state: State = INITIAL_STATE, action: Action) => {
@@ -59,8 +62,11 @@ const reducer = (state: State = INITIAL_STATE, action: Action) => {
     }
     case 'mediaLib/beganMetadataUpload': {
       return produce(state, draft => {
-        const { data: media } = action
-        draft.currentMedia = media
+        const { data } = action
+        draft.currentMedia = data.media
+        if (data.thumbnail) {
+          draft.contentThumbnail[data.media.magnet] = data.thumbnail
+        }
         draft.status = 'uploading metadata...'
       })
     }

@@ -1,4 +1,5 @@
 import { CompleteAnyMedia } from '../../services/mediaLib'
+import { ThumbnailFile } from '../thunks'
 
 export type MediaBasicInfo = {
   magnet: string
@@ -22,7 +23,10 @@ export type BeganMediaUploadAction = {
 }
 export type BeganMetadataUploadAction = {
   type: 'mediaLib/beganMetadataUpload'
-  data: MediaBasicInfo
+  data: {
+    media: MediaBasicInfo
+    thumbnail?: ThumbnailFile
+  }
 }
 export type FinishedContentUploadAction = {
   type: 'mediaLib/finishedContentUpload'
@@ -69,9 +73,13 @@ export const beganMediaUpload = (
 
 export const beganMetadataUpload = (
   mediaInfo: MediaBasicInfo,
+  thumbnailInfo?: ThumbnailFile,
 ): BeganMetadataUploadAction => ({
   type: 'mediaLib/beganMetadataUpload',
-  data: mediaInfo,
+  data: {
+    media: mediaInfo,
+    thumbnail: thumbnailInfo,
+  },
 })
 export const finishedContentUpload = (
   contentID: string,

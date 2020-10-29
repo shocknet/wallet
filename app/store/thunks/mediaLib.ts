@@ -17,8 +17,17 @@ export type MediaToUpload = {
   title: string
   description: string
 }
+export type ThumbnailFile = {
+  height: number
+  width: number
+  type: string
+  path: string
+}
 
-export const uploadMedia = (media: MediaToUpload) => async (dispatch: any) => {
+export const uploadMedia = (
+  media: MediaToUpload,
+  thumbnail?: ThumbnailFile,
+) => async (dispatch: any) => {
   try {
     dispatch(Actions.beganContentUpload())
     const localID: string = await generateRandomBytes(32)
@@ -108,11 +117,14 @@ export const uploadMedia = (media: MediaToUpload) => async (dispatch: any) => {
       })
     }
     dispatch(
-      Actions.beganMetadataUpload({
-        height: media.mainMediaHeight,
-        width: media.mainMediaWidth,
-        magnet: main.torrent,
-      }),
+      Actions.beganMetadataUpload(
+        {
+          height: media.mainMediaHeight,
+          width: media.mainMediaWidth,
+          magnet: main.torrent,
+        },
+        thumbnail,
+      ),
     )
     const contentID: string = await MediaLib.createLibEntry(mediaComplete)
     dispatch(Actions.finishedContentUpload(contentID, mediaComplete))

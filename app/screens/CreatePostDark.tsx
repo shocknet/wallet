@@ -26,12 +26,18 @@ import PublicIcon from '../assets/images/create-post/public.svg'
 //import PaywallIcon from '../assets/images/create-post/paywall.svg'
 import ShockWebView from '../components/ShockWebView'
 import { CompleteAnyMedia } from '../services/mediaLib'
+import { ThumbnailFile } from '../store/thunks'
 
 export const CREATE_POST_DARK = 'CREATE_POST_DARK'
 
 type Props = {
   navigation: import('react-navigation').NavigationScreenProp<{}, {}>
   mediaLib: import('../store/reducers/mediaLib').State
+}
+
+type ExtendedCompleteAnyMedia = CompleteAnyMedia & {
+  thumbnailAvailable?: boolean
+  thumbnail?: ThumbnailFile
 }
 
 /**
@@ -159,12 +165,27 @@ class CreatePostDark extends React.Component<Props, State> {
     this.setState({ selectedContentID: contentUpdate })
   }
 
-  prepareMediaItems = (): [() => void, boolean, CompleteAnyMedia[]][] => {
-    const { medias } = this.props.mediaLib
+  prepareMediaItems = (): [
+    () => void,
+    boolean,
+    ExtendedCompleteAnyMedia[],
+  ][] => {
+    const { medias, contentThumbnail } = this.props.mediaLib
+    //notificationService.LogT("MEDIA L"+JSON.stringify(this.props.mediaLib.contentThumbnail))
     const { shareMode, selectedContentID } = this.state
-    const mediaReady: [() => void, boolean, CompleteAnyMedia[]][] = []
+    const mediaReady: [() => void, boolean, ExtendedCompleteAnyMedia[]][] = []
     for (let contentID in medias) {
-      const media: CompleteAnyMedia[] = medias[contentID]
+      const media: ExtendedCompleteAnyMedia[] = medias[contentID].map(e => {
+        const thumbnail = contentThumbnail[e.magnetURI]
+        if (thumbnail) {
+          return {
+            ...e,
+            thumbnailAvailable: true,
+            thumbnail,
+          }
+        }
+        return e
+      })
       const mainMedia = media[0].isPreview ? media[1] : media[0]
       const isContentSelected = selectedContentID === contentID
       if (shareMode === 'public') {
@@ -192,14 +213,14 @@ class CreatePostDark extends React.Component<Props, State> {
   renderPostItem({
     item,
   }: {
-    item: [() => void, boolean, CompleteAnyMedia[]]
+    item: [() => void, boolean, ExtendedCompleteAnyMedia[]]
   }) {
     //const localSelect = this.selectMedia.bind(this)
     const [selectThis, selected, content] = item
-    const previewMedia: CompleteAnyMedia | undefined = content.find(
+    const previewMedia: ExtendedCompleteAnyMedia | undefined = content.find(
       e => e.isPreview,
     )
-    const mainMedia: CompleteAnyMedia | undefined = content.find(
+    const mainMedia: ExtendedCompleteAnyMedia | undefined = content.find(
       e => !e.isPreview,
     )
     if (!mainMedia) {
@@ -209,7 +230,10 @@ class CreatePostDark extends React.Component<Props, State> {
         </View>
       )
     }
-    const ref: CompleteAnyMedia = previewMedia ? previewMedia : mainMedia
+    const ref: ExtendedCompleteAnyMedia = previewMedia
+      ? previewMedia
+      : mainMedia
+
     return (
       <View style={{ marginRight: 20 }}>
         <View
@@ -218,7 +242,18 @@ class CreatePostDark extends React.Component<Props, State> {
             aspectRatio: Number(ref.width) / Number(ref.height),
           }}
         >
-          {ref.type === 'image/embedded' && (
+          {ref.thumbnailAvailable && ref.thumbnail && (
+            <TouchableOpacity onPress={selectThis}>
+              <Image
+                source={{ uri: ref.thumbnail.path }}
+                style={{
+                  height: 100,
+                  aspectRatio: Number(ref.width) / Number(ref.height),
+                }}
+              />
+            </TouchableOpacity>
+          )}
+          {!ref.thumbnailAvailable && ref.type === 'image/embedded' && (
             <ShockWebView
               type="image"
               width={Number(ref.width)}
@@ -228,7 +263,7 @@ class CreatePostDark extends React.Component<Props, State> {
               noControls={true}
             />
           )}
-          {ref.type === 'video/embedded' && (
+          {!ref.thumbnailAvailable && ref.type === 'video/embedded' && (
             <ShockWebView
               type="video"
               width={Number(ref.width)}
