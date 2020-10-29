@@ -34,11 +34,13 @@ interface StateProps {
   contentItems: Record<string, Schema.ContentItem>
   numOfTips: number
   showMenuBtn: boolean
+  isPinned: boolean
 }
 
 interface DispatchProps {
   pin(): void
   remove(): void
+  unpin(): void
 }
 
 interface State {
@@ -128,15 +130,30 @@ class Post extends React.PureComponent<Props, State> {
     this.setState(({ menuOpen }) => ({ menuOpen: !menuOpen }))
   }
 
-  menuChoices = {
-    pin: () => {
-      this.props.pin()
-      this.toggleMenu()
-    },
-    remove: () => {
-      this.props.remove()
-      this.toggleMenu()
-    },
+  getMenuChoices = () => {
+    if (this.props.isPinned) {
+      return {
+        unpin: () => {
+          this.props.unpin()
+          this.toggleMenu()
+        },
+        remove: () => {
+          this.props.remove()
+          this.toggleMenu()
+        },
+      }
+    } else {
+      return {
+        pin: () => {
+          this.props.pin()
+          this.toggleMenu()
+        },
+        remove: () => {
+          this.props.remove()
+          this.toggleMenu()
+        },
+      }
+    }
   }
 
   render() {
@@ -216,7 +233,7 @@ class Post extends React.PureComponent<Props, State> {
         <Dialog
           onRequestClose={this.toggleMenu}
           visible={this.state.menuOpen}
-          choiceToHandler={this.menuChoices}
+          choiceToHandler={this.getMenuChoices()}
         />
       </>
     )
@@ -267,24 +284,32 @@ const styles = StyleSheet.create({
   },
 })
 
-const mapState = (state: Store.State, ownProps: OwnProps): StateProps => {
-  const post = Store.getPost(state, ownProps.id)
-  const myPublicKey = Store.getMyPublicKey(state)
+const mapState = () => {
+  const getUser = Store.makeGetUser()
 
-  if (!post) {
-    return {
-      authorPublicKey: state.auth.gunPublicKey,
-      contentItems: {},
-      numOfTips: 0,
-      showMenuBtn: false,
+  return (state: Store.State, ownProps: OwnProps): StateProps => {
+    const post = Store.getPost(state, ownProps.id)
+    const myPublicKey = Store.getMyPublicKey(state)
+
+    if (!post) {
+      return {
+        authorPublicKey: state.auth.gunPublicKey,
+        contentItems: {},
+        numOfTips: 0,
+        showMenuBtn: false,
+        isPinned: false,
+      }
     }
-  }
 
-  return {
-    authorPublicKey: post.author,
-    contentItems: post.contentItems,
-    numOfTips: 0,
-    showMenuBtn: myPublicKey === post.author,
+    const user = getUser(state, post.author)
+
+    return {
+      authorPublicKey: post.author,
+      contentItems: post.contentItems,
+      numOfTips: 0,
+      showMenuBtn: myPublicKey === post.author,
+      isPinned: post.id === user.pinnedPost,
+    }
   }
 }
 
@@ -294,6 +319,9 @@ const mapDispatch = (
 ): DispatchProps => ({
   pin() {
     dispatch(Store.requestedPostPin(id))
+  },
+  unpin() {
+    dispatch(Store.requestedPostUnpin())
   },
   remove() {
     dispatch(Store.requestedPostRemoval(id))
