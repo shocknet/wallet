@@ -69,6 +69,7 @@ const assignSocketsToPublicKeys = (publicKeys: string[]) => {
             displayName: data.displayName,
             lastSeenApp: data.lastSeenApp,
             lastSeenNode: data.lastSeenNode,
+            pinnedPost: data.pinnedPost,
             publicKey,
           }),
         )

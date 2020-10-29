@@ -95,13 +95,11 @@ class Debug extends React.Component {
   }
 
   sendSentReqsEvent = () => {
-    // eslint-disable-next-line no-console
-    console.warn('deprecated')
+    ToastAndroid.show('deprecated', 800)
   }
 
   connectSocket = () => {
-    // eslint-disable-next-line no-console
-    console.warn('deprecated')
+    ToastAndroid.show('deprecated', 800)
   }
 
   clearAuthData = () => {

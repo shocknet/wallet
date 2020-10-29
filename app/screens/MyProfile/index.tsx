@@ -71,13 +71,7 @@ interface StateProps {
   posts: Common.Schema.PostN[]
 }
 
-interface DispatchProps {
-  DeletePost: (postInfo: {
-    postId: string
-    page: number
-    posts: Common.Schema.Post[]
-  }) => void
-}
+interface DispatchProps {}
 
 type Props = OwnProps & StateProps & DispatchProps
 
@@ -178,6 +172,16 @@ class MyProfile extends React.PureComponent<Props, State> {
     this.onDisplayNameUnsub()
 
     this.onBioUnsub()
+  }
+
+  componentDidUpdate({ posts: prevPosts }: Props) {
+    const { posts } = this.props
+
+    if (posts !== prevPosts) {
+      this.setState({
+        data: ['userdata', ...posts],
+      })
+    }
   }
 
   onChangeDisplayNameInput = (dn: string) => {

@@ -1,4 +1,4 @@
-import { takeEvery, select } from 'redux-saga/effects'
+import { takeEvery, select, all, put, call } from 'redux-saga/effects'
 import Logger from 'react-native-file-log'
 import SocketIO from 'socket.io-client'
 import difference from 'lodash/difference'
@@ -7,7 +7,7 @@ import pickBy from 'lodash/pickBy'
 
 import * as Actions from '../actions'
 import * as Selectors from '../selectors'
-import { rifle, get as httpGet } from '../../services'
+import { rifle, get as httpGet, post as httpPost } from '../../services'
 import { getStore } from '../store'
 
 /**
@@ -62,6 +62,19 @@ const assignSocketToPublicKeys = (publicKeys: string[]) => {
         // posts can't get edited for now
         const newPosts = difference(postsReceived, existingPosts)
 
+        const postsDeleted = Object.keys(
+          // get deleted posts
+          pickBy(data, v => v == null),
+        ).filter(k => k !== '_')
+
+        for (const postKey of postsDeleted) {
+          const store = getStore()
+          const { posts } = store.getState()
+          if (!!posts[postKey]) {
+            store.dispatch(Actions.postRemoved(postKey))
+          }
+        }
+
         for (const postKey of newPosts) {
           httpGet<{ data: Schema.RawPost }>(
             `api/gun/otheruser/${publicKey}/load/posts>${postKey}`,
@@ -104,6 +117,10 @@ const assignSocketToPublicKeys = (publicKeys: string[]) => {
       }
     })
 
+    sockets[publicKey].on(Constants.ErrorCode.NOT_AUTH, () => {
+      getStore().dispatch(Actions.tokenDidInvalidate())
+    })
+
     sockets[publicKey].on('$error', (err: unknown) => {
       if (err === Constants.ErrorCode.NOT_AUTH) {
         getStore().dispatch(Actions.tokenDidInvalidate())
@@ -115,8 +132,59 @@ const assignSocketToPublicKeys = (publicKeys: string[]) => {
   }
 }
 
+function* postRemoval({
+  payload: { postID },
+}: ReturnType<typeof Actions.requestedPostRemoval>) {
+  try {
+    yield call(httpPost, `api/gun/put`, {
+      path: `$user>posts>${postID}`,
+      value: null,
+    })
+
+    yield put(Actions.postRemoved(postID))
+  } catch (err) {
+    Logger.log('Error inside postRemoval* ()')
+    Logger.log(err)
+  }
+}
+
+function* postPin({
+  payload: { postID },
+}: ReturnType<typeof Actions.requestedPostPin>) {
+  try {
+    yield call(httpPost, `api/gun/put`, {
+      path: `$user>Profile>pinnedPost`,
+      value: postID,
+    })
+
+    yield put(Actions.pinnedPost(postID))
+  } catch (e) {
+    Logger.log('Error inside postPin* ()')
+    Logger.log(e.message)
+  }
+}
+
+function* postUnpin() {
+  try {
+    yield call(httpPost, `api/gun/put`, {
+      path: `$user>Profile>pinnedPost`,
+      value: null,
+    })
+
+    yield put(Actions.unpinnedPost())
+  } catch (e) {
+    Logger.log('Error inside postUnpin* ()')
+    Logger.log(e.message)
+  }
+}
+
 function* rootSaga() {
-  yield takeEvery('*', posts)
+  yield all([
+    takeEvery('*', posts),
+    takeEvery(Actions.requestedPostRemoval, postRemoval),
+    takeEvery(Actions.requestedPostPin, postPin),
+    takeEvery(Actions.requestedPostUnpin, postUnpin),
+  ])
 }
 
 export default rootSaga

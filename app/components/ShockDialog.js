@@ -6,7 +6,7 @@ import { Text } from 'react-native-elements'
 
 import * as CSS from '../res/css'
 
-import IGDialogBtn from './IGDialogBtn'
+import IGDialogBtn from './IGDialogBtnDark'
 
 /**
  * @typedef {object} Props
@@ -36,12 +36,12 @@ const _ShockDialog = ({
             <View style={styles.container}>
               {!!message && (
                 <View style={styles.sidePadded}>
-                  <Text>{message}</Text>
+                  <Text style={styles.text}>{message}</Text>
                 </View>
               )}
 
               {choices.length > 0 && (
-                <View style={styles.choices}>
+                <View style={styles.choice}>
                   {choices.map(([choice, handler]) => (
                     <IGDialogBtn
                       key={choice + handler.toString()}
@@ -66,24 +66,32 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 
-  choices: {
+  choice: {
     marginTop: 15,
     marginBottom: 15,
   },
 
   container: {
-    backgroundColor: CSS.Colors.BACKGROUND_WHITE,
-    marginBottom: 100,
-    marginLeft: 30,
-    marginRight: 30,
-    marginTop: 100,
-    paddingBottom: 15,
-    paddingTop: 15,
+    marginHorizontal: 30,
+    marginVertical: 100,
+
+    backgroundColor: CSS.Colors.DARK_MODE_BACKGROUND_DARK,
+
+    borderColor: CSS.Colors.DARK_MODE_BORDER_GRAY,
+    borderWidth: 1,
+
+    paddingVertical: 16,
+    paddingHorizontal: 24,
   },
 
   sidePadded: {
     paddingLeft: 10,
     paddingRight: 10,
+  },
+
+  text: {
+    color: CSS.Colors.DARK_MODE_TEXT_NEAR_WHITE,
+    fontFamily: 'Montserrat-Regular',
   },
 })
 
