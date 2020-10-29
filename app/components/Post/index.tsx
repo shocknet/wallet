@@ -23,6 +23,7 @@ import Share from '../../assets/images/share.svg'
 import Dialog from '../ShockDialog'
 
 import UserInfo from './UserInfoNew'
+import TipPopup from './tip-popup'
 
 interface OwnProps {
   id: string
@@ -47,6 +48,7 @@ interface State {
   mediaWidth: number | null
   displayingMediaIdx: number
   menuOpen: boolean
+  tipPopupOpen: boolean
 }
 
 type Props = OwnProps & StateProps & DispatchProps
@@ -56,6 +58,7 @@ class Post extends React.PureComponent<Props, State> {
     mediaWidth: null,
     displayingMediaIdx: 0,
     menuOpen: false,
+    tipPopupOpen: false,
   }
 
   getMediaItems() {
@@ -156,9 +159,15 @@ class Post extends React.PureComponent<Props, State> {
     }
   }
 
+  toggleTipPopup = () => {
+    this.setState(({ tipPopupOpen }) => ({
+      tipPopupOpen: !tipPopupOpen,
+    }))
+  }
+
   render() {
     const { id, contentItems, numOfTips, showTipBtn } = this.props
-    const { mediaWidth, displayingMediaIdx } = this.state
+    const { displayingMediaIdx, mediaWidth, tipPopupOpen } = this.state
 
     const paragraphs = pickBy(
       contentItems,
@@ -222,8 +231,14 @@ class Post extends React.PureComponent<Props, State> {
               // TODO: Why width100 pushes out share buton?
               style={showTipBtn ? CSS.styles.width70 : CSS.styles.opacityZero}
             >
-              <Button iconLeft="bolt" slim title={`Tip - ${numOfTips} Tips`} />
+              <Button
+                iconLeft="bolt"
+                slim
+                title={`Tip - ${numOfTips} Tips`}
+                onPress={this.toggleTipPopup}
+              />
             </View>
+
             <TouchableWithoutFeedback onPress={this.onPressShare}>
               <Share size={12} />
             </TouchableWithoutFeedback>
@@ -234,6 +249,12 @@ class Post extends React.PureComponent<Props, State> {
           onRequestClose={this.toggleMenu}
           visible={this.state.menuOpen}
           choiceToHandler={this.getMenuChoices()}
+        />
+
+        <TipPopup
+          onRequestClose={this.toggleTipPopup}
+          postID={id}
+          visible={tipPopupOpen}
         />
       </>
     )
@@ -276,7 +297,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-
   mediaIndexText: {
     color: CSS.Colors.TEXT_WHITE,
     fontFamily: 'Montserrat-Light',
