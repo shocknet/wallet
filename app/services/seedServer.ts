@@ -1,10 +1,7 @@
 import { generateRandomBytes } from './encryption'
-import FilePickerManager from 'react-native-file-picker'
-import {
-  FilePickerCancel,
-  FilePickerError,
-  FilePickerFile,
-} from 'react-native-file-picker'
+import ImagePicker from 'react-native-image-crop-picker'
+import { FilePickerFile } from 'react-native-file-picker'
+import notificationService from '../../notificationService'
 
 export const enrollToken = async (
   serviceUrl: string,
@@ -28,18 +25,53 @@ export const enrollToken = async (
   throw new Error('enroll token res NOT ok')
 }
 
-export const pickFile = (): Promise<FilePickerFile> => {
-  return new Promise((res, rej) => {
-    FilePickerManager.showFilePicker(response => {
-      if ((response as FilePickerCancel).didCancel) {
-        rej('User cancelled file picker')
-      } else if ((response as FilePickerError).error) {
-        rej('FilePickerManager Error: ' + (response as FilePickerError).error)
-      } else {
-        res(response as FilePickerFile)
-      }
-    })
-  })
+export const pickFile = async (
+  contentType?: 'photo' | 'video' | 'mixed',
+  otherOptions?: object,
+): Promise<
+  FilePickerFile & { width: number; height: number; name: string }
+> => {
+  const type = contentType ? contentType : 'video'
+  const vid: {
+    path: string
+    name: string
+    mime: string
+    width: number
+    height: number
+  } = ((await ImagePicker.openPicker({
+    mediaType: type,
+    ...otherOptions,
+  })) as unknown) as {
+    path: string
+    name: string
+    mime: string
+    width: number
+    height: number
+  }
+  notificationService.LogT(JSON.stringify(vid))
+  const name = vid.path.split('/').pop()
+  if (!name) {
+    throw new Error('no name found for file')
+  }
+  const vidReady: {
+    name: string
+    fileName: string
+    type: string
+    uri: string
+    path: string
+    width: number
+    height: number
+  } = {
+    name: name,
+    fileName: name,
+    type: vid.mime,
+    uri: vid.path,
+    path: vid.path,
+    height: vid.height,
+    width: vid.width,
+  }
+  //throw new Error("AAAAAH")
+  return vidReady
 }
 export interface TorrentFile {
   name: string

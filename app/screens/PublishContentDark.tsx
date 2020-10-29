@@ -21,6 +21,7 @@ import _ from 'lodash'
 import { connect } from 'react-redux'
 import { FilePickerFile } from 'react-native-file-picker'
 import Video from 'react-native-video'
+import ImagePicker from 'react-native-image-crop-picker'
 
 import * as CSS from '../res/css'
 //import Modal from 'react-native-modal'
@@ -33,7 +34,7 @@ import ContentMusic from '../assets/images/publish-content/music.svg'
 import ContentFile from '../assets/images/publish-content/file.svg'
 import { pickFile } from '../services/seedServer'
 import * as Thunks from '../store/thunks'
-import { MediaToUpload } from '../store/thunks/mediaLib'
+import { MediaToUpload, ThumbnailFile } from '../store/thunks/mediaLib'
 import { clearContentUpload } from '../store/actions/mediaLib'
 
 export const PUBLISH_CONTENT_DARK = 'PUBLISH_CONTENT_DARK'
@@ -41,7 +42,7 @@ type FileReady = FilePickerFile & { name: string }
 type Props = {
   navigation: import('react-navigation').NavigationScreenProp<{}, {}>
   mediaLib: import('../store/reducers/mediaLib').State
-  publishMedia: (media: MediaToUpload) => void
+  publishMedia: (media: MediaToUpload, thumbnail?: ThumbnailFile) => void
   clearContentUpload: () => void
 }
 
@@ -69,6 +70,8 @@ type State = {
   previewVideoWidth: number
   mainImageWidth: number
   mainVideoWidth: number
+
+  thumbnailFile?: ThumbnailFile
 }
 
 const emptySelectedMedia = (): selectedFileInfo => ({
@@ -210,15 +213,18 @@ class PublishContentDark extends React.Component<Props, State> {
       if (prefix === 'file') {
         throw new Error('General files are not supported yet')
       }
-      const file = (await pickFile()) as FileReady
+      const fileType = prefix === 'image' ? 'photo' : 'video'
+      const file = await pickFile(fileType)
+
       if (!file.type.startsWith(prefix + '/')) {
         throw new Error('Invalid file type selected please select a ' + prefix)
       }
       file.name = file.fileName
       if (file.type.startsWith('image/')) {
-        const size = (await new Promise((res, rej) => {
-          Image.getSize(file.uri, (w, h) => res({ w, h }), err => rej(err))
-        })) as { w: number; h: number }
+        const size = {
+          w: file.width,
+          h: file.height,
+        }
         if (preview) {
           this.setState({
             selectedPreview: {
@@ -230,6 +236,18 @@ class PublishContentDark extends React.Component<Props, State> {
             },
           })
         } else {
+          const croppedImg: {
+            width: number
+            height: number
+            size: number
+            mime: string
+            path: string
+          } = await ImagePicker.openCropper({
+            path: file.path,
+            compressImageMaxHeight: 200,
+            compressImageMaxWidth: (size.w / size.h) * 200,
+            cropperToolbarTitle:"Thumbnail"
+          })
           this.setState({
             selectedMedia: {
               file: file,
@@ -237,6 +255,12 @@ class PublishContentDark extends React.Component<Props, State> {
               height: size.h,
               width: size.w,
               isVideo: false,
+            },
+            thumbnailFile: {
+              height: croppedImg.height,
+              width: croppedImg.width,
+              path: croppedImg.path,
+              type: croppedImg.mime,
             },
           })
         }
@@ -281,6 +305,7 @@ class PublishContentDark extends React.Component<Props, State> {
       description,
       title,
       isPrivate,
+      thumbnailFile,
     } = this.state
     const { mediaLib } = this.props
     if (!selectedMedia.file) {
@@ -300,7 +325,7 @@ class PublishContentDark extends React.Component<Props, State> {
       description,
       title,
     }
-    this.props.publishMedia(media)
+    this.props.publishMedia(media, thumbnailFile)
     this.setState({
       processing: true,
     })
@@ -499,8 +524,8 @@ const mapStateToProps = ({ mediaLib }: import('../store/reducers').State) => ({
 })
 
 const mapDispatchToProps = (dispatch: any) => ({
-  publishMedia: (media: MediaToUpload) => {
-    dispatch(Thunks.uploadMedia(media))
+  publishMedia: (media: MediaToUpload, thumbnail?: ThumbnailFile) => {
+    dispatch(Thunks.uploadMedia(media, thumbnail))
   },
   clearContentUpload: () => {
     dispatch(clearContentUpload())

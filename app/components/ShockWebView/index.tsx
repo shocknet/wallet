@@ -26,7 +26,6 @@ export default class ShockWebView extends React.Component<Props, State> {
 
   componentDidMount() {
     const { magnet, type: finalType, noControls } = this.props
-
     const playerString =
       finalType === 'video'
         ? `<video id="player" style="width:100%"></video>`
