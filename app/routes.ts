@@ -9,9 +9,11 @@
  */
 
 export const USER = 'USER'
-/**
- * @typedef {object} UserParams
- * @prop {string} publicKey
- */
+
+export interface UserParams {
+  publicKey: string
+}
 
 export const FEED = 'FEED'
+
+export const MY_PROFILE = 'MY_PROFILE'

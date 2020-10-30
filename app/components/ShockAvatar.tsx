@@ -25,6 +25,7 @@ interface OwnProps {
 interface StateProps {
   image: string | null
   lastSeenApp: number | null
+  isOwn: boolean
 }
 
 interface DispatchProps {}
@@ -48,12 +49,20 @@ class ShockAvatar extends React.PureComponent<Props> {
   }
 
   onPress = () => {
-    const { navigation, onPress, publicKey } = this.props
+    const { navigation, onPress, publicKey, isOwn } = this.props
 
     if (onPress) {
       onPress()
     } else {
-      navigation && navigation.navigate(Routes.USER, { publicKey })
+      if (!navigation) {
+        return
+      }
+
+      if (isOwn) {
+        navigation.navigate(Routes.MY_PROFILE)
+      } else {
+        navigation.navigate(Routes.USER, { publicKey })
+      }
     }
   }
 
@@ -100,10 +109,12 @@ const makeMapStateToProps = () => {
   const f = (state: Reducers.State, ownProps: OwnProps): StateProps => {
     const { publicKey } = ownProps
     const user = getUser(state, publicKey)
+    const myPublicKey = Store.getMyPublicKey(state)
 
     return {
       image: user.avatar,
       lastSeenApp: user.lastSeenApp,
+      isOwn: user.publicKey === myPublicKey,
     }
   }
 

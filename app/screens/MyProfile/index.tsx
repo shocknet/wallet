@@ -52,8 +52,6 @@ import { CREATE_POST_DARK as CREATE_POST } from '../CreatePostDark'
 import SetBioDialog from './SetBioDialog'
 import MetaConfigModal from './MetaConfigModal'
 
-export const MY_PROFILE = 'MY_PROFILE'
-
 const showCopiedToClipboardToast = () => {
   ToastAndroid.show('Copied to clipboard!', 800)
 }
