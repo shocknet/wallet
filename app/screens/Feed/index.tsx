@@ -46,6 +46,7 @@ interface DispatchProps {}
 type Props = StateProps & DispatchProps & OwnProps
 
 const keyExtractor = (item: Common.Schema.PostN) => item.id
+const userKeyExtractor = (item: Common.Schema.User) => item.publicKey
 
 class Feed extends React.PureComponent<Props> {
   static navigationOptions: NavigationBottomTabOptions = {
@@ -115,6 +116,7 @@ class Feed extends React.PureComponent<Props> {
             data={this.props.usersFollowed}
             renderItem={this.renderFollow}
             horizontal
+            keyExtractor={userKeyExtractor}
           />
         </View>
 
