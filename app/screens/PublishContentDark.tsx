@@ -335,7 +335,19 @@ class PublishContentDark extends React.Component<Props, State> {
     const { mediaLib } = this.props
     if (mediaLib.status !== oldMediaLib.status && mediaLib.status === '') {
       this.setState({
+        title: '',
+        description: '',
+        isPostOrTeaser: false,
+        isPrivate: false,
+        selectedMedia: emptySelectedMedia(),
+        selectedPreview: emptySelectedMedia(),
         processing: false,
+        error: null,
+        mainImageWidth: 0,
+        mainVideoWidth: 0,
+        previewImageWidth: 0,
+        previewVideoWidth: 0,
+        thumbnailFile:undefined
       })
       this.goBack()
     }

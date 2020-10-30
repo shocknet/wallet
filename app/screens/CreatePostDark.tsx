@@ -155,6 +155,8 @@ class CreatePostDark extends React.Component<Props, State> {
       this.setState({
         isCreating: false,
         loadingStatus: null,
+        description:'',
+        selectedContentID:null
       })
     }
   }
