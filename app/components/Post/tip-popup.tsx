@@ -1,10 +1,18 @@
 import React from 'react'
-import { Image, StyleSheet, Text, ToastAndroid, View } from 'react-native'
+import {
+  ActivityIndicator,
+  Image,
+  StyleSheet,
+  Text,
+  ToastAndroid,
+  View,
+} from 'react-native'
 import AntDesign from 'react-native-vector-icons/AntDesign'
 // @ts-expect-error
 import SwipeVerify from 'react-native-swipe-verify'
 import isFinite from 'lodash/isFinite'
 import { connect } from 'react-redux'
+import Logger from 'react-native-file-log'
 
 import * as CSS from '../../res/css'
 import DarkModal from '../dark-modal'
@@ -12,6 +20,7 @@ import TextInput from '../TextInput'
 import BitcoinAccepted from '../../assets/images/bitcoin-accepted.png'
 import Pad from '../Pad'
 import * as Store from '../../store'
+import * as Services from '../../services'
 
 interface OwnProps {
   onRequestClose(): void
@@ -19,21 +28,35 @@ interface OwnProps {
   visible: boolean
 }
 
-interface StateProps {}
-
-interface DispatchProps {
-  tip(postID: string, amount: number): void
+interface StateProps {
+  authorPublicKey: string
 }
+
+interface DispatchProps {}
 
 type Props = OwnProps & StateProps & DispatchProps
 
 interface State {
   tipAmt: string
+  tipping: boolean
+  justTipped: boolean
 }
 
 class TipPopup extends React.PureComponent<Props, State> {
   state: State = {
     tipAmt: '',
+    tipping: false,
+    justTipped: false,
+  }
+
+  mounted = false
+
+  componentDidMount() {
+    this.mounted = true
+  }
+
+  componentWillUnmount() {
+    this.mounted = false
   }
 
   onChangeTipAmt = (tipAmt: string) => {
@@ -53,7 +76,10 @@ class TipPopup extends React.PureComponent<Props, State> {
   onRequestClose = () => {
     const { onRequestClose } = this.props
 
-    this.setState({ tipAmt: '' }, onRequestClose)
+    this.setState(
+      { tipAmt: '', tipping: false, justTipped: false },
+      onRequestClose,
+    )
   }
 
   onSlideToSend = () => {
@@ -66,50 +92,108 @@ class TipPopup extends React.PureComponent<Props, State> {
       return
     }
 
-    this.props.tip(this.props.postID, asNumber)
-    this.onRequestClose()
+    this.setState(
+      {
+        tipping: true,
+      },
+      () => {
+        const { authorPublicKey, postID } = this.props
+        const { tipAmt } = this.state
+
+        Services.tipPost(authorPublicKey, postID, Number(tipAmt))
+          .then(() => {
+            if (this.mounted) {
+              this.setState({
+                tipping: false,
+                justTipped: true,
+              })
+            } else {
+              ToastAndroid.show('Tipped post!', 800)
+            }
+          })
+          .catch(e => {
+            if (this.mounted) {
+              this.onRequestClose()
+            }
+            Logger.log(
+              `Could not tip post: ${postID} by author: ${authorPublicKey} with amount: ${tipAmt} because: ${e.message}`,
+            )
+            ToastAndroid.show('Could not tip post', 800)
+          })
+      },
+    )
+  }
+
+  renderOnInput() {
+    return (
+      <>
+        <Text style={styles.tipPopupTitle}>Tip Amount (Sats)</Text>
+
+        <Pad amount={24} />
+
+        <TextInput
+          autoFocus
+          keyboardType="number-pad"
+          onChangeText={this.onChangeTipAmt}
+          returnKeyType="done"
+          style={styles.tipInput}
+          value={this.state.tipAmt.toString()}
+        />
+
+        <View style={styles.line} />
+
+        <Pad amount={56} />
+
+        <SwipeVerify
+          buttonSize={80}
+          height={48}
+          backgroundColor="transparent"
+          style={styles.swipeBtn}
+          buttonColor="#212937"
+          borderColor="#4285B9"
+          swipeColor={CSS.Colors.GOLD}
+          textColor="#EBEBEB"
+          borderRadius={100}
+          icon={sliderIcon}
+          onVerified={this.onSlideToSend}
+        >
+          {slideToSendText}
+        </SwipeVerify>
+
+        <Pad amount={8} />
+      </>
+    )
   }
 
   render() {
     const { visible } = this.props
+    const { justTipped, tipping } = this.state
 
     return (
       <DarkModal onRequestClose={this.onRequestClose} visible={visible}>
         <>
-          <Text style={styles.tipPopupTitle}>Tip Amount (Sats)</Text>
+          {(() => {
+            if (justTipped) {
+              return (
+                <AntDesign
+                  size={48}
+                  name="checkcircleo"
+                  color={CSS.Colors.DARK_MODE_CYAN}
+                />
+              )
+            }
 
-          <Pad amount={24} />
+            if (tipping) {
+              return (
+                <ActivityIndicator
+                  color={CSS.Colors.DARK_MODE_CYAN}
+                  size="large"
+                />
+              )
+            }
 
-          <TextInput
-            autoFocus
-            keyboardType="number-pad"
-            onChangeText={this.onChangeTipAmt}
-            returnKeyType="done"
-            style={styles.tipInput}
-            value={this.state.tipAmt.toString()}
-          />
-
-          <View style={styles.line} />
-
-          <Pad amount={56} />
-
-          <SwipeVerify
-            buttonSize={80}
-            height={48}
-            backgroundColor="transparent"
-            style={styles.swipeBtn}
-            buttonColor="#212937"
-            borderColor="#4285B9"
-            swipeColor={CSS.Colors.GOLD}
-            textColor="#EBEBEB"
-            borderRadius={100}
-            icon={sliderIcon}
-            onVerified={this.onSlideToSend}
-          >
-            {slideToSendText}
-          </SwipeVerify>
-
-          <Pad amount={8} />
+            return this.renderOnInput()
+          })()}
 
           <View style={styles.x}>
             <AntDesign
@@ -172,15 +256,21 @@ const sliderIcon = (
   />
 )
 
-const mapState = null
+const mapState = (state: Store.State, props: OwnProps): StateProps => {
+  const post = Store.getPost(state, props.postID)
 
-const mapDispatch = {
-  tip: Store.requestedPostTip,
+  if (!post) {
+    Logger.log(`Could not find post via postID in TipPopup->connect`)
+    return {
+      authorPublicKey: '',
+    }
+  }
+
+  return {
+    authorPublicKey: post.author,
+  }
 }
 
-const ConnectedTipPopup = connect(
-  mapState,
-  mapDispatch,
-)(TipPopup)
+const ConnectedTipPopup = connect(mapState)(TipPopup)
 
 export default ConnectedTipPopup

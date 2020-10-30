@@ -35,17 +35,7 @@ export const tipFailed = (recipientsPublicKey: string, message: string) =>
     },
   } as const)
 
-export const requestedPostTip = (postID: string, amt: number) =>
-  ({
-    type: 'tips/requestedPostTip',
-    data: {
-      amt,
-      postID,
-    },
-  } as const)
-
 export type TipsAction =
   | ReturnType<typeof requestedTip>
   | ReturnType<typeof tipWentThrough>
   | ReturnType<typeof tipFailed>
-  | ReturnType<typeof requestedPostTip>
