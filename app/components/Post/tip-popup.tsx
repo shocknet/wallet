@@ -132,7 +132,6 @@ class TipPopup extends React.PureComponent<Props, State> {
         <Pad amount={24} />
 
         <TextInput
-          autoFocus
           keyboardType="number-pad"
           onChangeText={this.onChangeTipAmt}
           returnKeyType="done"
