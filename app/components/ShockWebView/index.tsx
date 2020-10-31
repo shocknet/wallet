@@ -1,5 +1,6 @@
 import React from 'react'
-import { WebView } from 'react-native-webview'
+import { WebView, WebViewProps } from 'react-native-webview'
+import produce from 'immer'
 
 import notificationService from '../../../notificationService'
 
@@ -14,14 +15,16 @@ type Props = {
 }
 
 type State = {
-  html: string
+  source: { html: string }
+  style: { width: '100%'; aspectRatio: number }
 }
 
 type CompleteWebView = WebView & { postMessage: (message: string) => void }
 
-export default class ShockWebView extends React.Component<Props, State> {
-  state = {
-    html: '',
+export default class ShockWebView extends React.PureComponent<Props, State> {
+  state: State = {
+    source: { html: '' },
+    style: { width: '100%', aspectRatio: this.props.width / this.props.height },
   }
 
   componentDidMount() {
@@ -118,7 +121,19 @@ export default class ShockWebView extends React.Component<Props, State> {
     </body>
     </html>`
 
-    this.setState({ html })
+    this.setState({ source: { html } })
+  }
+
+  componentDidUpdate({ height: prevHeight, width: prevWidth }: Props) {
+    const { height: currHeight, width: currWidth } = this.props
+
+    if (currHeight !== prevHeight || currWidth !== prevWidth) {
+      this.setState((state, { height, width }) =>
+        produce(state, draft => {
+          draft.style.aspectRatio = width / height
+        }),
+      )
+    }
   }
 
   webview: CompleteWebView | null = null
@@ -127,42 +142,39 @@ export default class ShockWebView extends React.Component<Props, State> {
     this.webview = ref as CompleteWebView
   }
 
-  render() {
-    const { width, height } = this.props
+  onMessage: WebViewProps['onMessage'] = event => {
+    const { data } = event.nativeEvent
+    if (data === 'updateSelectedMediaSizes') {
+      if (this.props.updateToMedia) {
+        this.props.updateToMedia()
+      }
+      return
+    }
+    if (data === 'generalClickOnPlayer') {
+      if (this.props.onPress) {
+        this.props.onPress()
+      }
+      return
+    }
+    notificationService.Log('TESTING', 'MESSAGE >>>>' + event.nativeEvent.data)
+  }
 
+  render() {
     return (
       <WebView
         ref={this.assignRef}
-        style={{ width: '100%', aspectRatio: width / height }}
+        style={this.state.style}
         allowUniversalAccessFromFileURLs
         mediaPlaybackRequiresUserAction={false}
         allowsInlineMediaPlayback={true}
         allowsFullscreenVideo
         mixedContentMode="always"
-        originWhitelist={['*']}
-        onMessage={event => {
-          const { data } = event.nativeEvent
-          if (data === 'updateSelectedMediaSizes') {
-            if (this.props.updateToMedia) {
-              this.props.updateToMedia()
-            }
-            return
-          }
-          if (data === 'generalClickOnPlayer') {
-            if (this.props.onPress) {
-              this.props.onPress()
-            }
-            return
-          }
-          notificationService.Log(
-            'TESTING',
-            'MESSAGE >>>>' + event.nativeEvent.data,
-          )
-        }}
-        source={{
-          html: this.state.html,
-        }}
+        originWhitelist={ORIGIN_WHITE_LIST}
+        onMessage={this.onMessage}
+        source={this.state.source}
       />
     )
   }
 }
+
+const ORIGIN_WHITE_LIST = ['*']
