@@ -8,6 +8,7 @@ import {
   ScrollView,
   StatusBar,
   TouchableHighlight,
+  TextInput,
 } from 'react-native'
 import { connect } from 'react-redux'
 import Logger from 'react-native-file-log'
@@ -28,7 +29,6 @@ import {
   updateNotifyDisconnect,
   updateNotifyDisconnectAfter,
 } from '../store/actions/SettingsActions'
-import ShockInput from '../components/ShockInput'
 import Pad from '../components/Pad'
 import Nav from '../components/Nav'
 import InputGroup from '../components/InputGroup'
@@ -80,8 +80,6 @@ export const WALLET_SETTINGS = 'WALLET_SETTINGS'
  * @prop {string} tmpNotifyDisconnectAfter
  * @prop {boolean} somethingChanged
  */
-
-import notificationService from '../../notificationService'
 
 /**
  * @extends Component<Props, State, never>
@@ -167,7 +165,14 @@ class WalletSettings extends React.Component {
    * @param {string} val
    */
   updateTmpRelativeFee = val => {
-    this.setState({ tmpRelativeFee: parseFloat(val).toString() })
+    const fee = val.slice(1)
+    let nextVal = '0'
+    if (fee[fee.length - 1] !== '.' && parseFloat(fee) !== 0) {
+      nextVal = (parseFloat(fee) / 100).toString()
+    } else {
+      nextVal = fee
+    }
+    this.setState({ tmpRelativeFee: nextVal })
     this.somethingChanged()
   }
 
@@ -252,7 +257,6 @@ class WalletSettings extends React.Component {
   }
 
   somethingChanged = () => {
-    notificationService.Log('TESTING', 'DOIIDSF')
     this.setState({ somethingChanged: true })
   }
 
@@ -298,6 +302,14 @@ class WalletSettings extends React.Component {
       },
     ]
 
+    let relativeValue = '%0'
+    const parsed = parseFloat(tmpRelativeFee)
+    if (tmpRelativeFee[tmpRelativeFee.length - 1] !== '.' && parsed !== 0) {
+      const fixed = ((parsed ? parsed : 0) * 100).toFixed(2)
+      relativeValue = '%' + parseFloat(fixed).toString()
+    } else {
+      relativeValue = '%' + tmpRelativeFee
+    }
     //if (theme === 'dark') {
     return (
       <View>
@@ -306,7 +318,9 @@ class WalletSettings extends React.Component {
             <StatusBar hidden />
             <Nav backButton title="Wallet Settings" navigation={navigation} />
             <View style={styles.mainContainer}>
-              <Text style={styles.feePreferenceText}>Fee preference</Text>
+              <Text style={styles.feePreferenceText}>
+                Fee preference (Chain)
+              </Text>
               <View style={styles.feePreferenceContainer}>
                 <View style={styles.feePreferenceOption}>
                   <Text style={styles.feePreferenceOptionTitle}>
@@ -437,22 +451,24 @@ class WalletSettings extends React.Component {
             </View>*/}
               <View style={styles.balanceSettingContainer}>
                 <Text style={styles.balanceSettingTitle}>
-                  Lightning Routing Fees Limit
+                  Routing Fees Limit (Lightning)
                 </Text>
                 <View style={styles.balanceSetting}>
                   <View style={styles.balanceSettingContent}>
                     <Text style={styles.balanceSettingContentTitle}>
-                      Absolute Fee
+                      Base Fee
                     </Text>
                     <Text style={styles.balanceSettingContentDescription}>
-                      Fix rate, doesn't depend on amount
+                      Fixed rate per payment measured in sats, allowed
+                      regardless of payment size
                     </Text>
                   </View>
                   <View style={styles.balanceSettingCheckBoxContainer}>
-                    <ShockInput
+                    <TextInput
                       onChangeText={this.updateTmpAbsoluteFee}
                       value={tmpAbsoluteFee}
                       keyboardType="numeric"
+                      style={styles.inputDark}
                     />
                   </View>
                 </View>
@@ -460,17 +476,19 @@ class WalletSettings extends React.Component {
                 <View style={styles.balanceSetting}>
                   <View style={styles.balanceSettingContent}>
                     <Text style={styles.balanceSettingContentTitle}>
-                      Relative Fee
+                      Percentage Fee
                     </Text>
                     <Text style={styles.balanceSettingContentDescription}>
-                      % based on the payment amount
+                      Maximum fee as a percentage of payment (if higher than
+                      base fee)
                     </Text>
                   </View>
                   <View style={styles.balanceSettingCheckBoxContainer}>
-                    <ShockInput
+                    <TextInput
                       onChangeText={this.updateTmpRelativeFee}
-                      value={tmpRelativeFee}
+                      value={relativeValue}
                       keyboardType="numeric"
+                      style={styles.inputDark}
                     />
                   </View>
                 </View>
@@ -482,10 +500,11 @@ class WalletSettings extends React.Component {
                 <View style={styles.balanceSetting}>
                   <View style={styles.balanceSettingContent}>
                     <Text style={styles.balanceSettingContentTitle}>
-                      Disconnect alert
+                      Disconnect Alerts
                     </Text>
                     <Text style={styles.balanceSettingContentDescription}>
-                      Make a noise when the connection is lost
+                      Triggering a notification if wallet is unable to connect
+                      to the node
                     </Text>
                   </View>
                   <View style={styles.balanceSettingCheckBoxContainer}>
@@ -500,18 +519,18 @@ class WalletSettings extends React.Component {
                   <View style={styles.balanceSetting}>
                     <View style={styles.balanceSettingContent}>
                       <Text style={styles.balanceSettingContentTitle}>
-                        Time to reconnect
+                        Disconnect Sensitivity
                       </Text>
                       <Text style={styles.balanceSettingContentDescription}>
-                        Seconds of no connection before assuming connection is
-                        lost
+                        Seconds elapsed before triggering disconnect alert
                       </Text>
                     </View>
                     <View style={styles.balanceSettingCheckBoxContainer}>
-                      <ShockInput
+                      <TextInput
                         value={tmpNotifyDisconnectAfter}
                         onChangeText={this.updateTmpNotifyDisconnectAfter}
                         keyboardType="numeric"
+                        style={styles.inputDark}
                       />
                     </View>
                   </View>
@@ -716,6 +735,23 @@ const styles = StyleSheet.create({
     color: '#212937',
     fontFamily: 'Montserrat-700',
     fontSize: 14,
+  },
+  inputDark: {
+    flex: 1,
+    fontFamily: 'Montserrat-600',
+    textAlignVertical: 'center',
+    fontSize: 12,
+    color: CSS.Colors.TEXT_WHITE,
+    alignItems: 'center',
+    width: '100%',
+    paddingHorizontal: 5,
+    height: 35,
+    marginBottom: 10,
+    backgroundColor: '#212937',
+    borderWidth: 1,
+    borderColor: '#4285B9',
+    overflow: 'hidden',
+    opacity: 0.7,
   },
   /*balanceSettingCheckBoxView: {
     backgroundColor: 'transparent',

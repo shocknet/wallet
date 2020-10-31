@@ -22,6 +22,8 @@ import Pad from '../components/Pad'
 import InputGroup from '../components/InputGroup'
 import ArrowLeft from '../assets/images/arrow-left.svg'
 import PublicIcon from '../assets/images/create-post/public.svg'
+import CheckIcon from '../assets/images/check.png'
+
 //import SubscribersIcon from '../assets/images/create-post/subscribers.svg'
 //import PaywallIcon from '../assets/images/create-post/paywall.svg'
 import ShockWebView from '../components/ShockWebView'
@@ -277,17 +279,23 @@ class CreatePostDark extends React.Component<Props, State> {
           )}
         </View>
         {selected && (
-          <Image
+          <View 
+          style={{
+            height: 100,
+            aspectRatio: Number(ref.width) / Number(ref.height),
+            marginTop: -100,
+            
+          }}>
+            <View style={{height:60}}></View>
+            <Image
             style={{
-              height: 100,
-              aspectRatio: Number(ref.width) / Number(ref.height),
-              marginTop: -100,
-              opacity: 0.3,
+              height: 40,
+              width:40,
+              
             }}
-            source={{
-              uri: 'https://reactnative.dev/img/tiny_logo.png',
-            }}
+            source={CheckIcon}
           />
+          </View>
         )}
       </View>
     )
