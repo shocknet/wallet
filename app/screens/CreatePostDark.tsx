@@ -71,7 +71,7 @@ const DEFAULT_STATE: State = {
   selectedView: 'preview',
 }
 
-class CreatePostDark extends React.Component<Props, State> {
+class CreatePostDark extends React.PureComponent<Props, State> {
   static navigationOptions: import('react-navigation-stack').NavigationStackOptions = {
     header: () => null,
   }
@@ -157,8 +157,8 @@ class CreatePostDark extends React.Component<Props, State> {
       this.setState({
         isCreating: false,
         loadingStatus: null,
-        description:'',
-        selectedContentID:null
+        description: '',
+        selectedContentID: null,
       })
     }
   }
@@ -279,22 +279,21 @@ class CreatePostDark extends React.Component<Props, State> {
           )}
         </View>
         {selected && (
-          <View 
-          style={{
-            height: 100,
-            aspectRatio: Number(ref.width) / Number(ref.height),
-            marginTop: -100,
-            
-          }}>
-            <View style={{height:60}}></View>
-            <Image
+          <View
             style={{
-              height: 40,
-              width:40,
-              
+              height: 100,
+              aspectRatio: Number(ref.width) / Number(ref.height),
+              marginTop: -100,
             }}
-            source={CheckIcon}
-          />
+          >
+            <View style={{ height: 60 }}></View>
+            <Image
+              style={{
+                height: 40,
+                width: 40,
+              }}
+              source={CheckIcon}
+            />
           </View>
         )}
       </View>

@@ -18,9 +18,9 @@ import PageBtn from './PageBtn'
  */
 
 /**
- * @augments React.Component<Props, {}, never>
+ * @augments React.PureComponent<Props, {}, never>
  */
-export default class ModalScreen extends React.Component {
+export default class ModalScreen extends React.PureComponent {
   /** @param {number} page */
   onPressPage = page => {
     const { onPressPage } = this.props

@@ -48,10 +48,10 @@ const defaultPolicy = {
   time_lock_delta: 0,
 }
 /**
- * @augments React.Component<Props, State, never>
+ * @augments React.PureComponent<Props, State, never>
  */
 
-class InfoChannelModal extends React.Component {
+class InfoChannelModal extends React.PureComponent {
   /** @type {State} */
   state = {
     chanInfoReady: false,

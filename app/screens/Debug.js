@@ -16,8 +16,8 @@ export const DEBUG = 'DEBUG'
  * @prop {string} deviceID
  */
 
-/** @augments React.Component<Props, Record<string, any>> */
-class Debug extends React.Component {
+/** @augments React.PureComponent<Props, Record<string, any>> */
+class Debug extends React.PureComponent {
   state = {
     // TODO
     addr: '',

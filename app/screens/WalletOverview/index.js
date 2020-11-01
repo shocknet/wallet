@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React from 'react'
 import {
   ActivityIndicator,
   Dimensions,
@@ -92,9 +92,9 @@ const { height } = Dimensions.get('window')
 export const WALLET_OVERVIEW = 'WALLET_OVERVIEW'
 
 /**
- * @augments Component<Props, {}, never>
+ * @augments React.PureComponent<Props, {}, never>
  */
-class WalletOverview extends Component {
+class WalletOverview extends React.PureComponent {
   /**
    * @type any
    */

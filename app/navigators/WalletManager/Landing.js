@@ -24,9 +24,9 @@ export const LANDING = 'LANDING'
  */
 
 /**
- * @augments React.Component<Props, {}>
+ * @augments React.PureComponent<Props, {}>
  */
-export default class CreateWallet extends React.Component {
+export default class CreateWallet extends React.PureComponent {
   /**
    * @type {import('react-navigation-stack').NavigationStackOptions}
    */

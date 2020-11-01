@@ -24,9 +24,9 @@ import { ConnectedShockAvatar } from './ShockAvatar'
  **/
 
 /**
- * @augments React.Component<Props>
+ * @augments React.PureComponent<Props>
  */
-export default class UserDetail extends React.Component {
+export default class UserDetail extends React.PureComponent {
   onPress = () => {
     const { id, onPress } = this.props
 

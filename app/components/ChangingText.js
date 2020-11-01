@@ -8,10 +8,10 @@ import size from 'lodash/size'
  */
 
 /**
- * We must not assume <Text /> is pure so we use React.Component.
- * @augments React.Component<Props,State>
+ * We must not assume <Text /> is pure so we use React.PureComponent.
+ * @augments React.PureComponent<Props,State>
  */
-export default class ChangingText extends React.Component {
+export default class ChangingText extends React.PureComponent {
   state = {
     i: 0,
   }
