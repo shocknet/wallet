@@ -22,7 +22,7 @@ import {
 
 import Login, { LOGIN } from '../screens/Login'
 
-import MyProfile, { MY_PROFILE } from '../screens/MyProfile'
+import MyProfile from '../screens/MyProfile'
 import Loading, { LOADING } from '../screens/Loading'
 
 import WalletManager, { WALLET_MANAGER } from './WalletManager'
@@ -46,7 +46,7 @@ const BottomNav = createBottomTabNavigator(
   {
     [WALLET_OVERVIEW]: WalletOverview,
     [CHATS_ROUTE]: Chats,
-    [MY_PROFILE]: MyProfile,
+    [Routes.MY_PROFILE]: MyProfile,
     [Routes.FEED]: Feed,
   },
   {
@@ -108,7 +108,7 @@ const drawerScreens = {
       title: 'Home',
     },
   },
-  [MY_PROFILE]: {
+  [Routes.MY_PROFILE]: {
     screen: MyProfile,
     navigationOptions: {
       title: 'Profile',

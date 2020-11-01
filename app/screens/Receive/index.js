@@ -1,6 +1,5 @@
-import React, { Component } from 'react'
+import React from 'react'
 import {
-  // Clipboard,
   StyleSheet,
   Text,
   View,
@@ -45,9 +44,9 @@ export const RECEIVE_SCREEN = 'RECEIVE_SCREEN'
  */
 
 /**
- * @extends Component<Props, {}, never>
+ * @extends React.PureComponent<Props, {}, never>
  */
-class ReceiveScreen extends Component {
+class ReceiveScreen extends React.PureComponent {
   state = {
     step: 1,
     maxStep: 2,

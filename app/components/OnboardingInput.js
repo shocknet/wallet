@@ -46,9 +46,9 @@ import Pad from '../components/Pad'
  */
 
 /**
- * @augments React.Component<Props & {innerRef: React.Ref<TextInput>}, State>
+ * @augments React.PureComponent<Props & {innerRef: React.Ref<TextInput>}, State>
  */
-class OnboardingInput extends React.Component {
+class OnboardingInput extends React.PureComponent {
   /** @type {State} */
   state = {
     layout: {

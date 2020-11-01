@@ -1,7 +1,4 @@
-/**
- * @format
- */
-import React, { Component } from 'react'
+import React from 'react'
 import {
   Animated,
   Easing,
@@ -47,9 +44,9 @@ import * as CSS from '../../../res/css'
 
 /**
  * @template T
- * @augments React.Component<Props<T>>
+ * @augments React.PureComponent<Props<T>>
  */
-export default class Accordion extends Component {
+export default class Accordion extends React.PureComponent {
   static defaultProps = {
     menuOptions: [],
   }

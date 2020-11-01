@@ -74,9 +74,9 @@ const DEFAULT_STATE = {
 }
 
 /**
- * @augments React.Component<Props, State, never>
+ * @augments React.PureComponent<Props, State, never>
  */
-class ConnectToNode extends React.Component {
+class ConnectToNode extends React.PureComponent {
   /**
    * @type {import('react-navigation-stack').NavigationStackOptions}
    */

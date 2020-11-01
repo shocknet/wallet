@@ -9,5 +9,6 @@ export type Dispatch = _Dispatch<Action>
 
 export * from './store'
 export * from './selectors'
+export * from './actions'
 
 export default configureStore

@@ -50,9 +50,9 @@ const shockBG = require('../assets/images/shock-bg.png')
  */
 
 /**
- * @augments React.Component<Props, State>
+ * @augments React.PureComponent<Props, State>
  */
-export class Login extends React.Component {
+export class Login extends React.PureComponent {
   /**
    * @type {import('react-navigation-stack').NavigationStackOptions}
    */

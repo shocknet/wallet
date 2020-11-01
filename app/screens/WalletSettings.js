@@ -79,13 +79,13 @@ export const WALLET_SETTINGS = 'WALLET_SETTINGS'
  */
 
 /**
- * @extends Component<Props, State, never>
+ * @extends React.PureComponent<Props, State, never>
  */
 
 /**
- * @augments React.Component<Props, State, never>
+ * @augments React.PureComponent<Props, State, never>
  */
-class WalletSettings extends React.Component {
+class WalletSettings extends React.PureComponent {
   /**
    * @type {import('react-navigation-stack').NavigationStackOptions}
    */

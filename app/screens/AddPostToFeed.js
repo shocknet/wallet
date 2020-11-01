@@ -42,9 +42,9 @@ const DEFAULT_STATE = {
  */
 
 /**
- * @augments React.Component<Props, State, never>
+ * @augments React.PureComponent<Props, State, never>
  */
-class AddPostToFeed extends React.Component {
+class AddPostToFeed extends React.PureComponent {
   /**
    * @type {import('react-navigation').NavigationScreenOptions}
    */

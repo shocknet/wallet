@@ -33,6 +33,7 @@ export const styles = StyleSheet.create({
   backgroundOrange: { backgroundColor: Colors.ORANGE },
   backgroundWhite: { backgroundColor: Colors.BACKGROUND_WHITE },
   backgroundWhiteDark: { backgroundColor: '#1A2028' },
+  backgroundBlack: { backgroundColor: 'black' },
   textBold: { fontWeight: 'bold' },
   flex: { flex: 1 },
   flexBasisZero: { flexBasis: 0 },
@@ -79,6 +80,13 @@ export const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   square32: { width: 32, height: 32 },
+  displayNone: {
+    display: 'none',
+  },
+  montserratWhite: {
+    color: Colors.DARK_MODE_TEXT_NEAR_WHITE,
+    fontFamily: 'Montserrat-Regular',
+  },
 })
 
 export const SCREEN_PADDING = 30

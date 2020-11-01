@@ -86,9 +86,9 @@ const HeaderLeft = React.memo(({ onPress }) => ((
 // TODO: COMPONENT HERE IS A TEMP FIX
 
 /**
- * @augments React.Component<Props, State>
+ * @augments React.PureComponent<Props, State>
  */
-export default class Chat extends React.Component {
+export default class Chat extends React.PureComponent {
   /**
    * @param {import('react-navigation-stack').NavigationStackScreenProps} args
    * @returns {import('react-navigation-stack').NavigationStackOptions}

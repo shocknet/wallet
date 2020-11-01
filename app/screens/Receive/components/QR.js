@@ -1,6 +1,3 @@
-/**
- * @format
- */
 import React from 'react'
 import QRCode from 'react-native-qrcode-svg'
 /**

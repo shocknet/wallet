@@ -6,7 +6,6 @@ import {
   FlatList,
   Text,
   View,
-  ActivityIndicator,
   StatusBar,
   TouchableOpacity,
 } from 'react-native'
@@ -24,7 +23,7 @@ import * as CSS from '../../res/css'
 import Tabs from '../../components/tabs'
 import ShockIconWhite from '../../assets/images/shockW.svg'
 import ShockIconBlue from '../../assets/images/shockB.svg'
-import ShockAvatar, { ConnectedShockAvatar } from '../../components/ShockAvatar'
+import { ConnectedShockAvatar } from '../../components/ShockAvatar'
 import AddonIcon from '../../assets/images/feed/addon.svg'
 import { CREATE_POST_DARK } from '../CreatePostDark'
 import Pad from '../../components/Pad'
@@ -38,8 +37,8 @@ interface OwnProps {
 
 interface StateProps {
   posts: Common.Schema.PostN[]
-  avatar: string | null
   usersFollowed: Common.Schema.User[]
+  publicKey: string
 }
 
 interface DispatchProps {}
@@ -47,8 +46,9 @@ interface DispatchProps {}
 type Props = StateProps & DispatchProps & OwnProps
 
 const keyExtractor = (item: Common.Schema.PostN) => item.id
+const userKeyExtractor = (item: Common.Schema.User) => item.publicKey
 
-class Feed extends React.Component<Props> {
+class Feed extends React.PureComponent<Props> {
   static navigationOptions: NavigationBottomTabOptions = {
     tabBarIcon: ({ focused }) => {
       if (focused) {
@@ -89,7 +89,7 @@ class Feed extends React.Component<Props> {
   }
 
   render() {
-    const { posts, avatar } = this.props
+    const { publicKey } = this.props
 
     return (
       <SafeAreaView style={styles.container}>
@@ -100,14 +100,15 @@ class Feed extends React.Component<Props> {
         />
         <View style={styles.usersContainer}>
           <TouchableOpacity style={styles.avatarContainer}>
-            <ShockAvatar
-              height={63}
-              image={avatar}
-              onPress={this.onPressMyAvatar}
-              lastSeenApp={Date.now()}
-              avatarStyle={styles.avatarStyle}
-              disableOnlineRing
-            />
+            <View style={styles.avatarStyle}>
+              <ConnectedShockAvatar
+                height={63}
+                onPress={this.onPressMyAvatar}
+                publicKey={publicKey}
+                disableOnlineRing
+              />
+            </View>
+
             <AddonIcon size={25} style={styles.avatarAddon} />
           </TouchableOpacity>
 
@@ -115,6 +116,7 @@ class Feed extends React.Component<Props> {
             data={this.props.usersFollowed}
             renderItem={this.renderFollow}
             horizontal
+            keyExtractor={userKeyExtractor}
           />
         </View>
 
@@ -128,7 +130,6 @@ class Feed extends React.Component<Props> {
           data={this.props.posts}
           keyExtractor={keyExtractor}
           ListEmptyComponent={listEmptyElement}
-          ListFooterComponent={posts.length ? listFooterElement : null}
         />
       </SafeAreaView>
     )
@@ -137,14 +138,13 @@ class Feed extends React.Component<Props> {
 
 const TABS = ['Feed', 'Saved', 'Videos']
 
-const listFooterElement = <ActivityIndicator />
-
 const mapStateToProps = (state: Reducers.State): StateProps => {
+  const publicKey = Store.getMyPublicKey(state)
   const posts = Store.getPostsFromFollowed(state)
 
   return {
     posts,
-    avatar: state.users[state.auth.gunPublicKey].avatar,
+    publicKey,
     usersFollowed: Store.getFollowedUsers(state),
   }
 }

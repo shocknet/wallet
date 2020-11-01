@@ -13,6 +13,7 @@ const reducer: Reducer<State, Action> = (state = {}, action) =>
 
       posts.forEach(post => {
         // Posts can't get edited for now, let's not update unnecessarily
+        // They can be deleted however but should be handled via posts/removed
         if (draft[post.id]) {
           return
         }
@@ -35,7 +36,7 @@ const reducer: Reducer<State, Action> = (state = {}, action) =>
       } = action.payload
 
       // Posts can't get edited for now, let's not update unnecessarily
-      if (draft[id]) {
+      if (!!draft[id]) {
         return
       }
 
@@ -71,6 +72,12 @@ const reducer: Reducer<State, Action> = (state = {}, action) =>
           title,
         }
       }
+    }
+
+    if (action.type === 'posts/removed') {
+      const { postID } = action.payload
+
+      delete draft[postID]
     }
   })
 

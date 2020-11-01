@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React from 'react'
 import {
   View,
   StyleSheet,
@@ -65,10 +65,10 @@ const drawerBottomItems = [
  * @typedef {import('react-navigation-drawer').DrawerContentComponentProps} DrawerContentComponentProps
  */
 /**
- * @extends Component<DrawerContentComponentProps>
+ * @extends React.PureComponent<DrawerContentComponentProps>
  */
 
-export default class CustomDrawer extends Component {
+export default class CustomDrawer extends React.PureComponent {
   moveToQr = () => {
     this.props.navigation.navigate(LNURL_SCREEN, { qrRequest: true })
   }

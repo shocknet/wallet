@@ -1,6 +1,7 @@
-import React, { Component } from 'react'
+import React from 'react'
 import { View, UIManager, findNodeHandle, TouchableOpacity } from 'react-native'
 import Icon from 'react-native-vector-icons/MaterialIcons'
+import Logger from 'react-native-file-log'
 
 const ICON_SIZE = 24
 
@@ -12,7 +13,7 @@ type State = {
   icon: Icon | null
 }
 
-export default class PopupMenu extends Component<Props, State> {
+export default class PopupMenu extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props)
     this.state = {
@@ -21,7 +22,7 @@ export default class PopupMenu extends Component<Props, State> {
   }
 
   onError() {
-    console.log('Popup Error')
+    Logger.log('Popup Error')
   }
 
   onPress = () => {

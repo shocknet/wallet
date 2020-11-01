@@ -127,7 +127,7 @@ const getMediaStyle = ({
   return s.video
 }
 
-class PublishContentDark extends React.Component<Props, State> {
+class PublishContentDark extends React.PureComponent<Props, State> {
   static navigationOptions: import('react-navigation-stack').NavigationStackOptions = {
     header: () => null,
   }

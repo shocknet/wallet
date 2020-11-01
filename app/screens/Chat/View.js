@@ -77,15 +77,16 @@ const Loading = () => (
 /**
  * @type {React.FC<import('react-native-gifted-chat').LoadEarlierProps>}
  */
-const LoadingEarlier = ({ isLoadingEarlier }) =>
+const LoadingEarlier = React.memo(({ isLoadingEarlier }) =>
   (isLoadingEarlier ? (
     <View>
       <Pad amount={24} />
       <ActivityIndicator color="gray" />
     </View>
-  ) : null)
+  ) : null),
+)
 
-const AlwaysNull = () => null
+const AlwaysNull = React.memo(() => null)
 
 /**
  * @typedef {import('./ChatInvoice').PaymentStatus} PaymentStatus
@@ -139,9 +140,9 @@ const AlwaysNull = () => null
 
 // TODO: Component instead of PureComponent is a temp fix
 /**
- * @augments React.Component<Props, State, never>
+ * @augments React.PureComponent<Props, State, never>
  */
-export default class ChatView extends React.Component {
+export default class ChatView extends React.PureComponent {
   navigationOptions = {
     headerStyle: {
       backgroundColor: CSS.Colors.BLUE_DARK,

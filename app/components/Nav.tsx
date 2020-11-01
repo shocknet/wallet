@@ -30,68 +30,70 @@ interface OwnProps {
 
 type Props = DispatchProps & StateProps & OwnProps
 
-const Nav: React.FC<Props> = ({
-  title,
-  style,
-  backButton,
-  showAvatar,
-  navigation,
-  onPressAvatar,
-  isOnline,
-  publicKey,
-}) => {
-  const goBack = () => {
-    if (navigation) {
-      return navigation.goBack()
+const Nav: React.FC<Props> = React.memo(
+  ({
+    title,
+    style,
+    backButton,
+    showAvatar,
+    navigation,
+    onPressAvatar,
+    isOnline,
+    publicKey,
+  }) => {
+    const goBack = () => {
+      if (navigation) {
+        return navigation.goBack()
+      }
+
+      return null
     }
 
-    return null
-  }
+    const theme = 'dark'
 
-  const theme = 'dark'
-
-  return (
-    <SafeAreaView style={[navStyles.container, style]}>
-      {backButton ? (
-        <Ionicons
-          name="ios-arrow-round-back"
-          color={Colors.TEXT_WHITE}
-          size={40}
-          style={navStyles.navMenu}
-          // eslint-disable-next-line react/jsx-no-bind
-          onPress={goBack}
-        />
-      ) : (
-        <View
-          style={typeof showAvatar === 'undefined' ? navStyles.hidden : null}
-        >
-          <ConnectedShockAvatar
-            height={40}
-            publicKey={publicKey}
-            onPress={onPressAvatar}
-            disableOnlineRing={!isOnline}
+    return (
+      <SafeAreaView style={[navStyles.container, style]}>
+        {backButton ? (
+          <Ionicons
+            name="ios-arrow-round-back"
+            color={Colors.TEXT_WHITE}
+            size={40}
+            style={navStyles.navMenu}
+            // eslint-disable-next-line react/jsx-no-bind
+            onPress={goBack}
           />
-        </View>
-      )}
-      <Text
-        style={theme === 'dark' ? navStyles.navTitleDark : navStyles.navTitle}
-      >
-        {title ? title.toUpperCase() : ''}
-      </Text>
-      {!backButton ? (
-        <Ionicons
-          name="md-menu"
-          color={Colors.TEXT_WHITE}
-          size={30}
-          style={navStyles.navMenu}
-          onPress={toggleDrawer}
-        />
-      ) : (
-        <View style={navStyles.balanceComponent} />
-      )}
-    </SafeAreaView>
-  )
-}
+        ) : (
+          <View
+            style={typeof showAvatar === 'undefined' ? navStyles.hidden : null}
+          >
+            <ConnectedShockAvatar
+              height={40}
+              publicKey={publicKey}
+              onPress={onPressAvatar}
+              disableOnlineRing={!isOnline}
+            />
+          </View>
+        )}
+        <Text
+          style={theme === 'dark' ? navStyles.navTitleDark : navStyles.navTitle}
+        >
+          {title ? title.toUpperCase() : ''}
+        </Text>
+        {!backButton ? (
+          <Ionicons
+            name="md-menu"
+            color={Colors.TEXT_WHITE}
+            size={30}
+            style={navStyles.navMenu}
+            onPress={toggleDrawer}
+          />
+        ) : (
+          <View style={navStyles.balanceComponent} />
+        )}
+      </SafeAreaView>
+    )
+  },
+)
 
 const navStyles = StyleSheet.create({
   container: {

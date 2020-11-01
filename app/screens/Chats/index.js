@@ -52,9 +52,9 @@ const byTimestampFromOldestToNewest = (a, b) => a.timestamp - b.timestamp
 // TODO: Component vs PureComponent
 
 /**
- * @augments React.Component<Props, State>
+ * @augments React.PureComponent<Props, State>
  */
-export default class Chats extends React.Component {
+export default class Chats extends React.PureComponent {
   /**
    * @type {import('react-navigation-tabs').NavigationBottomTabOptions}
    */

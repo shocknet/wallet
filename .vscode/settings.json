@@ -8,5 +8,6 @@
   "typescript.tsdk": "node_modules/typescript/lib",
   "cSpell.words": [
     "unfollow"
-  ]
+  ],
+  "editor.formatOnSave": true
 }

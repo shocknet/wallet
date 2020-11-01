@@ -12,8 +12,8 @@ const AVATAR_SIZE = 40
 /**
  * @type {React.FC<Props>}
  */
-const ChatAvatar = ({ publicKey }) => {
+const ChatAvatar = React.memo(({ publicKey }) => {
   return (<ConnectedShockAvatar height={AVATAR_SIZE} publicKey={publicKey} />)
-}
+})
 
 export default ChatAvatar

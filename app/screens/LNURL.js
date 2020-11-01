@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React from 'react'
 import Logger from 'react-native-file-log'
 import {
   Text,
@@ -78,9 +78,9 @@ export const LNURL_SCREEN = 'LNURL_SCREEN'
  * @prop {(contact:Contact|BTCAddress|Keysend)=>void} selectContact
  */
 /**
- * @extends Component<Props, State, never>
+ * @extends React.PureComponent<Props, State, never>
  */
-class LNURL extends React.Component {
+class LNURL extends React.PureComponent {
   getInitialLNURLState = () => {
     return {
       privateChannel: true,

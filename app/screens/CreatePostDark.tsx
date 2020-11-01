@@ -71,7 +71,7 @@ const DEFAULT_STATE: State = {
   selectedView: 'preview',
 }
 
-class CreatePostDark extends React.Component<Props, State> {
+class CreatePostDark extends React.PureComponent<Props, State> {
   static navigationOptions: import('react-navigation-stack').NavigationStackOptions = {
     header: () => null,
   }
@@ -135,7 +135,7 @@ class CreatePostDark extends React.Component<Props, State> {
         })
       }
       // eslint-disable-next-line no-console
-      console.log('onPressCreate dataToSendToService', dataToSendToService)
+      Logger.log('onPressCreate dataToSendToService', dataToSendToService)
       const res = await Http.post(`/api/gun/wall`, {
         tags: [],
         title: 'Post',
