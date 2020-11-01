@@ -64,7 +64,7 @@ import { Color } from 'shock-common/dist/constants'
  * @prop {Navigation} navigation
  * @prop {string|null} totalBalance
  * @prop {number} USDRate
- * @prop {{ nodeInfo: import('../../store/actions/NodeActions').GetInfo }} node
+ * @prop {boolean} testnet
  * @prop {() => Promise<void>} fetchRecentTransactions
  * @prop {() => Promise<void>} fetchRecentPayments
  * @prop {() => Promise<void>} fetchRecentInvoices
@@ -365,7 +365,7 @@ class WalletOverview extends React.PureComponent {
   }
 
   render() {
-    const { nodeInfo } = this.props.node
+    const { testnet } = this.props
 
     return (
       <View style={styles.container}>
@@ -382,7 +382,7 @@ class WalletOverview extends React.PureComponent {
           <Nav title="" showAvatar />
           {this.renderBalance()}
 
-          {nodeInfo && nodeInfo.testnet ? (
+          {testnet ? (
             <Text style={styles.networkNotice}>
               You are using Testnet network
             </Text>
@@ -462,7 +462,7 @@ const mapStateToProps = state => {
   return {
     USDRate,
     totalBalance,
-    node,
+    testnet: node.nodeInfo.testnet,
     settings,
     isOnline,
   }

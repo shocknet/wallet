@@ -87,6 +87,9 @@ export const styles = StyleSheet.create({
     color: Colors.DARK_MODE_TEXT_NEAR_WHITE,
     fontFamily: 'Montserrat-Regular',
   },
+  alignItemsStretch: {
+    alignItems: 'stretch',
+  },
 })
 
 export const SCREEN_PADDING = 30

@@ -133,30 +133,26 @@ class Post extends React.PureComponent<Props, State> {
     this.setState(({ menuOpen }) => ({ menuOpen: !menuOpen }))
   }
 
-  getMenuChoices = () => {
-    if (this.props.isPinned) {
-      return {
-        unpin: () => {
-          this.props.unpin()
-          this.toggleMenu()
-        },
-        remove: () => {
-          this.props.remove()
-          this.toggleMenu()
-        },
-      }
-    } else {
-      return {
-        pin: () => {
-          this.props.pin()
-          this.toggleMenu()
-        },
-        remove: () => {
-          this.props.remove()
-          this.toggleMenu()
-        },
-      }
-    }
+  choicesWhenPinned = {
+    unpin: () => {
+      this.props.unpin()
+      this.toggleMenu()
+    },
+    remove: () => {
+      this.props.remove()
+      this.toggleMenu()
+    },
+  }
+
+  choicesWhenUnpinned = {
+    pin: () => {
+      this.props.pin()
+      this.toggleMenu()
+    },
+    remove: () => {
+      this.props.remove()
+      this.toggleMenu()
+    },
   }
 
   toggleTipPopup = () => {
@@ -166,7 +162,7 @@ class Post extends React.PureComponent<Props, State> {
   }
 
   render() {
-    const { id, contentItems, numOfTips, showTipBtn } = this.props
+    const { id, contentItems, numOfTips, showTipBtn, isPinned } = this.props
     const { displayingMediaIdx, mediaWidth, tipPopupOpen } = this.state
 
     const paragraphs = pickBy(
@@ -248,7 +244,9 @@ class Post extends React.PureComponent<Props, State> {
         <Dialog
           onRequestClose={this.toggleMenu}
           visible={this.state.menuOpen}
-          choiceToHandler={this.getMenuChoices()}
+          choiceToHandler={
+            isPinned ? this.choicesWhenPinned : this.choicesWhenUnpinned
+          }
         />
 
         <TipPopup

@@ -3,7 +3,6 @@ import {
   Clipboard,
   Text,
   StyleSheet,
-  ActivityIndicator,
   ToastAndroid,
   TouchableOpacity,
   View,
@@ -35,22 +34,23 @@ import Pad from '../../components/Pad'
 import BasicDialog from '../../components/BasicDialog'
 import Post from '../../components/Post'
 import { PUBLISH_CONTENT_DARK } from '../../screens/PublishContentDark'
-import ShockInput from '../../components/ShockInput'
-import IGDialogBtn from '../../components/IGDialogBtn'
 import SettingIcon from '../../assets/images/profile/setting-icon.svg'
 import QrCode from '../../assets/images/qrcode.svg'
 import TapCopy from '../../assets/images/profile/tapcopy.svg'
-import OfferProduct from '../../assets/images/profile/offer-product.svg'
-import OfferService from '../../assets/images/profile/offer-service.svg'
-import PublishContent from '../../assets/images/profile/publish-content.svg'
-import CreatePost from '../../assets/images/profile/create-post.svg'
+
 import ShockIcon from '../../res/icons'
 import * as Store from '../../store'
 import { post } from '../../services'
 import { CREATE_POST_DARK as CREATE_POST } from '../CreatePostDark'
+import {
+  activityIndicatorSmall,
+  activityIndicatorLarge,
+} from '../../components'
 
 import SetBioDialog from './SetBioDialog'
 import MetaConfigModal from './MetaConfigModal'
+import DisplayNameDialog from './display-name-dialog'
+import ContentButtons from './content-buttons'
 
 const showCopiedToClipboardToast = () => {
   ToastAndroid.show('Copied to clipboard!', 800)
@@ -77,7 +77,6 @@ interface State {
   authData: Cache.AuthData | null
   settingAvatar: boolean
   displayNameDialogOpen: boolean
-  displayNameInput: string
   settingDisplayName: boolean
   settingBio: boolean
   showQrCodeModal: boolean
@@ -89,8 +88,6 @@ interface State {
   postIdToDelete: string | null
   sendingDelete: boolean
   deleteError: string | null
-
-  data: [string, ...Common.Schema.PostN[]]
 }
 
 const theme = 'dark'
@@ -120,7 +117,6 @@ class MyProfile extends React.PureComponent<Props, State> {
     settingAvatar: false,
 
     displayNameDialogOpen: false,
-    displayNameInput: '',
     settingDisplayName: false,
     settingBio: false,
     showQrCodeModal: false,
@@ -132,7 +128,6 @@ class MyProfile extends React.PureComponent<Props, State> {
     postIdToDelete: null,
     sendingDelete: false,
     deleteError: null,
-    data: ['userdata', ...this.props.posts],
   }
 
   setBioDialog: React.RefObject<SetBioDialog> = React.createRef()
@@ -172,32 +167,13 @@ class MyProfile extends React.PureComponent<Props, State> {
     this.onBioUnsub()
   }
 
-  componentDidUpdate({ posts: prevPosts }: Props) {
-    const { posts } = this.props
-
-    if (posts !== prevPosts) {
-      this.setState({
-        data: ['userdata', ...posts],
-      })
-    }
-  }
-
-  onChangeDisplayNameInput = (dn: string) => {
-    this.setState({
-      displayNameInput: dn,
-    })
-  }
-
   toggleSetupDisplayName = () => {
-    this.setState(({ displayNameDialogOpen }, { displayName }) => ({
+    this.setState(({ displayNameDialogOpen }) => ({
       displayNameDialogOpen: !displayNameDialogOpen,
-      displayNameInput: displayNameDialogOpen ? '' : displayName || '',
     }))
   }
 
-  setDisplayName = () => {
-    const { displayNameInput } = this.state
-
+  setDisplayName = (displayNameInput: string) => {
     this.toggleSetupDisplayName()
 
     this.setState({
@@ -325,40 +301,7 @@ class MyProfile extends React.PureComponent<Props, State> {
     }
   }
 
-  renderItem = ({ item }: ListRenderItemInfo<Common.Schema.PostN | string>) => {
-    if (typeof item === 'string') {
-      return (
-        <View>
-          <View style={{ width: '100%', height: 300 }}></View>
-          <TouchableOpacity style={styles.actionButtonDark}>
-            <OfferProduct />
-            <Text style={styles.actionButtonTextDark}>Offer a Product</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.actionButtonDark}>
-            <OfferService />
-            <Text style={styles.actionButtonTextDark}>Offer a Service</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.actionButtonDark}
-            onPress={this.onPressPublish}
-          >
-            <PublishContent />
-            <Text style={styles.actionButtonTextDark}>Publish Content</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.actionButtonDark}
-            onPress={this.onPressCreate}
-          >
-            <CreatePost />
-            <Text style={styles.actionButtonTextDark}>Create a Post</Text>
-          </TouchableOpacity>
-        </View>
-      )
-    }
-
+  renderItem = ({ item }: ListRenderItemInfo<Common.Schema.PostN>) => {
     return (
       <View>
         <Post id={item.id} />
@@ -381,6 +324,12 @@ class MyProfile extends React.PureComponent<Props, State> {
 
   onPressPublish = () => {
     this.props.navigation.navigate(PUBLISH_CONTENT_DARK)
+  }
+
+  onScroll = (...args: any[]) => {
+    Animated.event([
+      { nativeEvent: { contentOffset: { y: this.state.scrollY } } },
+    ])(...args)
   }
 
   onPressHeader = async () => {
@@ -447,7 +396,6 @@ class MyProfile extends React.PureComponent<Props, State> {
 
       authData,
       displayNameDialogOpen,
-      displayNameInput,
     } = this.state
 
     const { headerImage } = this.props
@@ -511,7 +459,7 @@ class MyProfile extends React.PureComponent<Props, State> {
                   <React.Fragment>
                     <TouchableOpacity onPress={this.copyDataToClipboard}>
                       {authData === null ? (
-                        <ActivityIndicator size="large" />
+                        activityIndicatorLarge
                       ) : (
                         <QR
                           size={180}
@@ -619,13 +567,12 @@ class MyProfile extends React.PureComponent<Props, State> {
             style={CSS.styles.width100}
             overScrollMode={'never'}
             scrollEventThrottle={16}
-            onScroll={Animated.event([
-              { nativeEvent: { contentOffset: { y: this.state.scrollY } } },
-            ])}
+            onScroll={this.onScroll}
             renderItem={this.renderItem}
-            data={this.state.data}
+            data={this.props.posts}
             keyExtractor={this.keyExtractor}
             ListFooterComponent={listFooter}
+            ListHeaderComponent={ContentButtons}
           />
 
           <TouchableOpacity
@@ -639,29 +586,16 @@ class MyProfile extends React.PureComponent<Props, State> {
 
           <BasicDialog
             visible={settingAvatar || settingBio || settingDisplayName}
-            onRequestClose={() => {}}
+            onRequestClose={F}
           >
-            <ActivityIndicator />
+            {activityIndicatorSmall}
           </BasicDialog>
 
-          <BasicDialog
+          <DisplayNameDialog
             onRequestClose={this.toggleSetupDisplayName}
-            title="Display Name"
+            onSubmit={this.setDisplayName}
             visible={displayNameDialogOpen}
-          >
-            <View style={styles.dialog}>
-              <ShockInput
-                onChangeText={this.onChangeDisplayNameInput}
-                value={displayNameInput}
-              />
-
-              <IGDialogBtn
-                disabled={displayNameInput.length === 0}
-                title="OK"
-                onPress={this.setDisplayName}
-              />
-            </View>
-          </BasicDialog>
+          />
         </View>
       )
     }
@@ -669,6 +603,8 @@ class MyProfile extends React.PureComponent<Props, State> {
     return null
   }
 }
+
+const F = () => {}
 
 const listFooter = <Pad amount={75} />
 
@@ -720,10 +656,6 @@ const styles = StyleSheet.create({
     bottom: 20,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-
-  dialog: {
-    alignItems: 'stretch',
   },
 
   displayName: {
@@ -805,25 +737,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     paddingLeft: 7,
   },
-  actionButtonDark: {
-    width: '100%',
-    height: 79,
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    backgroundColor: 'rgba(33, 41, 55, .7)',
-    borderColor: '#4285B9',
-    borderBottomWidth: 1,
-    borderTopWidth: 1,
-    marginBottom: 7,
-    flexDirection: 'row',
-    paddingLeft: '30%',
-  },
-  actionButtonTextDark: {
-    color: '#F3EFEF',
-    fontFamily: 'Montserrat-700',
-    fontSize: 14,
-    marginLeft: 20,
-  },
+
   mainButtons: {
     width: '100%',
   },

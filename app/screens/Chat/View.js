@@ -138,7 +138,6 @@ const AlwaysNull = () => null
  * @prop {string} disconnectErr Empty string if disconnectStatus !== 'err'
  */
 
-// TODO: Component instead of PureComponent is a temp fix
 /**
  * @augments React.PureComponent<Props, State, never>
  */
