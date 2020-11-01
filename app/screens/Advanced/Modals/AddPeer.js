@@ -23,7 +23,7 @@ const LOADING_BACKDROP = 'rgba(0,0,0,0.25)'
  *   closeModal: () => void,
  * }} Props
  */
-class AddPeerModal extends React.Component {
+class AddPeerModal extends React.PureComponent {
   render() {
     const {
       modalRef,

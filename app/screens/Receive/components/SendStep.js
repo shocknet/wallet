@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React from 'react'
 import {
   View,
   StyleSheet,
@@ -57,9 +57,9 @@ import { CHATS_ROUTE } from '../../Chats'
  * @prop {string} contactsSearch
  */
 /**
- * @extends Component<Props, State, never>
+ * @extends React.PureComponent<Props, State, never>
  */
-class SendStep extends Component {
+class SendStep extends React.PureComponent {
   state = {
     contactsSearch: '',
   }

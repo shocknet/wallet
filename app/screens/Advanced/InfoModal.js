@@ -27,9 +27,9 @@ import Pad from '../../components/Pad'
  */
 
 /**
- * @augments React.Component<Props>
+ * @augments React.PureComponent<Props>
  */
-export default class InfoModal extends React.Component {
+export default class InfoModal extends React.PureComponent {
   copyPubToClipboard = () => {
     const { info } = this.props
     if (info === null) {

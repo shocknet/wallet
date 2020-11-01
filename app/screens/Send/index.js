@@ -1,9 +1,5 @@
-/**
- * @format
- */
-import React, { Component } from 'react'
+import React from 'react'
 import {
-  // Clipboard,
   StyleSheet,
   Text,
   View,
@@ -103,9 +99,9 @@ export const SEND_SCREEN = 'SEND_SCREEN'
  */
 
 /**
- * @extends Component<Props, State, never>
+ * @extends React.PureComponent<Props, State, never>
  */
-class SendScreen extends Component {
+class SendScreen extends React.PureComponent {
   /**@type State */
   state = {
     description: '',

@@ -96,9 +96,9 @@ const keyExtractor = item => item.id
  */
 
 /**
- * @augments React.Component<Props>
+ * @augments React.PureComponent<Props>
  */
-export default class ChatsView extends React.Component {
+export default class ChatsView extends React.PureComponent {
   /**
    * @private
    * @type {Record<string, () => void>}

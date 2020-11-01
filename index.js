@@ -102,9 +102,9 @@ AppRegistry.registerComponent('shockwallet', () => ShockWallet)
 const { persistor, store } = configureStore()
 
 /**
- * @augments React.Component<{}, State,never>
+ * @augments React.PureComponent<{}, State,never>
  */
-export default class ShockWallet extends React.Component {
+export default class ShockWallet extends React.PureComponent {
   state = {
     ready: false,
   }

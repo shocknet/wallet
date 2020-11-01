@@ -19,9 +19,9 @@ import { getStore, getMe } from '../../store'
  */
 
 /**
- * @augments React.Component<Props, State>
+ * @augments React.PureComponent<Props, State>
  */
-export default class SetBioDialog extends React.Component {
+export default class SetBioDialog extends React.PureComponent {
   state = {
     bio: '',
     open: false,

@@ -24,9 +24,9 @@ const BUBBLE_TRIANGLE_VERTICAL_OFFSET = 6
  */
 
 /**
- * @augments React.Component<Props>
+ * @augments React.PureComponent<Props>
  */
-export default class ChatMessage extends React.Component {
+export default class ChatMessage extends React.PureComponent {
   componentDidMount() {
     /**
      * Force-updates every minute so moment-formatted dates refresh.

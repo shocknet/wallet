@@ -24,9 +24,9 @@ import { Colors } from '../../../res/css'
  */
 
 /**
- * @augments React.Component<Props, {}, never>
+ * @augments React.PureComponent<Props, {}, never>
  */
-class AddChannelModal extends React.Component {
+class AddChannelModal extends React.PureComponent {
   render() {
     const {
       modalRef,

@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React from 'react'
 import { View, StyleSheet, Text, ActivityIndicator } from 'react-native'
 import Modal from 'react-native-modalbox'
 import Ionicons from 'react-native-vector-icons/Ionicons'
@@ -20,9 +20,9 @@ import { Colors } from '../../../res/css'
  */
 
 /**
- * @extends Component<Props, {}, never>
+ * @extends React.PureComponent<Props, {}, never>
  */
-class InfoPeerModal extends React.Component {
+class InfoPeerModal extends React.PureComponent {
   render() {
     const {
       modalRef,

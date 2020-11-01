@@ -139,9 +139,9 @@ const AlwaysNull = () => null
 
 // TODO: Component instead of PureComponent is a temp fix
 /**
- * @augments React.Component<Props, State, never>
+ * @augments React.PureComponent<Props, State, never>
  */
-export default class ChatView extends React.Component {
+export default class ChatView extends React.PureComponent {
   navigationOptions = {
     headerStyle: {
       backgroundColor: CSS.Colors.BLUE_DARK,
