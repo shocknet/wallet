@@ -1,6 +1,3 @@
-/**
- * @prettier
- */
 import React from 'react'
 import { Clipboard, StatusBar, ToastAndroid } from 'react-native'
 import zipObj from 'lodash/zipObject'
@@ -59,9 +56,6 @@ export default class Chats extends React.PureComponent {
    * @type {import('react-navigation-tabs').NavigationBottomTabOptions}
    */
   static navigationOptions = {
-    // tabBarIcon: ({ focused }) => {
-    //   return <TabBarIcon focused={focused} />
-    // },
     tabBarIcon: ({ focused }) => {
       return ((
         <ShockIcon
