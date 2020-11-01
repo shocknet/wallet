@@ -86,7 +86,7 @@ const LoadingEarlier = React.memo(({ isLoadingEarlier }) =>
   ) : null),
 )
 
-const AlwaysNull = React.memo(() => null)
+const AlwaysNull = () => null
 
 /**
  * @typedef {import('./ChatInvoice').PaymentStatus} PaymentStatus
