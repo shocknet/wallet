@@ -25,41 +25,43 @@ import * as Thunks from '../store/thunks'
 /**
  * @type {React.FC<StateProps & DispatchProps & OwnProps>}
  */
-export const FollowBtn = ({ follow, onPressFollow, onPressUnfollow }) => {
-  /**
-   * @type {Common.Schema.Follow['status'] | 'unfollowed'}
-   */
-  const state = follow ? follow.status : 'unfollowed'
+export const FollowBtn = React.memo(
+  ({ follow, onPressFollow, onPressUnfollow }) => {
+    /**
+     * @type {Common.Schema.Follow['status'] | 'unfollowed'}
+     */
+    const state = follow ? follow.status : 'unfollowed'
 
-  const title = (() => {
-    switch (state) {
-      case 'ok':
-        return 'unfollow'
-      case 'processing':
-        return '...'
-      case 'unfollowed':
-        return 'follow'
-    }
-  })()
+    const title = (() => {
+      switch (state) {
+        case 'ok':
+          return 'unfollow'
+        case 'processing':
+          return '...'
+        case 'unfollowed':
+          return 'follow'
+      }
+    })()
 
-  return ((
-    <Button
-      // eslint-disable-next-line react/jsx-no-bind
-      onPress={() => {
-        switch (state) {
-          case 'ok':
-            onPressUnfollow()
-            break
-          case 'unfollowed':
-            onPressFollow()
-            break
-        }
-      }}
-      title={title}
-      disabled={state === 'processing'}
-    />
-  ))
-}
+    return ((
+      <Button
+        // eslint-disable-next-line react/jsx-no-bind
+        onPress={() => {
+          switch (state) {
+            case 'ok':
+              onPressUnfollow()
+              break
+            case 'unfollowed':
+              onPressFollow()
+              break
+          }
+        }}
+        title={title}
+        disabled={state === 'processing'}
+      />
+    ))
+  },
+)
 
 /**
  * @param {Store.State} state

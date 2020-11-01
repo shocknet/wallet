@@ -45,14 +45,6 @@ const byTimestampFromOldestToNewest = (a, b) => a.timestamp - b.timestamp
 /**
  * @type {React.FC}
  */
-// const _NoChatsOrRequests = () => ((
-//   <View style={styles.noChats}>
-//     <Text>NO CHATS OR REQUESTS</Text>
-//   </View>
-// ))
-//
-// const NoChatsOrRequests = React.memo(_NoChatsOrRequests)
-
 const _NoChatsOrRequestsDark = () => ((
   <View style={styles.noChatsDark}>
     <Text style={styles.noChatsTextDark}>NO CHATS OR REQUESTS</Text>
