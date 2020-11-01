@@ -62,7 +62,8 @@ import { Color } from 'shock-common/dist/constants'
 /**
  * @typedef {object} Props
  * @prop {Navigation} navigation
- * @prop {{ USDRate: number, totalBalance: string|null }} wallet
+ * @prop {string|null} totalBalance
+ * @prop {number} USDRate
  * @prop {{ nodeInfo: import('../../store/actions/NodeActions').GetInfo }} node
  * @prop {() => Promise<void>} fetchRecentTransactions
  * @prop {() => Promise<void>} fetchRecentPayments
@@ -267,7 +268,7 @@ class WalletOverview extends React.PureComponent {
   }
 
   onPressRequest = () => {
-    const { totalBalance } = this.props.wallet
+    const { totalBalance } = this.props
 
     if (totalBalance === null) {
       return
@@ -277,7 +278,7 @@ class WalletOverview extends React.PureComponent {
   }
 
   onPressSend = () => {
-    const { totalBalance } = this.props.wallet
+    const { totalBalance } = this.props
 
     if (totalBalance === null) {
       return
@@ -310,7 +311,7 @@ class WalletOverview extends React.PureComponent {
   }
 
   renderBalance = () => {
-    const { USDRate, totalBalance } = this.props.wallet
+    const { USDRate, totalBalance } = this.props
     /** @type {boolean} */
     const isConnected = this.props.isOnline
     const convertedBalance = (
@@ -455,10 +456,12 @@ class WalletOverview extends React.PureComponent {
  */
 const mapStateToProps = state => {
   const { wallet, node, settings } = state
+  const { USDRate, totalBalance } = wallet
   const isOnline = Store.isOnline(state)
 
   return {
-    wallet,
+    USDRate,
+    totalBalance,
     node,
     settings,
     isOnline,
