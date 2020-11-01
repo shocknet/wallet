@@ -22,7 +22,7 @@ import Pad from '../components/Pad'
 import InputGroup from '../components/InputGroup'
 import ArrowLeft from '../assets/images/arrow-left.svg'
 import PublicIcon from '../assets/images/create-post/public.svg'
-import CheckIcon from '../assets/images/check.png'
+import CheckIcon from '../assets/images/check.svg'
 
 //import SubscribersIcon from '../assets/images/create-post/subscribers.svg'
 //import PaywallIcon from '../assets/images/create-post/paywall.svg'
@@ -284,16 +284,13 @@ class CreatePostDark extends React.PureComponent<Props, State> {
               height: 100,
               aspectRatio: Number(ref.width) / Number(ref.height),
               marginTop: -100,
+              flex: 1,
+              justifyContent: 'center',
+              alignItems: 'center',
+              backgroundColor: 'rgba(255,255,255,0.3)',
             }}
           >
-            <View style={{ height: 60 }}></View>
-            <Image
-              style={{
-                height: 40,
-                width: 40,
-              }}
-              source={CheckIcon}
-            />
+            <CheckIcon style={styles.checkIcon} onPress={selectThis} />
           </View>
         )}
       </View>
@@ -643,5 +640,9 @@ const styles = StyleSheet.create({
   postImageBackground: {
     width: 91,
     height: 91,
+  },
+  checkIcon: {
+    height: 40,
+    width: 40,
   },
 })

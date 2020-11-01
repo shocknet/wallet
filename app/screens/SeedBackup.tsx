@@ -19,15 +19,15 @@ type NodeInfo = import('../services/wallet').NodeInfo
 
 export const SEED_BACKUP = 'SEED_BACKUP'
 type State = {
-  nodeInfo:NodeInfo|null
-  seedBackup:string|null
-  chansBackup:string|null
+  nodeInfo: NodeInfo | null
+  seedBackup: string | null
+  chansBackup: string | null
 }
-type Props ={
+type Props = {
   navigation: import('react-navigation').NavigationScreenProp<{}, {}>
 }
-export default class SeedBackup extends React.PureComponent<Props,State> {
-  state:State = {
+export default class SeedBackup extends React.PureComponent<Props, State> {
+  state: State = {
     nodeInfo: null,
     seedBackup: null,
     chansBackup: null,
@@ -44,13 +44,13 @@ export default class SeedBackup extends React.PureComponent<Props,State> {
     }
   }
 
-  toHexString = (byteArray:number[]) => {
+  toHexString = (byteArray: number[]) => {
     return Array.from(byteArray, byte => {
       // eslint-disable-next-line
       return ('0' + (byte & 0xff).toString(16)).slice(-2)
     }).join('')
   }
-  mounted:boolean = false //??
+  mounted: boolean = false //??
   componentDidMount() {
     this.mounted = true
 
@@ -80,45 +80,55 @@ export default class SeedBackup extends React.PureComponent<Props,State> {
     if (!nodeInfo) {
       return (
         <>
-        <Nav style={styles.nav} backButton title="Wallet Settings" navigation={this.props.navigation} />
-        <View style={xStyles.container}>
-          <ActivityIndicator size="large" color={CSS.Colors.BLUE_MEDIUM_DARK} />
-        </View>
+          <Nav
+            style={styles.nav}
+            backButton
+            title="Wallet Settings"
+            navigation={this.props.navigation}
+          />
+          <View style={xStyles.container}>
+            <ActivityIndicator
+              size="large"
+              color={CSS.Colors.BLUE_MEDIUM_DARK}
+            />
+          </View>
         </>
       )
     }
 
     return (
       <>
-      <Nav style={styles.nav} backButton title="Wallet Settings" navigation={this.props.navigation} />
-      <View style={xStyles.container}>
-        
-        <Text style={xStyles.title}>Lightning Pubkey</Text>
-        <Text style={xStyles.text}>{nodeInfo.identity_pubkey}</Text>
-        <Pad amount={48} />
-        <Text style={xStyles.title}>Seed Phrase</Text>
-        {seedBackup && (
-          <Text style={xStyles.text}>{seedBackup}</Text>
-        )}
-        {!seedBackup && (
+        <Nav
+          style={styles.nav}
+          backButton
+          title="Wallet Settings"
+          navigation={this.props.navigation}
+        />
+        <View style={xStyles.container}>
+          <Text style={xStyles.title}>Lightning Pubkey</Text>
+          <Text style={xStyles.text}>{nodeInfo.identity_pubkey}</Text>
+          <Pad amount={48} />
+          <Text style={xStyles.title}>Seed Phrase</Text>
+          {seedBackup && <Text style={xStyles.text}>{seedBackup}</Text>}
+          {!seedBackup && (
+            <Text style={xStyles.text}>
+              Seed backup not available on this node
+            </Text>
+          )}
+          <Pad amount={48} />
+          <Text style={xStyles.title}>Channels Backup</Text>
+          {chansBackup && (
+            <Ionicons
+              name="ios-copy"
+              color={CSS.Colors.TEXT_WHITE}
+              size={24}
+              onPress={this.copyPubToClipboard}
+            />
+          )}
           <Text style={xStyles.text}>
-            Seed backup not available on this node
+            Channels backup not available on this node
           </Text>
-        )}
-        <Pad amount={48} />
-        <Text style={xStyles.title}>Channels Backup</Text>
-        {chansBackup && (
-          <Ionicons
-            name="ios-copy"
-            color={CSS.Colors.TEXT_WHITE}
-            size={24}
-            onPress={this.copyPubToClipboard}
-          />
-        )}
-        <Text style={xStyles.text}>
-          Channels backup not available on this node
-        </Text>
-      </View>
+        </View>
       </>
     )
   }
@@ -129,22 +139,21 @@ const styles = StyleSheet.create({
     paddingLeft: 24,
     paddingRight: 24,
     backgroundColor: '#16191C',
-    
   },
-  nav:{
+  nav: {
     backgroundColor: '#16191C',
-  }
+  },
 })
 
 const xStyles = {
   container: [CSS.styles.flex, CSS.styles.deadCenter, styles.container],
 
-  title: [CSS.styles.fontSize24, CSS.styles.fontMontserrat,{color:'white'}],
+  title: [CSS.styles.fontSize24, CSS.styles.fontMontserrat, { color: 'white' }],
 
   text: [
     CSS.styles.fontMontserrat,
     CSS.styles.fontSize18,
     CSS.styles.textAlignCenter,
-    {color:'white'}
+    { color: 'white' },
   ],
 }
