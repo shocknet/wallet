@@ -74,7 +74,7 @@ type State = {
 
   thumbnailFile?: ThumbnailFile
 
-  selectedVideoPaused:boolean
+  selectedVideoPaused: boolean
 }
 
 const emptySelectedMedia = (): selectedFileInfo => ({
@@ -98,7 +98,7 @@ const DEFAULT_STATE: State = {
   mainVideoWidth: 0,
   previewImageWidth: 0,
   previewVideoWidth: 0,
-  selectedVideoPaused:false
+  selectedVideoPaused: false,
 }
 
 const getMediaStyle = ({
@@ -250,7 +250,7 @@ class PublishContentDark extends React.Component<Props, State> {
             path: file.path,
             compressImageMaxHeight: 200,
             compressImageMaxWidth: (size.w / size.h) * 200,
-            cropperToolbarTitle:"Thumbnail"
+            cropperToolbarTitle: 'Thumbnail',
           })
           this.setState({
             selectedMedia: {
@@ -351,8 +351,8 @@ class PublishContentDark extends React.Component<Props, State> {
         mainVideoWidth: 0,
         previewImageWidth: 0,
         previewVideoWidth: 0,
-        thumbnailFile:undefined,
-        selectedVideoPaused:false
+        thumbnailFile: undefined,
+        selectedVideoPaused: false,
       })
       this.goBack()
     }
@@ -379,7 +379,7 @@ class PublishContentDark extends React.Component<Props, State> {
     this.onPressPicker('file', false)
   }
   toggleVideoPaused = () => {
-    this.setState({selectedVideoPaused:!this.state.selectedVideoPaused})
+    this.setState({ selectedVideoPaused: !this.state.selectedVideoPaused })
   }
 
   render() {
@@ -468,19 +468,18 @@ class PublishContentDark extends React.Component<Props, State> {
                 style={{ display: 'flex', alignItems: 'center', width: '100%' }}
               >
                 <TouchableWithoutFeedback onPress={this.toggleVideoPaused}>
-                <Video
-                  ref={this.assignVideoRef('main')}
-                  style={getMediaStyle({
-                    w: selectedMedia.width,
-                    h: selectedMedia.height,
-                    parentW: mainVideoWidth,
-                  })}
-                  controls={false}
-                  paused={this.state.selectedVideoPaused}
-                  onLoad={this.onVideoLoad('main')}
-                  source={mediaSource}
-                  
-                />
+                  <Video
+                    ref={this.assignVideoRef('main')}
+                    style={getMediaStyle({
+                      w: selectedMedia.width,
+                      h: selectedMedia.height,
+                      parentW: mainVideoWidth,
+                    })}
+                    controls={false}
+                    paused={this.state.selectedVideoPaused}
+                    onLoad={this.onVideoLoad('main')}
+                    source={mediaSource}
+                  />
                 </TouchableWithoutFeedback>
               </View>
             )}

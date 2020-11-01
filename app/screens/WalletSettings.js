@@ -13,8 +13,6 @@ import {
 import { connect } from 'react-redux'
 import Logger from 'react-native-file-log'
 import { Slider } from 'react-native-elements'
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'
-// import IconDrawerWalletSettings from '../assets/images/drawer-icons/icon-drawer-wallet.svg'
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}, Params>} Navigation
  */
@@ -29,7 +27,6 @@ import {
   updateNotifyDisconnect,
   updateNotifyDisconnectAfter,
 } from '../store/actions/SettingsActions'
-import Pad from '../components/Pad'
 import Nav from '../components/Nav'
 import InputGroup from '../components/InputGroup'
 
@@ -312,14 +309,14 @@ class WalletSettings extends React.Component {
     }
     //if (theme === 'dark') {
     return (
-      <View>
+      <View style={styles.mainView}>
         <ScrollView>
           <View style={styles.flexCenterDark}>
             <StatusBar hidden />
             <Nav backButton title="Wallet Settings" navigation={navigation} />
             <View style={styles.mainContainer}>
               <Text style={styles.feePreferenceText}>
-                Fee preference (Chain)
+                Fee Preference (Chain)
               </Text>
               <View style={styles.feePreferenceContainer}>
                 <View style={styles.feePreferenceOption}>
@@ -327,7 +324,7 @@ class WalletSettings extends React.Component {
                     {feePreferenceOption[0].title}
                   </Text>
                   <Text style={styles.feePreferenceOptionInfo}>
-                    {feePreferenceOption[0].info}
+                    {feePreferenceOption[0].info} sats/byte
                   </Text>
                 </View>
                 <View style={styles.feePreferenceOption}>
@@ -335,7 +332,7 @@ class WalletSettings extends React.Component {
                     {feePreferenceOption[1].title}
                   </Text>
                   <Text style={styles.feePreferenceOptionInfo}>
-                    {feePreferenceOption[1].info}
+                    {feePreferenceOption[1].info} sats/byte
                   </Text>
                 </View>
                 <View style={styles.feePreferenceOption}>
@@ -343,7 +340,7 @@ class WalletSettings extends React.Component {
                     {feePreferenceOption[2].title}
                   </Text>
                   <Text style={styles.feePreferenceOptionInfo}>
-                    {feePreferenceOption[2].info}
+                    {feePreferenceOption[2].info} sats/byte
                   </Text>
                 </View>
               </View>
@@ -369,14 +366,6 @@ class WalletSettings extends React.Component {
                     value={tmpSource}
                     style={styles.feeSourceContainerInputGroup}
                     onChange={this.updateTmpSource}
-                  />
-                </View>
-                <View style={styles.submitFeeSource}>
-                  <FontAwesome5
-                    name="exchange-alt"
-                    size={20}
-                    color="white"
-                    onPress={this.submitSourceToStore}
                   />
                 </View>
               </View>
@@ -451,7 +440,7 @@ class WalletSettings extends React.Component {
             </View>*/}
               <View style={styles.balanceSettingContainer}>
                 <Text style={styles.balanceSettingTitle}>
-                  Routing Fees Limit (Lightning)
+                  Routing Fee Limits (Lightning)
                 </Text>
                 <View style={styles.balanceSetting}>
                   <View style={styles.balanceSettingContent}>
@@ -472,7 +461,6 @@ class WalletSettings extends React.Component {
                     />
                   </View>
                 </View>
-                <Pad amount={20} />
                 <View style={styles.balanceSetting}>
                   <View style={styles.balanceSettingContent}>
                     <Text style={styles.balanceSettingContentTitle}>
@@ -511,10 +499,14 @@ class WalletSettings extends React.Component {
                     <Switch
                       value={tmpNotifyDisconnect}
                       onValueChange={this.updateTmpNotifyDisconnect}
+                      thumbColor="#4285b9"
+                      trackColor={{
+                        true: 'rgba(66,133,185,0.8)',
+                        false: 'black',
+                      }}
                     />
                   </View>
                 </View>
-                <Pad amount={20} />
                 {tmpNotifyDisconnect && (
                   <View style={styles.balanceSetting}>
                     <View style={styles.balanceSettingContent}>
@@ -587,22 +579,27 @@ export default connect(
 )(WalletSettings)
 
 const styles = StyleSheet.create({
+  mainView: {
+    backgroundColor: '#16191C',
+    height: '100%',
+  },
   flexCenterDark: {
     height: '100%',
     display: 'flex',
     alignItems: 'center',
     backgroundColor: '#16191C',
-    paddingTop: 20,
   },
   feePreferenceText: {
     fontFamily: 'Montserrat-600',
     fontSize: 15,
     color: '#EBEBEB',
+    fontWeight: '700',
   },
   balanceSettingTitle: {
     fontFamily: 'Montserrat-600',
     fontSize: 15,
     color: '#EBEBEB',
+    fontWeight: '700',
   },
   feePreferenceOption: {
     flexDirection: 'column',
@@ -612,7 +609,7 @@ const styles = StyleSheet.create({
   },
   feePreferenceContainer: {
     flexDirection: 'row',
-    marginTop: 25,
+    marginTop: 10,
   },
   feePreferenceOptionTitle: {
     color: '#4285B9',
@@ -625,11 +622,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: 'white',
     textAlign: 'center',
-    paddingTop: 5,
+    paddingTop: 3,
   },
   mainContainer: {
-    padding: 38,
-    paddingTop: 10,
+    paddingHorizontal: 20,
+    paddingTop: 5,
     alignItems: 'flex-start',
     justifyContent: 'flex-start',
     flex: 1,
@@ -641,8 +638,8 @@ const styles = StyleSheet.create({
   },
   feeSliderContainer: {
     flexDirection: 'row',
-    marginTop: 18,
-    marginBottom: 18,
+    marginTop: 2,
+    marginBottom: 2,
   },
   feeSliderThumb: {
     borderWidth: 1,
@@ -653,24 +650,26 @@ const styles = StyleSheet.create({
   feeSourceContainer: {
     flexDirection: 'row',
     width: '100%',
-    marginBottom: 25,
+    marginBottom: 5,
   },
   feeSourceLabel: {
     fontFamily: 'Montserrat-600',
     fontSize: 15,
     color: '#EBEBEB',
+    fontWeight: '700',
   },
   balanceSettingContainer: {
     width: '100%',
-    marginBottom: 25,
+    marginBottom: 10,
   },
   balanceSetting: {
     flexDirection: 'row',
-    marginTop: 20,
+    marginTop: 5,
   },
   balanceSettingCheckBoxContainer: {
-    alignItems: 'flex-end',
-    justifyContent: 'flex-start',
+    height: 30,
+    width: 50,
+    marginTop: 25,
     // marginTop: -15,
   },
   balanceSettingContent: {
@@ -690,24 +689,17 @@ const styles = StyleSheet.create({
   feeSourceContainerInputGroup: {
     marginBottom: 0,
   },
-  submitFeeSource: {
-    alignItems: 'flex-end',
-    justifyContent: 'flex-end',
-    marginBottom: 20,
-    width: '12%',
-  },
   feeSourceInputGroupContainer: {
     flexDirection: 'row',
-    width: '85%',
   },
   actionButtonsDark: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
     width: '100%',
   },
   actionButtonDark1: {
-    width: '48%',
+    width: '43%',
     height: 54,
     alignItems: 'center',
     justifyContent: 'center',
@@ -715,9 +707,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#001220',
     borderColor: '#4285B9',
     borderWidth: 1,
+    marginHorizontal: 5,
   },
   actionButtonDark2: {
-    width: '48%',
+    width: '43%',
     height: 54,
     alignItems: 'center',
     justifyContent: 'center',
@@ -725,6 +718,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#4285B9',
     borderColor: CSS.Colors.BACKGROUND_WHITE,
     borderWidth: 1,
+    marginHorizontal: 5,
   },
   actionButtonTextDark1: {
     color: '#4285B9',
@@ -740,13 +734,16 @@ const styles = StyleSheet.create({
     flex: 1,
     fontFamily: 'Montserrat-600',
     textAlignVertical: 'center',
+    textAlign: 'center',
     fontSize: 12,
     color: CSS.Colors.TEXT_WHITE,
     alignItems: 'center',
-    width: '100%',
-    paddingHorizontal: 5,
-    height: 35,
-    marginBottom: 10,
+    justifyContent: 'center',
+    width: 50,
+    paddingHorizontal: 2,
+    paddingVertical: 0,
+    //height: 5,
+    //marginBottom: 5,
     backgroundColor: '#212937',
     borderWidth: 1,
     borderColor: '#4285B9',
