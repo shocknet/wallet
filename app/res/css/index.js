@@ -90,6 +90,13 @@ export const styles = StyleSheet.create({
   alignItemsStretch: {
     alignItems: 'stretch',
   },
+  backgroundDark: {
+    backgroundColor: Colors.DARK_MODE_BACKGROUND_DARK,
+  },
+  backgroundDarkFlex: {
+    backgroundColor: Colors.DARK_MODE_BACKGROUND_DARK,
+    flex: 1,
+  },
 })
 
 export const SCREEN_PADDING = 30
