@@ -72,7 +72,7 @@ class Feed extends React.PureComponent<Props> {
   onPressUserAvatar = (publicKey: string) => () =>
     this.props.navigation.navigate(Routes.USER, { publicKey })
 
-  renderFollow({ item }: ListRenderItemInfo<Common.Schema.User>) {
+  renderFollow = ({ item }: ListRenderItemInfo<Common.Schema.User>) => {
     return (
       <View style={styles.otherUserContainer}>
         <View style={styles.avatarStyle}>
