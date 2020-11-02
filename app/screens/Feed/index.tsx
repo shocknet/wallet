@@ -1,14 +1,12 @@
 import React from 'react'
 import {
   ListRenderItemInfo,
-  SafeAreaView,
   StyleSheet,
   FlatList,
   Text,
   View,
   ScrollView,
   StatusBar,
-  TouchableOpacity,
 } from 'react-native'
 import { connect } from 'react-redux'
 
@@ -60,29 +58,43 @@ class Feed extends React.PureComponent<Props> {
     },
   }
 
-  renderItem = ({ item }: ListRenderItemInfo<Common.Schema.PostN>) => {
+  renderItem = ({ item, index }: ListRenderItemInfo<Common.Schema.PostN>) => {
     return (
       <View>
-        <Post id={item.id} showTipBtn />
+        <Post id={item.id} showTipBtn hideTopBorder={index === 0} />
         <Pad amount={12} />
       </View>
     )
   }
 
   onPressMyAvatar = () => this.props.navigation.navigate(CREATE_POST_DARK)
-  onPressUserAvatar = (publicKey: string) => () =>
-    this.props.navigation.navigate(Routes.USER, { publicKey })
 
-  renderFollow = ({ item }: ListRenderItemInfo<Common.Schema.User>) => {
+  renderMe = () => {
+    const { publicKey } = this.props
     return (
-      <View style={styles.otherUserContainer}>
-        <View style={styles.avatarStyle}>
+      <View style={CSS.styles.flexRow}>
+        <PersonSeparator />
+        <View>
           <ConnectedShockAvatar
-            height={63}
+            height={64}
+            onPress={this.onPressMyAvatar}
+            publicKey={publicKey}
             disableOnlineRing
-            publicKey={item.publicKey}
           />
+
+          <AddonIcon size={25} style={styles.avatarAddon} />
         </View>
+        <PersonSeparator />
+      </View>
+    )
+  }
+
+  renderPerson = ({ item }: ListRenderItemInfo<Common.Schema.User>) => {
+    return (
+      <View style={CSS.styles.alignItemsCenter}>
+        <ConnectedShockAvatar height={64} publicKey={item.publicKey} />
+
+        <Pad amount={16} />
 
         <Text style={styles.otherUserName}>{item.displayName}</Text>
       </View>
@@ -90,62 +102,53 @@ class Feed extends React.PureComponent<Props> {
   }
 
   render() {
-    const { publicKey } = this.props
-
     return (
       <>
         <StatusBar
-          translucent
-          backgroundColor="transparent"
+          backgroundColor={CSS.Colors.DARK_MODE_BACKGROUND_DARK}
           barStyle="light-content"
+          translucent={false}
         />
 
-        <SafeAreaView style={styles.container}>
-          <ScrollView
-            contentContainerStyle={CSS.styles.width100}
+        <ScrollView
+          stickyHeaderIndices={STICKY_HEADER_INDICES}
+          style={CSS.styles.backgroundDark}
+        >
+          <FlatList
+            style={styles.usersContainer}
+            data={this.props.usersFollowed}
+            renderItem={this.renderPerson}
+            horizontal
+            keyExtractor={userKeyExtractor}
             nestedScrollEnabled
-          >
-            <View style={styles.usersContainer}>
-              <TouchableOpacity style={styles.avatarContainer}>
-                <View style={styles.avatarStyle}>
-                  <ConnectedShockAvatar
-                    height={63}
-                    onPress={this.onPressMyAvatar}
-                    publicKey={publicKey}
-                    disableOnlineRing
-                  />
-                </View>
+            ListHeaderComponent={this.renderMe}
+            ItemSeparatorComponent={PersonSeparator}
+            ListFooterComponent={PersonSeparator}
+          />
 
-                <AddonIcon size={25} style={styles.avatarAddon} />
-              </TouchableOpacity>
-
-              <FlatList
-                data={this.props.usersFollowed}
-                renderItem={this.renderFollow}
-                horizontal
-                keyExtractor={userKeyExtractor}
-                nestedScrollEnabled
-              />
-            </View>
-
+          {/* mind the index of this component inside the components list in relation to "stickyHeaderIndices" above */}
+          <View style={CSS.styles.backgroundDark}>
             <Pad amount={8} />
             <Tabs texts={TABS} selectedTabIndex={0} />
             <Pad amount={8} />
+            <View style={styles.line}></View>
+          </View>
 
-            <FlatList
-              style={CSS.styles.width100}
-              renderItem={this.renderItem}
-              data={this.props.posts}
-              keyExtractor={keyExtractor}
-              ListEmptyComponent={listEmptyElement}
-              nestedScrollEnabled
-            />
-          </ScrollView>
-        </SafeAreaView>
+          <FlatList
+            renderItem={this.renderItem}
+            data={this.props.posts}
+            keyExtractor={keyExtractor}
+            ListEmptyComponent={listEmptyElement}
+          />
+        </ScrollView>
       </>
     )
   }
 }
+
+const PersonSeparator = React.memo(() => <Pad amount={16} insideRow />)
+
+const STICKY_HEADER_INDICES = [1]
 
 const TABS = ['Feed', 'Saved', 'Videos']
 
@@ -165,13 +168,10 @@ const ConnectedFeed = connect(mapStateToProps)(Feed)
 export default ConnectedFeed
 
 const styles = StyleSheet.create({
-  container: {
-    alignItems: 'center',
-    backgroundColor: '#16191C',
-    margin: 0,
-    flex: 1,
-    width: '100%',
-    paddingTop: StatusBar.currentHeight,
+  line: {
+    height: 0,
+    borderBottomColor: CSS.Colors.DARK_MODE_BORDER_GRAY,
+    borderBottomWidth: 1,
   },
   emptyMessageText: {
     color: CSS.Colors.TEXT_GRAY,
@@ -179,49 +179,21 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   usersContainer: {
-    flexDirection: 'row',
-    marginTop: 30,
-    paddingTop: 19,
-    paddingBottom: 0,
-    paddingLeft: 15,
-    paddingRight: 6,
-    borderColor: '#707070',
-    borderBottomWidth: 1,
-    borderTopWidth: 1,
-    height: 115,
-    justifyContent: 'flex-start',
-    alignItems: 'flex-start',
-    backgroundColor: '#212937',
-  },
-  avatarContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    marginRight: 17,
+    backgroundColor: CSS.Colors.DARK_MODE_BACKGROUND_BLUEISH_GRAY,
+    borderColor: CSS.Colors.DARK_MODE_BORDER_GRAY,
+    borderWidth: 1,
+    paddingVertical: 24,
   },
   avatarAddon: {
-    marginLeft: -25,
-    marginTop: -15,
-  },
-  avatarStyle: {
-    borderRadius: 32,
-    borderColor: '#707070',
+    position: 'absolute',
+    right: 0,
+    bottom: 0,
   },
   otherUserName: {
     color: '#F3EFEF',
     fontFamily: 'Montserrat-600',
     fontSize: 12,
     textAlign: 'center',
-    marginTop: 9,
-  },
-  otherUserContainer: {
-    marginRight: 17,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  otherUserAvatar: {
-    width: 53,
-    height: 53,
-    borderRadius: 27,
   },
 })
 
