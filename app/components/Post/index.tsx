@@ -28,6 +28,7 @@ import TipPopup from './tip-popup'
 interface OwnProps {
   id: string
   showTipBtn?: boolean
+  hideTopBorder?: boolean
 }
 
 interface StateProps {
@@ -162,7 +163,14 @@ class Post extends React.PureComponent<Props, State> {
   }
 
   render() {
-    const { id, contentItems, numOfTips, showTipBtn, isPinned } = this.props
+    const {
+      id,
+      contentItems,
+      numOfTips,
+      showTipBtn,
+      isPinned,
+      hideTopBorder,
+    } = this.props
     const { displayingMediaIdx, mediaWidth, tipPopupOpen } = this.state
 
     const paragraphs = pickBy(
@@ -180,7 +188,11 @@ class Post extends React.PureComponent<Props, State> {
       <>
         <View
           style={
-            mediaWidth ? styles.container : styles.containerCalculatingLayout
+            mediaWidth
+              ? hideTopBorder
+                ? styles.containerTopBorderHidden
+                : styles.container
+              : styles.containerCalculatingLayout
           }
           onLayout={this.onLayout}
         >
@@ -276,6 +288,11 @@ const styles = StyleSheet.create({
   containerCalculatingLayout: {
     ...containerBase,
     opacity: 0,
+  },
+
+  containerTopBorderHidden: {
+    ...containerBase,
+    borderTopWidth: 0,
   },
 
   paragraph: {
