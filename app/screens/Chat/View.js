@@ -86,7 +86,7 @@ const LoadingEarlier = React.memo(({ isLoadingEarlier }) =>
   ) : null),
 )
 
-const AlwaysNull = React.memo(() => null)
+const AlwaysNull = () => null
 
 /**
  * @typedef {import('./ChatInvoice').PaymentStatus} PaymentStatus
@@ -138,7 +138,6 @@ const AlwaysNull = React.memo(() => null)
  * @prop {string} disconnectErr Empty string if disconnectStatus !== 'err'
  */
 
-// TODO: Component instead of PureComponent is a temp fix
 /**
  * @augments React.PureComponent<Props, State, never>
  */

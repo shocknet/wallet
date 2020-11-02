@@ -23,7 +23,7 @@ interface OwnProps {
   title?: string
   style?: object
   backButton?: boolean | null
-  showAvatar?: string | null
+  showAvatar?: boolean
   navigation?: Navigation
   onPressAvatar?: () => void
 }
@@ -63,9 +63,7 @@ const Nav: React.FC<Props> = React.memo(
             onPress={goBack}
           />
         ) : (
-          <View
-            style={typeof showAvatar === 'undefined' ? navStyles.hidden : null}
-          >
+          <View style={showAvatar ? null : navStyles.hidden}>
             <ConnectedShockAvatar
               height={40}
               publicKey={publicKey}

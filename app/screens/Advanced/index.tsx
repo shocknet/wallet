@@ -58,79 +58,77 @@ export const ADVANCED_SCREEN = 'ADVANCED_SCREEN'
 type Channel = import('../../services/wallet').Channel
 type PendingChannel = import('../../services/wallet').PendingChannel
 
-interface Accordions  {
-  transactions:boolean
-  peers:boolean
-  invoices:boolean
-  channels:boolean
+interface Accordions {
+  transactions: boolean
+  peers: boolean
+  invoices: boolean
+  channels: boolean
 }
 
 interface ChannelParsed {
-  fundingTX:string
-  outputIndex:string
-  chan_id:string
-  local_balance:string
-  remote_balance:string
+  fundingTX: string
+  outputIndex: string
+  chan_id: string
+  local_balance: string
+  remote_balance: string
 }
 
 export interface State {
-  accordions:Accordions
-  peerURI:string
-  channelPublicKey:string
-  channelCapacity:string
-  channelPushAmount:string
-  err:string
-  modalLoading:boolean
-  keyboardOpen:boolean
-  keyboardHeight:number
-  willCloseChannelPoint:ChannelParsed|null
-  nodeInfoModal:boolean
-  forceCloseChannel:boolean
-  channelInfo:Channel
-  peerInfo:{pubKey:string}
-  confirmCloseChannel:boolean
-  confirmCloseChannelText:string
-  refreshingChannels:boolean
-  refreshingTransactions:boolean
-
-
+  accordions: Accordions
+  peerURI: string
+  channelPublicKey: string
+  channelCapacity: string
+  channelPushAmount: string
+  err: string
+  modalLoading: boolean
+  keyboardOpen: boolean
+  keyboardHeight: number
+  willCloseChannelPoint: ChannelParsed | null
+  nodeInfoModal: boolean
+  forceCloseChannel: boolean
+  channelInfo: Channel
+  peerInfo: { pubKey: string }
+  confirmCloseChannel: boolean
+  confirmCloseChannelText: string
+  refreshingChannels: boolean
+  refreshingTransactions: boolean
 }
 
 type ConnectedRedux = ReturnType<typeof mapStateToProps>
 
 interface PageToFetch {
-  page?:number
-  itemsPerPage?:number
-  reset?:boolean
+  page?: number
+  itemsPerPage?: number
+  reset?: boolean
 }
 
 type Navigation = import('react-navigation').NavigationScreenProp<{}>
 interface TmpProps {
-  fetchChannels:()=>void
-  fetchPendingChannels:()=>void
-  fetchInvoices:(invoice:PageToFetch)=>void
-  fetchPayments:(payment:PageToFetch)=>void
-  fetchPeers:()=>void
-  fetchTransactions:(transaction:PageToFetch)=>void
-  fetchRecentTransactions:()=>void
-  fetchHistory:()=>void
-  fetchNodeInfo:()=>void
-  navigation:Navigation
-} 
+  fetchChannels: () => void
+  fetchPendingChannels: () => void
+  fetchInvoices: (invoice: PageToFetch) => void
+  fetchPayments: (payment: PageToFetch) => void
+  fetchPeers: () => void
+  fetchTransactions: (transaction: PageToFetch) => void
+  fetchRecentTransactions: () => void
+  fetchHistory: () => void
+  fetchNodeInfo: () => void
+  navigation: Navigation
+}
 
 type Props = ConnectedRedux & TmpProps
 
 type NavigationStackOptions = import('react-navigation-stack').NavigationStackOptions
 
-class AdvancedScreen extends React.PureComponent<Props,State> {
-  static navigationOptions:NavigationStackOptions = {
+class AdvancedScreen extends React.PureComponent<Props, State> {
+  static navigationOptions: NavigationStackOptions = {
     header: () => null,
     // drawerIcon: () => {
     //   return <IconDrawerAdvancedLightning />
     // },
   }
 
-  state:State = {
+  state: State = {
     accordions: {
       transactions: false,
       peers: false,
@@ -170,28 +168,28 @@ class AdvancedScreen extends React.PureComponent<Props,State> {
 
   backToOverview = () => this.props.navigation.navigate(WALLET_OVERVIEW)
 
-  addChannelModal:React.RefObject<Modal> = React.createRef()
+  addChannelModal: React.RefObject<Modal> = React.createRef()
 
-  infoChannelModal:React.RefObject<Modal> = React.createRef()
+  infoChannelModal: React.RefObject<Modal> = React.createRef()
 
-  closeChannelModal:React.RefObject<Modal> = React.createRef()
+  closeChannelModal: React.RefObject<Modal> = React.createRef()
 
-  addPeerModal:React.RefObject<Modal> = React.createRef()
+  addPeerModal: React.RefObject<Modal> = React.createRef()
 
-  infoPeerModal:React.RefObject<Modal> = React.createRef()
+  infoPeerModal: React.RefObject<Modal> = React.createRef()
 
-  onChange = (key:keyof State) => (value:any) => {
+  onChange = (key: keyof State) => (value: any) => {
     this.setState(prevState => ({
       ...prevState,
       [key]: value,
     }))
   }
 
-  keyboardDidShow:EmitterSubscription|null = null
+  keyboardDidShow: EmitterSubscription | null = null
 
-  keyboardDidHide:EmitterSubscription|null = null
+  keyboardDidHide: EmitterSubscription | null = null
 
-  didPageFocus:NavigationEventSubscription|null = null
+  didPageFocus: NavigationEventSubscription | null = null
 
   componentDidMount() {
     this.fetchData()
@@ -208,7 +206,10 @@ class AdvancedScreen extends React.PureComponent<Props,State> {
         keyboardHeight: 0,
       })
     })
-    this.didPageFocus = this.props.navigation.addListener('didFocus', this.props.fetchPendingChannels)
+    this.didPageFocus = this.props.navigation.addListener(
+      'didFocus',
+      this.props.fetchPendingChannels,
+    )
   }
 
   componentWillUnmount() {
@@ -219,7 +220,7 @@ class AdvancedScreen extends React.PureComponent<Props,State> {
     if (this.keyboardDidHide) {
       this.keyboardDidHide.remove()
     }
-    if(this.didPageFocus){
+    if (this.didPageFocus) {
       this.didPageFocus.remove()
     }
   }
@@ -259,12 +260,12 @@ class AdvancedScreen extends React.PureComponent<Props,State> {
       await Promise.all([fetchHistory(), fetchNodeInfo()])
       return true
     } catch (err) {
-      Logger.log('[ADVANCED] Data fetch error:', err?.response?.data ?? err)
+      Logger.log('[ADVANCED] Data fetch error:', JSON.stringify(err))
       throw err
     }
   }
 
-  toggleAccordion = (name:keyof Accordions) => () => {
+  toggleAccordion = (name: keyof Accordions) => () => {
     const { accordions } = this.state
     if (!(name in accordions)) {
       throw new Error(
@@ -291,14 +292,14 @@ class AdvancedScreen extends React.PureComponent<Props,State> {
     this.toggleAccordion('peers')
   }
 
-  wait = (ms:number) =>
+  wait = (ms: number) =>
     new Promise(resolve => {
       setTimeout(() => {
         resolve(true)
       }, ms)
     })
 
-  fetchNextPage = (routeName:string) => () => {
+  fetchNextPage = (routeName: string) => () => {
     const {
       history,
       fetchInvoices,
@@ -322,7 +323,14 @@ class AdvancedScreen extends React.PureComponent<Props,State> {
     }
   }
 
-  handleInputChange = (key:'peerURI'|'channelPublicKey'|'channelPushAmount'|'channelCapacity', value:string) => {
+  handleInputChange = (
+    key:
+      | 'peerURI'
+      | 'channelPublicKey'
+      | 'channelPushAmount'
+      | 'channelCapacity',
+    value: string,
+  ) => {
     // @ts-expect-error
     this.setState({
       [key]: value,
@@ -351,7 +359,7 @@ class AdvancedScreen extends React.PureComponent<Props,State> {
       ToastAndroid.show('Added successfully', 800)
 
       fetchPeers()
-      if(this.addPeerModal.current){
+      if (this.addPeerModal.current) {
         this.addPeerModal.current.close()
       }
     } catch (err) {
@@ -376,7 +384,7 @@ class AdvancedScreen extends React.PureComponent<Props,State> {
       }
       await disconnectPeer(pubKey)
       ToastAndroid.show('Peer disconnected', 800)
-      if(this.infoPeerModal.current){
+      if (this.infoPeerModal.current) {
         this.infoPeerModal.current.close()
       }
     } catch (e) {
@@ -438,7 +446,7 @@ class AdvancedScreen extends React.PureComponent<Props,State> {
       ToastAndroid.show('Added successfully', 800)
 
       fetchChannels()
-      if(this.addChannelModal.current){
+      if (this.addChannelModal.current) {
         this.addChannelModal.current.close()
       }
     } catch (err) {
@@ -453,8 +461,8 @@ class AdvancedScreen extends React.PureComponent<Props,State> {
     }
   }
 
-  willCloseChannel = (channel:ChannelParsed) => {
-    if(this.closeChannelModal.current){
+  willCloseChannel = (channel: ChannelParsed) => {
+    if (this.closeChannelModal.current) {
       this.closeChannelModal.current.open()
     }
     this.setState({
@@ -514,7 +522,7 @@ class AdvancedScreen extends React.PureComponent<Props,State> {
           throw new Error(res.data.errorMessage || 'Unknown error.')
         }
         this.setState({ modalLoading: false })
-        if(this.closeChannelModal.current){
+        if (this.closeChannelModal.current) {
           this.closeChannelModal.current.close()
         }
         fetchChannels()
@@ -527,7 +535,7 @@ class AdvancedScreen extends React.PureComponent<Props,State> {
     }
   }
 
-  showErr = (err:string) => {
+  showErr = (err: string) => {
     Logger.log('Setting Error message:', err)
     this.setState({
       err,
@@ -550,8 +558,8 @@ class AdvancedScreen extends React.PureComponent<Props,State> {
     })
   }
 
-  openInfoPeer = (pubKey:string) => {
-    if(this.infoPeerModal.current){
+  openInfoPeer = (pubKey: string) => {
+    if (this.infoPeerModal.current) {
       this.infoPeerModal.current.open()
     }
     this.setState({
@@ -560,7 +568,7 @@ class AdvancedScreen extends React.PureComponent<Props,State> {
   }
 
   closeInfoPeer = () => {
-    if(this.infoPeerModal.current){
+    if (this.infoPeerModal.current) {
       this.infoPeerModal.current.close()
     }
   }
@@ -572,7 +580,7 @@ class AdvancedScreen extends React.PureComponent<Props,State> {
   }
 
   closeAddChannelModal = () => {
-    if(this.addChannelModal.current){
+    if (this.addChannelModal.current) {
       this.addChannelModal.current.close()
     }
     this.setState({
@@ -584,7 +592,7 @@ class AdvancedScreen extends React.PureComponent<Props,State> {
   }
 
   closeAddPeerModal = () => {
-    if(this.addPeerModal.current){
+    if (this.addPeerModal.current) {
       this.addPeerModal.current.close()
     }
     this.setState({
@@ -598,7 +606,7 @@ class AdvancedScreen extends React.PureComponent<Props,State> {
   }
 
   onPressCloseChannel = () => {
-    if(this.infoChannelModal.current){
+    if (this.infoChannelModal.current) {
       this.infoChannelModal.current.close()
     }
     const { channelInfo } = this.state
@@ -618,11 +626,11 @@ class AdvancedScreen extends React.PureComponent<Props,State> {
     })
   }
 
-  onPressChannel = (channelString:string) => {
+  onPressChannel = (channelString: string) => {
     /**@type {Channel|PendingChannel} channel*/
     const channel = JSON.parse(channelString)
     if (channel.type === 'channel') {
-      if(this.infoChannelModal.current){
+      if (this.infoChannelModal.current) {
         this.infoChannelModal.current.open()
       }
       this.setState({
@@ -635,7 +643,7 @@ class AdvancedScreen extends React.PureComponent<Props,State> {
   }
 
   closeInfoChannelModal = () => {
-    if(this.infoChannelModal.current){
+    if (this.infoChannelModal.current) {
       this.infoChannelModal.current.close()
     }
     this.setState({
@@ -670,17 +678,17 @@ class AdvancedScreen extends React.PureComponent<Props,State> {
     this.setState({ refreshingTransactions: false })
   }
 
-  onChangePeerURI = (text:string) => this.handleInputChange('peerURI', text)
+  onChangePeerURI = (text: string) => this.handleInputChange('peerURI', text)
 
-  onChangeChannelPublicKey = (text:string) => {
+  onChangeChannelPublicKey = (text: string) => {
     this.handleInputChange('channelPublicKey', text)
   }
 
-  onChangeChannelCapacity = (text:string) => {
+  onChangeChannelCapacity = (text: string) => {
     this.handleInputChange('channelCapacity', text)
   }
 
-  onChangeChannelPushAmount = (text:string) => {
+  onChangeChannelPushAmount = (text: string) => {
     this.handleInputChange('channelPushAmount', text)
   }
 
@@ -692,10 +700,12 @@ class AdvancedScreen extends React.PureComponent<Props,State> {
     this.setState({ modalLoading: false })
   }
 
-  transactionKeyExtractor = (transaction:import('../../services/wallet').Transaction) => transaction.tx_hash
+  transactionKeyExtractor = (
+    transaction: import('../../services/wallet').Transaction,
+  ) => transaction.tx_hash
 
   render() {
-    const { node, wallet, history, avatar } = this.props
+    const { node, wallet, history } = this.props
     const {
       accordions,
       peerURI,
@@ -742,7 +752,7 @@ class AdvancedScreen extends React.PureComponent<Props,State> {
             <Nav
               title="Advanced"
               style={styles.nav}
-              showAvatar={avatar}
+              showAvatar
               onPressAvatar={this.backToOverview}
             />
             <View style={styles.statsContainer}>
@@ -859,7 +869,7 @@ class AdvancedScreen extends React.PureComponent<Props,State> {
                   name: 'Add Channel',
                   icon: 'link',
                   action: () => {
-                    if(this.addChannelModal.current){
+                    if (this.addChannelModal.current) {
                       this.addChannelModal.current.open()
                     }
                     this.setState({
@@ -896,7 +906,7 @@ class AdvancedScreen extends React.PureComponent<Props,State> {
                   icon: 'link',
                   action: () => {
                     Logger.log('addPeerOpen')
-                    if(this.addPeerModal.current){
+                    if (this.addPeerModal.current) {
                       this.addPeerModal.current.open()
                     }
                   },
@@ -917,9 +927,19 @@ class AdvancedScreen extends React.PureComponent<Props,State> {
           keyboardOpen={keyboardOpen}
           keyboardHeight={keyboardHeight}
           forceCloseChannel={forceCloseChannel}
-          chanId={willCloseChannelPoint?.chan_id}
-          localBalance={willCloseChannelPoint?.local_balance}
-          remoteBalance={willCloseChannelPoint?.remote_balance}
+          chanId={
+            willCloseChannelPoint ? willCloseChannelPoint.chan_id : undefined
+          }
+          localBalance={
+            willCloseChannelPoint
+              ? willCloseChannelPoint.local_balance
+              : undefined
+          }
+          remoteBalance={
+            willCloseChannelPoint
+              ? willCloseChannelPoint.remote_balance
+              : undefined
+          }
         />
         <InfoChannelModal
           modalRef={this.infoChannelModal}
@@ -979,12 +999,11 @@ class AdvancedScreen extends React.PureComponent<Props,State> {
   }
 }
 
-const mapStateToProps = ({ history, node, wallet, fees, users, auth }:Store.State) => ({
+const mapStateToProps = ({ history, node, wallet, fees }: Store.State) => ({
   history,
   node,
   wallet,
   fees,
-  avatar: users[auth.gunPublicKey].avatar,
 })
 
 const mapDispatchToProps = {
@@ -1086,8 +1105,8 @@ const xStyles = {
   channelBalanceContainer: [styles.stat, styles.marginBottom15],
 }
 
-
-const channelKeyExtractor = (channel:Channel|PendingChannel) => JSON.stringify(channel) //channel.channel_point
+const channelKeyExtractor = (channel: Channel | PendingChannel) =>
+  JSON.stringify(channel) //channel.channel_point
 
 type Peer = import('../../services/wallet').Peer
-const peerKeyExtractor = (p:Peer) => p.pub_key
+const peerKeyExtractor = (p: Peer) => p.pub_key

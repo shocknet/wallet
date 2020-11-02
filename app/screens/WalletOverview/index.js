@@ -1,3 +1,4 @@
+// @ts-check
 import React from 'react'
 import {
   ActivityIndicator,
@@ -61,9 +62,9 @@ import { Color } from 'shock-common/dist/constants'
 /**
  * @typedef {object} Props
  * @prop {Navigation} navigation
- * @prop {{ USDRate: number, totalBalance: string|null }} wallet
- * @prop {{ unifiedTransactions: (Wallet.Invoice|Wallet.Payment|Wallet.Transaction)[] }} history
- * @prop {{ nodeInfo: import('../../store/actions/NodeActions').GetInfo }} node
+ * @prop {string|null} totalBalance
+ * @prop {number} USDRate
+ * @prop {boolean} testnet
  * @prop {() => Promise<void>} fetchRecentTransactions
  * @prop {() => Promise<void>} fetchRecentPayments
  * @prop {() => Promise<void>} fetchRecentInvoices
@@ -73,14 +74,12 @@ import { Color } from 'shock-common/dist/constants'
  * @prop {() => Promise<number>} getUSDRate
  * @prop {(invoice: Wallet.Invoice) => void} loadNewInvoice
  * @prop {(transaction: Wallet.Transaction) => void} loadNewTransaction
- * @prop {{feesLevel:'MIN'|'MID'|'MAX', feesSource:string}} fees
  * @prop {{notifyDisconnect:boolean, notifyDisconnectAfterSeconds:number}} settings
  * @prop {() => void} forceInvoicesRefresh
  * @prop {boolean} isOnline
  * @prop {() => void} forcePaymentsRefresh // TODO: do at auth
  * @prop {() => void} getMoreFeed
  * @prop {() => void} forceChainTXsRefresh
- * @prop {string|null} avatar
  */
 
 /**
@@ -269,7 +268,7 @@ class WalletOverview extends React.PureComponent {
   }
 
   onPressRequest = () => {
-    const { totalBalance } = this.props.wallet
+    const { totalBalance } = this.props
 
     if (totalBalance === null) {
       return
@@ -279,7 +278,7 @@ class WalletOverview extends React.PureComponent {
   }
 
   onPressSend = () => {
-    const { totalBalance } = this.props.wallet
+    const { totalBalance } = this.props
 
     if (totalBalance === null) {
       return
@@ -312,7 +311,7 @@ class WalletOverview extends React.PureComponent {
   }
 
   renderBalance = () => {
-    const { USDRate, totalBalance } = this.props.wallet
+    const { USDRate, totalBalance } = this.props
     /** @type {boolean} */
     const isConnected = this.props.isOnline
     const convertedBalance = (
@@ -366,8 +365,7 @@ class WalletOverview extends React.PureComponent {
   }
 
   render() {
-    const { avatar } = this.props
-    const { nodeInfo } = this.props.node
+    const { testnet } = this.props
 
     return (
       <View style={styles.container}>
@@ -381,10 +379,10 @@ class WalletOverview extends React.PureComponent {
           resizeMode="cover"
           style={styles.overview}
         >
-          <Nav title="" showAvatar={avatar} />
+          <Nav title="" showAvatar />
           {this.renderBalance()}
 
-          {nodeInfo && nodeInfo.testnet ? (
+          {testnet ? (
             <Text style={styles.networkNotice}>
               You are using Testnet network
             </Text>
@@ -457,17 +455,16 @@ class WalletOverview extends React.PureComponent {
  * @param {Store.State} state
  */
 const mapStateToProps = state => {
-  const { wallet, history, node, fees, settings, users, auth } = state
+  const { wallet, node, settings } = state
+  const { USDRate, totalBalance } = wallet
   const isOnline = Store.isOnline(state)
 
   return {
-    wallet,
-    history,
-    node,
-    fees,
+    USDRate,
+    totalBalance,
+    testnet: node.nodeInfo.testnet,
     settings,
     isOnline,
-    avatar: users[auth.gunPublicKey].avatar,
   }
 }
 

@@ -1,15 +1,14 @@
 import React from 'react'
 import {
   ListRenderItemInfo,
-  SafeAreaView,
   StyleSheet,
   FlatList,
   Text,
   View,
   StatusBar,
-  TouchableOpacity,
 } from 'react-native'
 import { connect } from 'react-redux'
+import identity from 'lodash/identity'
 
 import { NavigationScreenProp } from 'react-navigation'
 import { NavigationBottomTabOptions } from 'react-navigation-tabs'
@@ -37,7 +36,7 @@ interface OwnProps {
 
 interface StateProps {
   posts: Common.Schema.PostN[]
-  usersFollowed: Common.Schema.User[]
+  usersFollowed: string[]
   publicKey: string
 }
 
@@ -45,10 +44,11 @@ interface DispatchProps {}
 
 type Props = StateProps & DispatchProps & OwnProps
 
-const keyExtractor = (item: Common.Schema.PostN) => item.id
-const userKeyExtractor = (item: Common.Schema.User) => item.publicKey
+interface State {
+  data: [string, ...Common.Schema.PostN[]]
+}
 
-class Feed extends React.PureComponent<Props> {
+class Feed extends React.PureComponent<Props, State> {
   static navigationOptions: NavigationBottomTabOptions = {
     tabBarIcon: ({ focused }) => {
       if (focused) {
@@ -59,82 +59,105 @@ class Feed extends React.PureComponent<Props> {
     },
   }
 
-  renderItem = ({ item }: ListRenderItemInfo<Common.Schema.PostN>) => {
+  state: State = {
+    data: ['tabs', ...this.props.posts],
+  }
+
+  componentDidUpdate({ posts: prevPosts }: Props) {
+    if (this.props.posts !== prevPosts) {
+      this.setState({
+        data: ['tabs', ...this.props.posts],
+      })
+    }
+  }
+
+  renderItem = ({
+    item,
+    index,
+  }: ListRenderItemInfo<Common.Schema.PostN | string>) => {
+    if (typeof item === 'string') {
+      return tabs
+    }
+
     return (
       <View>
-        <Post id={item.id} showTipBtn />
+        <Post id={item.id} showTipBtn hideTopBorder={index === 1} />
         <Pad amount={12} />
       </View>
     )
   }
 
   onPressMyAvatar = () => this.props.navigation.navigate(CREATE_POST_DARK)
-  onPressUserAvatar = (publicKey: string) => () =>
-    this.props.navigation.navigate(Routes.USER, { publicKey })
 
-  renderFollow({ item }: ListRenderItemInfo<Common.Schema.User>) {
+  renderMe = () => {
+    const { publicKey } = this.props
     return (
-      <View style={styles.otherUserContainer}>
-        <View style={styles.avatarStyle}>
+      <View style={CSS.styles.flexRow}>
+        <PersonSeparator />
+        <View>
           <ConnectedShockAvatar
-            height={63}
+            height={64}
+            onPress={this.onPressMyAvatar}
+            publicKey={publicKey}
             disableOnlineRing
-            publicKey={item.publicKey}
           />
-        </View>
 
-        <Text style={styles.otherUserName}>{item.displayName}</Text>
+          <AddonIcon size={25} style={styles.avatarAddon} />
+        </View>
+        <PersonSeparator />
       </View>
     )
   }
 
+  renderPerson = ({ item }: ListRenderItemInfo<string>) => (
+    <ConnectedShockAvatar height={64} publicKey={item} nameAtBottom />
+  )
+
+  renderPeople = () => (
+    <FlatList
+      style={styles.usersContainer}
+      data={this.props.usersFollowed}
+      renderItem={this.renderPerson}
+      horizontal
+      keyExtractor={identity}
+      nestedScrollEnabled
+      ListHeaderComponent={this.renderMe}
+      ItemSeparatorComponent={PersonSeparator}
+      ListFooterComponent={PersonSeparator}
+    />
+  )
+
   render() {
-    const { publicKey } = this.props
-
     return (
-      <SafeAreaView style={styles.container}>
+      <>
         <StatusBar
-          translucent
-          backgroundColor="transparent"
+          backgroundColor={CSS.Colors.DARK_MODE_BACKGROUND_DARK}
           barStyle="light-content"
+          translucent={false}
         />
-        <View style={styles.usersContainer}>
-          <TouchableOpacity style={styles.avatarContainer}>
-            <View style={styles.avatarStyle}>
-              <ConnectedShockAvatar
-                height={63}
-                onPress={this.onPressMyAvatar}
-                publicKey={publicKey}
-                disableOnlineRing
-              />
-            </View>
-
-            <AddonIcon size={25} style={styles.avatarAddon} />
-          </TouchableOpacity>
-
-          <FlatList
-            data={this.props.usersFollowed}
-            renderItem={this.renderFollow}
-            horizontal
-            keyExtractor={userKeyExtractor}
-          />
-        </View>
-
-        <Pad amount={8} />
-        <Tabs texts={TABS} selectedTabIndex={0} />
-        <Pad amount={8} />
 
         <FlatList
-          style={CSS.styles.width100}
+          stickyHeaderIndices={STICKY_HEADER_INDICES}
+          style={CSS.styles.backgroundDark}
           renderItem={this.renderItem}
-          data={this.props.posts}
+          data={this.state.data}
           keyExtractor={keyExtractor}
           ListEmptyComponent={listEmptyElement}
+          ListHeaderComponent={this.renderPeople}
         />
-      </SafeAreaView>
+      </>
     )
   }
 }
+
+const keyExtractor = (item: Common.Schema.PostN | string) => {
+  // @ts-expect-error
+  return item.id || item
+}
+
+const PersonSeparator = React.memo(() => <Pad amount={16} insideRow />)
+
+const STICKY_HEADER_INDICES = [1]
 
 const TABS = ['Feed', 'Saved', 'Videos']
 
@@ -145,7 +168,7 @@ const mapStateToProps = (state: Reducers.State): StateProps => {
   return {
     posts,
     publicKey,
-    usersFollowed: Store.getFollowedUsers(state),
+    usersFollowed: Store.getFollowedPublicKeys(state),
   }
 }
 
@@ -154,13 +177,10 @@ const ConnectedFeed = connect(mapStateToProps)(Feed)
 export default ConnectedFeed
 
 const styles = StyleSheet.create({
-  container: {
-    alignItems: 'center',
-    backgroundColor: '#16191C',
-    margin: 0,
-    flex: 1,
-    width: '100%',
-    paddingTop: StatusBar.currentHeight,
+  line: {
+    height: 0,
+    borderBottomColor: CSS.Colors.DARK_MODE_BORDER_GRAY,
+    borderBottomWidth: 1,
   },
   emptyMessageText: {
     color: CSS.Colors.TEXT_GRAY,
@@ -168,58 +188,29 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   usersContainer: {
-    flexDirection: 'row',
-    marginTop: 30,
-    paddingTop: 19,
-    paddingBottom: 0,
-    paddingLeft: 15,
-    paddingRight: 6,
-    borderColor: '#707070',
-    borderBottomWidth: 1,
-    borderTopWidth: 1,
-    height: 115,
-    justifyContent: 'flex-start',
-    alignItems: 'flex-start',
-    backgroundColor: '#212937',
-  },
-  avatarContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    marginRight: 17,
+    backgroundColor: CSS.Colors.DARK_MODE_BACKGROUND_BLUEISH_GRAY,
+    borderColor: CSS.Colors.DARK_MODE_BORDER_GRAY,
+    borderWidth: 1,
+    paddingVertical: 24,
   },
   avatarAddon: {
-    marginLeft: -25,
-    marginTop: -15,
-  },
-  avatarStyle: {
-    borderRadius: 32,
-    borderColor: '#707070',
-  },
-  otherUserName: {
-    color: '#F3EFEF',
-    fontFamily: 'Montserrat-600',
-    fontSize: 12,
-    textAlign: 'center',
-    marginTop: 9,
-  },
-  otherUserContainer: {
-    marginRight: 17,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  otherUserAvatar: {
-    width: 53,
-    height: 53,
-    borderRadius: 27,
+    position: 'absolute',
+    right: 0,
+    bottom: 0,
   },
 })
 
-const xStyles = {
-  emptyMessageTextContainer: [CSS.styles.flex, CSS.styles.deadCenter],
-}
+const tabs = (
+  <View style={CSS.styles.backgroundDark}>
+    <Pad amount={8} />
+    <Tabs texts={TABS} selectedTabIndex={0} />
+    <Pad amount={8} />
+    <View style={styles.line}></View>
+  </View>
+)
 
 const listEmptyElement = (
-  <View style={xStyles.emptyMessageTextContainer}>
+  <View style={CSS.styles.flexDeadCenter}>
     <Text style={styles.emptyMessageText}>
       Follow people to see their posts
     </Text>

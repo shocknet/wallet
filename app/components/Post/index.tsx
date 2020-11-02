@@ -28,6 +28,7 @@ import TipPopup from './tip-popup'
 interface OwnProps {
   id: string
   showTipBtn?: boolean
+  hideTopBorder?: boolean
 }
 
 interface StateProps {
@@ -133,30 +134,26 @@ class Post extends React.PureComponent<Props, State> {
     this.setState(({ menuOpen }) => ({ menuOpen: !menuOpen }))
   }
 
-  getMenuChoices = () => {
-    if (this.props.isPinned) {
-      return {
-        unpin: () => {
-          this.props.unpin()
-          this.toggleMenu()
-        },
-        remove: () => {
-          this.props.remove()
-          this.toggleMenu()
-        },
-      }
-    } else {
-      return {
-        pin: () => {
-          this.props.pin()
-          this.toggleMenu()
-        },
-        remove: () => {
-          this.props.remove()
-          this.toggleMenu()
-        },
-      }
-    }
+  choicesWhenPinned = {
+    unpin: () => {
+      this.props.unpin()
+      this.toggleMenu()
+    },
+    remove: () => {
+      this.props.remove()
+      this.toggleMenu()
+    },
+  }
+
+  choicesWhenUnpinned = {
+    pin: () => {
+      this.props.pin()
+      this.toggleMenu()
+    },
+    remove: () => {
+      this.props.remove()
+      this.toggleMenu()
+    },
   }
 
   toggleTipPopup = () => {
@@ -166,7 +163,14 @@ class Post extends React.PureComponent<Props, State> {
   }
 
   render() {
-    const { id, contentItems, numOfTips, showTipBtn } = this.props
+    const {
+      id,
+      contentItems,
+      numOfTips,
+      showTipBtn,
+      isPinned,
+      hideTopBorder,
+    } = this.props
     const { displayingMediaIdx, mediaWidth, tipPopupOpen } = this.state
 
     const paragraphs = pickBy(
@@ -184,7 +188,11 @@ class Post extends React.PureComponent<Props, State> {
       <>
         <View
           style={
-            mediaWidth ? styles.container : styles.containerCalculatingLayout
+            mediaWidth
+              ? hideTopBorder
+                ? styles.containerTopBorderHidden
+                : styles.container
+              : styles.containerCalculatingLayout
           }
           onLayout={this.onLayout}
         >
@@ -248,7 +256,9 @@ class Post extends React.PureComponent<Props, State> {
         <Dialog
           onRequestClose={this.toggleMenu}
           visible={this.state.menuOpen}
-          choiceToHandler={this.getMenuChoices()}
+          choiceToHandler={
+            isPinned ? this.choicesWhenPinned : this.choicesWhenUnpinned
+          }
         />
 
         <TipPopup
@@ -278,6 +288,11 @@ const styles = StyleSheet.create({
   containerCalculatingLayout: {
     ...containerBase,
     opacity: 0,
+  },
+
+  containerTopBorderHidden: {
+    ...containerBase,
+    borderTopWidth: 0,
   },
 
   paragraph: {
