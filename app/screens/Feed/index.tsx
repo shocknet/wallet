@@ -6,6 +6,7 @@ import {
   FlatList,
   Text,
   View,
+  ScrollView,
   StatusBar,
   TouchableOpacity,
 } from 'react-native'
@@ -92,46 +93,56 @@ class Feed extends React.PureComponent<Props> {
     const { publicKey } = this.props
 
     return (
-      <SafeAreaView style={styles.container}>
+      <>
         <StatusBar
           translucent
           backgroundColor="transparent"
           barStyle="light-content"
         />
-        <View style={styles.usersContainer}>
-          <TouchableOpacity style={styles.avatarContainer}>
-            <View style={styles.avatarStyle}>
-              <ConnectedShockAvatar
-                height={63}
-                onPress={this.onPressMyAvatar}
-                publicKey={publicKey}
-                disableOnlineRing
+
+        <SafeAreaView style={styles.container}>
+          <ScrollView
+            contentContainerStyle={CSS.styles.width100}
+            nestedScrollEnabled
+          >
+            <View style={styles.usersContainer}>
+              <TouchableOpacity style={styles.avatarContainer}>
+                <View style={styles.avatarStyle}>
+                  <ConnectedShockAvatar
+                    height={63}
+                    onPress={this.onPressMyAvatar}
+                    publicKey={publicKey}
+                    disableOnlineRing
+                  />
+                </View>
+
+                <AddonIcon size={25} style={styles.avatarAddon} />
+              </TouchableOpacity>
+
+              <FlatList
+                data={this.props.usersFollowed}
+                renderItem={this.renderFollow}
+                horizontal
+                keyExtractor={userKeyExtractor}
+                nestedScrollEnabled
               />
             </View>
 
-            <AddonIcon size={25} style={styles.avatarAddon} />
-          </TouchableOpacity>
+            <Pad amount={8} />
+            <Tabs texts={TABS} selectedTabIndex={0} />
+            <Pad amount={8} />
 
-          <FlatList
-            data={this.props.usersFollowed}
-            renderItem={this.renderFollow}
-            horizontal
-            keyExtractor={userKeyExtractor}
-          />
-        </View>
-
-        <Pad amount={8} />
-        <Tabs texts={TABS} selectedTabIndex={0} />
-        <Pad amount={8} />
-
-        <FlatList
-          style={CSS.styles.width100}
-          renderItem={this.renderItem}
-          data={this.props.posts}
-          keyExtractor={keyExtractor}
-          ListEmptyComponent={listEmptyElement}
-        />
-      </SafeAreaView>
+            <FlatList
+              style={CSS.styles.width100}
+              renderItem={this.renderItem}
+              data={this.props.posts}
+              keyExtractor={keyExtractor}
+              ListEmptyComponent={listEmptyElement}
+              nestedScrollEnabled
+            />
+          </ScrollView>
+        </SafeAreaView>
+      </>
     )
   }
 }
