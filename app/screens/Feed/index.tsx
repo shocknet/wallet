@@ -5,10 +5,10 @@ import {
   FlatList,
   Text,
   View,
-  ScrollView,
   StatusBar,
 } from 'react-native'
 import { connect } from 'react-redux'
+import identity from 'lodash/identity'
 
 import { NavigationScreenProp } from 'react-navigation'
 import { NavigationBottomTabOptions } from 'react-navigation-tabs'
@@ -36,7 +36,7 @@ interface OwnProps {
 
 interface StateProps {
   posts: Common.Schema.PostN[]
-  usersFollowed: Common.Schema.User[]
+  usersFollowed: string[]
   publicKey: string
 }
 
@@ -44,10 +44,11 @@ interface DispatchProps {}
 
 type Props = StateProps & DispatchProps & OwnProps
 
-const keyExtractor = (item: Common.Schema.PostN) => item.id
-const userKeyExtractor = (item: Common.Schema.User) => item.publicKey
+interface State {
+  data: [string, ...Common.Schema.PostN[]]
+}
 
-class Feed extends React.PureComponent<Props> {
+class Feed extends React.PureComponent<Props, State> {
   static navigationOptions: NavigationBottomTabOptions = {
     tabBarIcon: ({ focused }) => {
       if (focused) {
@@ -58,10 +59,29 @@ class Feed extends React.PureComponent<Props> {
     },
   }
 
-  renderItem = ({ item, index }: ListRenderItemInfo<Common.Schema.PostN>) => {
+  state: State = {
+    data: ['tabs', ...this.props.posts],
+  }
+
+  componentDidUpdate({ posts: prevPosts }: Props) {
+    if (this.props.posts !== prevPosts) {
+      this.setState({
+        data: ['tabs', ...this.props.posts],
+      })
+    }
+  }
+
+  renderItem = ({
+    item,
+    index,
+  }: ListRenderItemInfo<Common.Schema.PostN | string>) => {
+    if (typeof item === 'string') {
+      return tabs
+    }
+
     return (
       <View>
-        <Post id={item.id} showTipBtn hideTopBorder={index === 0} />
+        <Post id={item.id} showTipBtn hideTopBorder={index === 1} />
         <Pad amount={12} />
       </View>
     )
@@ -89,17 +109,23 @@ class Feed extends React.PureComponent<Props> {
     )
   }
 
-  renderPerson = ({ item }: ListRenderItemInfo<Common.Schema.User>) => {
-    return (
-      <View style={CSS.styles.alignItemsCenter}>
-        <ConnectedShockAvatar height={64} publicKey={item.publicKey} />
+  renderPerson = ({ item }: ListRenderItemInfo<string>) => (
+    <ConnectedShockAvatar height={64} publicKey={item} nameAtBottom />
+  )
 
-        <Pad amount={16} />
-
-        <Text style={styles.otherUserName}>{item.displayName}</Text>
-      </View>
-    )
-  }
+  renderPeople = () => (
+    <FlatList
+      style={styles.usersContainer}
+      data={this.props.usersFollowed}
+      renderItem={this.renderPerson}
+      horizontal
+      keyExtractor={identity}
+      nestedScrollEnabled
+      ListHeaderComponent={this.renderMe}
+      ItemSeparatorComponent={PersonSeparator}
+      ListFooterComponent={PersonSeparator}
+    />
+  )
 
   render() {
     return (
@@ -110,40 +136,23 @@ class Feed extends React.PureComponent<Props> {
           translucent={false}
         />
 
-        <ScrollView
+        <FlatList
           stickyHeaderIndices={STICKY_HEADER_INDICES}
           style={CSS.styles.backgroundDark}
-        >
-          <FlatList
-            style={styles.usersContainer}
-            data={this.props.usersFollowed}
-            renderItem={this.renderPerson}
-            horizontal
-            keyExtractor={userKeyExtractor}
-            nestedScrollEnabled
-            ListHeaderComponent={this.renderMe}
-            ItemSeparatorComponent={PersonSeparator}
-            ListFooterComponent={PersonSeparator}
-          />
-
-          {/* mind the index of this component inside the components list in relation to "stickyHeaderIndices" above */}
-          <View style={CSS.styles.backgroundDark}>
-            <Pad amount={8} />
-            <Tabs texts={TABS} selectedTabIndex={0} />
-            <Pad amount={8} />
-            <View style={styles.line}></View>
-          </View>
-
-          <FlatList
-            renderItem={this.renderItem}
-            data={this.props.posts}
-            keyExtractor={keyExtractor}
-            ListEmptyComponent={listEmptyElement}
-          />
-        </ScrollView>
+          renderItem={this.renderItem}
+          data={this.state.data}
+          keyExtractor={keyExtractor}
+          ListEmptyComponent={listEmptyElement}
+          ListHeaderComponent={this.renderPeople}
+        />
       </>
     )
   }
+}
+
+const keyExtractor = (item: Common.Schema.PostN | string) => {
+  // @ts-expect-error
+  return item.id || item
 }
 
 const PersonSeparator = React.memo(() => <Pad amount={16} insideRow />)
@@ -159,7 +168,7 @@ const mapStateToProps = (state: Reducers.State): StateProps => {
   return {
     posts,
     publicKey,
-    usersFollowed: Store.getFollowedUsers(state),
+    usersFollowed: Store.getFollowedPublicKeys(state),
   }
 }
 
@@ -189,20 +198,19 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
   },
-  otherUserName: {
-    color: '#F3EFEF',
-    fontFamily: 'Montserrat-600',
-    fontSize: 12,
-    textAlign: 'center',
-  },
 })
 
-const xStyles = {
-  emptyMessageTextContainer: [CSS.styles.flex, CSS.styles.deadCenter],
-}
+const tabs = (
+  <View style={CSS.styles.backgroundDark}>
+    <Pad amount={8} />
+    <Tabs texts={TABS} selectedTabIndex={0} />
+    <Pad amount={8} />
+    <View style={styles.line}></View>
+  </View>
+)
 
 const listEmptyElement = (
-  <View style={xStyles.emptyMessageTextContainer}>
+  <View style={CSS.styles.flexDeadCenter}>
     <Text style={styles.emptyMessageText}>
       Follow people to see their posts
     </Text>
