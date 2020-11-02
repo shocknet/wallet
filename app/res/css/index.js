@@ -97,6 +97,11 @@ export const styles = StyleSheet.create({
     backgroundColor: Colors.DARK_MODE_BACKGROUND_DARK,
     flex: 1,
   },
+  flexDeadCenter: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 })
 
 export const SCREEN_PADDING = 30
