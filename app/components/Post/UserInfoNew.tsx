@@ -1,5 +1,5 @@
 import React from 'react'
-import { View, Text, StyleSheet } from 'react-native'
+import { View, Text, StyleSheet, TouchableWithoutFeedback } from 'react-native'
 import { connect } from 'react-redux'
 import Fontisto from 'react-native-vector-icons/Fontisto'
 import Octicons from 'react-native-vector-icons/Octicons'
@@ -52,24 +52,22 @@ const UserInfoNew: React.FC<Props> = ({
 
     <View style={CSS.styles.rowCentered}>
       {showPin && (
-        <>
-          <Octicons
-            name="pin"
+        <Octicons
+          name="pin"
+          size={24}
+          color={CSS.Colors.DARK_MODE_BORDER_GRAY}
+          style={!showPin && CSS.styles.displayNone}
+        />
+      )}
+      <TouchableWithoutFeedback onPress={onPressMenuIcon}>
+        <View style={styles.moreIconContainer}>
+          <Fontisto
+            name="more-v"
             size={24}
             color={CSS.Colors.DARK_MODE_BORDER_GRAY}
-            style={!showPin && CSS.styles.displayNone}
           />
-
-          <Pad amount={24} insideRow />
-        </>
-      )}
-      <Fontisto
-        name="more-v"
-        size={24}
-        color={CSS.Colors.DARK_MODE_BORDER_GRAY}
-        onPress={onPressMenuIcon}
-        style={onPressMenuIcon ? undefined : CSS.styles.displayNone}
-      />
+        </View>
+      </TouchableWithoutFeedback>
     </View>
   </View>
 )
@@ -82,7 +80,6 @@ const styles = StyleSheet.create({
   nameAndDate: {
     justifyContent: 'space-around',
   },
-
   name: {
     color: CSS.Colors.DARK_MODE_TEXT_NEAR_WHITE,
     fontFamily: 'Montserrat-Bold',
@@ -93,6 +90,12 @@ const styles = StyleSheet.create({
     color: CSS.Colors.DARK_MODE_TEXT_NEAR_WHITE,
     fontFamily: 'Montserrat-Regular',
     fontSize: 12,
+  },
+  // TODO: do this with hitslop but I can't make it work.
+  moreIconContainer: {
+    // allow for easier press on icon
+    paddingLeft: 24,
+    paddingVertical: 12,
   },
 })
 
