@@ -152,10 +152,6 @@ class WalletOverview extends React.PureComponent {
     forceChainTXsRefresh()
 
     this.didFocus = navigation.addListener('didFocus', () => {
-      StatusBar.setBackgroundColor(CSS.Colors.TRANSPARENT)
-      StatusBar.setBarStyle('light-content')
-      StatusBar.setTranslucent(true)
-
       this.balanceIntervalID = setTimeout(this.getWalletBalance, 4000)
       this.exchangeRateIntervalID = setTimeout(this.getUSDRate, 4000)
       this.recentPaymentsIntervalID = setTimeout(this.fetchRecentPayments, 4000)

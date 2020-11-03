@@ -560,10 +560,6 @@ export default class Chat extends React.PureComponent {
     this.didFocus = navigation.addListener('didFocus', () => {
       this.isFocused = true
 
-      StatusBar.setBackgroundColor(Colors.BLUE_MEDIUM_DARK)
-      StatusBar.setBarStyle('light-content')
-      StatusBar.setTranslucent(false)
-
       this.updateLastReadMsg()
     })
     this.willBlur = navigation.addListener('willBlur', () => {
@@ -914,6 +910,11 @@ export default class Chat extends React.PureComponent {
 
     return (
       <>
+        <StatusBar
+          backgroundColor={Colors.BLUE_MEDIUM_DARK}
+          barStyle="light-content"
+          translucent={false}
+        />
         <ChatView
           msgIDToInvoiceAmount={msgIDToInvoiceAmount}
           msgIDToInvoiceExpiryDate={msgIDToInvoiceExpiryDate}

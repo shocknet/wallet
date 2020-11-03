@@ -88,18 +88,13 @@ export default class Chats extends React.PureComponent {
 
   sentReqsUnsubscribe = () => {}
 
-  didFocus = { remove() {} }
-
   onLastReadMsgsUnsub = () => {}
 
   componentDidMount() {
     this.onLastReadMsgsUnsub = Cache.onLastReadMsgs(lastReadMsgs => {
       this.setState({ lastReadMsgs })
     })
-    this.didFocus = this.props.navigation.addListener('didFocus', () => {
-      StatusBar.setBackgroundColor(CSS.Colors.BACKGROUND_WHITE)
-      StatusBar.setBarStyle('dark-content')
-    })
+
     this.chatsUnsubscribe = API.Events.onChats(chats => {
       this.setState({
         chats,
@@ -137,7 +132,6 @@ export default class Chats extends React.PureComponent {
   }
 
   componentWillUnmount() {
-    this.didFocus.remove()
     this.chatsUnsubscribe()
     this.receivedReqsUnsubscribe()
     this.sentReqsUnsubscribe()
@@ -371,26 +365,33 @@ export default class Chats extends React.PureComponent {
     })
 
     return (
-      <ChatsView
-        sentRequests={filteredSentRequests}
-        chats={chats}
-        onPressChat={this.onPressChat}
-        acceptingRequest={!!acceptingRequest}
-        receivedRequests={filteredReceivedRequests}
-        onPressRequest={this.onPressReceivedRequest}
-        onPressAcceptRequest={this.acceptRequest}
-        onRequestCloseRequestDialog={this.cancelAcceptingRequest}
-        onPressRejectRequest={this.onPressRejectRequest}
-        onPressAdd={this.toggleAddDialog}
-        showingAddDialog={showingAddDialog}
-        onRequestCloseAddDialog={this.toggleAddDialog}
-        userChosePasteFromClipboard={this.sendHRToUserFromClipboard}
-        userChoseQRScan={this.toggleContactQRScanner}
-        showingQRScanner={scanningUserQR}
-        onQRRead={this.onQRRead}
-        onRequestCloseQRScanner={this.toggleContactQRScanner}
-        readChatIDs={readChatIDs}
-      />
+      <>
+        <StatusBar
+          backgroundColor={CSS.Colors.DARK_MODE_BACKGROUND_BLUEISH_GRAY}
+          barStyle="light-content"
+          translucent={false}
+        />
+        <ChatsView
+          sentRequests={filteredSentRequests}
+          chats={chats}
+          onPressChat={this.onPressChat}
+          acceptingRequest={!!acceptingRequest}
+          receivedRequests={filteredReceivedRequests}
+          onPressRequest={this.onPressReceivedRequest}
+          onPressAcceptRequest={this.acceptRequest}
+          onRequestCloseRequestDialog={this.cancelAcceptingRequest}
+          onPressRejectRequest={this.onPressRejectRequest}
+          onPressAdd={this.toggleAddDialog}
+          showingAddDialog={showingAddDialog}
+          onRequestCloseAddDialog={this.toggleAddDialog}
+          userChosePasteFromClipboard={this.sendHRToUserFromClipboard}
+          userChoseQRScan={this.toggleContactQRScanner}
+          showingQRScanner={scanningUserQR}
+          onQRRead={this.onQRRead}
+          onRequestCloseQRScanner={this.toggleContactQRScanner}
+          readChatIDs={readChatIDs}
+        />
+      </>
     )
   }
 }
