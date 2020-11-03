@@ -170,7 +170,7 @@ const getHTML = (
   const contentUrl = magnet
     .replace(/%2F/g, '/')
     .replace(/%3A/g, ':')
-    .split('ws=')[1]
+    .replace(/.*(ws\=)/gi, '')
   if (contentUrl) {
     if (type === 'video') {
       if (noControls) {
