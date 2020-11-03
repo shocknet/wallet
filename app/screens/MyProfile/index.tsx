@@ -37,7 +37,6 @@ import { PUBLISH_CONTENT_DARK } from '../../screens/PublishContentDark'
 import SettingIcon from '../../assets/images/profile/setting-icon.svg'
 import QrCode from '../../assets/images/qrcode.svg'
 import TapCopy from '../../assets/images/profile/tapcopy.svg'
-
 import ShockIcon from '../../res/icons'
 import * as Store from '../../store'
 import { post } from '../../services'
@@ -46,6 +45,7 @@ import {
   activityIndicatorSmall,
   activityIndicatorLarge,
 } from '../../components'
+import * as Services from '../../services'
 
 import SetBioDialog from './SetBioDialog'
 import MetaConfigModal from './MetaConfigModal'
@@ -90,8 +90,6 @@ interface State {
   deleteError: string | null
 }
 
-const theme = 'dark'
-
 const HEADER_MAX_HEIGHT = 300
 const HEADER_MIN_HEIGHT = Platform.OS === 'ios' ? 60 : 73
 const HEADER_SCROLL_DISTANCE = HEADER_MAX_HEIGHT - HEADER_MIN_HEIGHT
@@ -134,21 +132,7 @@ class MyProfile extends React.PureComponent<Props, State> {
 
   onDisplayNameUnsub = () => {}
 
-  onBioUnsub = () => {}
-
-  didFocus = { remove() {} }
-
   async componentDidMount() {
-    this.didFocus = this.props.navigation.addListener('didFocus', () => {
-      if (theme === 'dark') {
-        StatusBar.setBackgroundColor(CSS.Colors.TRANSPARENT)
-        StatusBar.setBarStyle('light-content')
-      } else {
-        StatusBar.setBackgroundColor(CSS.Colors.BACKGROUND_WHITE)
-        StatusBar.setBarStyle('dark-content')
-      }
-    })
-
     const authData = await Cache.getStoredAuthData()
 
     if (authData === null) {
@@ -161,10 +145,7 @@ class MyProfile extends React.PureComponent<Props, State> {
   }
 
   componentWillUnmount() {
-    this.didFocus.remove()
     this.onDisplayNameUnsub()
-
-    this.onBioUnsub()
   }
 
   toggleSetupDisplayName = () => {
@@ -277,9 +258,15 @@ class MyProfile extends React.PureComponent<Props, State> {
   onSubmitBio = (bio: string) => {
     this.setState({ settingBio: true })
 
-    API.Actions.setBio(bio)
+    Services.post(`api/gun/put`, {
+      path: `$user>Profile>bio`,
+      value: bio,
+    })
       .then(() => {})
-      .catch()
+      .catch(e => {
+        Logger.log(e)
+        ToastAndroid.show(`Could not set bio: ${e.message}`, ToastAndroid.LONG)
+      })
       .finally(() => {
         this.setState({ settingBio: false })
       })
@@ -426,181 +413,171 @@ class MyProfile extends React.PureComponent<Props, State> {
       extrapolate: 'clamp',
     })
 
-    if (theme === 'dark') {
-      return (
-        <View style={styles.container}>
-          <StatusBar
-            translucent
-            backgroundColor="transparent"
-            barStyle="light-content"
-          />
+    return (
+      <View style={styles.container}>
+        <StatusBar
+          translucent
+          backgroundColor="transparent"
+          barStyle="light-content"
+        />
 
-          <View style={CSS.styles.flex}>
-            <Modal
-              isVisible={this.state.showQrCodeModal}
-              backdropColor={CSS.Colors.DARK_MODE_BACKGROUND_DARK}
-              backdropOpacity={0.94}
-              animationIn="zoomInDown"
-              animationOut="zoomOutUp"
-              animationInTiming={600}
-              animationOutTiming={600}
-              backdropTransitionInTiming={600}
-              backdropTransitionOutTiming={600}
-              onBackdropPress={this.onPressShowMyQrCodeModal}
-            >
-              <View style={styles.qrViewModal}>
-                <StatusBar
-                  translucent
-                  backgroundColor="rgba(22, 25, 28, .94)"
-                  barStyle="light-content"
-                />
-
-                <View style={styles.subContainerDark}>
-                  <React.Fragment>
-                    <TouchableOpacity onPress={this.copyDataToClipboard}>
-                      {authData === null ? (
-                        activityIndicatorLarge
-                      ) : (
-                        <QR
-                          size={180}
-                          logoToShow="shock"
-                          value={`$$__SHOCKWALLET__USER__${authData.publicKey}`}
-                        />
-                      )}
-                    </TouchableOpacity>
-                    <Pad amount={10} />
-                    <Text style={styles.bodyTextQrModal}>
-                      Other users can scan this QR to contact you.
-                    </Text>
-
-                    <TouchableOpacity style={styles.tapButtonQrModal}>
-                      <TapCopy size={30} />
-                      <Text style={styles.tapButtonQrModalText}>
-                        Tap to copy to clipboard
-                      </Text>
-                    </TouchableOpacity>
-                  </React.Fragment>
-                </View>
-              </View>
-            </Modal>
-          </View>
-
-          <View style={CSS.styles.flex}>
-            <MetaConfigModal
-              toggleModal={this.onPressMetaConfigModal}
-              isModalVisible={this.state.showMetaConfigModal}
-            />
-          </View>
-
-          <Animated.View
-            style={{
-              position: 'absolute',
-              zIndex: 9,
-              width: '100%',
-              height: headerHeight,
-              overflow: 'hidden',
-            }}
+        <View style={CSS.styles.flex}>
+          <Modal
+            isVisible={this.state.showQrCodeModal}
+            backdropColor={CSS.Colors.DARK_MODE_BACKGROUND_DARK}
+            backdropOpacity={0.94}
+            animationIn="zoomInDown"
+            animationOut="zoomOutUp"
+            animationInTiming={600}
+            animationOutTiming={600}
+            backdropTransitionInTiming={600}
+            backdropTransitionOutTiming={600}
+            onBackdropPress={this.onPressShowMyQrCodeModal}
           >
-            <TouchableOpacity onPress={this.onPressHeader}>
-              <ImageBackground
-                source={{
-                  uri: 'data:image/jpeg;base64,' + (headerImage || ''),
-                }}
-                resizeMode="cover"
-                style={styles.backImage}
-              />
-            </TouchableOpacity>
-            <Animated.View style={[styles.overview, { marginTop: imgMargin }]}>
-              <TouchableOpacity onPress={this.onPressAvatar}>
-                <Animated.Image
-                  source={
-                    avatar === null || avatar.length === 0
-                      ? {
-                          uri: 'data:image/jpeg;base64,' + DEFAULT_USER_IMAGE,
-                        }
-                      : {
-                          uri: 'data:image/jpeg;base64,' + avatar,
-                        }
-                  }
-                  style={{
-                    width: avatarWidth,
-                    height: avatarWidth,
-                    borderRadius: avatarRadius,
-                    overflow: 'hidden',
-                  }}
-                />
-              </TouchableOpacity>
-              <View style={styles.bio}>
-                <TouchableOpacity
-                  onPress={this.toggleSetupDisplayName}
-                  disabled={displayName === null}
-                >
-                  <Text style={styles.displayNameDark}>
-                    {displayName === null ? 'Loading...' : displayName}
+            <View style={styles.qrViewModal}>
+              <View style={styles.subContainerDark}>
+                <React.Fragment>
+                  <TouchableOpacity onPress={this.copyDataToClipboard}>
+                    {authData === null ? (
+                      activityIndicatorLarge
+                    ) : (
+                      <QR
+                        size={180}
+                        logoToShow="shock"
+                        value={`$$__SHOCKWALLET__USER__${authData.publicKey}`}
+                      />
+                    )}
+                  </TouchableOpacity>
+                  <Pad amount={10} />
+                  <Text style={styles.bodyTextQrModal}>
+                    Other users can scan this QR to contact you.
                   </Text>
-                </TouchableOpacity>
 
-                <Pad amount={8} />
-
-                <Animated.View style={{ opacity: extrasOpacity }}>
-                  <TouchableOpacity onPress={this.onPressBio}>
-                    <Text style={styles.bodyTextDark}>
-                      {bio || 'Loading...'}
+                  <TouchableOpacity style={styles.tapButtonQrModal}>
+                    <TapCopy size={30} />
+                    <Text style={styles.tapButtonQrModalText}>
+                      Tap to copy to clipboard
                     </Text>
                   </TouchableOpacity>
-                </Animated.View>
-
-                <Animated.View style={{ opacity: extrasOpacity }}>
-                  <TouchableOpacity
-                    style={styles.configButtonDark}
-                    onPress={this.onPressMetaConfigModal}
-                  >
-                    <SettingIcon />
-                    <Text style={styles.configButtonTextDark}>Config</Text>
-                  </TouchableOpacity>
-                </Animated.View>
+                </React.Fragment>
               </View>
-            </Animated.View>
-          </Animated.View>
-
-          <FlatList
-            style={CSS.styles.width100}
-            overScrollMode={'never'}
-            scrollEventThrottle={16}
-            onScroll={this.onScroll}
-            renderItem={this.renderItem}
-            data={this.props.posts}
-            keyExtractor={this.keyExtractor}
-            ListFooterComponent={listFooter}
-            ListHeaderComponent={ContentButtons}
-          />
-
-          <TouchableOpacity
-            style={styles.createBtn}
-            onPress={this.onPressShowMyQrCodeModal}
-          >
-            <View>
-              <QrCode size={25} />
             </View>
-          </TouchableOpacity>
+          </Modal>
+        </View>
 
-          <BasicDialog
-            visible={settingAvatar || settingBio || settingDisplayName}
-            onRequestClose={F}
-          >
-            {activityIndicatorSmall}
-          </BasicDialog>
-
-          <DisplayNameDialog
-            onRequestClose={this.toggleSetupDisplayName}
-            onSubmit={this.setDisplayName}
-            visible={displayNameDialogOpen}
+        <View style={CSS.styles.flex}>
+          <MetaConfigModal
+            toggleModal={this.onPressMetaConfigModal}
+            isModalVisible={this.state.showMetaConfigModal}
           />
         </View>
-      )
-    }
 
-    return null
+        <Animated.View
+          style={{
+            position: 'absolute',
+            zIndex: 9,
+            width: '100%',
+            height: headerHeight,
+            overflow: 'hidden',
+          }}
+        >
+          <TouchableOpacity onPress={this.onPressHeader}>
+            <ImageBackground
+              source={{
+                uri: 'data:image/jpeg;base64,' + (headerImage || ''),
+              }}
+              resizeMode="cover"
+              style={styles.backImage}
+            />
+          </TouchableOpacity>
+          <Animated.View style={[styles.overview, { marginTop: imgMargin }]}>
+            <TouchableOpacity onPress={this.onPressAvatar}>
+              <Animated.Image
+                source={
+                  avatar === null || avatar.length === 0
+                    ? {
+                        uri: 'data:image/jpeg;base64,' + DEFAULT_USER_IMAGE,
+                      }
+                    : {
+                        uri: 'data:image/jpeg;base64,' + avatar,
+                      }
+                }
+                style={{
+                  width: avatarWidth,
+                  height: avatarWidth,
+                  borderRadius: avatarRadius,
+                  overflow: 'hidden',
+                }}
+              />
+            </TouchableOpacity>
+            <View style={styles.bio}>
+              <TouchableOpacity
+                onPress={this.toggleSetupDisplayName}
+                disabled={displayName === null}
+              >
+                <Text style={styles.displayNameDark}>
+                  {displayName === null ? 'Loading...' : displayName}
+                </Text>
+              </TouchableOpacity>
+
+              <Pad amount={8} />
+
+              <Animated.View style={{ opacity: extrasOpacity }}>
+                <TouchableOpacity onPress={this.onPressBio}>
+                  <Text style={styles.bodyTextDark}>{bio || 'Loading...'}</Text>
+                </TouchableOpacity>
+              </Animated.View>
+
+              <Animated.View style={{ opacity: extrasOpacity }}>
+                <TouchableOpacity
+                  style={styles.configButtonDark}
+                  onPress={this.onPressMetaConfigModal}
+                >
+                  <SettingIcon />
+                  <Text style={styles.configButtonTextDark}>Config</Text>
+                </TouchableOpacity>
+              </Animated.View>
+            </View>
+          </Animated.View>
+        </Animated.View>
+
+        <FlatList
+          style={CSS.styles.width100}
+          overScrollMode={'never'}
+          scrollEventThrottle={16}
+          onScroll={this.onScroll}
+          renderItem={this.renderItem}
+          data={this.props.posts}
+          keyExtractor={this.keyExtractor}
+          ListFooterComponent={listFooter}
+          ListHeaderComponent={ContentButtons}
+        />
+
+        <TouchableOpacity
+          style={styles.createBtn}
+          onPress={this.onPressShowMyQrCodeModal}
+        >
+          <View>
+            <QrCode size={25} />
+          </View>
+        </TouchableOpacity>
+
+        <BasicDialog
+          visible={settingAvatar || settingBio || settingDisplayName}
+          onRequestClose={F}
+        >
+          {activityIndicatorSmall}
+        </BasicDialog>
+
+        <DisplayNameDialog
+          onRequestClose={this.toggleSetupDisplayName}
+          onSubmit={this.setDisplayName}
+          visible={displayNameDialogOpen}
+        />
+
+        <SetBioDialog onSubmit={this.onSubmitBio} ref={this.setBioDialog} />
+      </View>
+    )
   }
 }
 

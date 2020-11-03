@@ -77,14 +77,13 @@ const Loading = () => (
 /**
  * @type {React.FC<import('react-native-gifted-chat').LoadEarlierProps>}
  */
-const LoadingEarlier = React.memo(({ isLoadingEarlier }) =>
+const LoadingEarlier = ({ isLoadingEarlier }) =>
   (isLoadingEarlier ? (
     <View>
       <Pad amount={24} />
       <ActivityIndicator color="gray" />
     </View>
-  ) : null),
-)
+  ) : null)
 
 const AlwaysNull = () => null
 
