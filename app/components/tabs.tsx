@@ -39,7 +39,10 @@ const Tabs: React.FC<Props> = ({ onPressTab, texts, selectedTabIndex }) => (
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    justifyContent: 'space-evenly',
+
+    // TODO: temp
+    justifyContent: 'flex-start',
+    paddingLeft: 48,
   },
   tabButtonText: {
     fontFamily: 'Montserrat-Regular',

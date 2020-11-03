@@ -159,7 +159,7 @@ const PersonSeparator = React.memo(() => <Pad amount={16} insideRow />)
 
 const STICKY_HEADER_INDICES = [1]
 
-const TABS = ['Feed', 'Saved', 'Videos']
+const TABS = ['Feed']
 
 const mapStateToProps = (state: Reducers.State): StateProps => {
   const publicKey = Store.getMyPublicKey(state)
