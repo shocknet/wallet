@@ -32,7 +32,9 @@ export const styles = StyleSheet.create({
   backgroundGreen: { backgroundColor: Colors.SUCCESS_GREEN },
   backgroundOrange: { backgroundColor: Colors.ORANGE },
   backgroundWhite: { backgroundColor: Colors.BACKGROUND_WHITE },
-  backgroundWhiteDark: { backgroundColor: '#1A2028' },
+  backgroundWhiteDark: {
+    backgroundColor: Colors.DARK_MODE_BACKGROUND_BLUEISH_GRAY,
+  },
   backgroundBlack: { backgroundColor: 'black' },
   textBold: { fontWeight: 'bold' },
   flex: { flex: 1 },

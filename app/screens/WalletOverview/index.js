@@ -366,7 +366,6 @@ class WalletOverview extends React.PureComponent {
 
   render() {
     const { testnet } = this.props
-
     return (
       <View style={styles.container}>
         <StatusBar

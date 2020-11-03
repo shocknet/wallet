@@ -471,7 +471,7 @@ const styles = StyleSheet.create({
   },
 
   headerDark: {
-    backgroundColor: '#1A2028',
+    backgroundColor: Colors.DARK_MODE_BACKGROUND_BLUEISH_GRAY,
     justifyContent: 'flex-end',
     flexDirection: 'row',
     paddingLeft: SCREEN_PADDING,
@@ -497,7 +497,7 @@ const styles = StyleSheet.create({
   // },
   noChatsDark: {
     alignItems: 'center',
-    backgroundColor: '#1A2028',
+    backgroundColor: Colors.DARK_MODE_BACKGROUND_BLUEISH_GRAY,
     flex: 1,
     justifyContent: 'center',
   },
