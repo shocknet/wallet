@@ -221,6 +221,9 @@ const styles = StyleSheet.create({
     color: CSS.Colors.DARK_MODE_TEXT_NEAR_WHITE,
     fontFamily: 'Montserrat-Regular',
     fontSize: 16,
+    // make it easier to touch
+    textAlign: 'center',
+    width: '100%',
   },
   line: {
     borderColor: CSS.Colors.DARK_MODE_BORDER_GRAY,
