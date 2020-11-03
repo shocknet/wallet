@@ -59,15 +59,17 @@ const UserInfoNew: React.FC<Props> = ({
           style={!showPin && CSS.styles.displayNone}
         />
       )}
-      <TouchableWithoutFeedback onPress={onPressMenuIcon}>
-        <View style={styles.moreIconContainer}>
-          <Fontisto
-            name="more-v"
-            size={24}
-            color={CSS.Colors.DARK_MODE_BORDER_GRAY}
-          />
-        </View>
-      </TouchableWithoutFeedback>
+      <View style={onPressMenuIcon ? undefined : CSS.styles.displayNone}>
+        <TouchableWithoutFeedback onPress={onPressMenuIcon}>
+          <View style={styles.moreIconContainer}>
+            <Fontisto
+              name="more-v"
+              size={24}
+              color={CSS.Colors.DARK_MODE_BORDER_GRAY}
+            />
+          </View>
+        </TouchableWithoutFeedback>
+      </View>
     </View>
   </View>
 )
