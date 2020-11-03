@@ -118,7 +118,7 @@ class TipPopup extends React.PureComponent<Props, State> {
             Logger.log(
               `Could not tip post: ${postID} by author: ${authorPublicKey} with amount: ${tipAmt} because: ${e.message}`,
             )
-            ToastAndroid.show('Could not tip post', 800)
+            ToastAndroid.show('Could not tip post: ' + e.message, 800)
           })
       },
     )
