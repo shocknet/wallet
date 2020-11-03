@@ -29,99 +29,7 @@ export default class ShockWebView extends React.PureComponent<Props, State> {
 
   componentDidMount() {
     const { magnet, type: finalType, noControls } = this.props
-    const playerString =
-      finalType === 'video'
-        ? `<video id="player" style="width:100%"></video>`
-        : `<img id="player" style="width:100%"></img>`
-    const fileExtension =
-      finalType === 'video'
-        ? `(file.name.endsWith('.mp4') || file.name.endsWith('.webm'))`
-        : `(file.name.endsWith('.jpg') || file.name.endsWith('.png'))`
-    const domID = finalType === 'video' ? `video#player` : `img#player`
-    const videoControls = noControls ? "video.removeAttribute('controls')" : ''
-    const html = `<!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Document</title>
-    </head>
-    <body style="margin:0;padding:0" id="body">
-      
-      ${playerString}
-      
-      
-  <script src="https://cdn.jsdelivr.net/npm/webtorrent@latest/webtorrent.min.js"></script>
-    <script type="text/javascript">
-    
-    var client = new WebTorrent()
-    document.getElementById("player").addEventListener("click", e => {
-      e.preventDefault();
-      window.ReactNativeWebView.postMessage("generalClickOnPlayer");
-    
-    })
-    
-    var torrentId = '${magnet}'
-    client.add(torrentId, function (torrent) {
-      let cont = 0
-      let infoBuff = ''
-      while(torrent.info[cont]){
-        const [charCode] =torrent.info[cont]
-        infoBuff = infoBuff + String.fromCharCode(charCode)
-        cont++
-      }
-      try{
-        infoBuff = JSON.parse(infoBuff)
-      } catch(e){}
-      if(typeof infoBuff === 'object'){
-        const previewFile = !!infoBuff.previewName && torrent.files.find(function (file) {
-          return (file.name == infoBuff.previewName) 
-        })
-        const mainFile = !!infoBuff.mediaName && torrent.files.find(function (file) {
-          return (file.name == infoBuff.mediaName) 
-        })
-        if(previewFile){
-          previewFile.renderTo('${domID}')
-          document.getElementById("player").addEventListener("click", e => {
-            window.ReactNativeWebView.postMessage("updateSelectedMediaSizes");
-            if(mainFile){
-              document.getElementById("player").remove()
-              var element = "img"
-              var id = "img#player"
-              if(mainFile.name.endsWith('.mp4') || mainFile.name.endsWith('.webm')){
-                element = "video"
-                id="video#player"
-              }
-              var node = document.createElement(element);
-              node.style.cssText = "width:100%"
-              node.id ="player"
-              document.getElementById("body").appendChild(node)
-              mainFile.renderTo(id)
-              if(element === "video"){
-                node.play()
-              }
-            }
-          
-          })
-        }
-      } else {
-        var file = torrent.files.find(function (file) {
-          return ${fileExtension}
-        })
-        file.renderTo('${domID}')
-        if("${finalType}" === 'video'){
-          const video = document.getElementById("player")
-          video.onloadeddata =  (l => video.pause())
-          video.play()
-          ${videoControls}
-        }
-      }
-    })
-        </script>
-    </body>
-    </html>`
-
-    this.setState({ source: { html } })
+    this.setState({ source: { html: getHTML(magnet, finalType, noControls) } })
   }
 
   componentDidUpdate({ height: prevHeight, width: prevWidth }: Props) {
@@ -178,3 +86,116 @@ export default class ShockWebView extends React.PureComponent<Props, State> {
 }
 
 const ORIGIN_WHITE_LIST = ['*']
+const commonHTMLTop: string = `
+  <!DOCTYPE html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Document</title>
+    </head>
+    <body style="margin:0;padding:0" id="body">
+`
+const commonHTMLMid: string = `
+  <script src="https://cdn.jsdelivr.net/npm/webtorrent@latest/webtorrent.min.js"></script>
+  <script type="text/javascript">
+    
+    var client = new WebTorrent()
+    document.getElementById("player").addEventListener("click", e => {
+      e.preventDefault();
+      window.ReactNativeWebView.postMessage("generalClickOnPlayer");
+    
+    })
+`
+const commonHTMLBot: string = `
+    </script>
+  </body>
+</html>
+`
+const getVideoTorrentHTML = (magnet: string, controls: string) => `
+  ${commonHTMLTop} 
+  <video id="player" style="width:100%"></video>
+  ${commonHTMLMid}
+  var torrentId = '${magnet}'
+  client.add(torrentId, function (torrent) {
+      var file = torrent.files.find(function (file) {
+          return (file.name.endsWith('.mp4') || file.name.endsWith('.webm'))
+      })
+      file.renderTo('video#player')
+      const video = document.getElementById("player")
+      video.onloadeddata =  (l => video.pause())
+      video.play()
+      ${controls}
+  })
+  ${commonHTMLBot}
+`
+const getImageTorrentHTML = (magnet: string) => `
+  ${commonHTMLTop} 
+  <img id="player" style="width:100%"></img>
+  ${commonHTMLMid}
+  var torrentId = '${magnet}'
+  client.add(torrentId, function (torrent) {
+      var file = torrent.files.find(function (file) {
+          return (file.name.endsWith('.jpg') || file.name.endsWith('.png'))
+      })
+      file.renderTo('img#player')
+  })
+  ${commonHTMLBot}
+`
+const getImageHTML = (url: string) => `
+  ${commonHTMLTop} 
+  <img id="player" style="width:100%"></img>
+  ${commonHTMLMid}
+  var image = document.querySelector('#player')
+  image.setAttribute("src","${url}")
+  ${commonHTMLBot}
+`
+const getVideoHTML = (url: string, controls: string) => `
+  ${commonHTMLTop} 
+  <video id="player" style="width:100%"></video>
+  ${commonHTMLMid}
+  var video = document.querySelector('#player')
+  video.setAttribute("src","${url}")
+  video.onloadeddata =  (l => video.pause())
+  video.play()
+  ${controls}
+  ${commonHTMLBot}
+`
+
+const getHTML = (
+  magnet: string,
+  type: 'video' | 'image',
+  noControls?: boolean,
+) => {
+  const contentUrl = magnet
+    .replace(/%2F/g, '/')
+    .replace(/%3A/g, ':')
+    .replace(/.*(ws\=)/gi, '')
+  if (contentUrl) {
+    if (type === 'video') {
+      if (noControls) {
+        notificationService.LogT('HTTP - VIDEO - NO')
+        return getVideoHTML(contentUrl, 'video.removeAttribute("controls")')
+      } else {
+        notificationService.LogT('HTTP - VIDEO - YES')
+        return getVideoHTML(contentUrl, 'video.setAttribute("controls",true)')
+      }
+    } else {
+      notificationService.LogT('HTTP - IMAGE')
+      return getImageHTML(contentUrl)
+    }
+  } else {
+    if (type === 'video') {
+      if (noControls) {
+        notificationService.LogT('TORRENT - VIDEO - NO')
+        return getVideoTorrentHTML(magnet, 'video.removeAttribute("controls")')
+      } else {
+        notificationService.LogT('TORRENT - VIDEO - YES')
+        return getVideoTorrentHTML(magnet, '')
+      }
+    } else {
+      notificationService.LogT('TORRENT - IMAGE')
+      return getImageTorrentHTML(magnet)
+    }
+  }
+}
