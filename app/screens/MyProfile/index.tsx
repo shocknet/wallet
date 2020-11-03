@@ -45,6 +45,7 @@ import {
   activityIndicatorSmall,
   activityIndicatorLarge,
 } from '../../components'
+import * as Services from '../../services'
 
 import SetBioDialog from './SetBioDialog'
 import MetaConfigModal from './MetaConfigModal'
@@ -89,8 +90,6 @@ interface State {
   deleteError: string | null
 }
 
-const theme = 'dark'
-
 const HEADER_MAX_HEIGHT = 300
 const HEADER_MIN_HEIGHT = Platform.OS === 'ios' ? 60 : 73
 const HEADER_SCROLL_DISTANCE = HEADER_MAX_HEIGHT - HEADER_MIN_HEIGHT
@@ -133,21 +132,7 @@ class MyProfile extends React.PureComponent<Props, State> {
 
   onDisplayNameUnsub = () => {}
 
-  onBioUnsub = () => {}
-
-  didFocus = { remove() {} }
-
   async componentDidMount() {
-    this.didFocus = this.props.navigation.addListener('didFocus', () => {
-      if (theme === 'dark') {
-        StatusBar.setBackgroundColor(CSS.Colors.TRANSPARENT)
-        StatusBar.setBarStyle('light-content')
-      } else {
-        StatusBar.setBackgroundColor(CSS.Colors.BACKGROUND_WHITE)
-        StatusBar.setBarStyle('dark-content')
-      }
-    })
-
     const authData = await Cache.getStoredAuthData()
 
     if (authData === null) {
@@ -160,10 +145,7 @@ class MyProfile extends React.PureComponent<Props, State> {
   }
 
   componentWillUnmount() {
-    this.didFocus.remove()
     this.onDisplayNameUnsub()
-
-    this.onBioUnsub()
   }
 
   toggleSetupDisplayName = () => {
@@ -276,9 +258,15 @@ class MyProfile extends React.PureComponent<Props, State> {
   onSubmitBio = (bio: string) => {
     this.setState({ settingBio: true })
 
-    API.Actions.setBio(bio)
+    Services.post(`api/gun/put`, {
+      path: `$user>Profile>bio`,
+      value: bio,
+    })
       .then(() => {})
-      .catch()
+      .catch(e => {
+        Logger.log(e)
+        ToastAndroid.show(`Could not set bio: ${e.message}`, ToastAndroid.LONG)
+      })
       .finally(() => {
         this.setState({ settingBio: false })
       })
@@ -447,12 +435,6 @@ class MyProfile extends React.PureComponent<Props, State> {
             onBackdropPress={this.onPressShowMyQrCodeModal}
           >
             <View style={styles.qrViewModal}>
-              <StatusBar
-                translucent
-                backgroundColor="rgba(22, 25, 28, .94)"
-                barStyle="light-content"
-              />
-
               <View style={styles.subContainerDark}>
                 <React.Fragment>
                   <TouchableOpacity onPress={this.copyDataToClipboard}>
@@ -592,6 +574,8 @@ class MyProfile extends React.PureComponent<Props, State> {
           onSubmit={this.setDisplayName}
           visible={displayNameDialogOpen}
         />
+
+        <SetBioDialog onSubmit={this.onSubmitBio} ref={this.setBioDialog} />
       </View>
     )
   }

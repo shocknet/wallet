@@ -165,22 +165,6 @@ export const sendPayment = async (recipientPub, amount, memo, fees) => {
 }
 
 /**
- * @param {string} bio
- * @returns {Promise<void>}
- */
-export const setBio = async bio => {
-  try {
-    await Http.put(`/api/gun/me`, {
-      bio,
-    })
-  } catch (err) {
-    Logger.log(err)
-    ToastAndroid.show(`Could not set bio: ${err.message}`, ToastAndroid.LONG)
-    throw err
-  }
-}
-
-/**
  * @param {string} pub
  * @throws {Error}
  * @returns {Promise<void>}
