@@ -32,7 +32,9 @@ interface StateProps {
   authorPublicKey: string
 }
 
-interface DispatchProps {}
+interface DispatchProps {
+  forcePaymentsRefresh(): void
+}
 
 type Props = OwnProps & StateProps & DispatchProps
 
@@ -102,6 +104,7 @@ class TipPopup extends React.PureComponent<Props, State> {
 
         Services.tipPost(authorPublicKey, postID, Number(tipAmt))
           .then(() => {
+            this.props.forcePaymentsRefresh()
             if (this.mounted) {
               this.setState({
                 tipping: false,
@@ -273,6 +276,13 @@ const mapState = (state: Store.State, props: OwnProps): StateProps => {
   }
 }
 
-const ConnectedTipPopup = connect(mapState)(TipPopup)
+const mapDispatch = {
+  forcePaymentsRefresh: Store.paymentsRefreshForced,
+}
+
+const ConnectedTipPopup = connect(
+  mapState,
+  mapDispatch,
+)(TipPopup)
 
 export default ConnectedTipPopup
