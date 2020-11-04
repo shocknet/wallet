@@ -33,14 +33,13 @@ import QR from '../WalletOverview/QR'
 import Pad from '../../components/Pad'
 import BasicDialog from '../../components/BasicDialog'
 import Post from '../../components/Post'
-import { PUBLISH_CONTENT_DARK } from '../../screens/PublishContentDark'
 import SettingIcon from '../../assets/images/profile/setting-icon.svg'
 import QrCode from '../../assets/images/qrcode.svg'
 import TapCopy from '../../assets/images/profile/tapcopy.svg'
 import ShockIcon from '../../res/icons'
 import * as Store from '../../store'
 import { post } from '../../services'
-import { CREATE_POST_DARK as CREATE_POST } from '../CreatePostDark'
+
 import {
   activityIndicatorSmall,
   activityIndicatorLarge,
@@ -303,14 +302,6 @@ class MyProfile extends React.PureComponent<Props, State> {
     }
 
     return item.id
-  }
-
-  onPressCreate = () => {
-    this.props.navigation.navigate(CREATE_POST)
-  }
-
-  onPressPublish = () => {
-    this.props.navigation.navigate(PUBLISH_CONTENT_DARK)
   }
 
   onScroll = (...args: any[]) => {

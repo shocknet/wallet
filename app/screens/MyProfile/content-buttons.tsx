@@ -1,21 +1,35 @@
 import React from 'react'
 import { StyleSheet, TouchableOpacity, Text, View } from 'react-native'
+import { NavigationScreenProp } from 'react-navigation'
+import { withNavigation } from 'react-navigation'
 
 import Pad from '../../components/Pad'
 import OfferProduct from '../../assets/images/profile/offer-product.svg'
 import OfferService from '../../assets/images/profile/offer-service.svg'
 import PublishContent from '../../assets/images/profile/publish-content.svg'
 import CreatePost from '../../assets/images/profile/create-post.svg'
+import { PUBLISH_CONTENT_DARK } from '../../screens/PublishContentDark'
+import { CREATE_POST_DARK as CREATE_POST } from '../CreatePostDark'
+
+type Navigation = NavigationScreenProp<{}>
 
 interface Props {
-  onPressPublish(): void
-  onPressCreate(): void
+  navigation: Navigation
 }
 
-export default class ContentButtons extends React.PureComponent<Props> {
+class ContentButtons extends React.PureComponent<Props> {
+  onPressCreate = () => {
+    this.props.navigation.navigate(CREATE_POST)
+  }
+
+  onPressPublish = () => {
+    this.props.navigation.navigate(PUBLISH_CONTENT_DARK)
+  }
+
   render() {
     return (
       <View>
+        {/* TODO: fix this. */}
         <Pad amount={300} />
         <TouchableOpacity style={styles.actionButtonDark}>
           <OfferProduct />
@@ -29,7 +43,7 @@ export default class ContentButtons extends React.PureComponent<Props> {
 
         <TouchableOpacity
           style={styles.actionButtonDark}
-          onPress={this.props.onPressPublish}
+          onPress={this.onPressPublish}
         >
           <PublishContent />
           <Text style={styles.actionButtonTextDark}>Publish Content</Text>
@@ -37,7 +51,7 @@ export default class ContentButtons extends React.PureComponent<Props> {
 
         <TouchableOpacity
           style={styles.actionButtonDark}
-          onPress={this.props.onPressCreate}
+          onPress={this.onPressCreate}
         >
           <CreatePost />
           <Text style={styles.actionButtonTextDark}>Create a Post</Text>
@@ -68,3 +82,10 @@ const styles = StyleSheet.create({
     marginLeft: 20,
   },
 })
+
+const WithNavigationContentButtons = withNavigation(
+  // @ts-expect-error
+  ContentButtons,
+) as React.FC<{}>
+
+export default WithNavigationContentButtons

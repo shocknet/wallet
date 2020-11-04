@@ -12,6 +12,7 @@ import Pad from './Pad'
 import { ADVANCED_SCREEN } from '../screens/Advanced'
 import { SEED_BACKUP } from '../screens/SeedBackup'
 import { WALLET_SETTINGS } from '../screens/WalletSettings'
+import { DEBUG } from '../screens/Debug'
 
 import { Colors } from '../res/css'
 import ShockIcon from '../res/icons'
@@ -54,6 +55,7 @@ const drawerBottomItems = [
   {
     name: 'Help Resources',
     iconName: 'solid-help',
+    screen: DEBUG,
   },
   {
     name: 'Buy Bitcoin',
