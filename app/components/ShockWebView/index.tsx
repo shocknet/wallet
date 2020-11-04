@@ -123,7 +123,8 @@ const getVideoTorrentHTML = (magnet: string, controls: string) => `
       })
       file.renderTo('video#player')
       const video = document.getElementById("player")
-      video.onloadeddata =  (l => video.pause())
+      video.muted = true
+      //video.onloadeddata =  (l => video.pause())
       video.play()
       ${controls}
   })
@@ -156,7 +157,8 @@ const getVideoHTML = (url: string, controls: string) => `
   ${commonHTMLMid}
   var video = document.querySelector('#player')
   video.setAttribute("src","${url}")
-  video.onloadeddata =  (l => video.pause())
+  video.muted = true
+  //video.onloadeddata =  (l => video.pause())
   video.play()
   ${controls}
   ${commonHTMLBot}
@@ -175,7 +177,10 @@ const getHTML = (
     if (type === 'video') {
       if (noControls) {
         notificationService.LogT('HTTP - VIDEO - NO')
-        return getVideoHTML(contentUrl, 'video.removeAttribute("controls")')
+        return getVideoHTML(
+          contentUrl,
+          'video.removeAttribute("controls");video.onloadeddata =  (l => video.pause())',
+        )
       } else {
         notificationService.LogT('HTTP - VIDEO - YES')
         return getVideoHTML(contentUrl, 'video.setAttribute("controls",true)')
@@ -188,7 +193,10 @@ const getHTML = (
     if (type === 'video') {
       if (noControls) {
         notificationService.LogT('TORRENT - VIDEO - NO')
-        return getVideoTorrentHTML(magnet, 'video.removeAttribute("controls")')
+        return getVideoTorrentHTML(
+          magnet,
+          'video.removeAttribute("controls");video.onloadeddata =  (l => video.pause())',
+        )
       } else {
         notificationService.LogT('TORRENT - VIDEO - YES')
         return getVideoTorrentHTML(magnet, '')
