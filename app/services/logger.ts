@@ -1,5 +1,4 @@
-// @ts-expect-error
-import Logger from 'node_modules/react-native-file-log/index'
+import Logger from 'react-native-file-log'
 
 import { log, getStore } from '../store'
 
