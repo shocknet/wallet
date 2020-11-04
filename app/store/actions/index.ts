@@ -61,5 +61,6 @@ export * from './chain-txs'
 export { fetchNodeInfo } from './NodeActions'
 export * from './users'
 export * from './posts'
+export * from './debug'
 
 export { ChatActions, RequestActions, Follows }
