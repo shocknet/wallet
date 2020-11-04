@@ -22,6 +22,8 @@ interface StateProps {
   feedPostsAmt: number
   followsAmt: number
 
+  debugModeEnabled: boolean
+
   online: boolean
 
   token: string
@@ -29,7 +31,9 @@ interface StateProps {
   deviceID: string
 }
 
-interface DispatchProps {}
+interface DispatchProps {
+  disableDebug(): void
+}
 
 type Props = OwnProps & StateProps & DispatchProps
 
@@ -82,6 +86,10 @@ class Debug extends React.PureComponent<Props, Record<string, any>> {
     })
   }
 
+  disableDebugMode = () => {
+    Store.getStore().dispatch(Store.disableDebug())
+  }
+
   render() {
     const {
       chatsAmt,
@@ -93,14 +101,17 @@ class Debug extends React.PureComponent<Props, Record<string, any>> {
       receivedReqsAmt,
       sentReqsAmt,
       token,
+      debugModeEnabled,
     } = this.props
 
     const { handshakeAddr } = this.state
 
     return (
       <View style={styles.container}>
-        <Text>A random number:</Text>
-        <Text>{Math.random().toString()}</Text>
+        <Button title="Disable " onPress={this.disableDebugMode} />
+
+        <Text>Debug Mode Enabled:</Text>
+        <Text>{debugModeEnabled}</Text>
 
         <Text>Canary Socket Status:</Text>
         <Text>{online ? 'Connected' : 'Disconnected'}</Text>
@@ -171,7 +182,15 @@ const mapStateToProps = (state: Store.State): StateProps => {
     sentReqsAmt: -1,
     token: state.auth.token,
     online: Store.isOnline(state),
+    debugModeEnabled: state.debug.enabled,
   }
 }
 
-export default connect(mapStateToProps)(Debug)
+const mapDispatch = {
+  disableDebug: Store.disableDebug,
+}
+
+export default connect(
+  mapStateToProps,
+  mapDispatch,
+)(Debug)
