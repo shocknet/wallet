@@ -2,17 +2,12 @@ import Logger from 'react-native-file-log'
 
 import { log, getStore } from '../store'
 
-// Avoid excessive dispatchs if debug mode has not been enabled.
+// Avoid excessive dispatchs (logs) when debug mode is disabled
 let enabled = false
 const store = getStore()
-let unsub = () => {}
-unsub = store.subscribe(() => {
+store.subscribe(() => {
   const state = store.getState()
-
-  if (state.debug.enabled) {
-    enabled = true
-    unsub()
-  }
+  enabled = state.debug.enabled
 })
 
 const logger = {
