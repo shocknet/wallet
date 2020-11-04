@@ -103,7 +103,9 @@ public class NotificationService extends Service {
                 }
                 lastTX = last;
                 String id = last.substring(0,5)+"...";
-                doNotification("New Transaction","value: "+res.getString("amount")+"\nTx: "+last,R.drawable.icon,"");
+                int value = Integer.parseInt(res.getString("amount"));
+                float valueBTC = value / 100000000f;
+                doNotification("Transaction confirmed! "+String.valueOf(valueBTC)+" BTC","",R.drawable.icon,"");
             }catch (Exception e){
                 Log.d(TAG,"Tx err"+e.toString());
             }
@@ -122,7 +124,7 @@ public class NotificationService extends Service {
                     return;
                 }
                 
-                doNotification("New Invoice","value: "+res.getString("value"),R.drawable.icon,"");
+                doNotification("Payment Received!"+res.getString("value")+" sats","",R.drawable.icon,"");
             }catch (Exception e){
                 Log.d(TAG,"Inv err"+e.toString());
             }
