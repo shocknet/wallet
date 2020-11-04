@@ -17,6 +17,7 @@ import invoicesListed from './invoices-listed'
 import invoicesAdded from './invoices-added'
 import chainTXs from './chain-txs'
 import posts from './posts'
+import debug from './debug'
 
 const rootReducer = {
   auth,
@@ -38,6 +39,7 @@ const rootReducer = {
   invoicesListed,
   invoicesAdded,
   chainTXs,
+  debug,
 }
 
 /**

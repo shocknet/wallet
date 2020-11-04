@@ -3,6 +3,7 @@ import { Schema } from 'shock-common'
 
 import { State } from '../reducers'
 
+import { getMyPublicKey } from './auth'
 import { getFollowedPublicKeys } from './follows'
 import { makeGetUser } from './users'
 
@@ -60,4 +61,16 @@ export const getPostsFromFollowed = createSelector<
       .filter(p => publicKeys.includes(p.author))
       .sort((a, b) => b.date - a.date)
   },
+)
+
+export const getOwnPosts = createSelector<
+  State,
+  ReturnType<typeof getPosts>,
+  ReturnType<typeof getMyPublicKey>,
+  Schema.PostN[]
+>(
+  getPosts,
+  getMyPublicKey,
+  (posts, myPublicKey) =>
+    Object.values(posts).filter(p => p.author === myPublicKey),
 )

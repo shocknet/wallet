@@ -11,11 +11,8 @@ import moment from 'moment'
 import Http, { AxiosRequestConfig } from 'axios'
 import Logger from 'react-native-file-log'
 import { Logger as CommonLogger } from 'shock-common'
-import { DISABLE_ENCRYPTION } from './app/config'
-
 import { Provider } from 'react-redux'
-
-import Loading from './app/screens/Loading'
+import { PersistGate } from 'redux-persist/integration/react'
 import React from 'react'
 import RNBootSplash from 'react-native-bootsplash'
 // @ts-expect-error
@@ -25,20 +22,23 @@ import { throttledExchangeKeyPair } from './app/store/actions/ConnectionActions'
 import * as NavigationService from './app/services/navigation'
 import * as Cache from './app/services/cache'
 import * as Encryption from './app/services/encryption'
-import configureStore from './app/store'
-import { PersistGate } from 'redux-persist/integration/react'
-
+import configureStore, { log } from './app/store'
 import RootStack from './app/navigators/Root'
-
 import { LNURL_SCREEN } from './app/screens/LNURL'
-
 import WithConnWarning from './app/components/WithConnWarning'
 import { hostWasSet } from './app/store/actions'
 import { LOGIN } from './app/screens/Login'
+import { DISABLE_ENCRYPTION } from './app/config'
+import Loading from './app/screens/Loading'
 
 Logger.setTag('ShockWallet')
 Logger.setFileLogEnabled(true)
 Logger.setConsoleLogEnabled(__DEV__)
+Logger.inject((...content) => {
+  if (store.getState().debug.enabled) {
+    store.dispatch(log(...content))
+  }
+})
 
 CommonLogger.setLogger({
   debug(...msgs) {

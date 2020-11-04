@@ -1,4 +1,3 @@
-// @ts-expect-error
 import uuid from 'uuid/v4'
 import { Action } from '../actions'
 import { ACTIONS } from '../actions/ConnectionActions'

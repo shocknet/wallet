@@ -1671,6 +1671,11 @@
   resolved "https://registry.npm.taobao.org/@types/stack-utils/download/@types/stack-utils-1.0.1.tgz?cache=0&sync_timestamp=1580844116374&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2F%40types%2Fstack-utils%2Fdownload%2F%40types%2Fstack-utils-1.0.1.tgz#0a851d3bd96498fa25c33ab7278ed3bd65f06c3e"
   integrity sha1-CoUdO9lkmPolwzq3J47TvWXwbD4=
 
+"@types/uuid@3.x.x":
+  version "3.4.9"
+  resolved "https://registry.yarnpkg.com/@types/uuid/-/uuid-3.4.9.tgz#fcf01997bbc9f7c09ae5f91383af076d466594e1"
+  integrity sha512-XDwyIlt/47l2kWLTzw/mtrpLdB+GPSskR2n/PIcPn+VYhVO77rGhRncIR5GPU0KRzXuqkDO+J5qqrG0Y8P6jzQ==
+
 "@types/yargs-parser@*":
   version "15.0.0"
   resolved "https://registry.npm.taobao.org/@types/yargs-parser/download/@types/yargs-parser-15.0.0.tgz?cache=0&sync_timestamp=1580844439343&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2F%40types%2Fyargs-parser%2Fdownload%2F%40types%2Fyargs-parser-15.0.0.tgz#cb3f9f741869e20cce330ffbeb9271590483882d"
@@ -7648,9 +7653,9 @@ react-native-elements@^0.19.1:
     opencollective "^1.0.3"
     prop-types "^15.5.8"
 
-react-native-file-log@Emad-salah/react-native-file-log#693c33089dbd21a6cc2ceefcf7a6fae2db3f15f9:
+react-native-file-log@shocknet/react-native-file-log#master:
   version "2.0.0"
-  resolved "https://codeload.github.com/Emad-salah/react-native-file-log/tar.gz/693c33089dbd21a6cc2ceefcf7a6fae2db3f15f9"
+  resolved "https://codeload.github.com/shocknet/react-native-file-log/tar.gz/90af85f5d7a628d5808c605686f9930a86810114"
 
 react-native-file-picker@^0.0.19:
   version "0.0.19"

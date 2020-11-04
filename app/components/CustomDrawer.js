@@ -7,11 +7,14 @@ import {
   Text,
 } from 'react-native'
 import { DrawerActions } from 'react-navigation-drawer'
+
 import { LNURL_SCREEN } from '../screens/LNURL'
 import Pad from './Pad'
 import { ADVANCED_SCREEN } from '../screens/Advanced'
 import { SEED_BACKUP } from '../screens/SeedBackup'
 import { WALLET_SETTINGS } from '../screens/WalletSettings'
+import { DEBUG } from '../screens/Debug'
+import * as Store from '../store'
 
 import { Colors } from '../res/css'
 import ShockIcon from '../res/icons'
@@ -54,6 +57,7 @@ const drawerBottomItems = [
   {
     name: 'Help Resources',
     iconName: 'solid-help',
+    screen: DEBUG,
   },
   {
     name: 'Buy Bitcoin',
@@ -86,6 +90,11 @@ export default class CustomDrawer extends React.PureComponent {
 
     if (!screenName) {
       return
+    }
+
+    if (screenName === DEBUG) {
+      const store = Store.getStore()
+      store.dispatch(Store.enableDebug())
     }
 
     navigation.navigate(screenName)

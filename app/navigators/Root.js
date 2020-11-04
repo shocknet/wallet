@@ -78,6 +78,9 @@ const WalletNav = createStackNavigator(
     [SEND_SCREEN]: SendScreen,
     [RECEIVE_SCREEN]: ReceiveScreen,
     [Routes.USER]: UserScreen,
+    [DEBUG]: {
+      screen: Debug,
+    },
   },
   {
     initialRouteName: BOTTOM_NAV,
@@ -161,15 +164,6 @@ const drawerScreens = {
 
 if (theme === 'dark') {
   delete drawerScreens[ADD_POST_TO_FEED]
-}
-
-if (__DEV__) {
-  drawerScreens[DEBUG] = {
-    screen: Debug,
-    navigationOptions: {
-      title: 'Debug',
-    },
-  }
 }
 
 const MainDrawer = createDrawerNavigator(drawerScreens, {
