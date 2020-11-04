@@ -13,7 +13,7 @@ type DebugState = typeof INITIAL_STATE
 const insertLog = (line: string, logs: string[]) => {
   logs.push(line)
 
-  if (logs.length > 1000) {
+  if (logs.length > 100) {
     logs.splice(0, 1)
   }
 }
@@ -32,9 +32,11 @@ const reducer: Reducer<DebugState, Action> = (state = INITIAL_STATE, action) =>
       return
     }
 
-    // log action regardless of action type:
-
-    insertLog(action.type, draft.logs)
+    if (action.type === 'debug/log') {
+      for (const line of action.payload.content) {
+        insertLog(line, draft.logs)
+      }
+    }
   })
 
 export default reducer

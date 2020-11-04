@@ -7,6 +7,7 @@ import users from './users'
 import posts from './posts'
 import follows from './follows'
 import ping from './ping'
+import debug from './debug'
 
 function* rootSaga() {
   yield all([
@@ -17,6 +18,7 @@ function* rootSaga() {
     call(posts),
     call(follows),
     call(ping),
+    call(debug),
   ])
 }
 

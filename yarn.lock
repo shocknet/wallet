@@ -7653,9 +7653,9 @@ react-native-elements@^0.19.1:
     opencollective "^1.0.3"
     prop-types "^15.5.8"
 
-react-native-file-log@Emad-salah/react-native-file-log#693c33089dbd21a6cc2ceefcf7a6fae2db3f15f9:
+react-native-file-log@shocknet/react-native-file-log#master:
   version "2.0.0"
-  resolved "https://codeload.github.com/Emad-salah/react-native-file-log/tar.gz/693c33089dbd21a6cc2ceefcf7a6fae2db3f15f9"
+  resolved "https://codeload.github.com/shocknet/react-native-file-log/tar.gz/90af85f5d7a628d5808c605686f9930a86810114"
 
 react-native-file-picker@^0.0.19:
   version "0.0.19"

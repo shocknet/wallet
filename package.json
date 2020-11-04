@@ -71,7 +71,7 @@
     "react-native-deep-linking": "^2.2.0",
     "react-native-dropdown-picker": "^3.6.6",
     "react-native-elements": "^0.19.1",
-    "react-native-file-log": "Emad-salah/react-native-file-log#693c33089dbd21a6cc2ceefcf7a6fae2db3f15f9",
+    "react-native-file-log": "shocknet/react-native-file-log#master",
     "react-native-file-picker": "^0.0.19",
     "react-native-gesture-handler": "^1.8.0",
     "react-native-gifted-chat": "^0.13.0",
