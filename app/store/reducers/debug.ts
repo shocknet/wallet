@@ -4,7 +4,7 @@ import produce from 'immer'
 import { Action, enableDebug, disableDebug } from '../actions'
 
 const INITIAL_STATE = {
-  enabled: __DEV__,
+  enabled: false,
   logs: [] as string[],
 }
 

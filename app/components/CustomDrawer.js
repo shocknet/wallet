@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Text,
+  ToastAndroid,
 } from 'react-native'
 import { DrawerActions } from 'react-navigation-drawer'
 
@@ -95,6 +96,7 @@ export default class CustomDrawer extends React.PureComponent {
     if (screenName === DEBUG) {
       const store = Store.getStore()
       store.dispatch(Store.enableDebug())
+      ToastAndroid.show('Debug mode enabled', 800)
     }
 
     navigation.navigate(screenName)

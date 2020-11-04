@@ -1,5 +1,5 @@
 import React from 'react'
-import { Clipboard, View, Button, Text, ToastAndroid } from 'react-native'
+import { Clipboard, ScrollView, Button, Text, ToastAndroid } from 'react-native'
 import { connect } from 'react-redux'
 import uuid from 'uuid/v1'
 
@@ -87,7 +87,7 @@ class Debug extends React.PureComponent<Props, Record<string, any>> {
   }
 
   disableDebugMode = () => {
-    Store.getStore().dispatch(Store.disableDebug())
+    this.props.disableDebug()
   }
 
   render() {
@@ -107,11 +107,13 @@ class Debug extends React.PureComponent<Props, Record<string, any>> {
     const { handshakeAddr } = this.state
 
     return (
-      <View style={styles.container}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={CSS.styles.alignItemsCenter}
+      >
         <Button title="Disable " onPress={this.disableDebugMode} />
 
-        <Text>Debug Mode Enabled:</Text>
-        <Text>{debugModeEnabled}</Text>
+        <Text>Debug Mode {debugModeEnabled ? 'Enabled' : 'Disabled'}</Text>
 
         <Text>Canary Socket Status:</Text>
         <Text>{online ? 'Connected' : 'Disconnected'}</Text>
@@ -162,13 +164,13 @@ class Debug extends React.PureComponent<Props, Record<string, any>> {
           logoToShow="shock"
           value={`$$__SHOCKWALLET__USER__${this.state.pk}`}
         />
-      </View>
+      </ScrollView>
     )
   }
 }
 
 const styles = {
-  container: [CSS.styles.deadCenter, CSS.styles.flex],
+  container: [CSS.styles.flex],
 }
 
 const mapStateToProps = (state: Store.State): StateProps => {
