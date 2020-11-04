@@ -476,7 +476,7 @@ public class NotificationService extends Service {
                         NotificationService.ApiPubKey = resJson.getString("APIPublicKey");
 
                         //mSocket = IO.socket("http://"+NotificationService.ip+"?x-shockwallet-device-id=7601a723-b6d4-4020-95a6-6113fb40e2f8");
-                        mSocket = IO.socket("http://"+NotificationService.ip+"?x-shockwallet-device-id="+deviceId+"&IS_LND_SOCKET=true&IS_NOTIFICATIONS_SOCKET=true");
+                        mSocket = IO.socket("http://"+NotificationService.ip+"/default?x-shockwallet-device-id="+deviceId+"&IS_LND_SOCKET=true&IS_NOTIFICATIONS_SOCKET=true");
                         mSocket.on("transaction:new", newTransaction);
                         mSocket.on("invoice:new", newInvoice);
                         mSocket.on("ON_CHATS", newChat);
