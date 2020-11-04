@@ -90,8 +90,6 @@ export const getStoredAuthData = async () => {
   const _sad = await AsyncStorage.getItem(STORED_AUTH_DATA)
 
   if (_sad === null) {
-    getStore().dispatch(Actions.tokenDidInvalidate())
-    getStore().dispatch(Actions.hostWasSet(''))
     return null
   }
 
@@ -103,15 +101,11 @@ export const getStoredAuthData = async () => {
   const currNodeURL = await getNodeURL()
   if (currNodeURL === null) {
     AsyncStorage.removeItem(STORED_AUTH_DATA)
-    getStore().dispatch(Actions.tokenDidInvalidate())
-    getStore().dispatch(Actions.hostWasSet(''))
     return null
   }
   const [currNodeIP] = currNodeURL.split(':')
 
   if (sad.nodeIP !== currNodeIP) {
-    getStore().dispatch(Actions.tokenDidInvalidate())
-    getStore().dispatch(Actions.hostWasSet(''))
     await AsyncStorage.removeItem(STORED_AUTH_DATA)
     return null
   }

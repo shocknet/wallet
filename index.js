@@ -22,7 +22,7 @@ import { throttledExchangeKeyPair } from './app/store/actions/ConnectionActions'
 import * as NavigationService from './app/services/navigation'
 import * as Cache from './app/services/cache'
 import * as Encryption from './app/services/encryption'
-import configureStore, { log } from './app/store'
+import configureStore, { log, getStore } from './app/store'
 import RootStack from './app/navigators/Root'
 import { LNURL_SCREEN } from './app/screens/LNURL'
 import WithConnWarning from './app/components/WithConnWarning'
@@ -35,8 +35,9 @@ Logger.setTag('ShockWallet')
 Logger.setFileLogEnabled(true)
 Logger.setConsoleLogEnabled(__DEV__)
 Logger.inject((...content) => {
-  if (store.getState().debug.enabled) {
-    store.dispatch(log(...content))
+  const s = getStore()
+  if (s.getState().debug.enabled) {
+    s.dispatch(log(...content))
   }
 })
 

@@ -7,14 +7,14 @@ import Logger from 'react-native-file-log'
 
 import * as Auth from '../../services/auth'
 import * as Wallet from '../../services/wallet'
-
 import * as Cache from '../../services/cache'
 import { LOGIN } from '../../screens/Login'
 import { APP } from '../Root'
-
 import { CREATE_WALLET_OR_ALIAS } from './CreateWalletOrAlias'
 import OnboardingScreen from '../../components/OnboardingScreen'
 import { CONNECT_TO_NODE } from '../../screens/ConnectToNode'
+import { getStore } from '../../store'
+import * as Actions from '../../store/actions'
 
 export const LANDING = 'LANDING'
 
@@ -50,6 +50,25 @@ export default class CreateWallet extends React.PureComponent {
     try {
       Logger.log('GETTING AUTH DATA')
       const authData = await Cache.getStoredAuthData()
+      if (authData && authData.authData) {
+        const host = await Cache.getNodeURL()
+        getStore().dispatch(
+          Actions.hostWasSet(
+            // @ts-expect-error
+            host,
+          ),
+        )
+        getStore().dispatch(
+          Actions.authed({
+            alias: authData.authData.alias,
+            gunPublicKey: authData.authData.publicKey,
+            token: authData.authData.token,
+          }),
+        )
+      } else {
+        getStore().dispatch(Actions.tokenDidInvalidate())
+        getStore().dispatch(Actions.hostWasSet(''))
+      }
       Logger.log('GETTING WALLET STATUS')
       const walletStatus = await Wallet.walletStatus()
       Logger.log('FETCHING NODE URL')
