@@ -207,13 +207,17 @@ class WalletSettings extends React.PureComponent {
     const { tmpAbsoluteFee, tmpRelativeFee } = this.state
     updateRoutingFeeAbsolute(tmpAbsoluteFee)
     updateRoutingFeeRelative(tmpRelativeFee)
-    ToastAndroid.show('Updating routing fee limit', 800)
   }
 
   submitSourceToStore = () => {
     const { updateFeesSource } = this.props
     const { tmpSource } = this.state
     updateFeesSource(tmpSource)
+    this.submitRoutingFees()
+    this.submitNotificationsSettings()
+
+    ToastAndroid.show('Settings Updated', 800)
+    this.goBack()
   }
 
   setMID = () => {
