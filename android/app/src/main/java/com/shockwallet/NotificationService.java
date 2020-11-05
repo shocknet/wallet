@@ -124,7 +124,7 @@ public class NotificationService extends Service {
                     return;
                 }
                 
-                doNotification("Payment Received!"+res.getString("value")+" sats","",R.drawable.icon,"");
+                doNotification("Payment Received! "+res.getString("value")+" sats","",R.drawable.icon,"");
             }catch (Exception e){
                 Log.d(TAG,"Inv err"+e.toString());
             }
