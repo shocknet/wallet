@@ -270,11 +270,10 @@ class Post extends React.PureComponent<Props, State> {
           <View style={CSS.styles.rowCenteredSpaceBetween}>
             <View />
 
-            <View
-              // TODO: Why width100 pushes out share buton?
-              style={showTipBtn ? undefined : CSS.styles.opacityZero}
-            >
-              <ShockIcon width={24} height={24} />
+            <View style={showTipBtn ? undefined : CSS.styles.opacityZero}>
+              <TouchableWithoutFeedback onPress={this.toggleTipPopup}>
+                <ShockIcon width={24} height={24} />
+              </TouchableWithoutFeedback>
             </View>
 
             <TouchableWithoutFeedback onPress={this.onPressShare}>
