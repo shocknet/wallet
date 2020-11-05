@@ -19,6 +19,7 @@ import moment from 'moment'
 import { Schema } from 'shock-common'
 import { connect } from 'react-redux'
 import Entypo from 'react-native-vector-icons/Entypo'
+import isFinite from 'lodash/isFinite'
 
 import { ConnectedShockAvatar } from '../../components/ShockAvatar'
 import * as CSS from '../../res/css'
@@ -213,6 +214,24 @@ const makeMapStateToProps = () => {
       const isChainTX = !!asChainTX.tx_hash
       const isTip = !!asTip.amount && !!asTip.state
 
+      const value = Math.abs(
+        Number(
+          asInvoice.amt_paid_sat ||
+            asPayment.value_sat ||
+            asChainTX.amount ||
+            asTip.amount,
+        ),
+      )
+
+      if (!isFinite(value)) {
+        throw new TypeError(
+          `value obtained is not a finite number, got: ${typeof value} -- ${value} --${(() => {
+            if (isInvoice) {
+            }
+          })()}`,
+        )
+      }
+
       const maybeDecodedInvoice =
         state.decodedInvoices[asPayment.payment_request]
 
@@ -307,14 +326,7 @@ const makeMapStateToProps = () => {
             moment.now() - 200000,
         ),
         // Math.abs for outbound chain tx where the amount is negative
-        value: Math.abs(
-          Number(
-            asInvoice.amt_paid_sat ||
-              asPayment.value_sat ||
-              asChainTX.amount ||
-              asTip.amount,
-          ),
-        ),
+        value,
         subTitle: description,
         relatedPublickey: relatedPublickey || undefined,
         status,
