@@ -7,7 +7,15 @@ export const BOTTOM_BAR_HEIGHT = Math.round(HEIGHT * 0.085)
 
 import * as Common from 'shock-common'
 
-export const { Color: Colors } = Common.Constants
+export const Colors = {
+  ...Common.Constants.Color,
+  DARK_MODE_TEXT_NEAR_WHITE: '#EBEBEB',
+  DARK_MODE_TEXT_GRAY: '#9C9C9C',
+  DARK_MODE_BACKGROUND_DARK: '#16191C',
+  DARK_MODE_CYAN: '#4285B9',
+  DARK_MODE_BACKGROUND_BLUEISH_GRAY: '#212937',
+  DARK_MODE_BORDER_GRAY: '#707070',
+}
 
 export const styles = StyleSheet.create({
   absolutelyCentered: {
@@ -24,7 +32,10 @@ export const styles = StyleSheet.create({
   backgroundGreen: { backgroundColor: Colors.SUCCESS_GREEN },
   backgroundOrange: { backgroundColor: Colors.ORANGE },
   backgroundWhite: { backgroundColor: Colors.BACKGROUND_WHITE },
-  backgroundWhiteDark: { backgroundColor: '#1A2028' },
+  backgroundWhiteDark: {
+    backgroundColor: Colors.DARK_MODE_BACKGROUND_BLUEISH_GRAY,
+  },
+  backgroundBlack: { backgroundColor: 'black' },
   textBold: { fontWeight: 'bold' },
   flex: { flex: 1 },
   flexBasisZero: { flexBasis: 0 },
@@ -63,6 +74,36 @@ export const styles = StyleSheet.create({
   width0: { width: '0%' },
   width100: { width: '100%' },
   empty: {},
+  opacityZero: { opacity: 0 },
+  rowCentered: { flexDirection: 'row', alignItems: 'center' },
+  rowCenteredSpaceBetween: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  square32: { width: 32, height: 32 },
+  displayNone: {
+    display: 'none',
+  },
+  montserratWhite: {
+    color: Colors.DARK_MODE_TEXT_NEAR_WHITE,
+    fontFamily: 'Montserrat-Regular',
+  },
+  alignItemsStretch: {
+    alignItems: 'stretch',
+  },
+  backgroundDark: {
+    backgroundColor: Colors.DARK_MODE_BACKGROUND_DARK,
+  },
+  backgroundDarkFlex: {
+    backgroundColor: Colors.DARK_MODE_BACKGROUND_DARK,
+    flex: 1,
+  },
+  flexDeadCenter: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 })
 
 export const SCREEN_PADDING = 30

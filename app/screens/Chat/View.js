@@ -1,6 +1,3 @@
-/**
- * @prettier
- */
 import React from 'react'
 import {
   StyleSheet,
@@ -140,11 +137,10 @@ const AlwaysNull = () => null
  * @prop {string} disconnectErr Empty string if disconnectStatus !== 'err'
  */
 
-// TODO: Component instead of PureComponent is a temp fix
 /**
- * @augments React.Component<Props, State, never>
+ * @augments React.PureComponent<Props, State, never>
  */
-export default class ChatView extends React.Component {
+export default class ChatView extends React.PureComponent {
   navigationOptions = {
     headerStyle: {
       backgroundColor: CSS.Colors.BLUE_DARK,
@@ -181,7 +177,7 @@ export default class ChatView extends React.Component {
    */
   componentDidUpdate(_, prevState) {
     if (prevState.inputToolbarHeight !== this.state.inputToolbarHeight) {
-      // @ts-ignore
+      // @ts-expect-error
       this.actionSheetStyle[1].bottom = this.state.inputToolbarHeight
       this.forceUpdate()
     }

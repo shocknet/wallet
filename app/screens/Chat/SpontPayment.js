@@ -1,6 +1,3 @@
-/**
- * @prettier
- */
 import React from 'react'
 
 import TXBase from './TXBase'

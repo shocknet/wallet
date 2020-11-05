@@ -1,8 +1,6 @@
 /* eslint-disable  */
 import React from 'react'
 import {
-  Animated,
-  Easing,
   ImageBackground,
   StatusBar,
   StyleSheet,
@@ -12,7 +10,7 @@ import {
   ActivityIndicator,
   Dimensions,
 } from 'react-native'
-// @ts-ignore
+// @ts-expect-error
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scrollview'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 
@@ -224,20 +222,17 @@ export const linkTextStyle = [
 ]
 
 /**
- * @type {import('react-navigation').StackNavigatorConfig}
+ * @type {import('react-navigation-stack').NavigationStackOptions}
  */
 export const stackNavConfigMixin = {
-  headerLayoutPreset: 'center',
+  header: () => null,
 
-  navigationOptions: {
-    header: null,
-  },
-
-  transitionConfig: () => ({
-    transitionSpec: {
-      duration: 0,
-      timing: Animated.timing,
-      easing: Easing.step0,
-    },
-  }),
+  // Deprecated in react-navigation v4
+  // transitionConfig: () => ({
+  //   transitionSpec: {
+  //     duration: 0,
+  //     timing: Animated.timing,
+  //     easing: Easing.step0,
+  //   },
+  // }),
 }

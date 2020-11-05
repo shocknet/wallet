@@ -1,6 +1,3 @@
-/**
- * @prettier
- */
 import React from 'react'
 import Logger from 'react-native-file-log'
 
@@ -36,9 +33,9 @@ import TXBase from './TXBase'
  */
 
 /**
- * @augments React.Component<Props>
+ * @augments React.PureComponent<Props>
  */
-export default class ChatInvoice extends React.Component {
+export default class ChatInvoice extends React.PureComponent {
   componentDidMount() {
     /**
      * Force-updates every minute so moment-formatted dates refresh.

@@ -1,319 +1,216 @@
 import React from 'react'
 import {
   ListRenderItemInfo,
-  RefreshControl,
-  SafeAreaView,
   StyleSheet,
   FlatList,
   Text,
   View,
-  ActivityIndicator,
   StatusBar,
-  FlatListProps,
 } from 'react-native'
 import { connect } from 'react-redux'
-import { NavigationScreenProp, NavigationScreenOptions } from 'react-navigation'
+import identity from 'lodash/identity'
+
+import { NavigationScreenProp } from 'react-navigation'
+import { NavigationBottomTabOptions } from 'react-navigation-tabs'
 import _ from 'lodash'
 import * as Common from 'shock-common'
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'
 
-import * as Reducers from '../../../reducers'
+import * as Reducers from '../../store/reducers'
 import Post from '../../components/Post'
 import * as Routes from '../../routes'
 import * as CSS from '../../res/css'
+import Tabs from '../../components/tabs'
+import ShockIconWhite from '../../assets/images/shockW.svg'
+import ShockIconBlue from '../../assets/images/shockB.svg'
+import { ConnectedShockAvatar } from '../../components/ShockAvatar'
+import AddonIcon from '../../assets/images/feed/addon.svg'
+import { CREATE_POST_DARK } from '../CreatePostDark'
+import Pad from '../../components/Pad'
+import * as Store from '../../store'
 
 type Navigation = NavigationScreenProp<{}, Routes.UserParams>
-type Item = Common.Schema.Post
-
-interface StateProps {
-  posts: Common.Schema.Post[]
-}
-
-interface DispatchProps {
-  requestBackfeed: () => void
-  requestMoreFeed: () => void
-  onViewportChanged: (newViewport: string[]) => void
-}
 
 interface OwnProps {
   navigation: Navigation
 }
 
-interface State {
-  awaitingBackfeed: boolean
-  awaitingMoreFeed: boolean
+interface StateProps {
+  posts: Common.Schema.PostN[]
+  usersFollowed: string[]
+  publicKey: string
 }
+
+interface DispatchProps {}
 
 type Props = StateProps & DispatchProps & OwnProps
 
-const keyExtractor = (item: Common.Schema.Post) => item.id
+interface State {
+  data: [string, ...Common.Schema.PostN[]]
+}
 
-class Feed extends React.Component<Props, State> {
-  static navigationOptions: NavigationScreenOptions = {
-    header: null,
+class Feed extends React.PureComponent<Props, State> {
+  static navigationOptions: NavigationBottomTabOptions = {
     tabBarIcon: ({ focused }) => {
-      return (
-        <FontAwesome5
-          color={
-            focused ? CSS.Colors.BLUE_MEDIUM_DARK : CSS.Colors.GRAY_MEDIUM_LIGHT
-          }
-          name="bolt"
-          // reverseColor={'#CED0CE'}
-          size={32}
-        />
-      )
+      if (focused) {
+        return <ShockIconBlue style={CSS.styles.square32} />
+      } else {
+        return <ShockIconWhite style={CSS.styles.square32} />
+      }
     },
   }
 
   state: State = {
-    awaitingBackfeed: false,
-    awaitingMoreFeed: false,
+    data: ['tabs', ...this.props.posts],
   }
 
-  onEndReached = () => {
-    // todo: move this check to redux in a way that makes sense
-    if (!this.state.awaitingMoreFeed) {
-      this.setState(
-        {
-          awaitingMoreFeed: true,
-        },
-        () => {
-          this.props.requestMoreFeed()
-        },
-      )
+  componentDidUpdate({ posts: prevPosts }: Props) {
+    if (this.props.posts !== prevPosts) {
+      this.setState({
+        data: ['tabs', ...this.props.posts],
+      })
     }
   }
 
-  onRefresh = () => {
-    const { awaitingBackfeed, awaitingMoreFeed } = this.state
-
-    if (!awaitingBackfeed && !awaitingMoreFeed) {
-      this.setState(
-        {
-          awaitingBackfeed: true,
-        },
-        () => {
-          if (this.props.posts.length === 0) {
-            this.props.requestMoreFeed()
-          } else {
-            this.props.requestBackfeed()
-          }
-
-          // TODO: redux-side auto retry
-          setTimeout(() => {
-            this.setState({
-              awaitingBackfeed: false,
-              awaitingMoreFeed: false,
-            })
-          }, 10000)
-        },
-      )
+  renderItem = ({
+    item,
+    index,
+  }: ListRenderItemInfo<Common.Schema.PostN | string>) => {
+    if (typeof item === 'string') {
+      return tabs
     }
-  }
-
-  renderItem = ({ item }: ListRenderItemInfo<Item>) => {
-    if (!Common.Schema.isPost(item)) return null
-    const imageCIEntries = Object.entries(item.contentItems).filter(
-      ([_, ci]) => ci.type === 'image/embedded',
-    ) as [string, Common.Schema.EmbeddedImage][]
-
-    const videoCIEntries = Object.entries(item.contentItems).filter(
-      ([_, ci]) => ci.type === 'video/embedded',
-    ) as [string, Common.Schema.EmbeddedVideo][]
-
-    const paragraphCIEntries = Object.entries(item.contentItems).filter(
-      ([_, ci]) => ci.type === 'text/paragraph',
-    ) as [string, Common.Schema.Paragraph][]
-
-    const images = imageCIEntries.map(([key, imageCI]) => ({
-        id: key,
-        data: imageCI.magnetURI,
-        width:Number(imageCI.width),
-        height:Number(imageCI.height)
-      }))
-
-      const videos = videoCIEntries.map(([key, videoCI]) => ({
-        id: key,
-        data: videoCI.magnetURI,
-        width:Number(videoCI.width),
-        height:Number(videoCI.height)
-      }))
-
-    const paragraphs = paragraphCIEntries.map(([key, paragraphCI]) => ({
-      id: key,
-      text: paragraphCI.text,
-    }))
 
     return (
-      <Post
-        author={item.author}
-        date={item.date}
-        images={images}
-        videos={videos}
-        paragraphs={paragraphs}
-        parentScrollViewRef={undefined}
-      />
+      <View>
+        <Post id={item.id} showTipBtn hideTopBorder={index === 1} />
+        <Pad amount={12} />
+      </View>
     )
   }
 
-  _onViewableItemsChanged: FlatListProps<
-    Common.Schema.Post
-  >['onViewableItemsChanged'] = ({ viewableItems }) => {
-    const posts = viewableItems.map(
-      viewToken => viewToken.item,
-    ) as Common.Schema.Post[]
+  onPressMyAvatar = () => this.props.navigation.navigate(CREATE_POST_DARK)
 
-    const ids = posts.map(p => p.id)
+  renderMe = () => {
+    const { publicKey } = this.props
+    return (
+      <View style={CSS.styles.flexRow}>
+        <PersonSeparator />
+        <View>
+          <ConnectedShockAvatar
+            height={64}
+            onPress={this.onPressMyAvatar}
+            publicKey={publicKey}
+            disableOnlineRing
+          />
 
-    this.props.onViewportChanged(ids)
+          <AddonIcon size={25} style={styles.avatarAddon} />
+        </View>
+        <PersonSeparator />
+      </View>
+    )
   }
 
-  // TODO: debounce in redux
-  onViewableItemsChanged: FlatListProps<
-    Common.Schema.Post
-  >['onViewableItemsChanged'] = _.debounce(this
-    ._onViewableItemsChanged as () => {})
+  renderPerson = ({ item }: ListRenderItemInfo<string>) => (
+    <ConnectedShockAvatar height={64} publicKey={item} nameAtBottom />
+  )
 
-  componentDidUpdate(prevProps: Readonly<Props>) {
-    const { posts: prevPosts } = prevProps
-    const { posts: currentPosts } = this.props
-    const postsChanged = currentPosts !== prevPosts
-    const wasLoadingBackfeed = this.state.awaitingBackfeed
-    const wasLoadingFeed = this.state.awaitingMoreFeed
-
-    if (!postsChanged) {
-      return
-    }
-
-    if (prevPosts.length === 0 && currentPosts.length === 0) {
-      // `TODO: update perf optimization`)
-      return
-    }
-
-    // initial load
-    if (prevPosts.length === 0 && currentPosts.length !== 0) {
-      this.setState({
-        awaitingBackfeed: false,
-        awaitingMoreFeed: false,
-      })
-      return
-    }
-
-    const didLoadBackfeed = prevPosts[0].id !== currentPosts[0].id
-    const didLoadFeed =
-      prevPosts[prevPosts.length - 1].id !==
-      currentPosts[currentPosts.length - 1].id
-
-    if (wasLoadingBackfeed && didLoadBackfeed) {
-      this.setState({
-        awaitingBackfeed: false,
-      })
-    }
-
-    if (wasLoadingFeed && didLoadFeed) {
-      this.setState({
-        awaitingMoreFeed: false,
-      })
-    }
-  }
+  renderPeople = () => (
+    <FlatList
+      style={styles.usersContainer}
+      data={this.props.usersFollowed}
+      renderItem={this.renderPerson}
+      horizontal
+      keyExtractor={identity}
+      nestedScrollEnabled
+      ListHeaderComponent={this.renderMe}
+      ItemSeparatorComponent={PersonSeparator}
+      ListFooterComponent={PersonSeparator}
+    />
+  )
 
   render() {
-    const { posts } = this.props
-
     return (
-      <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="light-content" />
+      <>
+        <StatusBar
+          backgroundColor={CSS.Colors.DARK_MODE_BACKGROUND_DARK}
+          barStyle="light-content"
+          translucent={false}
+        />
+
         <FlatList
-          style={CSS.styles.flex}
+          stickyHeaderIndices={STICKY_HEADER_INDICES}
+          style={CSS.styles.backgroundDark}
           renderItem={this.renderItem}
-          data={posts}
+          data={this.state.data}
           keyExtractor={keyExtractor}
           ListEmptyComponent={listEmptyElement}
-          onEndReached={this.onEndReached}
-          onEndReachedThreshold={0.5}
-          refreshControl={
-            <RefreshControl
-              refreshing={this.state.awaitingBackfeed}
-              onRefresh={this.onRefresh}
-            />
-          }
-          ListFooterComponent={listFooterElement}
-          onViewableItemsChanged={this.onViewableItemsChanged}
-          viewabilityConfig={VIEWABILITY_CONFIG}
+          ListHeaderComponent={this.renderPeople}
         />
-      </SafeAreaView>
+      </>
     )
   }
 }
 
-const listFooterElement = <ActivityIndicator />
-
-const VIEWABILITY_CONFIG: FlatListProps<
-  Common.Schema.Post
->['viewabilityConfig'] = {
-  /**
-   * Minimum amount of time (in milliseconds) that an item must be physically viewable before the
-   * viewability callback will be fired. A high number means that scrolling through content without
-   * stopping will not mark the content as viewable.
-   */
-  minimumViewTime: 100,
-
-  /**
-   * Percent of viewport that must be covered for a partially occluded item to count as
-   * "viewable", 0-100. Fully visible items are always considered viewable. A value of 0 means
-   * that a single pixel in the viewport makes the item viewable, and a value of 100 means that
-   * an item must be either entirely visible or cover the entire viewport to count as viewable.
-   */
-  viewAreaCoveragePercentThreshold: 10,
+const keyExtractor = (item: Common.Schema.PostN | string) => {
+  // @ts-expect-error
+  return item.id || item
 }
 
-const mapStateToProps = (state: Reducers.State): StateProps => {
-  const postsIDs = _.flattenDeep(state.feed.currentFeed)
-  const noRepeats = _.uniq(postsIDs)
+const PersonSeparator = React.memo(() => <Pad amount={16} insideRow />)
 
-  const posts = Common.Schema.denormalizePosts(noRepeats, state)
+const STICKY_HEADER_INDICES = [1]
+
+const TABS = ['Feed']
+
+const mapStateToProps = (state: Reducers.State): StateProps => {
+  const publicKey = Store.getMyPublicKey(state)
+  const posts = Store.getPostsFromFollowed(state)
 
   return {
     posts,
+    publicKey,
+    usersFollowed: Store.getFollowedPublicKeys(state),
   }
 }
 
-const mapDispatchToProps: Record<
-  keyof DispatchProps,
-  (...args: any[]) => Common.Store.Actions.FeedAction
-> = {
-  onViewportChanged: Common.Store.Actions.viewportChanged,
-  requestBackfeed: Common.Store.Actions.getMoreBackfeed,
-  requestMoreFeed: Common.Store.Actions.getMoreFeed,
-}
-
-const ConnectedFeed = connect(
-  mapStateToProps,
-  mapDispatchToProps,
-)(Feed)
+const ConnectedFeed = connect(mapStateToProps)(Feed)
 
 export default ConnectedFeed
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    width: '100%',
-    backgroundColor: CSS.Colors.BACKGROUND_NEAR_WHITE,
-    paddingTop: StatusBar.currentHeight,
+  line: {
+    height: 0,
+    borderBottomColor: CSS.Colors.DARK_MODE_BORDER_GRAY,
+    borderBottomWidth: 1,
   },
   emptyMessageText: {
     color: CSS.Colors.TEXT_GRAY,
     fontFamily: 'Montserrat-700',
     fontSize: 16,
   },
+  usersContainer: {
+    backgroundColor: CSS.Colors.DARK_MODE_BACKGROUND_BLUEISH_GRAY,
+    borderColor: CSS.Colors.DARK_MODE_BORDER_GRAY,
+    borderWidth: 1,
+    paddingVertical: 24,
+  },
+  avatarAddon: {
+    position: 'absolute',
+    right: 0,
+    bottom: 0,
+  },
 })
 
-const xStyles = {
-  emptyMessageTextContainer: [CSS.styles.flex, CSS.styles.deadCenter],
-}
+const tabs = (
+  <View style={CSS.styles.backgroundDark}>
+    <Pad amount={8} />
+    <Tabs texts={TABS} selectedTabIndex={0} />
+    <Pad amount={8} />
+    <View style={styles.line}></View>
+  </View>
+)
 
 const listEmptyElement = (
-  <View style={xStyles.emptyMessageTextContainer}>
+  <View style={CSS.styles.flexDeadCenter}>
     <Text style={styles.emptyMessageText}>
       Follow people to see their posts
     </Text>

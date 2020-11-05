@@ -1,6 +1,4 @@
-/**
- * @format
- */
+import './wdyr'
 
 import {
   AppRegistry,
@@ -12,33 +10,36 @@ import {
 import moment from 'moment'
 import Http, { AxiosRequestConfig } from 'axios'
 import Logger from 'react-native-file-log'
-import { Logger as CommonLogger, Store } from 'shock-common'
-import { DISABLE_ENCRYPTION } from './app/config'
-
+import { Logger as CommonLogger } from 'shock-common'
 import { Provider } from 'react-redux'
-
-import Loading from './app/screens/Loading'
+import { PersistGate } from 'redux-persist/integration/react'
 import React from 'react'
 import RNBootSplash from 'react-native-bootsplash'
-// @ts-ignore
+// @ts-expect-error
 import url from 'url'
 
-import { throttledExchangeKeyPair } from './app/actions/ConnectionActions'
+import { throttledExchangeKeyPair } from './app/store/actions/ConnectionActions'
 import * as NavigationService from './app/services/navigation'
 import * as Cache from './app/services/cache'
 import * as Encryption from './app/services/encryption'
-import configureStore from './store'
-import { PersistGate } from 'redux-persist/integration/react'
-
-import { ConnectionProvider } from './app/ctx/Connection'
+import configureStore, { log, getStore } from './app/store'
 import RootStack from './app/navigators/Root'
-
 import { LNURL_SCREEN } from './app/screens/LNURL'
-import { feedPage } from './app/services/feed'
+import WithConnWarning from './app/components/WithConnWarning'
+import { hostWasSet } from './app/store/actions'
+import { LOGIN } from './app/screens/Login'
+import { DISABLE_ENCRYPTION } from './app/config'
+import Loading from './app/screens/Loading'
 
 Logger.setTag('ShockWallet')
 Logger.setFileLogEnabled(true)
 Logger.setConsoleLogEnabled(__DEV__)
+Logger.inject((...content) => {
+  const s = getStore()
+  if (s.getState().debug.enabled) {
+    s.dispatch(log(...content))
+  }
+})
 
 CommonLogger.setLogger({
   debug(...msgs) {
@@ -68,7 +69,7 @@ if (Platform.OS === 'android') {
 moment.locale('en', {
   relativeTime: {
     future: 'in %s',
-    past: '%s',
+    past: '%s ago',
     s: 'just now',
     ss: '%ss',
     m: '1m',
@@ -92,26 +93,7 @@ const nonEncryptedRoutes = [
   '/api/gun/auth',
 ]
 
-// Http.interceptors.response.use(
-//   res => res,
-//   async err => {
-//     // catch reference/Cache errors
-//     try {
-//       if (err.response.status === 401) {
-//         Socket.disconnect()
-//         await Cache.writeStoredAuthData(null)
-//       }
-//     } catch (e) {
-//       Logger.log(`Error inside response interceptor: ${e.message}`)
-//     }
-
-//     return Promise.reject(err)
-//   },
-// )
-
 AppRegistry.registerComponent('shockwallet', () => ShockWallet)
-
-Store.setFeedPage(feedPage)
 
 /**
  * @typedef {object} State
@@ -121,9 +103,9 @@ Store.setFeedPage(feedPage)
 const { persistor, store } = configureStore()
 
 /**
- * @augments React.Component<{}, State,never>
+ * @augments React.PureComponent<{}, State,never>
  */
-export default class ShockWallet extends React.Component {
+export default class ShockWallet extends React.PureComponent {
   state = {
     ready: false,
   }
@@ -136,35 +118,13 @@ export default class ShockWallet extends React.Component {
   handleUrl = e => {
     ToastAndroid.show('Protocol link detected', 1500)
     NavigationService.navigate(LNURL_SCREEN, { protocol_link: e.url })
-    /*try {
-      ToastAndroid.show('LNURL detected, decoding...', 1500)
-      const authData = await Cache.getStoredAuthData()
-      const walletStatus = await Wallet.walletStatus()
-      const nodeURL = await Cache.getNodeURL()
-      if (nodeURL === null) {
-        throw new Error(
-          'You tried to open a protocol link before authenticating',
-        )
-      }
-      const isGunAuth = await Auth.isGunAuthed()
-
-      if (walletStatus === 'unlocked') {
-        if (authData !== null && isGunAuth) {
-          NavigationService.navigate(WALLET_OVERVIEW, { protocol_link: e.url })
-          return
-        }
-      }
-      throw new Error('You tried to open a protocol link before authenticating')
-    } catch (e) {
-      Logger.log(e.message)
-      ToastAndroid.show(e.message, 1500)
-    }*/
   }
 
   async componentDidMount() {
     const nodeURL = await Cache.getNodeURL()
     if (nodeURL !== null) {
       Http.defaults.url = `http://${nodeURL}`
+      store.dispatch(hostWasSet(nodeURL))
     }
     RNBootSplash.hide({ duration: 250 })
     this.setState({
@@ -186,12 +146,24 @@ export default class ShockWallet extends React.Component {
       return null
     }
 
+    let rootNode = null
+
+    if (__DEV__) {
+      // Special care must be had inside <WithConnWarning />: don't remount the
+      // RootStack
+      rootNode = (
+        <WithConnWarning>
+          <RootStack ref={NavigationService.setTopLevelNavigator} />
+        </WithConnWarning>
+      )
+    } else {
+      rootNode = <RootStack ref={NavigationService.setTopLevelNavigator} />
+    }
+
     return (
       <Provider store={store}>
         <PersistGate loading={<Loading />} persistor={persistor}>
-          <ConnectionProvider>
-            <RootStack ref={NavigationService.setTopLevelNavigator} />
-          </ConnectionProvider>
+          {rootNode}
         </PersistGate>
       </Provider>
     )
@@ -289,7 +261,7 @@ Http.interceptors.request.use(async config => {
         token: encryptedToken,
         iv,
       }
-      // @ts-ignore
+      // @ts-expect-error
       // eslint-disable-next-line require-atomic-updates
       config.originalData = stringifiedData
     }
@@ -337,7 +309,7 @@ Http.interceptors.request.use(async config => {
  */
 const decryptResponse = async response => {
   try {
-    const decryptionTime = Date.now()
+    // const decryptionTime = Date.now()
     const { connection } = store.getState()
     const path = url.parse(response?.config.url).pathname
     // Logger.log('[ENCRYPTION] Decrypting Path:', path)
@@ -370,7 +342,7 @@ const decryptResponse = async response => {
         key: decryptedKey,
         iv: response.data.iv,
       })
-      Logger.log(`[HTTP] Decrypted data in: ${Date.now() - decryptionTime}ms`)
+      // Logger.log(`[HTTP] Decrypted data in: ${Date.now() - decryptionTime}ms`)
       const decryptedResponse = {
         ...response,
         data: JSON.parse(decryptedData),
@@ -465,11 +437,20 @@ Http.interceptors.response.use(
         error.response.status === 401 &&
         !encryptionErrors.includes(decryptedResponse.data.field)
       ) {
-        Logger.log(
-          '[ENCRYPTION] An error has occurred:',
-          decryptedResponse.data,
-        )
-        await Cache.writeStoredAuthData(null)
+        Logger.log('An error has occurred:', decryptedResponse.data)
+        Logger.log('Clearing auth data')
+        if (
+          decryptedResponse.data.field &&
+          decryptedResponse.data.field === 'lnd_locked'
+        ) {
+          const addr = await Cache.getNodeURL()
+          await Cache.writeStoredAuthData(null)
+          await Cache.writeNodeURLOrIP(addr)
+          NavigationService.navigate(LOGIN)
+        } else {
+          await Cache.writeStoredAuthData(null)
+        }
+        //
       }
 
       if (encryptionErrors.includes(decryptedResponse.data.field)) {
@@ -490,27 +471,20 @@ Http.interceptors.response.use(
           connection.deviceId
 
         if (
-          // @ts-ignore
+          // @ts-expect-error
           decryptedResponse.config.originalData
         ) {
-          // @ts-ignore
+          // @ts-expect-error
           const response = await Http[
             decryptedResponse.config.method?.toLowerCase() ?? 'get'
           ](
             decryptedResponse.config.url,
-            // @ts-ignore
+            // @ts-expect-error
             JSON.parse(decryptedResponse.config.originalData),
             decryptedResponse.config.headers,
           )
           return Promise.resolve(response)
         }
-      }
-
-      if (decryptedResponse.data.field === 'lnd_locked') {
-        //notificationService.Log("TESTING","LND FOUND LOCKED")
-      }
-      if (decryptedResponse.data.field === 'lnd_dead') {
-        //notificationService.Log("TESTING","LND FOUND DEAD")
       }
       const errorData = { ...error, response: decryptedResponse }
       if (decryptedResponse.data.errorMessage) {

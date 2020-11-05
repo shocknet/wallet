@@ -49,7 +49,15 @@ export const isLightningPubKey = data => lnPubKey.test(data)
 export const isShockPubKey = data => data.startsWith('$$__SHOCKWALLET__USER__')
 
 /** @param {string} data */
-export const isLNURL = data => data.startsWith('LNURL')
+export const findlnurl = data => {
+  const res = /^(http.*[&?]lightning=)?((lnurl)([0-9]{1,}[a-z0-9]+){1})/.exec(
+    data.toLowerCase(),
+  )
+  if (res) {
+    return res[2]
+  }
+  return null
+}
 
 /**
  * @typedef {object} ExtractedBTCAddress
@@ -114,10 +122,12 @@ export default data => {
       pk: cleanData,
     }
   }
-  if (isLNURL(cleanData)) {
+
+  const found = findlnurl(cleanData)
+  if (found) {
     return {
       type: 'lnurl',
-      lnurl: cleanData,
+      lnurl: found.toUpperCase(),
     }
   }
   return { type: 'unknown' }

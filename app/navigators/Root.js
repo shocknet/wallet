@@ -1,13 +1,7 @@
-/**
- * @prettier
- */
-
-import {
-  createBottomTabNavigator,
-  createStackNavigator,
-  createSwitchNavigator,
-  createDrawerNavigator,
-} from 'react-navigation'
+import { createSwitchNavigator, createAppContainer } from 'react-navigation'
+import { createDrawerNavigator } from 'react-navigation-drawer'
+import { createStackNavigator } from 'react-navigation-stack'
+import { createBottomTabNavigator } from 'react-navigation-tabs'
 import * as CSS from '../res/css'
 
 import Chat, { CHAT_ROUTE } from '../screens/Chat'
@@ -15,7 +9,6 @@ import Chats, { CHATS_ROUTE } from '../screens/Chats'
 import Advanced, { ADVANCED_SCREEN } from '../screens/Advanced'
 import WalletOverview, { WALLET_OVERVIEW } from '../screens/WalletOverview'
 import SeedBackup, { SEED_BACKUP } from '../screens/SeedBackup'
-//@ts-ignore
 import WalletSettings, { WALLET_SETTINGS } from '../screens/WalletSettings'
 import Feed from '../screens/Feed'
 import AddPostToFeed, { ADD_POST_TO_FEED } from '../screens/AddPostToFeed'
@@ -29,8 +22,7 @@ import {
 
 import Login, { LOGIN } from '../screens/Login'
 
-import MyProfile, { MY_PROFILE } from '../screens/MyProfile'
-//import MyFeed, { MY_FEED } from '../screens/MyFeed'
+import MyProfile from '../screens/MyProfile'
 import Loading, { LOADING } from '../screens/Loading'
 
 import WalletManager, { WALLET_MANAGER } from './WalletManager'
@@ -39,26 +31,11 @@ import SendScreen, { SEND_SCREEN } from '../screens/Send'
 import ReceiveScreen, { RECEIVE_SCREEN } from '../screens/Receive'
 import Debug, { DEBUG } from '../screens/Debug'
 import UserScreen from '../screens/User'
-
-import * as Routes from '../routes'
+import NodeInfo, { NODE_INFO } from '../screens/node-info'
 import LNURL, { LNURL_SCREEN } from '../screens/LNURL'
+import * as Routes from '../routes'
 
 import CustomDrawer from '../components/CustomDrawer'
-//@ts-ignore
-import IconDrawerProfile from '../assets/images/drawer-icons/icon-drawer-profile.svg'
-//@ts-ignore
-import IconDrawerWalletSettings from '../assets/images/drawer-icons/icon-drawer-wallet.svg'
-//@ts-ignore
-import IconDrawerSpendingRules from '../assets/images/drawer-icons/icon-drawer-spending-rule.svg'
-//@ts-ignore
-import IconDrawerAdvancedLightning from '../assets/images/drawer-icons/icon-drawer-advanced-lightning.svg'
-//@ts-ignore
-import IconDrawerHelp from '../assets/images/drawer-icons/icon-drawer-help.svg'
-//@ts-ignore
-import IconDrawerScan from '../assets/images/drawer-icons/icon-drawer-scan.svg'
-//@ts-ignore
-import IconDrawerPower from '../assets/images/drawer-icons/icon-drawer-power.svg'
-// import IconDrawerHome from '../assets/images/drawer-icons/icon-drawer-help.svg'
 
 export const APP = 'APP'
 export const BOTTOM_NAV = 'BOTTOM_NAV'
@@ -69,7 +46,7 @@ const BottomNav = createBottomTabNavigator(
   {
     [WALLET_OVERVIEW]: WalletOverview,
     [CHATS_ROUTE]: Chats,
-    [MY_PROFILE]: MyProfile,
+    [Routes.MY_PROFILE]: MyProfile,
     [Routes.FEED]: Feed,
   },
   {
@@ -79,7 +56,6 @@ const BottomNav = createBottomTabNavigator(
       showLabel: false,
       style: {
         borderTopWidth: 0,
-        // backgroundColor: CSS.Colors.BACKGROUND_WHITE,
         backgroundColor: CSS.Colors.BACKGROUND_BLACK,
         height: CSS.BOTTOM_BAR_HEIGHT,
         shadowColor: '#000',
@@ -102,27 +78,32 @@ const WalletNav = createStackNavigator(
     [SEND_SCREEN]: SendScreen,
     [RECEIVE_SCREEN]: ReceiveScreen,
     [Routes.USER]: UserScreen,
+    [DEBUG]: {
+      screen: Debug,
+    },
   },
   {
     initialRouteName: BOTTOM_NAV,
-    navigationOptions: {
-      header: null,
+    defaultNavigationOptions: {
+      headerTitleAlign: 'center',
     },
   },
 )
 
 BottomNav.navigationOptions = {
-  header: null,
-  // drawerIcon: () => {
-  //   return <IconDrawerHome />
-  // },
+  header: () => null,
 }
 
 const MAIN_DRAWER = 'MAIN_DRAWER'
 const theme = 'dark'
 
-/** @type {import('react-navigation').NavigationRouteConfigMap} */
+/** @typedef {import('react-navigation-drawer').NavigationDrawerOptions} NavigationDrawerOptions */
+/** @typedef {import('react-navigation').NavigationParams} NavigationParams */
+/** @typedef {import('react-navigation').NavigationRoute<NavigationParams>} NavigationRoute */
+/** @typedef {import('react-navigation-drawer').NavigationDrawerProp<NavigationRoute, any>} NavigationDrawerProp */
+/** @typedef {import('react-navigation').NavigationRouteConfigMap<NavigationDrawerOptions, NavigationDrawerProp, unknown>} NavigationRouteConfigMap */
 
+/** @type {NavigationRouteConfigMap} */
 const drawerScreens = {
   [WALLET_NAV]: {
     screen: WalletNav,
@@ -130,7 +111,7 @@ const drawerScreens = {
       title: 'Home',
     },
   },
-  [MY_PROFILE]: {
+  [Routes.MY_PROFILE]: {
     screen: MyProfile,
     navigationOptions: {
       title: 'Profile',
@@ -154,12 +135,7 @@ const drawerScreens = {
       title: 'Seed Backup',
     },
   },
-  /*[FEED]: {
-    screen: Feed,
-    navigationOptions: {
-      title: 'Feed POC',
-    },
-  },*/
+
   [ADD_POST_TO_FEED]: {
     screen: AddPostToFeed,
     navigationOptions: {
@@ -184,99 +160,17 @@ const drawerScreens = {
       title: 'Publish Content',
     },
   },
-  /*[CREATE_POST]: { already declared
-    screen: CreatePost,
-    navigationOptions: {
-      title: 'Publish Content Dark',
-    },
-  },*/
 }
 
 if (theme === 'dark') {
-  //delete drawerScreens[SEED_BACKUP]
-  //delete drawerScreens[FEED]
   delete drawerScreens[ADD_POST_TO_FEED]
-  //delete drawerScreens[CREATE_POST]
-  //delete drawerScreens[LNURL_SCREEN]
-  delete drawerScreens[PUBLISH_CONTENT_DARK]
-}
-//
-// const drawerScreens = {
-//   [WALLET_NAV]: {
-//     screen: WalletNav,
-//     navigationOptions: {
-//       title: 'Home',
-//     },
-//   },
-//   [ADVANCED_SCREEN]: {
-//     screen: Advanced,
-//     navigationOptions: {
-//       title: 'Advanced Lightning',
-//     },
-//   },
-//   [SEED_BACKUP]: {
-//     screen: SeedBackup,
-//     navigationOptions: {
-//       title: 'Seed Backup',
-//     },
-//   },
-//   [WALLET_SETTINGS]: {
-//     screen: WalletSettings,
-//     navigationOptions: {
-//       title: 'Wallet Settings',
-//     },
-//   },
-//   [FEED]: {
-//     screen: Feed,
-//     navigationOptions: {
-//       title: 'Feed POC',
-//     },
-//   },
-//   [ADD_POST_TO_FEED]: {
-//     screen: AddPostToFeed,
-//     navigationOptions: {
-//       title: 'Add Post to Feed',
-//     },
-//   },
-//   [CREATE_POST]: {
-//     screen: CreatePost,
-//     navigationOptions: {
-//       title: 'Add Post to Feed',
-//     },
-//   },
-//   [LNURL_SCREEN]: {
-//     screen: LNURL,
-//     navigationOptions: {
-//       title: 'LNURL utils',
-//     },
-//   },
-//   [PUBLISH_CONTENT_DARK]: {
-//     screen: PublishContentDark,
-//     navigationOptions: {
-//       title: 'Publish Content',
-//     },
-//   },
-//   [CREATE_POST_DARK]: {
-//     screen: CreatePostDark,
-//     navigationOptions: {
-//       title: 'Publish Content Dark',
-//     },
-//   },
-// }
-
-if (__DEV__) {
-  drawerScreens[DEBUG] = {
-    screen: Debug,
-    navigationOptions: {
-      title: 'Debug',
-    },
-  }
 }
 
 const MainDrawer = createDrawerNavigator(drawerScreens, {
   initialRouteName: WALLET_NAV,
   drawerPosition: 'right',
   contentComponent: CustomDrawer,
+  drawerBackgroundColor: 'transparent',
   contentOptions: {
     labelStyle: {
       textAlign: 'right',
@@ -285,7 +179,7 @@ const MainDrawer = createDrawerNavigator(drawerScreens, {
 })
 
 MainDrawer.navigationOptions = {
-  header: null,
+  headerShown: false,
 }
 
 const App = createStackNavigator(
@@ -293,9 +187,9 @@ const App = createStackNavigator(
     [ADVANCED_SCREEN]: Advanced,
     [CHAT_ROUTE]: Chat,
     [MAIN_DRAWER]: MainDrawer,
+    [NODE_INFO]: NodeInfo,
   },
   {
-    headerLayoutPreset: 'center',
     initialRouteName: MAIN_DRAWER,
   },
 )
@@ -324,4 +218,4 @@ const MainSwitch = createSwitchNavigator(
   },
 )
 
-export default MainSwitch
+export default createAppContainer(MainSwitch)

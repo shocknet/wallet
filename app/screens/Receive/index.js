@@ -1,6 +1,5 @@
-import React, { Component } from 'react'
+import React from 'react'
 import {
-  // Clipboard,
   StyleSheet,
   Text,
   View,
@@ -17,8 +16,8 @@ import SendStep from './components/SendStep'
 import wavesBG from '../../assets/images/shock-bg.png'
 import wavesBGDark from '../../assets/images/shock-bg-dark.png'
 import Nav from '../../components/Nav'
-import { resetSelectedContact } from '../../actions/ChatActions'
-import { resetInvoice } from '../../actions/InvoiceActions'
+import { resetSelectedContact } from '../../store/actions/ChatActions'
+import { resetInvoice } from '../../store/actions/InvoiceActions'
 
 import * as CSS from '../../res/css'
 import Ionicons from 'react-native-vector-icons/Ionicons'
@@ -45,9 +44,9 @@ export const RECEIVE_SCREEN = 'RECEIVE_SCREEN'
  */
 
 /**
- * @extends Component<Props, {}, never>
+ * @extends React.PureComponent<Props, {}, never>
  */
-class ReceiveScreen extends Component {
+class ReceiveScreen extends React.PureComponent {
   state = {
     step: 1,
     maxStep: 2,
@@ -298,7 +297,7 @@ class ReceiveScreen extends Component {
 
 /**
  * @param {{
- * invoice:import('../../../reducers/InvoiceReducer').State}} state
+ * invoice:import('../../store/reducers/InvoiceReducer').State}} state
  */
 const mapStateToProps = ({ invoice }) => ({ invoice })
 

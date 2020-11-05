@@ -13,14 +13,14 @@ import Ionicons from 'react-native-vector-icons/Ionicons'
 import { connect } from 'react-redux'
 import Logger from 'react-native-file-log'
 import Suggestion from './Suggestion'
-import { selectContact } from '../../actions/ChatActions'
-import { decodePaymentRequest } from '../../actions/InvoiceActions'
+import { selectContact } from '../../store/actions/ChatActions'
+import { decodePaymentRequest } from '../../store/actions/InvoiceActions'
 
 import * as CSS from '../../res/css'
 // import InputGroup from '../InputGroup'
 
 /**
- * @typedef {import('../../actions/ChatActions').SelectedContact} ContactTypes
+ * @typedef {import('../../store/actions/ChatActions').SelectedContact} ContactTypes
  */
 
 /**
@@ -47,7 +47,7 @@ import * as CSS from '../../res/css'
  * @prop {(contact: ContactTypes) => void} selectContact
  * @prop {(paymentRequest: string) => DecodeResponse} decodePaymentRequest
  * @prop {(() => void)=} startDecoding
- * @prop {{ contacts: import('../../actions/ChatActions').Contact[] }} chat
+ * @prop {{ contacts: import('../../store/actions/ChatActions').Contact[] }} chat
  */
 
 /**
@@ -69,7 +69,7 @@ class ContactsSearch extends PureComponent {
   defaultFeatures = ['btc', 'invoice', 'contacts']
 
   /**
-   * @param {import('../../actions/ChatActions').SelectedContact} item
+   * @param {import('../../store/actions/ChatActions').SelectedContact} item
    * @param {number} index
    * @returns {string}
    */
@@ -294,7 +294,7 @@ class ContactsSearch extends PureComponent {
   }
 }
 
-/** @param {import('../../../reducers/index').default} state */
+/** @param {import('../../store/reducers/index').default} state */
 const mapStateToProps = ({ chat }) => ({ chat })
 
 const mapDispatchToProps = {
@@ -305,7 +305,7 @@ const mapDispatchToProps = {
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-  // @ts-ignore
+  // @ts-expect-error
 )(ContactsSearch)
 
 const styles = StyleSheet.create({

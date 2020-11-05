@@ -21,7 +21,6 @@ import * as Cache from '../../services/cache'
 import * as CSS from '../../res/css'
 import * as Wallet from '../../services/wallet'
 import { LOGIN } from '../../screens/Login'
-import { Socket } from '../../services/contact-api'
 import { APP } from '../Root'
 import Pad from '../../components/Pad'
 import OnboardingScreen, {
@@ -32,7 +31,7 @@ import OnboardingScreen, {
 import OnboardingInput from '../../components/OnboardingInput'
 import OnboardingBtn from '../../components/OnboardingBtn'
 import FlexCenter from '../../components/FlexCenter'
-import { throttledExchangeKeyPair } from '../../actions/ConnectionActions'
+import { throttledExchangeKeyPair } from '../../store/actions/ConnectionActions'
 
 export const CREATE_WALLET_OR_ALIAS = 'CREATE_WALLET_OR_ALIAS'
 
@@ -54,11 +53,11 @@ export const CREATE_WALLET_OR_ALIAS = 'CREATE_WALLET_OR_ALIAS'
  */
 
 /**
- * @augments React.Component<Props, State>
+ * @augments React.PureComponent<Props, State>
  */
-class CreateWalletOrAlias extends React.Component {
+class CreateWalletOrAlias extends React.PureComponent {
   /**
-   * @type {import('react-navigation').NavigationStackScreenOptions}
+   * @type {import('react-navigation-stack').NavigationStackOptions}
    */
   static navigationOptions = ({
     title: 'CREATE WALLET/ALIAS',
@@ -195,7 +194,6 @@ class CreateWalletOrAlias extends React.Component {
               token,
             }),
           )
-          .then(Socket.connect)
           .then(() => this.props.navigation.navigate(APP))
           .catch(e => {
             this.setState({
@@ -399,7 +397,7 @@ class CreateWalletOrAlias extends React.Component {
 }
 
 /**
- * @param {typeof import('../../../reducers/index').default} state
+ * @param {typeof import('../../store/reducers/index').default} state
  */
 const mapStateToProps = ({ connection }) => ({ connection })
 

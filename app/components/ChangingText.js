@@ -8,10 +8,10 @@ import size from 'lodash/size'
  */
 
 /**
- * We must not assume <Text /> is pure so we use React.Component.
- * @augments React.Component<Props,State>
+ * We must not assume <Text /> is pure so we use React.PureComponent.
+ * @augments React.PureComponent<Props,State>
  */
-export default class ChangingText extends React.Component {
+export default class ChangingText extends React.PureComponent {
   state = {
     i: 0,
   }
@@ -28,7 +28,7 @@ export default class ChangingText extends React.Component {
     this.setState(
       (
         { i },
-        // @ts-ignore
+        // @ts-expect-error
         { children, cycle },
       ) => {
         const len = size(children)
@@ -50,7 +50,7 @@ export default class ChangingText extends React.Component {
         }
       },
       () => {
-        // @ts-ignore
+        // @ts-expect-error
         const len = size(this.props.children)
         if (
           this.state.i === len - 1 &&

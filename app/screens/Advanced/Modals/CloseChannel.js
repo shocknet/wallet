@@ -22,9 +22,9 @@ import { Colors } from '../../../res/css'
  */
 
 /**
- * @augments React.Component<Props, {}, never>
+ * @augments React.PureComponent<Props, {}, never>
  */
-class CloseChannelModal extends React.Component {
+class CloseChannelModal extends React.PureComponent {
   render() {
     const {
       modalRef,

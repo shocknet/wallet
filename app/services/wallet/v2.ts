@@ -3,7 +3,9 @@ import Logger from 'react-native-file-log'
 import { Schema } from 'shock-common'
 import { ToastAndroid } from 'react-native'
 
-import { getStore } from '../../../store'
+import { getStore } from '../../store'
+import { post } from '../http'
+import * as Store from '../../store'
 
 // TODO: Move to common repo
 interface ErrResponse {
@@ -151,4 +153,55 @@ export const decodeInvoice = async ({
         'Unknown error.',
     )
   }
+}
+
+export interface ListPaymentsReq {
+  include_incomplete?: boolean
+  index_offset?: number
+  max_payments?: number
+  reversed?: boolean
+}
+
+export interface ListPaymentsRes {
+  payments: Array<Schema.PaymentV2>
+  first_index_offset: string
+  last_index_offset: string
+}
+
+export const batchDecodePayReqs = async (
+  payReqs: string[],
+): Promise<Schema.InvoiceWhenDecoded[]> => {
+  const res = await Promise.all(
+    payReqs.map(payReq => decodeInvoice({ payReq })),
+  )
+
+  return res.map(r => r.decodedRequest)
+}
+
+export const tipPost = async (
+  to: string,
+  postID: string,
+  amt: number,
+): Promise<void> => {
+  const {
+    fees: { absoluteFee, relativeFee },
+  } = Store.getStore().getState()
+
+  const relFeeN = Number(relativeFee)
+  const absFeeN = Number(absoluteFee)
+  if (!relFeeN || !absFeeN) {
+    throw new Error('invalid fees provided')
+  }
+  const amountN = amt
+  const calculatedFeeLimit = Math.floor(amountN * relFeeN + absFeeN)
+  const feeLimit = calculatedFeeLimit > amountN ? amountN : calculatedFeeLimit
+
+  await post('api/lnd/unifiedTrx', {
+    type: 'post',
+    amt,
+    to,
+    memo: '',
+    feeLimit,
+    postID,
+  })
 }

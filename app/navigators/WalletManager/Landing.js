@@ -5,17 +5,16 @@ import Logger from 'react-native-file-log'
  * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation
  */
 
-import * as API from '../../services/contact-api'
 import * as Auth from '../../services/auth'
 import * as Wallet from '../../services/wallet'
-
 import * as Cache from '../../services/cache'
 import { LOGIN } from '../../screens/Login'
 import { APP } from '../Root'
-
 import { CREATE_WALLET_OR_ALIAS } from './CreateWalletOrAlias'
 import OnboardingScreen from '../../components/OnboardingScreen'
 import { CONNECT_TO_NODE } from '../../screens/ConnectToNode'
+import { getStore } from '../../store'
+import * as Actions from '../../store/actions'
 
 export const LANDING = 'LANDING'
 
@@ -25,14 +24,14 @@ export const LANDING = 'LANDING'
  */
 
 /**
- * @augments React.Component<Props, {}>
+ * @augments React.PureComponent<Props, {}>
  */
-export default class CreateWallet extends React.Component {
+export default class CreateWallet extends React.PureComponent {
   /**
-   * @type {import('react-navigation').NavigationScreenOptions}
+   * @type {import('react-navigation-stack').NavigationStackOptions}
    */
   static navigationOptions = {
-    header: null,
+    header: () => null,
   }
 
   didFocus = {
@@ -51,6 +50,25 @@ export default class CreateWallet extends React.Component {
     try {
       Logger.log('GETTING AUTH DATA')
       const authData = await Cache.getStoredAuthData()
+      if (authData && authData.authData) {
+        const host = await Cache.getNodeURL()
+        getStore().dispatch(
+          Actions.hostWasSet(
+            // @ts-expect-error
+            host,
+          ),
+        )
+        getStore().dispatch(
+          Actions.authed({
+            alias: authData.authData.alias,
+            gunPublicKey: authData.authData.publicKey,
+            token: authData.authData.token,
+          }),
+        )
+      } else {
+        getStore().dispatch(Actions.tokenDidInvalidate())
+        getStore().dispatch(Actions.hostWasSet(''))
+      }
       Logger.log('GETTING WALLET STATUS')
       const walletStatus = await Wallet.walletStatus()
       Logger.log('FETCHING NODE URL')
@@ -70,10 +88,7 @@ export default class CreateWallet extends React.Component {
 
       if (walletStatus === 'unlocked') {
         if (authData !== null && isGunAuth) {
-          Logger.log(
-            'NOW CONNECTING SOCKET, GUN IS AUTHED AND AUTH DATA IS CACHED',
-          )
-          await API.Socket.connect()
+          Logger.log('GUN IS AUTHED AND AUTH DATA IS CACHED')
           Logger.log('NAVIGATING TO APP')
           this.props.navigation.navigate(APP)
         } else {

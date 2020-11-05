@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 /**
  * @prettier
  */
@@ -14,6 +13,7 @@ import InAppBrowser from 'react-native-inappbrowser-reborn'
 import * as CSS from '../res/css'
 import * as Cache from '../services/cache'
 import * as Conn from '../services/connection'
+import { isValidURL as isValidIP } from '../services/utils'
 import Pad from '../components/Pad'
 import QRScanner from './QRScanner'
 import { WALLET_MANAGER } from '../navigators/WalletManager'
@@ -22,14 +22,15 @@ import OnboardingScreen, {
   titleTextStyle,
   linkTextStyle,
 } from '../components/OnboardingScreen'
-import { throttledExchangeKeyPair } from '../actions/ConnectionActions'
-import InvitationLogin from '../components/InvitationLogin'
-
+import OnboardingInput from '../components/OnboardingInput'
+import OnboardingBtn from '../components/OnboardingBtn'
+import { throttledExchangeKeyPair } from '../store/actions/ConnectionActions'
 /** @type {number} */
-// @ts-ignore
+// @ts-expect-error
 const shockBG = require('../assets/images/shock-bg.png')
 
 export const CONNECT_TO_NODE = 'CONNECT_TO_NODE'
+const HOSTING_SERVER = '167.88.11.204:8080'
 
 /**
  * @typedef {object} Params
@@ -73,14 +74,14 @@ const DEFAULT_STATE = {
 }
 
 /**
- * @augments React.Component<Props, State, never>
+ * @augments React.PureComponent<Props, State, never>
  */
-class ConnectToNode extends React.Component {
+class ConnectToNode extends React.PureComponent {
   /**
-   * @type {import('react-navigation').NavigationScreenOptions}
+   * @type {import('react-navigation-stack').NavigationStackOptions}
    */
   static navigationOptions = {
-    header: null,
+    header: () => null,
   }
 
   theme = 'dark'
@@ -104,12 +105,12 @@ class ConnectToNode extends React.Component {
   }
 
   componentWillUnmount() {
-    this.mounted = true
+    this.mounted = false
     this.didFocusSub.remove()
   }
 
   checkCacheForNodeURL = async () => {
-    this.setState(DEFAULT_STATE)
+    this.mounted && this.setState(DEFAULT_STATE)
     try {
       const nodeURL = await Cache.getNodeURL()
       const err = this.props.navigation.getParam('err')
@@ -117,20 +118,92 @@ class ConnectToNode extends React.Component {
       if (nodeURL !== null && !err) {
         this.props.navigation.navigate(WALLET_MANAGER)
       } else {
-        this.setState({
-          checkingCacheForNodeURL: false,
-          nodeURL: nodeURL || '',
-        })
+        this.mounted &&
+          this.setState({
+            checkingCacheForNodeURL: false,
+            nodeURL: nodeURL || '',
+          })
       }
     } catch (err) {
       this.props.navigation.setParams({
         err: err.message,
       })
     } finally {
-      this.setState({
-        checkingCacheForNodeURL: false,
-      })
+      this.mounted &&
+        this.setState({
+          checkingCacheForNodeURL: false,
+        })
     }
+  }
+
+  /**
+   * @private
+   * @param {string} invitationCode
+   */
+  onChangeInvitationCode = invitationCode => {
+    this.mounted &&
+      this.setState({
+        invitationCode,
+      })
+  }
+
+  /** @private */
+  onPressConnectViaInvite = async () => {
+    const { invitationCode, externalURL } = this.state
+    try {
+      Logger.log('requesting with', invitationCode)
+      const resp = await fetch(`http://${HOSTING_SERVER}/mainnet`, {
+        headers: {
+          Accept: 'application/json',
+          Authorization: invitationCode,
+        },
+      })
+      Logger.log(resp)
+      this.mounted &&
+        this.setState({ nodeURL: (await resp.json()).data.address })
+    } catch (error) {
+      Logger.log(error)
+    }
+
+    setTimeout(() => {
+      this.mounted &&
+        this.setState(
+          {
+            pinging: true,
+          },
+          async () => {
+            try {
+              Logger.log('received response', this.state.nodeURL)
+              await this.connectURL(this.state.nodeURL)
+            } catch (err) {
+              try {
+                Logger.log(
+                  'CONNECTURL FAILED, TRYING ONCE MORE TIME, ERR: ' +
+                    err.message,
+                )
+                await this.connectURL(externalURL)
+              } catch (err) {
+                this.mounted &&
+                  this.setState({
+                    pinging: false,
+                    wasBadPing: true,
+                  })
+              }
+            }
+          },
+        )
+    }, 5000)
+  }
+
+  /**
+   * @private
+   * @param {string} nodeURL
+   */
+  onChangeNodeURL = nodeURL => {
+    this.mounted &&
+      this.setState({
+        nodeURL,
+      })
   }
 
   connectURL = async (url = '') => {
@@ -194,9 +267,10 @@ class ConnectToNode extends React.Component {
   }
 
   toggleQRScreen = () => {
-    this.setState(({ scanningQR }) => ({
-      scanningQR: !scanningQR,
-    }))
+    this.mounted &&
+      this.setState(({ scanningQR }) => ({
+        scanningQR: !scanningQR,
+      }))
   }
 
   /**
@@ -205,16 +279,17 @@ class ConnectToNode extends React.Component {
   onQRRead = data => {
     if (data && typeof data === 'object') {
       const { internalIP, externalIP, walletPort } = data
-      this.setState(
-        {
-          scanningQR: false,
-          nodeURL: internalIP + ':' + walletPort,
-          externalURL: `${externalIP}:${walletPort}`,
-        },
-        () => {
-          this.onPressConnect()
-        },
-      )
+      this.mounted &&
+        this.setState(
+          {
+            scanningQR: false,
+            nodeURL: internalIP + ':' + walletPort,
+            externalURL: `${externalIP}:${walletPort}`,
+          },
+          () => {
+            this.onPressConnect()
+          },
+        )
     }
   }
 
@@ -236,12 +311,21 @@ class ConnectToNode extends React.Component {
     }
   }
 
+  toggleInvitation = () => {
+    this.mounted &&
+      this.setState(({ isUsingInvitation }) => ({
+        isUsingInvitation: !isUsingInvitation,
+      }))
+  }
+
   render() {
     const {
       checkingCacheForNodeURL,
+      nodeURL,
       wasBadPing,
       pinging,
       scanningQR,
+      isUsingInvitation,
     } = this.state
 
     const err = this.props.navigation.getParam('err')
@@ -261,15 +345,72 @@ class ConnectToNode extends React.Component {
     return (
       <OnboardingScreen loading={checkingCacheForNodeURL || pinging}>
         <Text style={titleTextStyle}>
-          {this.state.isUsingInvitation ? 'Invitation Code' : 'Node Address'}
+          {isUsingInvitation ? 'Invitation Code' : 'Node Address'}
         </Text>
 
         <Pad amount={ITEM_SPACING} />
 
-        <InvitationLogin
-          navigation={this.props.navigation}
-          mounted={this.mounted}
-        />
+        {isUsingInvitation ? (
+          <OnboardingInput
+            autoCapitalize="none"
+            autoCorrect={false}
+            disable={pinging || wasBadPing || !!err}
+            onChangeText={this.onChangeInvitationCode}
+            placeholder="Enter your invitation code"
+            value={this.state.invitationCode}
+          />
+        ) : (
+          <OnboardingInput
+            autoCapitalize="none"
+            autoCorrect={false}
+            disable={pinging || wasBadPing || !!err}
+            onChangeText={this.onChangeNodeURL}
+            onPressQRBtn={this.toggleQRScreen}
+            placeholder="Enter your node IP"
+            value={nodeURL}
+          />
+        )}
+
+        <Pad amount={ITEM_SPACING} />
+
+        {!(wasBadPing || !!err) && (
+          <>
+            {isUsingInvitation ? (
+              <OnboardingBtn
+                onPress={this.onPressConnectViaInvite}
+                title={wasBadPing || err ? 'Continue' : 'Create and Connect'}
+              />
+            ) : (
+              <OnboardingBtn
+                disabled={!isValidIP(nodeURL) || pinging}
+                onPress={
+                  wasBadPing || err ? this.onPressTryAgain : this.onPressConnect
+                }
+                title={wasBadPing || err ? 'Continue' : 'Connect'}
+              />
+            )}
+
+            <Pad amount={ITEM_SPACING} />
+
+            {isUsingInvitation ? (
+              <Text style={linkTextStyle} onPress={this.toggleInvitation}>
+                Use Node Address
+              </Text>
+            ) : (
+              <>
+                <Text style={linkTextStyle} onPress={this.openDocsLink}>
+                  Don't have a node?
+                </Text>
+
+                <Pad amount={ITEM_SPACING} />
+
+                <Text style={linkTextStyle} onPress={this.toggleInvitation}>
+                  Use Invitation Code
+                </Text>
+              </>
+            )}
+          </>
+        )}
 
         {wasBadPing && (
           <Text style={titleTextStyle}>
@@ -292,7 +433,7 @@ class ConnectToNode extends React.Component {
 }
 
 /**
- * @param {typeof import('../../reducers/index').default} state
+ * @param {typeof import('../store/reducers/index').default} state
  */
 const mapStateToProps = ({ connection }) => ({ connection })
 

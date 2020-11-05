@@ -24,9 +24,9 @@ import { ConnectedShockAvatar } from './ShockAvatar'
  **/
 
 /**
- * @augments React.Component<Props>
+ * @augments React.PureComponent<Props>
  */
-export default class UserDetail extends React.Component {
+export default class UserDetail extends React.PureComponent {
   onPress = () => {
     const { id, onPress } = this.props
 
@@ -91,15 +91,16 @@ export default class UserDetail extends React.Component {
 }
 
 const nameTextStyle = {
-  color: CSS.Colors.TEXT_STANDARD,
+  color: CSS.Colors.DARK_MODE_TEXT_NEAR_WHITE,
   fontSize: 16,
+  fontFamily: 'Montserrat-700',
 }
 
 /**
  * @type {import('react-native').ViewStyle}
  */
 const alternateTextStyle = {
-  // @ts-ignore TODO
+  // @ts-expect-error TODO
   color: CSS.Colors.TEXT_LIGHT,
   fontSize: 14,
   fontWeight: '200',
@@ -130,7 +131,6 @@ const styles = StyleSheet.create({
 
   nameBold: {
     ...nameTextStyle,
-    color: CSS.Colors.TEXT_STANDARD,
     fontWeight: 'bold',
   },
 

@@ -7,21 +7,13 @@ import {
   ScrollView,
 } from 'react-native'
 import { connect } from 'react-redux'
-//import ShockWebView from '../components/ShockWebView'
-//import { WebView } from 'react-native-webview'
-//import FeedItem from '../components/FeedItem'
-//import notificationService from '../../notificationService'
-//import Http from 'axios'
 import ShockInput from '../components/ShockInput'
 import ShockButton from '../components/ShockButton'
 import Pad from '../components/Pad'
-import * as Thunks from '../thunks'
+import * as Thunks from '../store/thunks'
 import notificationService from '../../notificationService'
 
-//import { updateSelectedFee, updateFeesSource } from '../actions/FeesActions'
-//import ShockInput from '../components/ShockInput'
 /** @type {number} */
-// @ts-ignore
 const shockBG = require('../assets/images/shock-bg.png')
 
 export const ADD_POST_TO_FEED = 'ADD_POST_TO_FEED'
@@ -50,14 +42,14 @@ const DEFAULT_STATE = {
  */
 
 /**
- * @augments React.Component<Props, State, never>
+ * @augments React.PureComponent<Props, State, never>
  */
-class AddPostToFeed extends React.Component {
+class AddPostToFeed extends React.PureComponent {
   /**
    * @type {import('react-navigation').NavigationScreenOptions}
    */
   static navigationOptions = {
-    header: null,
+    headerShown: false,
   }
 
   /** @type {State} */
@@ -147,7 +139,7 @@ class AddPostToFeed extends React.Component {
 }
 
 /**
- * @param {typeof import('../../reducers/index').default} state
+ * @param {typeof import('../store/reducers/index').default} state
  */
 const mapStateToProps = ({ follows }) => ({ follows })
 

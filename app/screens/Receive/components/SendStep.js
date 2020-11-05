@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React from 'react'
 import {
   View,
   StyleSheet,
@@ -13,7 +13,7 @@ import {
 } from 'react-native'
 import { connect } from 'react-redux'
 import Ionicons from 'react-native-vector-icons/Ionicons'
-// @ts-ignore
+// @ts-expect-error
 import SwipeVerify from 'react-native-swipe-verify'
 import Logger from 'react-native-file-log'
 
@@ -25,8 +25,8 @@ import {
   setInvoiceMode,
   addInvoice,
   newAddress,
-} from '../../../actions/InvoiceActions'
-import { resetSelectedContact } from '../../../actions/ChatActions'
+} from '../../../store/actions/InvoiceActions'
+import { resetSelectedContact } from '../../../store/actions/ChatActions'
 import QR from './QR'
 import BitcoinAccepted from '../../../assets/images/bitcoin-accepted.png'
 import { CHATS_ROUTE } from '../../Chats'
@@ -57,9 +57,9 @@ import { CHATS_ROUTE } from '../../Chats'
  * @prop {string} contactsSearch
  */
 /**
- * @extends Component<Props, State, never>
+ * @extends React.PureComponent<Props, State, never>
  */
-class SendStep extends Component {
+class SendStep extends React.PureComponent {
   state = {
     contactsSearch: '',
   }
@@ -105,7 +105,6 @@ class SendStep extends Component {
     /**
      * @type {Pick<State, keyof State>}
      */
-    // @ts-ignore TODO: fix typing
     const updatedState = {
       [key]: value,
     }
@@ -386,8 +385,8 @@ class SendStep extends Component {
 
 /**
  * @param {{
- * invoice: import('../../../../reducers/InvoiceReducer').State,
- * chat: import('../../../../reducers/ChatReducer').State
+ * invoice: import('../../../store/reducers/InvoiceReducer').State,
+ * chat: import('../../../store/reducers/ChatReducer').State
  * }} state
  */
 const mapStateToProps = ({ invoice, chat }) => ({ invoice, chat })

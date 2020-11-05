@@ -1,15 +1,9 @@
-/**
- * @prettier
- */
 import React from 'react'
 import { Clipboard, StatusBar, ToastAndroid } from 'react-native'
 import zipObj from 'lodash/zipObject'
 import Logger from 'react-native-file-log'
 import { Schema } from 'shock-common'
-// @ts-ignore
-import ChatIcon from '../../assets/images/navbar-icons/chat.svg'
-// @ts-ignore
-import ChatIconFocused from '../../assets/images/navbar-icons/chat-focused.svg'
+import ShockIcon from '../../res/icons'
 
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation
@@ -21,6 +15,7 @@ import * as CSS from '../../res/css'
 import { CHAT_ROUTE } from './../Chat'
 
 import ChatsView from './View'
+import { Color } from 'shock-common/dist/constants'
 
 export const CHATS_ROUTE = 'CHATS_ROUTE'
 /**
@@ -54,18 +49,21 @@ const byTimestampFromOldestToNewest = (a, b) => a.timestamp - b.timestamp
 // TODO: Component vs PureComponent
 
 /**
- * @augments React.Component<Props, State>
+ * @augments React.PureComponent<Props, State>
  */
-export default class Chats extends React.Component {
+export default class Chats extends React.PureComponent {
   /**
-   * @type {import('react-navigation').NavigationBottomTabScreenOptions}
+   * @type {import('react-navigation-tabs').NavigationBottomTabOptions}
    */
   static navigationOptions = {
-    // tabBarIcon: ({ focused }) => {
-    //   return <TabBarIcon focused={focused} />
-    // },
     tabBarIcon: ({ focused }) => {
-      return (focused ? <ChatIconFocused size={32} /> : <ChatIcon size={32} />)
+      return ((
+        <ShockIcon
+          name="thin-chat"
+          color={focused ? Color.BUTTON_BLUE : Color.TEXT_WHITE}
+          size={32}
+        />
+      ))
     },
   }
 
@@ -90,18 +88,13 @@ export default class Chats extends React.Component {
 
   sentReqsUnsubscribe = () => {}
 
-  didFocus = { remove() {} }
-
   onLastReadMsgsUnsub = () => {}
 
   componentDidMount() {
     this.onLastReadMsgsUnsub = Cache.onLastReadMsgs(lastReadMsgs => {
       this.setState({ lastReadMsgs })
     })
-    this.didFocus = this.props.navigation.addListener('didFocus', () => {
-      StatusBar.setBackgroundColor(CSS.Colors.BACKGROUND_WHITE)
-      StatusBar.setBarStyle('dark-content')
-    })
+
     this.chatsUnsubscribe = API.Events.onChats(chats => {
       this.setState({
         chats,
@@ -139,7 +132,6 @@ export default class Chats extends React.Component {
   }
 
   componentWillUnmount() {
-    this.didFocus.remove()
     this.chatsUnsubscribe()
     this.receivedReqsUnsubscribe()
     this.sentReqsUnsubscribe()
@@ -373,26 +365,33 @@ export default class Chats extends React.Component {
     })
 
     return (
-      <ChatsView
-        sentRequests={filteredSentRequests}
-        chats={chats}
-        onPressChat={this.onPressChat}
-        acceptingRequest={!!acceptingRequest}
-        receivedRequests={filteredReceivedRequests}
-        onPressRequest={this.onPressReceivedRequest}
-        onPressAcceptRequest={this.acceptRequest}
-        onRequestCloseRequestDialog={this.cancelAcceptingRequest}
-        onPressRejectRequest={this.onPressRejectRequest}
-        onPressAdd={this.toggleAddDialog}
-        showingAddDialog={showingAddDialog}
-        onRequestCloseAddDialog={this.toggleAddDialog}
-        userChosePasteFromClipboard={this.sendHRToUserFromClipboard}
-        userChoseQRScan={this.toggleContactQRScanner}
-        showingQRScanner={scanningUserQR}
-        onQRRead={this.onQRRead}
-        onRequestCloseQRScanner={this.toggleContactQRScanner}
-        readChatIDs={readChatIDs}
-      />
+      <>
+        <StatusBar
+          backgroundColor={CSS.Colors.DARK_MODE_BACKGROUND_BLUEISH_GRAY}
+          barStyle="light-content"
+          translucent={false}
+        />
+        <ChatsView
+          sentRequests={filteredSentRequests}
+          chats={chats}
+          onPressChat={this.onPressChat}
+          acceptingRequest={!!acceptingRequest}
+          receivedRequests={filteredReceivedRequests}
+          onPressRequest={this.onPressReceivedRequest}
+          onPressAcceptRequest={this.acceptRequest}
+          onRequestCloseRequestDialog={this.cancelAcceptingRequest}
+          onPressRejectRequest={this.onPressRejectRequest}
+          onPressAdd={this.toggleAddDialog}
+          showingAddDialog={showingAddDialog}
+          onRequestCloseAddDialog={this.toggleAddDialog}
+          userChosePasteFromClipboard={this.sendHRToUserFromClipboard}
+          userChoseQRScan={this.toggleContactQRScanner}
+          showingQRScanner={scanningUserQR}
+          onQRRead={this.onQRRead}
+          onRequestCloseQRScanner={this.toggleContactQRScanner}
+          readChatIDs={readChatIDs}
+        />
+      </>
     )
   }
 }

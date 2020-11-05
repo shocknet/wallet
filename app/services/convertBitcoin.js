@@ -17,6 +17,11 @@ const Units = {
  * @returns {number}
  */
 const convert = (from, fromUnit, toUnit) => {
+  if (typeof from !== 'string') {
+    throw new TypeError(
+      `convert -> from is not an string, instead got: ${typeof from}`,
+    )
+  }
   const fromFactor = Units[fromUnit]
   if (fromFactor === undefined) {
     throw new Error(`'${fromUnit}' is not a bitcoin unit`)

@@ -3,7 +3,8 @@ import {
   ScrollView,
   StatusBar,
   StyleSheet,
-  Text, TouchableHighlight,
+  Text,
+  TouchableHighlight,
   TouchableOpacity,
   View,
 } from 'react-native'
@@ -11,11 +12,9 @@ import Modal from 'react-native-modal'
 import * as CSS from '../../res/css'
 import Pad from '../../components/Pad'
 import InputGroup from '../../components/InputGroup'
-// @ts-ignore
 import ArrowLeft from '../../assets/images/arrow-left.svg'
 
-// @ts-ignore
-export default function MetaConfigModal(props) {
+export default function MetaConfigModal(props: any) {
   return (
     <View style={{ flex: 1 }}>
       <Modal

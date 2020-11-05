@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React from 'react'
 import Logger from 'react-native-file-log'
 import {
   Text,
@@ -14,13 +14,13 @@ import ShockButton from '../components/ShockButton'
 import ShockInput from '../components/ShockInput'
 import Pad from '../components/Pad'
 import * as CSS from '../res/css'
-//@ts-ignore
+//@ts-expect-error
 import bech32 from 'bech32'
 import { connect } from 'react-redux'
 import * as Cache from '../services/cache'
 import { WALLET_OVERVIEW } from './WalletOverview'
-import QRCodeScanner from '../components/QRScanner'
-import { fetchPeers } from '../actions/HistoryActions'
+import QRScanner from './QRScanner'
+import { fetchPeers } from '../store/actions/HistoryActions'
 import ExtractInfo from '../services/validators'
 import { SEND_SCREEN } from './Send'
 export const LNURL_SCREEN = 'LNURL_SCREEN'
@@ -35,9 +35,9 @@ export const LNURL_SCREEN = 'LNURL_SCREEN'
  * @typedef {import('react-navigation').NavigationScreenProp<{}, Params>} Navigation
  */
 /**
- * @typedef {import('../actions/ChatActions').BTCAddress} BTCAddress
- * @typedef {import('../actions/ChatActions').Contact} Contact
- * @typedef {import('../actions/ChatActions').Keysend} Keysend
+ * @typedef {import('../store/actions/ChatActions').BTCAddress} BTCAddress
+ * @typedef {import('../store/actions/ChatActions').Contact} Contact
+ * @typedef {import('../store/actions/ChatActions').Keysend} Keysend
  */
 
 /**
@@ -72,15 +72,15 @@ export const LNURL_SCREEN = 'LNURL_SCREEN'
 /**
  * @typedef {object} Props
  * @prop {Navigation} navigation
- * @prop {import('../../reducers/HistoryReducer').State} history
+ * @prop {import('../store/reducers/HistoryReducer').State} history
  * @prop {()=>void} fetchPeers
  * @prop {(req:string)=>void} decodePaymentRequest
  * @prop {(contact:Contact|BTCAddress|Keysend)=>void} selectContact
  */
 /**
- * @extends Component<Props, State, never>
+ * @extends React.PureComponent<Props, State, never>
  */
-class LNURL extends React.Component {
+class LNURL extends React.PureComponent {
   getInitialLNURLState = () => {
     return {
       privateChannel: true,
@@ -666,13 +666,14 @@ class LNURL extends React.Component {
   }
 
   /**
-   * @param {{data:string}} e
+   * @param {string} data
    */
-  onScanQR = e => {
+  onScanQR = data => {
     this.setState({
       scanQR: false,
     })
-    this.decodeAll(e.data)
+
+    this.decodeAll(data)
   }
 
   scanQR = () => {
@@ -681,7 +682,7 @@ class LNURL extends React.Component {
     })
   }
 
-  closeScanQR = () => {
+  toggleScanQR = () => {
     this.setState({
       scanQR: false,
     })
@@ -698,10 +699,13 @@ class LNURL extends React.Component {
     }
     if (scanQR) {
       return (
-        <QRCodeScanner
-          onRead={this.onScanQR}
-          onRequestClose={this.closeScanQR}
-        />
+        <View style={CSS.styles.flex}>
+          <QRScanner
+            onQRSuccess={this.onScanQR}
+            toggleQRScreen={this.toggleScanQR}
+            type="send"
+          />
+        </View>
       )
     }
     return (
@@ -714,7 +718,7 @@ class LNURL extends React.Component {
   }
 }
 /**
- * @param {{history:import('../../reducers/HistoryReducer').State}} state
+ * @param {{history:import('../store/reducers/HistoryReducer').State}} state
  */
 const mapStateToProps = ({ history }) => ({ history })
 

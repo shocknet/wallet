@@ -4,8 +4,8 @@ import { View } from 'react-native'
 
 import BasicDialog from '../../components/BasicDialog'
 import ShockInput from '../../components/ShockInput'
-import { Events } from '../../services/contact-api'
 import IGDialogBtn from '../../components/IGDialogBtn'
+import { getStore, getMe } from '../../store'
 
 /**
  * @typedef {object} Props
@@ -19,17 +19,20 @@ import IGDialogBtn from '../../components/IGDialogBtn'
  */
 
 /**
- * @augments React.Component<Props, State>
+ * @augments React.PureComponent<Props, State>
  */
-export default class SetBioDialog extends React.Component {
+export default class SetBioDialog extends React.PureComponent {
   state = {
     bio: '',
     open: false,
   }
 
   open = () => {
+    const state = getStore().getState()
+
+    const me = getMe(state)
     this.setState({
-      bio: Events.currentBio || '',
+      bio: me.bio || '',
       open: true,
     })
   }

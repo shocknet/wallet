@@ -1,6 +1,3 @@
-/**
- * @prettier
- */
 import React from 'react'
 import {
   FlatList,
@@ -48,14 +45,6 @@ const byTimestampFromOldestToNewest = (a, b) => a.timestamp - b.timestamp
 /**
  * @type {React.FC}
  */
-// const _NoChatsOrRequests = () => ((
-//   <View style={styles.noChats}>
-//     <Text>NO CHATS OR REQUESTS</Text>
-//   </View>
-// ))
-//
-// const NoChatsOrRequests = React.memo(_NoChatsOrRequests)
-
 const _NoChatsOrRequestsDark = () => ((
   <View style={styles.noChatsDark}>
     <Text style={styles.noChatsTextDark}>NO CHATS OR REQUESTS</Text>
@@ -99,9 +88,9 @@ const keyExtractor = item => item.id
  */
 
 /**
- * @augments React.Component<Props>
+ * @augments React.PureComponent<Props>
  */
-export default class ChatsView extends React.Component {
+export default class ChatsView extends React.PureComponent {
   /**
    * @private
    * @type {Record<string, () => void>}
@@ -194,7 +183,7 @@ export default class ChatsView extends React.Component {
 
                 return lastMsg.body
               })()}
-              lowerTextStyle={unread ? styles.boldFont : undefined}
+              lowerTextStyle={unread ? styles.boldFont : styles.nearWhiteFont}
               name={
                 chat.recipientDisplayName === null
                   ? chat.recipientPublicKey
@@ -257,10 +246,10 @@ export default class ChatsView extends React.Component {
    * @returns {React.ReactElement<any>}
    */
   sentRequestRenderer = sentRequest => {
-    // @ts-ignore
+    // @ts-expect-error
     const isSending = sentRequest.state === 'sending'
     const hasError =
-      // @ts-ignore
+      // @ts-expect-error
       typeof sentRequest.state === 'string' && sentRequest.state !== 'sending'
 
     return (
@@ -280,7 +269,7 @@ export default class ChatsView extends React.Component {
               }
 
               if (hasError) {
-                // @ts-ignore
+                // @ts-expect-error
                 return sentRequest.state
               }
 
@@ -455,13 +444,19 @@ const ITEM_CONTAINER_HORIZONTAL_PADDING = SCREEN_PADDING / 2
 const ITEM_CONTAINER_VERTICAL_PADDING = 15
 
 const styles = StyleSheet.create({
+  nearWhiteFont: {
+    color: Colors.DARK_MODE_TEXT_NEAR_WHITE,
+    fontFamily: 'Montserrat-600',
+  },
+
   boldFont: {
-    // @ts-ignore
+    fontFamily: 'Montserrat-700',
+    color: Colors.DARK_MODE_TEXT_NEAR_WHITE,
     fontWeight: 'bold',
   },
 
   redBoldFont: {
-    // @ts-ignore
+    fontFamily: 'Montserrat-700',
     fontWeight: 'bold',
     color: 'red',
   },
@@ -476,7 +471,7 @@ const styles = StyleSheet.create({
   },
 
   headerDark: {
-    backgroundColor: '#1A2028',
+    backgroundColor: Colors.DARK_MODE_BACKGROUND_BLUEISH_GRAY,
     justifyContent: 'flex-end',
     flexDirection: 'row',
     paddingLeft: SCREEN_PADDING,
@@ -502,7 +497,7 @@ const styles = StyleSheet.create({
   // },
   noChatsDark: {
     alignItems: 'center',
-    backgroundColor: '#1A2028',
+    backgroundColor: Colors.DARK_MODE_BACKGROUND_BLUEISH_GRAY,
     flex: 1,
     justifyContent: 'center',
   },

@@ -1,6 +1,6 @@
 import React from 'react'
 import { View, StyleSheet, Text, ActivityIndicator } from 'react-native'
-// @ts-ignore
+// @ts-expect-error
 import { Dropdown } from 'react-native-material-dropdown'
 import Modal from 'react-native-modalbox'
 import ModalInput from '../../../components/PopupModal/Input'
@@ -24,9 +24,9 @@ import { Colors } from '../../../res/css'
  */
 
 /**
- * @augments React.Component<Props, {}, never>
+ * @augments React.PureComponent<Props, {}, never>
  */
-class AddChannelModal extends React.Component {
+class AddChannelModal extends React.PureComponent {
   render() {
     const {
       modalRef,

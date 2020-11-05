@@ -27,9 +27,9 @@ import { bLogoSmall } from '../../res'
  */
 
 /**
- * @augments React.Component<Props, State>
+ * @augments React.PureComponent<Props, State>
  */
-export default class InputToolbar extends React.Component {
+export default class InputToolbar extends React.PureComponent {
   /** @type {State} */
   state = {
     text: '',
@@ -85,7 +85,7 @@ export default class InputToolbar extends React.Component {
               onChangeText={this.onInput}
               style={styles.textInput}
               value={text}
-              // @ts-ignore
+              // @ts-expect-error
               paddingTop={0}
               paddingBottom={0}
               ref={this.textInputRef}
