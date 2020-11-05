@@ -27,6 +27,7 @@ import btcConvert from '../../services/convertBitcoin'
 import Pad from '../../components/Pad'
 import * as Store from '../../store'
 import { Tip } from '../../schema'
+import * as Services from '../../services'
 
 const OUTBOUND_INDICATOR_RADIUS = 20
 
@@ -71,7 +72,7 @@ export class UnifiedTransaction extends React.PureComponent<Props> {
       return <Text>{err}</Text>
     }
 
-    const formattedTimestamp = moment.unix(timestamp).fromNow()
+    const formattedTimestamp = moment(timestamp).fromNow()
     const convertedBalance = (
       Math.round(
         btcConvert(value.toString(), 'Satoshi', 'BTC') * USDRate * 100,
@@ -137,10 +138,10 @@ export class UnifiedTransaction extends React.PureComponent<Props> {
           </Text>
         </View>
         <View style={styles.valuesContainer}>
-          <Text style={styles.timestamp}>{formattedTimestamp + ' ago'}</Text>
+          <Text style={styles.timestamp}>{formattedTimestamp}</Text>
           <Text style={styles.value}>
             {(() => {
-              if (status === 'sent' || status === 'process') {
+              if (status === 'sent') {
                 return '-'
               }
 
@@ -213,6 +214,16 @@ const makeMapStateToProps = () => {
       const isPayment = !!asPayment.payment_hash
       const isChainTX = !!asChainTX.tx_hash
       const isTip = !!asTip.amount && !!asTip.state
+
+      const timestamp = (() => {
+        const t =
+          asInvoice.settle_date ||
+          asPayment.creation_date ||
+          asChainTX.time_stamp ||
+          moment.now().toString()
+
+        return Services.normalizeTimestamp(Number(t))
+      })()
 
       const value = Math.abs(
         Number(
@@ -319,12 +330,7 @@ const makeMapStateToProps = () => {
             | number
             | null) || 0,
         title: name,
-        timestamp: Number(
-          asInvoice.settle_date ||
-            asPayment.creation_date ||
-            asChainTX.time_stamp ||
-            moment.now() - 200000,
-        ),
+        timestamp,
         // Math.abs for outbound chain tx where the amount is negative
         value,
         subTitle: description,
