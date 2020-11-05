@@ -105,7 +105,13 @@ public class NotificationService extends Service {
                 String id = last.substring(0,5)+"...";
                 int value = Integer.parseInt(res.getString("amount"));
                 float valueBTC = value / 100000000f;
-                doNotification("Transaction confirmed! "+String.valueOf(valueBTC)+" BTC","",R.drawable.icon,"");
+                String finalVal = "";
+                if(valueBTC >= 0.001){
+                    finalVal = String.valueOf(valueBTC)+" BTC";
+                } else {
+                    finalVal = res.getString("amount")+" sats";
+                }
+                doNotification("Transaction confirmed! "+finalVal,"",R.drawable.icon,"");
             }catch (Exception e){
                 Log.d(TAG,"Tx err"+e.toString());
             }
