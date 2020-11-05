@@ -1,3 +1,5 @@
+import Logger from 'react-native-file-log'
+
 // Record<string, string|number|boolean> could have been used for params but
 // typescript complains on param bodies with optional parameters.
 /**
@@ -77,3 +79,26 @@ export const SET_LAST_SEEN_APP_INTERVAL = 15000
  */
 export const isOnline = (lastSeen: number): boolean =>
   Date.now() - lastSeen < SET_LAST_SEEN_APP_INTERVAL * 2
+
+export function normalizeTimestamp(timestamp: number): number {
+  if (timestamp === 0) {
+    return timestamp
+  }
+
+  const t = timestamp.toString()
+
+  if (t.length === 10) {
+    // is seconds
+    return Number(t) * 1000
+  } else if (t.length === 13) {
+    // is milliseconds
+    return Number(t) * 1000
+  } else if (t.length === 16) {
+    // is microseconds
+    return Number(t) * 1000 * 1000
+  }
+
+  Logger.log('normalizeTimestamp() -> could not interpret timestamp')
+
+  return Number(t)
+}
