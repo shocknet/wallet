@@ -16,11 +16,11 @@ import size from 'lodash/size'
 import * as Store from '../../store'
 import * as CSS from '../../res/css'
 import Pad from '../Pad'
-import Button from '../space-btn'
 import SeeMore from '../SeeMore'
 import ShockWebView from '../ShockWebView'
 import Share from '../../assets/images/share.svg'
 import Dialog from '../ShockDialog'
+import ShockIcon from '../../assets/images/shockB.svg'
 
 import UserInfo from './UserInfoNew'
 import TipPopup from './tip-popup'
@@ -50,6 +50,7 @@ interface State {
   displayingMediaIdx: number
   menuOpen: boolean
   tipPopupOpen: boolean
+  showingRibbon: boolean
 }
 
 type Props = OwnProps & StateProps & DispatchProps
@@ -60,6 +61,7 @@ class Post extends React.PureComponent<Props, State> {
     displayingMediaIdx: 0,
     menuOpen: false,
     tipPopupOpen: false,
+    showingRibbon: true,
   }
 
   getMediaItems() {
@@ -103,12 +105,21 @@ class Post extends React.PureComponent<Props, State> {
     this.setState({ displayingMediaIdx: i })
   }
 
+  onPressVideo = () => {
+    this.setState({
+      showingRibbon: false,
+    })
+  }
+
+  onPressImage = () => {}
+
   renderMediaItem = ({
     item,
   }: {
     item: Schema.EmbeddedImage | Schema.EmbeddedVideo
   }) => {
-    const { mediaWidth } = this.state
+    const { numOfTips } = this.props
+    const { mediaWidth, showingRibbon } = this.state
 
     if (!mediaWidth) {
       return null
@@ -121,7 +132,20 @@ class Post extends React.PureComponent<Props, State> {
           magnet={item.magnetURI}
           type={item.type === 'image/embedded' ? 'image' : 'video'}
           width={Number(item.width)}
+          onPress={
+            item.type === 'image/embedded'
+              ? this.onPressImage
+              : this.onPressVideo
+          }
         />
+
+        {showingRibbon ? (
+          <View style={styles.ribbon}>
+            <Text style={styles.ribbonText}>
+              {numOfTips} <Text style={styles.ribbonTextBold}>Tips</Text>
+            </Text>
+          </View>
+        ) : null}
       </View>
     )
   }
@@ -163,14 +187,7 @@ class Post extends React.PureComponent<Props, State> {
   }
 
   render() {
-    const {
-      id,
-      contentItems,
-      numOfTips,
-      showTipBtn,
-      isPinned,
-      hideTopBorder,
-    } = this.props
+    const { id, contentItems, showTipBtn, isPinned, hideTopBorder } = this.props
     const { displayingMediaIdx, mediaWidth, tipPopupOpen } = this.state
 
     const paragraphs = pickBy(
@@ -232,23 +249,20 @@ class Post extends React.PureComponent<Props, State> {
             </>
           )}
 
-          <Pad amount={8} />
+          <Pad amount={12} />
 
           <View style={CSS.styles.rowCenteredSpaceBetween}>
+            <View />
+
             <View
               // TODO: Why width100 pushes out share buton?
-              style={showTipBtn ? CSS.styles.width70 : CSS.styles.opacityZero}
+              style={showTipBtn ? undefined : CSS.styles.opacityZero}
             >
-              <Button
-                iconLeft="bolt"
-                slim
-                title={`Tip - ${numOfTips} Tips`}
-                onPress={this.toggleTipPopup}
-              />
+              <ShockIcon width={24} height={24} />
             </View>
 
             <TouchableWithoutFeedback onPress={this.onPressShare}>
-              <Share size={12} />
+              <Share size={16} />
             </TouchableWithoutFeedback>
           </View>
         </View>
@@ -317,6 +331,26 @@ const styles = StyleSheet.create({
     fontFamily: 'Montserrat-Light',
     fontSize: 8,
   },
+
+  ribbon: {
+    position: 'absolute',
+    top: 12,
+    right: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    borderBottomLeftRadius: 8,
+    borderTopLeftRadius: 8,
+    paddingHorizontal: 48,
+    paddingVertical: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  ribbonText: {
+    textAlign: 'center',
+    fontFamily: 'Montserrat-Regular',
+    color: 'white',
+  },
+  ribbonTextBold: { fontFamily: 'Montserrat-Bold' },
 })
 
 const mapState = () => {
