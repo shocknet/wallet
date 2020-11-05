@@ -101,7 +101,7 @@
     "react-native-swipe-verify": "Emad-salah/RNSwipeVerify#6fa559cb80ba1d64286a3a3eb9a64fd684dc1553",
     "react-native-tcp": "^3.2.1",
     "react-native-text-size": "4.0.0-rc.1",
-    "react-native-udp": "^2.1.0",
+    "react-native-udp": "^4.0.3",
     "react-native-vector-icons": "^6.6.0",
     "react-native-video": "^5.1.0-alpha8",
     "react-native-webview": "^9.4.0",
