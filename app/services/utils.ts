@@ -1,16 +1,15 @@
-/**
- * @format
- */
+import Logger from 'react-native-file-log'
 
 // Record<string, string|number|boolean> could have been used for params but
 // typescript complains on param bodies with optional parameters.
-
 /**
- * @param {string} url
- * @param {Record<string, any>} params
- * @returns {string}
+ * @param url
+ * @param params
  */
-export const getQueryParams = (url, params = {}) => {
+export const getQueryParams = (
+  url: string,
+  params: Record<string, any> = {},
+): string => {
   let finalURL = url
 
   Object.entries(params).forEach(([param, value], i) => {
@@ -43,16 +42,14 @@ export const getQueryParams = (url, params = {}) => {
 }
 
 /**
- * @param {string} pub
- * @returns {string}
+ * @param pub
  */
-export const defaultName = pub => 'anon' + pub.slice(0, 8)
+export const defaultName = (pub: string): string => 'anon' + pub.slice(0, 8)
 
 /**
- * @param {string} ip
- * @returns {boolean}
+ * @param ip
  */
-export const isValidIP = ip => {
+export const isValidIP = (ip: string): boolean => {
   const sections = ip.split('.')
 
   if (sections.length !== 4) return false
@@ -63,10 +60,9 @@ export const isValidIP = ip => {
 }
 
 /**
- * @param {string} url
- * @returns {boolean}
+ * @param url
  */
-export const isValidURL = url => {
+export const isValidURL = (url: string): boolean => {
   const [ip, port] = url.split(':')
 
   if (!port) {
@@ -79,8 +75,30 @@ export const isValidURL = url => {
 export const SET_LAST_SEEN_APP_INTERVAL = 15000
 
 /**
- * @param {number} lastSeen
- * @returns {boolean}
+ * @param lastSeen
  */
-export const isOnline = lastSeen =>
+export const isOnline = (lastSeen: number): boolean =>
   Date.now() - lastSeen < SET_LAST_SEEN_APP_INTERVAL * 2
+
+export function normalizeTimestamp(timestamp: number): number {
+  if (timestamp === 0) {
+    return timestamp
+  }
+
+  const t = timestamp.toString()
+
+  if (t.length === 10) {
+    // is seconds
+    return Number(t) * 1000
+  } else if (t.length === 13) {
+    // is milliseconds
+    return Number(t) * 1000
+  } else if (t.length === 16) {
+    // is microseconds
+    return Number(t) * 1000 * 1000
+  }
+
+  Logger.log('normalizeTimestamp() -> could not interpret timestamp')
+
+  return Number(t)
+}

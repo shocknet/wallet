@@ -145,6 +145,8 @@ class Debug extends React.PureComponent<Props, Record<string, any>> {
         <Text>Token:</Text>
         <Text>{token}</Text>
 
+        <Button title="Clear ALL Data" onPress={Cache.clearAllStorage} />
+
         <Button title="Clear AUTH Data" onPress={this.clearAuthData} />
 
         <Button
