@@ -12,6 +12,8 @@ import { connect } from 'react-redux'
 import pickBy from 'lodash/pickBy'
 import Carousel from 'react-native-snap-carousel'
 import size from 'lodash/size'
+import isFinite from 'lodash/isFinite'
+import Logger from 'react-native-file-log'
 
 import * as Store from '../../store'
 import * as CSS from '../../res/css'
@@ -21,6 +23,7 @@ import ShockWebView from '../ShockWebView'
 import Share from '../../assets/images/share.svg'
 import Dialog from '../ShockDialog'
 import ShockIcon from '../../assets/images/shockB.svg'
+import * as Services from '../../services'
 
 import UserInfo from './UserInfoNew'
 import TipPopup from './tip-popup'
@@ -47,10 +50,10 @@ interface DispatchProps {
 
 interface State {
   mediaWidth: number | null
-  displayingMediaIdx: number
   menuOpen: boolean
   tipPopupOpen: boolean
   showingRibbon: boolean
+  tipAmt: number
 }
 
 type Props = OwnProps & StateProps & DispatchProps
@@ -58,12 +61,37 @@ type Props = OwnProps & StateProps & DispatchProps
 class Post extends React.PureComponent<Props, State> {
   state: State = {
     mediaWidth: null,
-    displayingMediaIdx: 0,
     menuOpen: false,
     tipPopupOpen: false,
     showingRibbon: true,
+    tipAmt: 0,
   }
 
+  tipAmtSocket: null | ReturnType<typeof Services.rifle> = null
+
+  componentDidMount = () => {
+    const { authorPublicKey, id } = this.props
+    this.tipAmtSocket = Services.rifle(
+      `${authorPublicKey}::posts>${id}>tipCounter::on`,
+    )
+    this.tipAmtSocket.on('$shock', (tipAmt: unknown) => {
+      if (typeof tipAmt === 'number' && isFinite(tipAmt) && tipAmt >= 0) {
+        this.setState({ tipAmt })
+      } else {
+        Logger.log(
+          `post: ${id} -- got bad tipAmt: ${typeof tipAmt} -- rendered: ${tipAmt}`,
+        )
+      }
+    })
+  }
+
+  componentWillUnmount = () => {
+    if (this.tipAmtSocket) {
+      this.tipAmtSocket.off('*')
+      this.tipAmtSocket.close()
+      this.tipAmtSocket = null
+    }
+  }
   getMediaItems() {
     const { contentItems } = this.props
 
@@ -99,10 +127,6 @@ class Post extends React.PureComponent<Props, State> {
         mediaWidth: (width || 0) - PADDING * 2,
       }
     })
-  }
-
-  onSnapToMediaItem = (i: number) => {
-    this.setState({ displayingMediaIdx: i })
   }
 
   onPressVideo = () => {
@@ -188,7 +212,7 @@ class Post extends React.PureComponent<Props, State> {
 
   render() {
     const { id, contentItems, showTipBtn, isPinned, hideTopBorder } = this.props
-    const { displayingMediaIdx, mediaWidth, tipPopupOpen } = this.state
+    const { mediaWidth, tipPopupOpen } = this.state
 
     const paragraphs = pickBy(
       contentItems,
@@ -235,16 +259,8 @@ class Post extends React.PureComponent<Props, State> {
                   itemWidth={mediaWidth}
                   sliderWidth={mediaWidth}
                   lockScrollWhileSnapping
-                  onSnapToItem={this.onSnapToMediaItem}
                   initialNumToRender={1}
                 />
-
-                {numOfMediaItems > 1 && (
-                  <View style={styles.mediaIndex}>
-                    <Text style={styles.mediaIndexText}>{`${displayingMediaIdx +
-                      1}/${numOfMediaItems}`}</Text>
-                  </View>
-                )}
               </View>
             </>
           )}
@@ -313,23 +329,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Montserrat-Light',
     color: CSS.Colors.TEXT_WHITE,
     fontSize: 12,
-  },
-
-  mediaIndex: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    borderRadius: 100,
-    width: 24,
-    height: 24,
-    backgroundColor: `rgba(0,0,0, 0.5)`,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  mediaIndexText: {
-    color: CSS.Colors.TEXT_WHITE,
-    fontFamily: 'Montserrat-Light',
-    fontSize: 8,
   },
 
   ribbon: {
