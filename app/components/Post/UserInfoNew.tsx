@@ -35,11 +35,7 @@ const UserInfoNew: React.FC<Props> = ({
 }) => (
   <View style={CSS.styles.rowCenteredSpaceBetween}>
     <View style={styles.userAndDate}>
-      <ConnectedShockAvatar
-        height={56}
-        publicKey={authorPublicKey}
-        onPress={F}
-      />
+      <ConnectedShockAvatar height={56} publicKey={authorPublicKey} />
 
       <Pad amount={10} insideRow />
 
@@ -100,8 +96,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
 })
-
-const F = () => {}
 
 const makeMapState = () => {
   const getUser = Store.makeGetUser()
