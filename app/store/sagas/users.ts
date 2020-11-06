@@ -17,10 +17,12 @@ function* users() {
     const allPublicKeys = Selectors.getAllPublicKeys(state)
 
     if (isReady) {
+      Logger.log(`Will asign user sockets to all known public keys`)
       assignSocketsToPublicKeys(allPublicKeys)
     }
 
     if (!isReady) {
+      Logger.log(`Will remove user sockets from all subbed public keys`)
       for (const publicKey of allPublicKeys) {
         const normalSocket = sockets['normal' + publicKey]
         const binarySocket = sockets['binary' + publicKey]
@@ -46,6 +48,7 @@ function* users() {
 
 const assignSocketsToPublicKeys = (publicKeys: string[]) => {
   for (const publicKey of publicKeys) {
+    Logger.log(`Assigning socket to publicKey: ${publicKey}`)
     const normalSocketName = 'normal' + publicKey
     const binarySocketName = 'binary' + publicKey
 
