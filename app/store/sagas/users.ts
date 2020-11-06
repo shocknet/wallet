@@ -18,7 +18,6 @@ function* users() {
     const allPublicKeys = Selectors.getAllPublicKeys(state)
 
     if (isReady) {
-      Logger.log(`Will asign user sockets to all known public keys if needed`)
       assignSocketsToPublicKeysIfNeeded(allPublicKeys)
     }
 
@@ -53,7 +52,6 @@ const assignSocketsToPublicKeysIfNeeded = (publicKeys: string[]) => {
     const binarySocketName = 'binary' + publicKey
 
     if (sockets[normalSocketName] && sockets[binarySocketName]) {
-      Logger.log(`Socket for public key already exists, skipping: ${publicKey}`)
       continue
     }
 
