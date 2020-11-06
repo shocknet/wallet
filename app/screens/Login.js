@@ -210,7 +210,6 @@ export class Login extends React.PureComponent {
               token: res.token,
             })
 
-            this.props.dispatch(Actions.Follows.receivedFollows(res.follows))
             this.props.dispatch(
               Actions.authed({
                 alias: aliasToUse,
