@@ -21,22 +21,6 @@ export const keysLoaded = (keys: LoadedKeys) =>
     data: keys,
   } as const)
 
-export const SOCKET_DID_CONNECT = 'socket/socketDidConnect'
-
-export const socketDidConnect = () =>
-  ({
-    type: SOCKET_DID_CONNECT,
-  } as const)
-
-export const SOCKET_DID_DISCONNECT = 'socket/socketDidDisconnect'
-
-export const socketDidDisconnect = () =>
-  ({
-    type: SOCKET_DID_DISCONNECT,
-  } as const)
-
 export type ConnectionAction =
   | ReturnType<typeof ping>
   | ReturnType<typeof keysLoaded>
-  | ReturnType<typeof socketDidConnect>
-  | ReturnType<typeof socketDidDisconnect>

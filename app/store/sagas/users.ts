@@ -2,6 +2,7 @@ import { takeEvery, select } from 'redux-saga/effects'
 import Logger from 'react-native-file-log'
 import SocketIO from 'socket.io-client'
 import { Constants } from 'shock-common'
+import size from 'lodash/size'
 
 import * as Actions from '../actions'
 import * as Selectors from '../selectors'
@@ -17,10 +18,11 @@ function* users() {
     const allPublicKeys = Selectors.getAllPublicKeys(state)
 
     if (isReady) {
-      assignSocketsToPublicKeys(allPublicKeys)
+      assignSocketsToPublicKeysIfNeeded(allPublicKeys)
     }
 
-    if (!isReady) {
+    if (!isReady && size(sockets)) {
+      Logger.log(`Will remove user sockets from all subbed public keys`)
       for (const publicKey of allPublicKeys) {
         const normalSocket = sockets['normal' + publicKey]
         const binarySocket = sockets['binary' + publicKey]
@@ -44,7 +46,7 @@ function* users() {
   }
 }
 
-const assignSocketsToPublicKeys = (publicKeys: string[]) => {
+const assignSocketsToPublicKeysIfNeeded = (publicKeys: string[]) => {
   for (const publicKey of publicKeys) {
     const normalSocketName = 'normal' + publicKey
     const binarySocketName = 'binary' + publicKey
@@ -52,6 +54,8 @@ const assignSocketsToPublicKeys = (publicKeys: string[]) => {
     if (sockets[normalSocketName] && sockets[binarySocketName]) {
       continue
     }
+
+    Logger.log(`Assigning socket to publicKey: ${publicKey}`)
 
     if (!(!sockets[normalSocketName] && !sockets[binarySocketName])) {
       throw new Error(
