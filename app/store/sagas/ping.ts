@@ -15,6 +15,7 @@ function* ping() {
     const { token, host } = state.auth
 
     if (token && !socket) {
+      Logger.log(`Will try to connect ping socket`)
       socket = SocketIO(`http://${host}/shockping`, {
         query: {
           token,
@@ -28,9 +29,14 @@ function* ping() {
       socket.on(Constants.ErrorCode.NOT_AUTH, () => {
         getStore().dispatch(Actions.tokenDidInvalidate())
       })
+
+      socket.on('$error', (e: string) => {
+        Logger.log(`Error received by ping socket: ${e}`)
+      })
     }
 
     if (!token && socket) {
+      Logger.log(`Will kill ping socket`)
       socket.off('*')
       socket.close()
       socket = null
