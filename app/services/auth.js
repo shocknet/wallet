@@ -1,6 +1,5 @@
 import Http from 'axios'
 import Logger from 'react-native-file-log'
-import { Schema } from 'shock-common'
 
 import * as Cache from './cache'
 import * as Wallet from './wallet'
@@ -24,8 +23,6 @@ export const isGunAuthed = async () => {
  * @typedef {object} AuthResponse
  * @prop {string} publicKey
  * @prop {string} token
- * @prop {Record<string, Schema.Follow>} follows
- * @prop {Wallet.ListInvoiceResponse} invoices
  */
 
 /**
@@ -58,8 +55,6 @@ export const unlockWallet = async (alias, password) => {
     return {
       publicKey: data.user.publicKey,
       token: data.authorization,
-      follows: data.follows,
-      invoices: data.data.invoices,
     }
   } catch (err) {
     throw new Error(
@@ -96,12 +91,6 @@ export const createWallet = async (alias, password) => {
       return {
         publicKey: data.user.publicKey,
         token: data.authorization,
-        follows: {},
-        invoices: {
-          first_index_offset: 0,
-          invoices: [],
-          last_index_offset: 0,
-        },
       }
     }
   } catch (err) {
@@ -139,12 +128,6 @@ export const newGUNAlias = async (alias, pass) => {
     return {
       publicKey: body.user.publicKey,
       token: body.authorization,
-      follows: {},
-      invoices: {
-        first_index_offset: 0,
-        invoices: [],
-        last_index_offset: 0,
-      },
     }
   } catch (err) {
     const body = err.response.data
