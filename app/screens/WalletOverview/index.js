@@ -18,7 +18,6 @@ import { Schema } from 'shock-common'
 // @ts-expect-error
 import bech32 from 'bech32'
 
-import SocketManager from '../../services/socket'
 import * as Navigation from '../../services/navigation'
 import Nav from '../../components/Nav'
 import wavesBG from '../../assets/images/waves-bg.png'
@@ -26,15 +25,12 @@ import wavesBGDark from '../../assets/images/waves-bg-dark.png'
 import ShockIcon from '../../res/icons'
 import btcConvert from '../../services/convertBitcoin'
 import * as CSS from '../../res/css'
-import * as Wallet from '../../services/wallet'
 import { getUSDRate, getWalletBalance } from '../../store/actions/WalletActions'
 import { fetchNodeInfo } from '../../store/actions/NodeActions'
 import {
   fetchRecentTransactions,
   fetchRecentPayments,
   fetchRecentInvoices,
-  loadNewInvoice,
-  loadNewTransaction,
 } from '../../store/actions/HistoryActions'
 import { subscribeOnChats } from '../../store/actions/ChatActions'
 import {
@@ -72,8 +68,6 @@ import { Color } from 'shock-common/dist/constants'
  * @prop {() => Promise<import('../../store/actions/NodeActions').GetInfo>} fetchNodeInfo
  * @prop {() => Promise<Schema.Chat[]>} subscribeOnChats
  * @prop {() => Promise<number>} getUSDRate
- * @prop {(invoice: Wallet.Invoice) => void} loadNewInvoice
- * @prop {(transaction: Wallet.Transaction) => void} loadNewTransaction
  * @prop {{notifyDisconnect:boolean, notifyDisconnectAfterSeconds:number}} settings
  * @prop {() => void} forceInvoicesRefresh
  * @prop {boolean} isOnline
@@ -124,21 +118,12 @@ class WalletOverview extends React.PureComponent {
 
   theme = 'dark'
 
-  /**
-   * @param {Schema.InvoiceWhenListed} invoice
-   */
-  loadNewInvoice = invoice => {
-    // @ts-expect-error
-    this.props.loadNewInvoice(invoice)
-  }
-
   componentDidMount = async () => {
     const {
       fetchNodeInfo,
       subscribeOnChats,
       fetchRecentTransactions,
       fetchRecentInvoices,
-      loadNewTransaction,
       navigation,
       forceInvoicesRefresh,
       forcePaymentsRefresh,
@@ -173,10 +158,6 @@ class WalletOverview extends React.PureComponent {
 
     this.startNotificationService()
 
-    if (!SocketManager.socket?.connected) {
-      await SocketManager.connectSocket()
-    }
-
     subscribeOnChats()
     await Promise.all([
       fetchRecentInvoices(),
@@ -184,28 +165,6 @@ class WalletOverview extends React.PureComponent {
       fetchRecentPayments(),
       fetchNodeInfo(),
     ])
-
-    SocketManager.socket.on(
-      'invoice:new',
-      /**
-       * @param {Schema.InvoiceWhenListed} data
-       */
-      data => {
-        Logger.log('[SOCKET] New Invoice!', data)
-        this.loadNewInvoice(data)
-      },
-    )
-
-    SocketManager.socket.on(
-      'transaction:new',
-      /**
-       * @param {Wallet.Transaction} data
-       */
-      data => {
-        Logger.log('[SOCKET] New Transaction!', data)
-        loadNewTransaction(data)
-      },
-    )
   }
 
   fetchRecentPayments = () =>
@@ -471,8 +430,6 @@ const mapDispatchToProps = {
   fetchRecentInvoices,
   fetchRecentPayments,
   subscribeOnChats,
-  loadNewInvoice,
-  loadNewTransaction,
   forceInvoicesRefresh: invoicesRefreshForced,
   forcePaymentsRefresh: paymentsRefreshForced,
   getMoreFeed,
