@@ -1,6 +1,5 @@
 import uuid from 'uuid/v4'
 import { Action } from '../actions'
-import { ACTIONS } from '../actions/ConnectionActions'
 
 /**
  * @typedef {object} State
@@ -8,7 +7,6 @@ import { ACTIONS } from '../actions/ConnectionActions'
  * @prop {string?} APIPublicKey
  * @prop {string?} sessionId
  * @prop {string} deviceId
- * @prop {boolean} socketConnected
  * @prop {number} lastPing
  */
 
@@ -20,7 +18,6 @@ const INITIAL_STATE = {
   APIPublicKey: null,
   sessionId: null,
   deviceId: uuid(),
-  socketConnected: false,
   lastPing: 0,
 }
 
@@ -38,18 +35,6 @@ const connection = (state = INITIAL_STATE, action) => {
         devicePublicKey: devicePublicKey || null,
         sessionId,
         APIPublicKey,
-      }
-    }
-    case ACTIONS.SOCKET_DID_CONNECT: {
-      return {
-        ...state,
-        socketConnected: true,
-      }
-    }
-    case ACTIONS.SOCKET_DID_DISCONNECT: {
-      return {
-        ...state,
-        socketConnected: false,
       }
     }
     case 'socket/ping': {
