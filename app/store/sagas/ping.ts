@@ -27,7 +27,11 @@ function* ping() {
       Date.now() - lastHandshake > 12000
 
     if (socketIsDead) {
-      Logger.log('Socket is dead')
+      Logger.log(
+        `Socket is dead, claims ${
+          socket!.connected ? 'to be connected' : 'to be offline'
+        }`,
+      )
     }
 
     if ((!token && socket) || socketIsDead) {
