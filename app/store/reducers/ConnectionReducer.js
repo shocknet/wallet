@@ -18,7 +18,8 @@ const INITIAL_STATE = {
   APIPublicKey: null,
   sessionId: null,
   deviceId: uuid(),
-  lastPing: 0,
+  // setting the initial value to Date.now() simplifies things elsewhere
+  lastPing: Date.now(),
 }
 
 /**
