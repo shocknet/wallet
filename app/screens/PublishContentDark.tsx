@@ -2,13 +2,10 @@ import React from 'react'
 import {
   Text,
   View,
-  //SafeAreaView,
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  //ToastAndroid,
   ActivityIndicator,
-  //StatusBar,
   TouchableHighlight,
   Image,
   PixelRatio,
@@ -16,16 +13,13 @@ import {
   LayoutChangeEvent,
   TouchableWithoutFeedback,
 } from 'react-native'
-//import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'
-//import Logger from 'react-native-file-log'
-import _ from 'lodash'
+
 import { connect } from 'react-redux'
 import { FilePickerFile } from 'react-native-file-picker'
 import Video from 'react-native-video'
 import ImagePicker from 'react-native-image-crop-picker'
 
 import * as CSS from '../res/css'
-//import Modal from 'react-native-modal'
 import Pad from '../components/Pad'
 import InputGroup from '../components/InputGroup'
 import ArrowLeft from '../assets/images/arrow-left.svg'
