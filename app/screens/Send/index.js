@@ -102,6 +102,11 @@ export const SEND_SCREEN = 'SEND_SCREEN'
  * @extends React.PureComponent<Props, State, never>
  */
 class SendScreen extends React.PureComponent {
+  /** @type {import('react-navigation-stack').NavigationStackOptions} */
+  static navigationOptions = {
+    headerShown: false,
+  }
+
   /**@type State */
   state = {
     description: '',
