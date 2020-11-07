@@ -14,7 +14,6 @@ import {
 import Ionicons from 'react-native-vector-icons/Ionicons'
 import { NavigationStackScreenProps } from 'react-navigation-stack'
 import * as Common from 'shock-common'
-import _ from 'lodash'
 import { connect } from 'react-redux'
 import { StackNavigationOptions } from 'react-navigation-stack/lib/typescript/src/vendor/types'
 

@@ -12,7 +12,6 @@ import identity from 'lodash/identity'
 
 import { NavigationScreenProp } from 'react-navigation'
 import { NavigationBottomTabOptions } from 'react-navigation-tabs'
-import _ from 'lodash'
 import * as Common from 'shock-common'
 
 import * as Reducers from '../../store/reducers'
