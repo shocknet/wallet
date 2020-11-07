@@ -1,4 +1,5 @@
 import { Schema } from 'shock-common'
+import Logger from 'react-native-file-log'
 
 import * as Wallet from '../../../services/wallet'
 
@@ -79,6 +80,7 @@ export const decodePaymentRequest = paymentRequest => async dispatch => {
     })
     return
   } catch (err) {
+    Logger.log(`Error inside decodePaymentRequest action -> ${err.message}`)
     dispatch({
       type: ACTIONS.INVOICE_DECODE_ERROR,
       data: 'invalid invoice',

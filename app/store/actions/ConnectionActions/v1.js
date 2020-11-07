@@ -156,6 +156,7 @@ export const throttledExchangeKeyPair = keypairDetails => async (
 
     return result
   } catch (err) {
+    Logger.log(`Error inside throttledExchangeKeyPair -> ${err.message}`)
     exchangingKeypair = null
     throw err
   }
