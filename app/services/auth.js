@@ -48,6 +48,12 @@ export const unlockWallet = async (alias, password) => {
       throw new TypeError("typeof data.authorization !== 'string'")
     }
 
+    if (data.authorization.length < 10) {
+      throw new TypeError(
+        `data.authorization is an string but does not look like a token, it is less than 10 characters long: ${data.authorization}`,
+      )
+    }
+
     if (typeof data.user.publicKey !== 'string') {
       throw new TypeError("typeof data.user.publicKey !== 'string'")
     }
@@ -88,6 +94,12 @@ export const createWallet = async (alias, password) => {
     } else if (typeof data.user.publicKey !== 'string') {
       throw new TypeError("typeof data.user.publicKey !== 'string'")
     } else {
+      if (data.authorization.length < 10) {
+        throw new TypeError(
+          `data.authorization is an string but does not look like a token, it is less than 10 characters long: ${data.authorization}`,
+        )
+      }
+
       return {
         publicKey: data.user.publicKey,
         token: data.authorization,
