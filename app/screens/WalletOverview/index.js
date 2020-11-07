@@ -245,10 +245,25 @@ class WalletOverview extends React.PureComponent {
   startNotificationService = async () => {
     const authData = await Cache.getStoredAuthData()
     const nodeInfo = await Cache.getNodeURL()
-    if (!authData || !nodeInfo || !authData.authData.token) {
-      Logger.log('error starting notifications service, invalid info')
+
+    if (!authData) {
+      Logger.log('error starting notifications service, no auth data')
       return
     }
+
+    if (!nodeInfo) {
+      Logger.log('error starting notifications service, no nodeInfo')
+      return
+    }
+
+    if (!authData.authData.token) {
+      Logger.log(
+        'error starting notifications service, empty token: ' +
+          authData.authData.token,
+      )
+      return
+    }
+
     const {
       notifyDisconnect,
       notifyDisconnectAfterSeconds,
