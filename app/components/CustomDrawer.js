@@ -93,12 +93,6 @@ export default class CustomDrawer extends React.PureComponent {
       return
     }
 
-    if (screenName === DEBUG) {
-      const store = Store.getStore()
-      store.dispatch(Store.enableDebug())
-      ToastAndroid.show('Debug mode enabled', 800)
-    }
-
     navigation.navigate(screenName)
     navigation.dispatch(DrawerActions.closeDrawer())
   }
