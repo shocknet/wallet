@@ -424,6 +424,18 @@ export const listPayments = async request => {
   try {
     const { data } = await Http.get(url, { headers: { Authorization: token } })
 
+    const d = /** @type {PaginatedListPaymentsResponse} */ (data)
+
+    d.content.forEach(p => {
+      if (!Schema.isPaymentV2(p)) {
+        throw new TypeError(
+          `listPayments found a payment not confirming to schema: ${JSON.stringify(
+            p,
+          )}`,
+        )
+      }
+    })
+
     return data
   } catch (err) {
     const { response } = err
