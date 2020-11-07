@@ -5,7 +5,6 @@ import {
   TouchableOpacity,
   ScrollView,
   Text,
-  ToastAndroid,
 } from 'react-native'
 import { DrawerActions } from 'react-navigation-drawer'
 
@@ -15,7 +14,6 @@ import { ADVANCED_SCREEN } from '../screens/Advanced'
 import { SEED_BACKUP } from '../screens/SeedBackup'
 import { WALLET_SETTINGS } from '../screens/WalletSettings'
 import { DEBUG } from '../screens/Debug'
-import * as Store from '../store'
 
 import { Colors } from '../res/css'
 import ShockIcon from '../res/icons'
