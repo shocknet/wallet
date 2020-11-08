@@ -5,7 +5,7 @@ import ChatReducer from './ChatReducer'
 import InvoiceReducer from './InvoiceReducer'
 import ConnectionReducer from './ConnectionReducer'
 import FeesReducer from './FeesReducer'
-import UsersReducer, * as Users from './UsersReducer'
+import UsersReducer from './UsersReducer'
 import FollowsReducer from './follows'
 import SettingsReducer from './SettingsReducer'
 import paymentsV2s from './paymentV2s'
@@ -42,20 +42,8 @@ const rootReducer = {
   debug,
 }
 
-/**
- * @typedef {{ [K in keyof rootReducer]: ReturnType<typeof rootReducer[K]> }} State
- */
-
-/**
- * @param {State} state
- */
-export const selectAllUsers = state => Users.selectAllUsers(state.users)
-
-/**
- * @param {State} state
- * @param {{ publicKey: string }} props
- */
-export const selectUser = (state, { publicKey }) =>
-  Users.selectUser(state.users, { publicKey })
+export type State = {
+  [K in keyof typeof rootReducer]: ReturnType<typeof rootReducer[K]>
+}
 
 export default rootReducer
