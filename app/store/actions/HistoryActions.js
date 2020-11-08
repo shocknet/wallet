@@ -272,31 +272,3 @@ export const fetchRecentTransactions = () => async dispatch => {
 
   dispatch(unifyTransactions())
 }
-
-/**
- * Loads a new invoice into the Redux reducer
- * @param {Wallet.Invoice} invoice
- * @returns {import('redux-thunk').ThunkAction<void, {}, {}, import('redux').AnyAction>}
- */
-export const loadNewInvoice = invoice => dispatch => {
-  dispatch({
-    type: ACTIONS.LOAD_NEW_RECENT_INVOICE,
-    data: invoice,
-  })
-
-  dispatch(unifyTransactions())
-}
-
-/**
- * Loads a new transaction into the Redux reducer
- * @param {Wallet.Transaction} transaction
- * @returns {import('redux-thunk').ThunkAction<void, {}, {}, import('redux').AnyAction>}
- */
-export const loadNewTransaction = transaction => dispatch => {
-  dispatch({
-    type: ACTIONS.LOAD_NEW_RECENT_TRANSACTION,
-    data: transaction,
-  })
-
-  dispatch(unifyTransactions())
-}
