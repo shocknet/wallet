@@ -1,3 +1,5 @@
+import Logger from 'react-native-file-log'
+
 import * as API from '../../services/contact-api'
 
 export const ACTIONS = {
@@ -81,39 +83,47 @@ export const subscribeReceivedRequests = callback => dispatch =>
 /**
  * Subscribes to sent requests event listener
  * @param {((chats: SentRequest[]) => void)=} callback
- * @returns {import('redux-thunk').ThunkAction<Promise<SentRequest[]>, {}, {}, import('redux').AnyAction>}
+ * @returns {(dispatch: (a: any) => void) => Promise<any>}
  */
-export const subscribeSentRequests = callback => dispatch =>
-  new Promise((resolve, reject) => {
-    API.Events.onSentRequests(requests => {
-      try {
-        const sent = requests.map(chat => ({
-          id: chat.id,
-          pk: chat.recipientPublicKey,
-          avatar: chat.recipientAvatar,
-          displayName: chat.recipientDisplayName,
-          changedRequestAddress: chat.recipientChangedRequestAddress,
-          timestamp: chat.timestamp,
-        }))
+export const subscribeSentRequests = callback => async dispatch => {
+  try {
+    await new Promise((resolve, reject) => {
+      API.Events.onSentRequests(requests => {
+        try {
+          const sent = requests.map(chat => ({
+            id: chat.id,
+            pk: chat.recipientPublicKey,
+            avatar: chat.recipientAvatar,
+            displayName: chat.recipientDisplayName,
+            changedRequestAddress: chat.recipientChangedRequestAddress,
+            timestamp: chat.timestamp,
+          }))
 
-        /** @type {SentRequestsAction} */
-        const sentRequestsAction = {
-          type: ACTIONS.LOAD_SENT_REQUESTS,
-          data: sent,
+          /** @type {SentRequestsAction} */
+          const sentRequestsAction = {
+            type: ACTIONS.LOAD_SENT_REQUESTS,
+            data: sent,
+          }
+
+          dispatch(sentRequestsAction)
+
+          if (callback) {
+            callback(sent)
+          }
+
+          resolve(sent)
+        } catch (err) {
+          Logger.log(
+            `Error inside subscribeSentRequests thunk listener: ${err.message}`,
+          )
+          reject(err)
         }
-
-        dispatch(sentRequestsAction)
-
-        if (callback) {
-          callback(sent)
-        }
-
-        resolve(sent)
-      } catch (err) {
-        reject(err)
-      }
+      })
     })
-  })
+  } catch (e) {
+    Logger.log(`Error inside subscribeSentRequests thunk: ${e.message}`)
+  }
+}
 
 /**
  * Resets the cached sent/received requests

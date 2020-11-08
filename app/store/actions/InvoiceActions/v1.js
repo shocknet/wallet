@@ -139,19 +139,23 @@ export const resetInvoice = () => dispatch => {
  * @returns {import('redux-thunk').ThunkAction<void, {}, {}, import('redux').AnyAction>}
  */
 export const addInvoice = invoice => async dispatch => {
-  const newInvoice = await Wallet.addInvoice(invoice)
-  /** @type {AddInvoiceAction} */
-  const addInvoiceAction = {
-    type: ACTIONS.ADD_INVOICE,
-    data: newInvoice.payment_request,
-    invoice: newInvoice,
-  }
-  dispatch(addInvoiceAction)
-  if (newInvoice.liquidityCheck !== undefined) {
-    dispatch({
-      type: ACTIONS.SET_LIQUIDITY_CHECK,
-      data: newInvoice.liquidityCheck,
-    })
+  try {
+    const newInvoice = await Wallet.addInvoice(invoice)
+    /** @type {AddInvoiceAction} */
+    const addInvoiceAction = {
+      type: ACTIONS.ADD_INVOICE,
+      data: newInvoice.payment_request,
+      invoice: newInvoice,
+    }
+    dispatch(addInvoiceAction)
+    if (newInvoice.liquidityCheck !== undefined) {
+      dispatch({
+        type: ACTIONS.SET_LIQUIDITY_CHECK,
+        data: newInvoice.liquidityCheck,
+      })
+    }
+  } catch (e) {
+    Logger.log(`Error inside addInvoice thunk: ${e.message}`)
   }
 }
 
@@ -160,9 +164,13 @@ export const addInvoice = invoice => async dispatch => {
  * @returns {import('redux-thunk').ThunkAction<void, {}, {}, import('redux').AnyAction>}
  */
 export const newAddress = () => async dispatch => {
-  const address = await Wallet.newAddress()
-  dispatch({
-    type: ACTIONS.SET_ADDRESS,
-    data: address,
-  })
+  try {
+    const address = await Wallet.newAddress()
+    dispatch({
+      type: ACTIONS.SET_ADDRESS,
+      data: address,
+    })
+  } catch (e) {
+    Logger.log(`Error inside newAddress thunk: ${e.message}`)
+  }
 }

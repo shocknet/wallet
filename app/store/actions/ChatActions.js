@@ -51,58 +51,64 @@ export const ACTIONS = {
 /**
  * Fetches the Node's info
  * @param {((chats: Common.Schema.Chat[]) => void)=} callback
- * @returns {import('redux-thunk').ThunkAction<Promise<Common.Schema.Chat[]>, {}, {}, import('redux').AnyAction>}
+ * @returns {(d: (a: any) => any) => Promise<any>}
  */
-export const subscribeOnChats = callback => dispatch =>
-  new Promise((resolve, reject) => {
-    // TODO: Move to saga
-    API.Events.onChats(chats => {
-      try {
-        const contacts = chats.map(chat => ({
-          pk: chat.recipientPublicKey,
-          avatar: chat.recipientAvatar,
-          displayName: chat.recipientDisplayName,
-        }))
+export const subscribeOnChats = callback => async dispatch => {
+  try {
+    await Common.Utils.makePromise((resolve, reject) => {
+      API.Events.onChats(chats => {
+        try {
+          const contacts = chats.map(chat => ({
+            pk: chat.recipientPublicKey,
+            avatar: chat.recipientAvatar,
+            displayName: chat.recipientDisplayName,
+          }))
 
-        const messages = chats.reduce(
-          (messages, chat) => ({
-            ...messages,
-            [chat.recipientPublicKey]: chat.messages,
-          }),
-          {},
-        )
+          const messages = chats.reduce(
+            (messages, chat) => ({
+              ...messages,
+              [chat.recipientPublicKey]: chat.messages,
+            }),
+            {},
+          )
 
-        dispatch({
-          type: ACTIONS.LOAD_CONTACTS,
-          data: contacts,
-        })
+          dispatch({
+            type: ACTIONS.LOAD_CONTACTS,
+            data: contacts,
+          })
 
-        dispatch({
-          type: ACTIONS.LOAD_MESSAGES,
-          data: messages,
-        })
+          dispatch({
+            type: ACTIONS.LOAD_MESSAGES,
+            data: messages,
+          })
 
-        /** @type {ReceivedChatsAction} */
-        const receivedChatsAction = {
-          type: 'chats/receivedChats',
-          data: {
-            chats,
-          },
+          /** @type {ReceivedChatsAction} */
+          const receivedChatsAction = {
+            type: 'chats/receivedChats',
+            data: {
+              chats,
+            },
+          }
+
+          dispatch(receivedChatsAction)
+
+          if (callback) {
+            callback(chats)
+          }
+
+          resolve(chats)
+        } catch (err) {
+          Logger.log(
+            `Error inside callback to onChats in subscribeOnChats thunk: ${err.message}`,
+          )
+          reject(err)
         }
-
-        dispatch(receivedChatsAction)
-
-        if (callback) {
-          callback(chats)
-        }
-
-        resolve(chats)
-      } catch (err) {
-        Logger.log(err)
-        reject(err)
-      }
+      })
     })
-  })
+  } catch (e) {
+    Logger.log(`Error inside subscribeOnChats thunk: ${e.message}`)
+  }
+}
 
 /**
  * Selects a contact (useful for easily referencing the currently focused contact)
