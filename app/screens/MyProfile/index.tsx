@@ -176,7 +176,7 @@ class MyProfile extends React.PureComponent<Props, State> {
       return
     }
 
-    const data = `$$__SHOCKWALLET__USER__${authData.publicKey}`
+    const data = `${authData.publicKey}`
 
     Clipboard.setString(data)
 
@@ -434,7 +434,7 @@ class MyProfile extends React.PureComponent<Props, State> {
                       <QR
                         size={180}
                         logoToShow="shock"
-                        value={`$$__SHOCKWALLET__USER__${authData.publicKey}`}
+                        value={`${authData.publicKey}`}
                       />
                     )}
                   </TouchableOpacity>

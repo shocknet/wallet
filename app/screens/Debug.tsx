@@ -161,11 +161,7 @@ class Debug extends React.PureComponent<Props, Record<string, any>> {
           onPress={this.generateNewHandshakeNode}
         />
 
-        <QR
-          size={256}
-          logoToShow="shock"
-          value={`$$__SHOCKWALLET__USER__${this.state.pk}`}
-        />
+        <QR size={256} logoToShow="shock" value={`${this.state.pk}`} />
       </ScrollView>
     )
   }

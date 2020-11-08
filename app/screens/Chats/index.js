@@ -225,7 +225,7 @@ export default class Chats extends React.PureComponent {
    * @param {string} encodedShockUser
    */
   sendHR = encodedShockUser => {
-    const pk = encodedShockUser.slice('$$__SHOCKWALLET__USER__'.length)
+    const pk = encodedShockUser
 
     if (typeof pk === 'string' && pk.length === 0) {
       Logger.log("typeof pk === 'string' && pk.length === 0")

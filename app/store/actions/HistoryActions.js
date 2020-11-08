@@ -1,4 +1,3 @@
-import { ToastAndroid } from 'react-native'
 import Logger from 'react-native-file-log'
 
 import * as Wallet from '../../services/wallet'
