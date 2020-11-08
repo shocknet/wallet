@@ -26,26 +26,36 @@ export const ACTIONS = {
  * @returns {import('redux-thunk').ThunkAction<Promise<Wallet.Channel[]>, {}, {}, import('redux').AnyAction>}
  */
 export const fetchChannels = () => async dispatch => {
-  const data = await Wallet.listChannels()
-  dispatch({
-    type: ACTIONS.LOAD_CHANNELS,
-    data,
-  })
+  try {
+    const data = await Wallet.listChannels()
+    dispatch({
+      type: ACTIONS.LOAD_CHANNELS,
+      data,
+    })
 
-  return data
+    return data
+  } catch (e) {
+    Logger.log(`Error inside fetchChannels thunk: ${e.message}`)
+    return []
+  }
 }
 /**
  * Fetches the Node's info
  * @returns {import('redux-thunk').ThunkAction<Promise<Wallet.PendingChannel[]>, {}, {}, import('redux').AnyAction>}
  */
 export const fetchPendingChannels = () => async dispatch => {
-  const data = await Wallet.pendingChannels()
-  dispatch({
-    type: ACTIONS.LOAD_PENDING_CHANNELS,
-    data,
-  })
+  try {
+    const data = await Wallet.pendingChannels()
+    dispatch({
+      type: ACTIONS.LOAD_PENDING_CHANNELS,
+      data,
+    })
 
-  return data
+    return data
+  } catch (e) {
+    Logger.log(`Error inside fetchPendingChannels thunk: ${e.message}`)
+    return []
+  }
 }
 
 /**
@@ -57,22 +67,31 @@ export const fetchInvoices = ({
   itemsPerPage = 10,
   reset = false,
 }) => async dispatch => {
-  const data = await Wallet.listInvoices({ page, itemsPerPage })
+  try {
+    const data = await Wallet.listInvoices({ page, itemsPerPage })
 
-  if (reset) {
+    if (reset) {
+      dispatch({
+        type: ACTIONS.LOAD_INVOICES,
+        data,
+      })
+      return data
+    }
+
     dispatch({
-      type: ACTIONS.LOAD_INVOICES,
+      type: ACTIONS.LOAD_MORE_INVOICES,
       data,
     })
+
     return data
+  } catch (e) {
+    Logger.log(`Error inside fetchInvoices thunk: ${e.message}`)
+    return {
+      content: [],
+      page: 1,
+      totalPages: 1,
+    }
   }
-
-  dispatch({
-    type: ACTIONS.LOAD_MORE_INVOICES,
-    data,
-  })
-
-  return data
 }
 
 /**
@@ -80,14 +99,19 @@ export const fetchInvoices = ({
  * @returns {import('redux-thunk').ThunkAction<Promise<Wallet.Peer[]>, {}, {}, import('redux').AnyAction>}
  */
 export const fetchPeers = () => async dispatch => {
-  const data = await Wallet.listPeers()
+  try {
+    const data = await Wallet.listPeers()
 
-  dispatch({
-    type: ACTIONS.LOAD_PEERS,
-    data,
-  })
+    dispatch({
+      type: ACTIONS.LOAD_PEERS,
+      data,
+    })
 
-  return data
+    return data
+  } catch (e) {
+    Logger.log(`Error inside fetchPeers thunk: ${e.message}`)
+    return []
+  }
 }
 
 /**
@@ -99,27 +123,36 @@ export const fetchPayments = ({
   itemsPerPage = 10,
   reset = false,
 }) => async dispatch => {
-  const data = await Wallet.listPayments({
-    page,
-    itemsPerPage,
-    paginate: true,
-    include_incomplete: false,
-  })
+  try {
+    const data = await Wallet.listPayments({
+      page,
+      itemsPerPage,
+      paginate: true,
+      include_incomplete: false,
+    })
 
-  if (reset) {
+    if (reset) {
+      dispatch({
+        type: ACTIONS.LOAD_PAYMENTS,
+        data,
+      })
+      return data
+    }
+
     dispatch({
-      type: ACTIONS.LOAD_PAYMENTS,
+      type: ACTIONS.LOAD_MORE_PAYMENTS,
       data,
     })
+
     return data
+  } catch (e) {
+    return {
+      content: [],
+      page: 1,
+      totalItems: 0,
+      totalPages: 1,
+    }
   }
-
-  dispatch({
-    type: ACTIONS.LOAD_MORE_PAYMENTS,
-    data,
-  })
-
-  return data
 }
 
 /**
@@ -131,29 +164,38 @@ export const fetchTransactions = ({
   itemsPerPage = 500,
   reset = false,
 }) => async dispatch => {
-  const data = await Wallet.getTransactions({
-    page,
-    itemsPerPage,
-    paginate: true,
-  })
-  const revData = {
-    ...data,
-    content: data.content.reverse(),
-  }
-  if (reset) {
+  try {
+    const data = await Wallet.getTransactions({
+      page,
+      itemsPerPage,
+      paginate: true,
+    })
+    const revData = {
+      ...data,
+      content: data.content.reverse(),
+    }
+    if (reset) {
+      dispatch({
+        type: ACTIONS.LOAD_TRANSACTIONS,
+        revData,
+      })
+      return revData
+    }
+
     dispatch({
-      type: ACTIONS.LOAD_TRANSACTIONS,
+      type: ACTIONS.LOAD_MORE_TRANSACTIONS,
       revData,
     })
+
     return revData
+  } catch (e) {
+    return {
+      content: [],
+      page: 1,
+      totalItems: 0,
+      totalPages: 1,
+    }
   }
-
-  dispatch({
-    type: ACTIONS.LOAD_MORE_TRANSACTIONS,
-    revData,
-  })
-
-  return revData
 }
 
 /**
@@ -177,17 +219,29 @@ export const unifyTransactions = () => dispatch => {
  * ]>, {}, {}, import('redux').AnyAction>}
  */
 export const fetchHistory = () => async dispatch => {
-  const history = await Promise.all([
-    dispatch(fetchInvoices({ reset: true })),
-    dispatch(fetchPeers()),
-    dispatch(fetchChannels()),
-    dispatch(fetchPayments({ reset: true })),
-    dispatch(fetchTransactions({ reset: true })),
-  ])
+  try {
+    const history = await Promise.all([
+      dispatch(fetchInvoices({ reset: true })),
+      dispatch(fetchPeers()),
+      dispatch(fetchChannels()),
+      dispatch(fetchPayments({ reset: true })),
+      dispatch(fetchTransactions({ reset: true })),
+    ])
 
-  dispatch(unifyTransactions())
+    dispatch(unifyTransactions())
 
-  return history
+    return history
+  } catch (e) {
+    Logger.log(`Error inside fetchHistory thunk: ${e.message}`)
+
+    return [
+      { content: [], totalPages: 1, page: 1 },
+      [],
+      [],
+      { content: [], page: 1, totalItems: 1, totalPages: 1 },
+      { content: [], page: 1, totalItems: 1, totalPages: 1 },
+    ]
+  }
 }
 
 /**
@@ -195,17 +249,21 @@ export const fetchHistory = () => async dispatch => {
  * @returns {import('redux-thunk').ThunkAction<Promise<void>, {}, {}, import('redux').AnyAction>}
  */
 export const fetchRecentInvoices = () => async dispatch => {
-  const invoiceResponse = await Wallet.listInvoices({
-    itemsPerPage: 100,
-    page: 1,
-  })
+  try {
+    const invoiceResponse = await Wallet.listInvoices({
+      itemsPerPage: 100,
+      page: 1,
+    })
 
-  dispatch({
-    type: ACTIONS.LOAD_RECENT_INVOICES,
-    data: invoiceResponse.content,
-  })
+    dispatch({
+      type: ACTIONS.LOAD_RECENT_INVOICES,
+      data: invoiceResponse.content,
+    })
 
-  dispatch(unifyTransactions())
+    dispatch(unifyTransactions())
+  } catch (e) {
+    Logger.log(`Error inside fetchRecentInvoices -> ${e.message}`)
+  }
 }
 
 /**
@@ -259,44 +317,20 @@ export const fetchRecentPayments = () => async dispatch => {
  * @returns {import('redux-thunk').ThunkAction<Promise<void>, {}, {}, import('redux').AnyAction>}
  */
 export const fetchRecentTransactions = () => async dispatch => {
-  const invoiceResponse = await Wallet.getTransactions({
-    itemsPerPage: 500,
-    page: 1,
-    paginate: true,
-  })
+  try {
+    const invoiceResponse = await Wallet.getTransactions({
+      itemsPerPage: 500,
+      page: 1,
+      paginate: true,
+    })
 
-  dispatch({
-    type: ACTIONS.LOAD_RECENT_TRANSACTIONS,
-    data: invoiceResponse,
-  })
+    dispatch({
+      type: ACTIONS.LOAD_RECENT_TRANSACTIONS,
+      data: invoiceResponse,
+    })
 
-  dispatch(unifyTransactions())
-}
-
-/**
- * Loads a new invoice into the Redux reducer
- * @param {Wallet.Invoice} invoice
- * @returns {import('redux-thunk').ThunkAction<void, {}, {}, import('redux').AnyAction>}
- */
-export const loadNewInvoice = invoice => dispatch => {
-  dispatch({
-    type: ACTIONS.LOAD_NEW_RECENT_INVOICE,
-    data: invoice,
-  })
-
-  dispatch(unifyTransactions())
-}
-
-/**
- * Loads a new transaction into the Redux reducer
- * @param {Wallet.Transaction} transaction
- * @returns {import('redux-thunk').ThunkAction<void, {}, {}, import('redux').AnyAction>}
- */
-export const loadNewTransaction = transaction => dispatch => {
-  dispatch({
-    type: ACTIONS.LOAD_NEW_RECENT_TRANSACTION,
-    data: transaction,
-  })
-
-  dispatch(unifyTransactions())
+    dispatch(unifyTransactions())
+  } catch (e) {
+    Logger.log(`Error inside fetchRecentTransactions thunk: ${e.message}`)
+  }
 }
