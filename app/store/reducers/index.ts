@@ -1,3 +1,5 @@
+import Logger from 'react-native-file-log'
+
 import HistoryReducer from './HistoryReducer'
 import WalletReducer from './WalletReducer'
 import NodeReducer from './NodeReducer'
@@ -40,6 +42,19 @@ const rootReducer = {
   invoicesAdded,
   chainTXs,
   debug,
+}
+
+for (const [key, reducer] of Object.entries(rootReducer)) {
+  // @ts-expect-error
+  rootReducer[key] = (state: unknown, action: unknown) => {
+    try {
+      // @ts-expect-error
+      return reducer(state, action)
+    } catch (e) {
+      Logger.log(`Error inside ${key} reducer -> ${e.message}`)
+      return state
+    }
+  }
 }
 
 export type State = {
