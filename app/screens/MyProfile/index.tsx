@@ -176,9 +176,7 @@ class MyProfile extends React.PureComponent<Props, State> {
       return
     }
 
-    const data = `${authData.publicKey}`
-
-    Clipboard.setString(data)
+    Clipboard.setString(`https://shock.pub/${authData.publicKey}`)
 
     showCopiedToClipboardToast()
   }
@@ -271,19 +269,15 @@ class MyProfile extends React.PureComponent<Props, State> {
   }
 
   onPressShowMyQrCodeModal = () => {
-    if (this.state.showQrCodeModal) {
-      this.setState({ showQrCodeModal: false })
-    } else {
-      this.setState({ showQrCodeModal: true })
-    }
+    this.setState(({ showQrCodeModal }) => ({
+      showQrCodeModal: !showQrCodeModal,
+    }))
   }
 
   onPressMetaConfigModal = () => {
-    if (this.state.showMetaConfigModal) {
-      this.setState({ showMetaConfigModal: false })
-    } else {
-      this.setState({ showMetaConfigModal: true })
-    }
+    this.setState(({ showMetaConfigModal }) => ({
+      showMetaConfigModal: !showMetaConfigModal,
+    }))
   }
 
   renderItem = ({ item }: ListRenderItemInfo<Common.Schema.PostN>) => {
@@ -443,10 +437,13 @@ class MyProfile extends React.PureComponent<Props, State> {
                     Other users can scan this QR to contact you.
                   </Text>
 
-                  <TouchableOpacity style={styles.tapButtonQrModal}>
+                  <TouchableOpacity
+                    style={styles.tapButtonQrModal}
+                    onPress={this.copyDataToClipboard}
+                  >
                     <TapCopy size={30} />
                     <Text style={styles.tapButtonQrModalText}>
-                      Tap to copy to clipboard
+                      Copy link to clipboard
                     </Text>
                   </TouchableOpacity>
                 </React.Fragment>
