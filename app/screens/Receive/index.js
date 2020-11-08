@@ -47,6 +47,11 @@ export const RECEIVE_SCREEN = 'RECEIVE_SCREEN'
  * @extends React.PureComponent<Props, {}, never>
  */
 class ReceiveScreen extends React.PureComponent {
+  /** @type {import('react-navigation-stack').NavigationStackOptions} */
+  static navigationOptions = {
+    headerShown: false,
+  }
+
   state = {
     step: 1,
     maxStep: 2,

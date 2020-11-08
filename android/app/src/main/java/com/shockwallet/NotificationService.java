@@ -278,7 +278,7 @@ public class NotificationService extends Service {
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
         NotificationCompat.Builder notification = new NotificationCompat.Builder(this, DEFAULT_CHANNEL_ID)
-                .setSmallIcon(R.drawable.icon)
+                .setSmallIcon(R.drawable.icon_notification)
                 //.setLargeIcon(BitmapFactory.decodeResource(this.getResources(),
                 //        bigIcon))
                 .setContentTitle(title)
