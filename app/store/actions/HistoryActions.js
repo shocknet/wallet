@@ -250,10 +250,7 @@ export const fetchRecentPayments = () => async dispatch => {
     dispatch(unifyTransactions())
   } catch (err) {
     Logger.log(`Error inside fetchRecentPayments() -> ${err.message}`)
-    ToastAndroid.show(
-      `Error inside fetchRecentPayments() -> ${err.message}`,
-      800,
-    )
+    ToastAndroid.show(`Error inside fetchRecentPayments(), look at log`, 800)
   }
 }
 

@@ -110,15 +110,6 @@ export const getStoredAuthData = async () => {
     return null
   }
 
-  getStore().dispatch(Actions.hostWasSet(currNodeURL))
-  getStore().dispatch(
-    Actions.authed({
-      alias: sad.authData.alias,
-      gunPublicKey: sad.authData.publicKey,
-      token: sad.authData.token,
-    }),
-  )
-
   return {
     ...sad,
     authData: {
