@@ -433,7 +433,7 @@ class MyProfile extends React.PureComponent<Props, State> {
                     ) : (
                       <QR
                         size={180}
-                        logoToShow="shock"
+                        logoToShow="shock-new"
                         value={`${authData.publicKey}`}
                       />
                     )}
