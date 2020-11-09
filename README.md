@@ -33,7 +33,7 @@ Running a Shockwallet node requires the [Shock API](https://github.com/shocknet/
 - [ ] Portable LNURL-Auth Keyring
 
 
-## [Download Android APK](https://github.com/shocknet/wallet/releases/download/2020.09.12/app-release.apk)
+## [Download Android APK](https://github.com/shocknet/wallet/releases/download/2020.11.9/app-release.apk)
 
 _Node installer available at [shocknet/Wizard](https://github.com/shocknet/wizard)_
 
