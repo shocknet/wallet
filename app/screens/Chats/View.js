@@ -6,7 +6,6 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from 'react-native'
-import moment from 'moment'
 import { Divider, Icon } from 'react-native-elements'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 import Logger from 'react-native-file-log'
@@ -165,7 +164,8 @@ export default class ChatsView extends React.PureComponent {
         <View style={styles.itemContainer}>
           <View style={styles.userDetailContainer}>
             <UserDetail
-              alternateText={`(${moment(lastMsgTimestamp).fromNow()})`}
+              alternateText={lastMsgTimestamp.toString()}
+              alternateTextIsTimestamp
               alternateTextBold={unread}
               id={chat.id}
               lowerText={(() => {
@@ -215,8 +215,9 @@ export default class ChatsView extends React.PureComponent {
       <View style={styles.itemContainer}>
         <View style={styles.userDetailContainer}>
           <UserDetail
-            alternateText={`(${moment(receivedRequest.timestamp).fromNow()})`}
+            alternateText={receivedRequest.timestamp.toString()}
             alternateTextBold
+            alternateTextIsTimestamp
             id={receivedRequest.id}
             lowerText="Wants to contact you"
             lowerTextStyle={styles.boldFont}
@@ -256,8 +257,9 @@ export default class ChatsView extends React.PureComponent {
       <View style={styles.itemContainer}>
         <View style={styles.userDetailContainer}>
           <UserDetail
-            alternateText={`(${moment(sentRequest.timestamp).fromNow()})`}
+            alternateText={sentRequest.timestamp.toString()}
             alternateTextBold
+            alternateTextIsTimestamp
             id={sentRequest.id}
             lowerText={(() => {
               if (isSending) {

@@ -1,17 +1,16 @@
-/**
- * @prettier
- */
 import React from 'react'
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
 
 import * as CSS from '../res/css'
 
 import { ConnectedShockAvatar } from './ShockAvatar'
+import TimeText from './time-text'
 
 /**
  * @typedef {object} Props
  * @prop {string=} alternateText
  * @prop {boolean=} alternateTextBold
+ * @prop {boolean=} alternateTextIsTimestamp
  * @prop {React.ReactNode} lowerText
  * @prop {import('react-native').TextInputProps['style']=} lowerTextStyle
  * @prop {string} id
@@ -33,13 +32,11 @@ export default class UserDetail extends React.PureComponent {
     onPress && onPress(id)
   }
 
-  /** @type {number|null} */
-  intervalID = 0
-
   render() {
     const {
       alternateText,
       alternateTextBold,
+      alternateTextIsTimestamp,
       nameBold,
       lowerText,
       lowerTextStyle,
@@ -65,15 +62,31 @@ export default class UserDetail extends React.PureComponent {
               style={nameBold ? styles.nameBold : styles.name}
             >
               {name}
-              <Text
-                style={
-                  alternateTextBold
-                    ? styles.alternateTextBold
-                    : styles.alternateText
-                }
-              >
-                {alternateText && ` ${alternateText}`}
-              </Text>
+              {alternateText && alternateTextIsTimestamp ? (
+                <Text>
+                  {' '}
+                  <TimeText
+                    style={
+                      alternateTextBold
+                        ? styles.alternateTextBold
+                        : styles.alternateText
+                    }
+                  >
+                    {Number(alternateText)}
+                  </TimeText>
+                </Text>
+              ) : null}
+              {!alternateTextIsTimestamp ? (
+                <Text
+                  style={
+                    alternateTextBold
+                      ? styles.alternateTextBold
+                      : styles.alternateText
+                  }
+                >
+                  {alternateText && ` ${alternateText}`}
+                </Text>
+              ) : null}
             </Text>
 
             {typeof lowerText === 'string' ? (

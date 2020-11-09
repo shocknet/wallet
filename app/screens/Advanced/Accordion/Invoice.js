@@ -1,8 +1,8 @@
 import React from 'react'
 import { View, Text, StyleSheet, Image } from 'react-native'
-import Moment from 'moment'
 
 import * as CSS from '../../../res/css'
+import TimeText from '../../../components/time-text'
 /**
  * @typedef {import('../../../services/wallet').Invoice} IInvoice
  */
@@ -38,9 +38,9 @@ const _Invoice = ({ data }) => ((
       </View>
     </View>
     <View>
-      <Text style={styles.transactionTime}>
-        {Moment(data.settle_date).fromNow()} ago
-      </Text>
+      <TimeText style={styles.transactionTime}>
+        {Number(data.settle_date)}
+      </TimeText>
       <Text style={styles.transactionValueText}>+{data.amt_paid_sat}</Text>
       <Text style={styles.transactionUSDText}>
         {(Number(data.amt_paid_sat) / 100).toFixed(4)} USD

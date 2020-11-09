@@ -6,7 +6,6 @@ import {
   TouchableWithoutFeedback,
   View,
 } from 'react-native'
-import moment from 'moment'
 import Octicons from 'react-native-vector-icons/Octicons'
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons'
@@ -15,6 +14,7 @@ import Feather from 'react-native-vector-icons/Feather'
 import * as CSS from '../../res/css'
 import * as RES from '../../res'
 import Pad from '../../components/Pad'
+import TimeText from '../../components/time-text'
 
 /**
  * @typedef {'payment-received'|'invoice'|'invoice-unk'|'invoice-settling'|'invoice-settled'|'invoice-err'|'payment-sending'|'payment-sent'|'payment-err'} Type
@@ -37,19 +37,6 @@ import Pad from '../../components/Pad'
  * @augments React.PureComponent<Props>
  */
 export default class TXBase extends React.PureComponent {
-  componentDidMount() {
-    /**
-     * Force-updates every minute so moment-formatted dates refresh.
-     */
-    this.intervalID = setInterval(() => {
-      this.forceUpdate()
-    }, 60000)
-  }
-
-  componentWillUnmount() {
-    typeof this.intervalID === 'number' && clearInterval(this.intervalID)
-  }
-
   render() {
     const {
       amt,
@@ -191,9 +178,9 @@ export default class TXBase extends React.PureComponent {
             <View>
               <Pad amount={14} />
 
-              <Text style={xStyles.timestamp}>
-                {moment(timestamp).format('hh:mm')}
-              </Text>
+              <TimeText displayHHMM style={xStyles.timestamp}>
+                {timestamp}
+              </TimeText>
 
               {typeof amt === 'number' && (
                 <Text style={xStyles.amt}>{`${amt.toString()} Sats`}</Text>

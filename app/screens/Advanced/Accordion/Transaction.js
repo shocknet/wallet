@@ -1,9 +1,9 @@
 import React from 'react'
 import { View, Text, StyleSheet, Clipboard, ToastAndroid } from 'react-native'
-import Moment from 'moment'
 import EntypoIcons from 'react-native-vector-icons/Entypo'
 
 import * as CSS from '../../../res/css'
+import TimeText from '../../../components/time-text'
 /**
  * @typedef {import('../../../services/wallet').Transaction} ITransaction
  */
@@ -71,9 +71,9 @@ const _Transaction = ({ data }) => ((
       >
         {data.amount}
       </Text>
-      <Text style={styles.transactionTime}>
-        {Moment.utc(parseInt(data.time_stamp, 10) * 1000).fromNow()}
-      </Text>
+      <TimeText style={styles.transactionTime}>
+        {Number(data.time_stamp)}
+      </TimeText>
     </View>
   </View>
 ))
