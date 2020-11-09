@@ -104,7 +104,7 @@
     "react-native-udp": "^2.1.0",
     "react-native-vector-icons": "^6.6.0",
     "react-native-video": "^5.1.0-alpha8",
-    "react-native-webview": "^9.4.0",
+    "react-native-webview": "^10.10.2",
     "react-navigation": "^4.4.2",
     "react-navigation-drawer": "^2.5.2",
     "react-navigation-stack": "^2.8.4",
