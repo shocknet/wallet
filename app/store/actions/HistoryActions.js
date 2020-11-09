@@ -1,4 +1,3 @@
-import { ToastAndroid } from 'react-native'
 import Logger from 'react-native-file-log'
 
 import * as Wallet from '../../services/wallet'
@@ -308,7 +307,6 @@ export const fetchRecentPayments = () => async dispatch => {
     dispatch(unifyTransactions())
   } catch (err) {
     Logger.log(`Error inside fetchRecentPayments() -> ${err.message}`)
-    ToastAndroid.show(`Error inside fetchRecentPayments(), look at log`, 800)
   }
 }
 

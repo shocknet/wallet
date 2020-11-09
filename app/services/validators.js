@@ -94,7 +94,7 @@ export const findlnurl = data => {
  * @param {string} data
  * @returns {ExtractedBTCAddress|ExtractedLNInvoice|ExtractedKeysend|ExtractedShockPK|ExtractedUnknown|ExtractedLNURL}
  */
-export default data => {
+const extractInfo = data => {
   const cleanData = removePrefix(data)
   const { address, amount } = hasAmount(cleanData)
   if (isBitcoinAddress(address)) {
@@ -132,3 +132,5 @@ export default data => {
   }
   return { type: 'unknown' }
 }
+
+export default extractInfo
