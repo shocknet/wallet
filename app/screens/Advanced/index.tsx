@@ -123,6 +123,7 @@ type NavigationStackOptions = import('react-navigation-stack').NavigationStackOp
 class AdvancedScreen extends React.PureComponent<Props, State> {
   static navigationOptions: NavigationStackOptions = {
     header: () => null,
+    headerShown: false,
     // drawerIcon: () => {
     //   return <IconDrawerAdvancedLightning />
     // },

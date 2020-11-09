@@ -91,6 +91,7 @@ class WalletSettings extends React.PureComponent {
    */
   static navigationOptions = {
     header: () => null,
+    headerShown: false,
     // drawerIcon: () => {
     //   return (<IconDrawerWalletSettings />)
     // },

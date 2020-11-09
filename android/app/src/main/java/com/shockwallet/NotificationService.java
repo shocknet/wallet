@@ -105,7 +105,13 @@ public class NotificationService extends Service {
                 String id = last.substring(0,5)+"...";
                 int value = Integer.parseInt(res.getString("amount"));
                 float valueBTC = value / 100000000f;
-                doNotification("Transaction confirmed! "+String.valueOf(valueBTC)+" BTC","",R.drawable.icon,"");
+                String finalVal = "";
+                if(valueBTC >= 0.001){
+                    finalVal = String.valueOf(valueBTC)+" BTC";
+                } else {
+                    finalVal = res.getString("amount")+" sats";
+                }
+                doNotification("Transaction confirmed! "+finalVal,"",R.drawable.icon,"");
             }catch (Exception e){
                 Log.d(TAG,"Tx err"+e.toString());
             }
@@ -272,7 +278,7 @@ public class NotificationService extends Service {
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
         NotificationCompat.Builder notification = new NotificationCompat.Builder(this, DEFAULT_CHANNEL_ID)
-                .setSmallIcon(R.drawable.icon)
+                .setSmallIcon(R.drawable.icon_notification)
                 //.setLargeIcon(BitmapFactory.decodeResource(this.getResources(),
                 //        bigIcon))
                 .setContentTitle(title)

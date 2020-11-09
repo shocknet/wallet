@@ -1,5 +1,12 @@
 import React from 'react'
-import { Clipboard, ScrollView, Button, Text, ToastAndroid } from 'react-native'
+import {
+  Clipboard,
+  ScrollView,
+  Button,
+  Text,
+  ToastAndroid,
+  View,
+} from 'react-native'
 import { connect } from 'react-redux'
 import uuid from 'uuid/v1'
 
@@ -29,9 +36,12 @@ interface StateProps {
   token: string
 
   deviceID: string
+
+  err: string
 }
 
 interface DispatchProps {
+  enableDebug(): void
   disableDebug(): void
 }
 
@@ -59,6 +69,9 @@ class Debug extends React.PureComponent<Props, Record<string, any>> {
       s.off('*')
       s.close()
     })
+
+    this.props.enableDebug()
+    ToastAndroid.show('Debug mode enabled', 800)
   }
 
   componentWillUnmount() {
@@ -92,6 +105,7 @@ class Debug extends React.PureComponent<Props, Record<string, any>> {
 
   render() {
     const {
+      err,
       chatsAmt,
       deviceID,
       feedPostsAmt,
@@ -104,6 +118,14 @@ class Debug extends React.PureComponent<Props, Record<string, any>> {
       debugModeEnabled,
     } = this.props
 
+    if (err) {
+      return (
+        <View style={CSS.styles.flexDeadCenter}>
+          <Text>{err}</Text>
+        </View>
+      )
+    }
+
     const { handshakeAddr } = this.state
 
     return (
@@ -111,9 +133,13 @@ class Debug extends React.PureComponent<Props, Record<string, any>> {
         style={styles.container}
         contentContainerStyle={CSS.styles.alignItemsCenter}
       >
+        <Text>A random Number: {Math.random().toString()}</Text>
         <Button title="Disable " onPress={this.disableDebugMode} />
-
-        <Text>Debug Mode {debugModeEnabled ? 'Enabled' : 'Disabled'}</Text>
+        {debugModeEnabled ? (
+          <Text>Debug Mode Enabled</Text>
+        ) : (
+          <Text>Debug Mode Disabled</Text>
+        )}
 
         <Text>Canary Socket Status:</Text>
         <Text>{online ? 'Connected' : 'Disconnected'}</Text>
@@ -172,22 +198,32 @@ const styles = {
 }
 
 const mapStateToProps = (state: Store.State): StateProps => {
-  return {
-    chatsAmt: Object.keys(state.chat.contacts).length,
-    deviceID: state.connection.deviceId,
-    feedPostsAmt: Store.getPostsFromFollowed(state).length,
-    followsAmt: Store.getFollowedPublicKeys(state).length,
-    ownPostsAmt: Store.getOwnPosts(state).length,
-    receivedReqsAmt: -1,
-    sentReqsAmt: -1,
-    token: state.auth.token,
-    online: Store.isOnline(state),
-    debugModeEnabled: state.debug.enabled,
+  console.log('map state to props called' + JSON.stringify(state.debug))
+  try {
+    return {
+      chatsAmt: Object.keys(state.chat.contacts).length,
+      deviceID: state.connection.deviceId,
+      feedPostsAmt: Store.getPostsFromFollowed(state).length,
+      followsAmt: Store.getFollowedPublicKeys(state).length,
+      ownPostsAmt: Store.getOwnPosts(state).length,
+      receivedReqsAmt: -1,
+      sentReqsAmt: -1,
+      token: state.auth.token,
+      online: Store.isOnline(state),
+      debugModeEnabled: state.debug.enabled,
+      err: '',
+    }
+  } catch (e) {
+    // @ts-expect-error
+    return {
+      err: e.message,
+    }
   }
 }
 
 const mapDispatch = {
   disableDebug: Store.disableDebug,
+  enableDebug: Store.enableDebug,
 }
 
 export default connect(

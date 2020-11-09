@@ -149,6 +149,7 @@ class MyProfile extends React.PureComponent<Props, State> {
   toggleSetupDisplayName = () => {
     this.setState(({ displayNameDialogOpen }) => ({
       displayNameDialogOpen: !displayNameDialogOpen,
+      settingDisplayName: false,
     }))
   }
 

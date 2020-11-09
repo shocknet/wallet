@@ -21,18 +21,18 @@ const insertLog = (line: string, logs: string[]) => {
 const reducer: Reducer<DebugState, Action> = (state = INITIAL_STATE, action) =>
   produce(state, draft => {
     if (enableDebug.match(action)) {
-      state.enabled = true
+      draft.enabled = true
     }
 
     if (disableDebug.match(action)) {
-      state.enabled = false
+      draft.enabled = false
     }
 
-    if (!state.enabled) {
+    if (!draft.enabled) {
       return
     }
 
-    if (action.type === 'debug/log') {
+    if (draft.enabled && action.type === 'debug/log') {
       for (const line of action.payload.content) {
         insertLog(line, draft.logs)
       }
