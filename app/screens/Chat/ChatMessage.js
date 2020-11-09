@@ -1,10 +1,10 @@
 import React from 'react'
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
-import moment from 'moment'
 import { Svg, Polygon } from 'react-native-svg'
 
 import { Colors, WIDTH } from '../../res/css'
 import Pad from '../../components/Pad'
+import TimeText from '../../components/time-text'
 
 import ChatAvatar from './ChatAvatar'
 
@@ -27,19 +27,6 @@ const BUBBLE_TRIANGLE_VERTICAL_OFFSET = 6
  * @augments React.PureComponent<Props>
  */
 export default class ChatMessage extends React.PureComponent {
-  componentDidMount() {
-    /**
-     * Force-updates every minute so moment-formatted dates refresh.
-     */
-    this.intervalID = setInterval(() => {
-      this.forceUpdate()
-    }, 60000)
-  }
-
-  componentWillUnmount() {
-    typeof this.intervalID === 'number' && clearInterval(this.intervalID)
-  }
-
   onPress = () => {
     const { id, onPress } = this.props
     onPress && onPress(id)
@@ -47,8 +34,6 @@ export default class ChatMessage extends React.PureComponent {
 
   render() {
     const { body, outgoing, timestamp } = this.props
-
-    const formattedTime = moment(timestamp).format('hh:mm')
 
     const SVG_EDGE = 25
     const UNIT = SVG_EDGE / 5
@@ -74,7 +59,7 @@ export default class ChatMessage extends React.PureComponent {
 
         {outgoing && (
           <>
-            <Text style={styles.timestamp}>{formattedTime}</Text>
+            <TimeText style={styles.timestamp}>{timestamp}</TimeText>
             <Pad insideRow amount={12} />
           </>
         )}
@@ -106,7 +91,9 @@ export default class ChatMessage extends React.PureComponent {
         {!outgoing && (
           <>
             <Pad insideRow amount={12} />
-            <Text style={styles.timestamp}>{formattedTime}</Text>
+            <TimeText displayHHMM style={styles.timestamp}>
+              {timestamp}
+            </TimeText>
           </>
         )}
       </View>

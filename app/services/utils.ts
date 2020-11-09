@@ -80,7 +80,13 @@ export const SET_LAST_SEEN_APP_INTERVAL = 15000
 export const isOnline = (lastSeen: number): boolean =>
   Date.now() - lastSeen < SET_LAST_SEEN_APP_INTERVAL * 2
 
-export function normalizeTimestamp(timestamp: number): number {
+/**
+ * Converts seconds/microseconds timestamps to milliseconds, leaves milliseconds
+ * timestamps untouched. Works for timestamps no older than 2001.
+ * @timestamp A timestamp that can be seconds, milliseconds or microseconds.
+ * Should be no older than 2001.
+ */
+export function normalizeTimestampToMs(timestamp: number): number {
   if (timestamp === 0) {
     return timestamp
   }
@@ -92,10 +98,10 @@ export function normalizeTimestamp(timestamp: number): number {
     return Number(t) * 1000
   } else if (t.length === 13) {
     // is milliseconds
-    return Number(t) * 1000
+    return Number(t)
   } else if (t.length === 16) {
     // is microseconds
-    return Number(t) * 1000 * 1000
+    return Number(t) / 1000
   }
 
   Logger.log('normalizeTimestamp() -> could not interpret timestamp')

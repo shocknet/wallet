@@ -36,19 +36,6 @@ import TXBase from './TXBase'
  * @augments React.PureComponent<Props>
  */
 export default class ChatInvoice extends React.PureComponent {
-  componentDidMount() {
-    /**
-     * Force-updates every minute so moment-formatted dates refresh.
-     */
-    this.intervalID = setInterval(() => {
-      this.forceUpdate()
-    }, 60000)
-  }
-
-  componentWillUnmount() {
-    typeof this.intervalID === 'number' && clearInterval(this.intervalID)
-  }
-
   onPress = () => {
     const { id, onPressUnpaidIncomingInvoice } = this.props
     const { paymentStatus } = this.props
