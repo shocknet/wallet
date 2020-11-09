@@ -27,9 +27,9 @@ interface OwnProps {
 
 interface StateProps {
   image: string | null
-  lastSeenApp: number | null
   isOwn: boolean
   displayName: string | null
+  showGreenRing: boolean
 }
 
 interface DispatchProps {}
@@ -74,10 +74,9 @@ class ShockAvatar extends React.PureComponent<Props> {
     const {
       height,
       image,
-      lastSeenApp,
-      disableOnlineRing,
       nameAtBottom,
       displayName,
+      showGreenRing,
     } = this.props
 
     return (
@@ -95,11 +94,7 @@ class ShockAvatar extends React.PureComponent<Props> {
                 }
           }
           onPress={this.onPress}
-          avatarStyle={
-            lastSeenApp && isOnline(lastSeenApp) && !disableOnlineRing
-              ? styles.onlineRing
-              : undefined
-          }
+          avatarStyle={showGreenRing ? styles.onlineRing : undefined}
         />
         {nameAtBottom ? (
           <>
@@ -135,15 +130,17 @@ const makeMapStateToProps = () => {
   const getUser = Store.makeGetUser()
 
   const f = (state: Reducers.State, ownProps: OwnProps): StateProps => {
-    const { publicKey } = ownProps
+    const { publicKey, disableOnlineRing } = ownProps
     const user = getUser(state, publicKey)
     const myPublicKey = Store.getMyPublicKey(state)
+    const isOwn = user.publicKey === myPublicKey
+    const appOnline = isOwn ? Store.isOnline(state) : isOnline(user.lastSeenApp)
 
     return {
       image: user.avatar,
-      lastSeenApp: user.lastSeenApp,
-      isOwn: user.publicKey === myPublicKey,
+      isOwn,
       displayName: user.displayName,
+      showGreenRing: appOnline && !disableOnlineRing,
     }
   }
 
