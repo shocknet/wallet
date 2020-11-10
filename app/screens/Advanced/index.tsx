@@ -231,7 +231,6 @@ class AdvancedScreen extends React.PureComponent<Props, State> {
     if (USDRate !== null) {
       const parsedConfirmedBalance = new Big(confirmedBalance)
       const parsedChannelBalance = new Big(channelBalance)
-      //@ts-expect-error
       const parsedUSDRate = new Big(USDRate)
       const satoshiUnit = new Big(0.00000001)
       const confirmedBalanceUSD = parsedConfirmedBalance
