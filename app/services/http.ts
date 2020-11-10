@@ -1,4 +1,5 @@
 import Http, { AxiosResponse } from 'axios'
+import * as Common from 'shock-common'
 
 interface ErrorResponse {
   message?: string
@@ -27,6 +28,43 @@ const isErrResponse = (u: unknown): u is ErrorResponse => {
   return false
 }
 
+const processErr = (err: unknown) => {
+  if (typeof err === 'string') {
+    throw new Error(err)
+  }
+
+  if (!Common.Schema.isObj(err)) {
+    throw new Error(`Malformed: ${JSON.stringify(err)}`)
+  }
+
+  if (typeof err.message === 'string') {
+    throw err
+  }
+
+  if (Common.Schema.isObj(err.response) && err.response.status === 401) {
+    throw new Error(Common.Constants.ErrorCode.NOT_AUTH)
+  }
+
+  if (Common.Schema.isObj(err.response) && err.response.data) {
+    if (Common.Schema.isObj(err.response.data)) {
+      const { message, errorMessage } = err.response.data
+      if (typeof errorMessage === 'string') {
+        throw new Error(errorMessage)
+      }
+
+      if (typeof message === 'string') {
+        throw new Error(message)
+      }
+    }
+
+    if (typeof err.response.data === 'string') {
+      throw new Error(err.response.data)
+    }
+  }
+
+  throw new Error(`Unknown Error (Malformed): ${JSON.stringify(err)}`)
+}
+
 /**
  * @param url
  * @param data
@@ -52,6 +90,10 @@ export const post = async <T>(
 
     const { data: dataReceived, status } = axiosRes
 
+    if (status === 401) {
+      throw new Error(Common.Constants.ErrorCode.NOT_AUTH)
+    }
+
     if (isErrResponse(dataReceived)) {
       throw new Error(
         dataReceived.errorMessage ||
@@ -73,29 +115,8 @@ export const post = async <T>(
     }
 
     return dataReceived
-  } catch (err) {
-    if (typeof err.message === 'string') {
-      throw err
-    }
-
-    if (err.response && err.response.data) {
-      if (typeof err.response.data === 'object') {
-        const { message, errorMessage } = err.response.data
-        if (errorMessage) {
-          throw new Error(errorMessage)
-        }
-
-        if (message) {
-          throw new Error(message)
-        }
-      }
-
-      if (typeof err.response.data === 'string') {
-        throw new Error(err.response.data)
-      }
-    }
-
-    throw new Error(`Unknown Error (Malformed): ${JSON.stringify(err)}`)
+  } catch (e) {
+    return processErr(e)
   }
 }
 
@@ -118,6 +139,10 @@ export const get = async <T>(
 
     const { data: dataReceived, status } = axiosRes
 
+    if (status === 401) {
+      throw new Error(Common.Constants.ErrorCode.NOT_AUTH)
+    }
+
     if (isErrResponse(dataReceived)) {
       throw new Error(
         dataReceived.errorMessage ||
@@ -139,28 +164,7 @@ export const get = async <T>(
     }
 
     return dataReceived
-  } catch (err) {
-    if (typeof err.message === 'string') {
-      throw err
-    }
-
-    if (err.response && err.response.data) {
-      if (typeof err.response.data === 'object') {
-        const { message, errorMessage } = err.response.data
-        if (errorMessage) {
-          throw new Error(errorMessage)
-        }
-
-        if (message) {
-          throw new Error(message)
-        }
-      }
-
-      if (typeof err.response.data === 'string') {
-        throw new Error(err.response.data)
-      }
-    }
-
-    throw new Error(`Unknown Error (Malformed): ${JSON.stringify(err)}`)
+  } catch (e) {
+    return processErr(e)
   }
 }
