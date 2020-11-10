@@ -8,7 +8,6 @@ import {
   TouchableHighlight,
   View,
   ImageBackground,
-  InteractionManager,
   StatusBar,
 } from 'react-native'
 import Logger from 'react-native-file-log'
@@ -26,11 +25,6 @@ import ShockIcon from '../../res/icons'
 import btcConvert from '../../services/convertBitcoin'
 import * as CSS from '../../res/css'
 import { fetchNodeInfo } from '../../store/actions/NodeActions'
-import {
-  fetchRecentTransactions,
-  fetchRecentPayments,
-  fetchRecentInvoices,
-} from '../../store/actions/HistoryActions'
 import { subscribeOnChats } from '../../store/actions/ChatActions'
 import {
   invoicesRefreshForced,
@@ -60,12 +54,8 @@ import { Color } from 'shock-common/dist/constants'
  * @prop {string|null} totalBalance
  * @prop {number} USDRate
  * @prop {boolean} testnet
- * @prop {() => Promise<void>} fetchRecentTransactions
- * @prop {() => Promise<void>} fetchRecentPayments
- * @prop {() => Promise<void>} fetchRecentInvoices
  * @prop {() => Promise<import('../../store/actions/NodeActions').GetInfo>} fetchNodeInfo
  * @prop {() => Promise<Schema.Chat[]>} subscribeOnChats
- * @prop {() => Promise<number>} getUSDRate
  * @prop {{notifyDisconnect:boolean, notifyDisconnectAfterSeconds:number}} settings
  * @prop {() => void} forceInvoicesRefresh
  * @prop {boolean} isOnline
@@ -114,58 +104,20 @@ class WalletOverview extends React.PureComponent {
     const {
       fetchNodeInfo,
       subscribeOnChats,
-      fetchRecentTransactions,
-      fetchRecentInvoices,
-      navigation,
       forceInvoicesRefresh,
       forcePaymentsRefresh,
-      getMoreFeed,
       forceChainTXsRefresh,
     } = this.props
 
     forcePaymentsRefresh()
     forceInvoicesRefresh()
-    getMoreFeed()
     forceChainTXsRefresh()
-
-    this.didFocus = navigation.addListener('didFocus', () => {
-      this.recentPaymentsIntervalID = setTimeout(this.fetchRecentPayments, 4000)
-    })
-
-    navigation.addListener('didBlur', () => {
-      if (this.recentPaymentsIntervalID) {
-        clearTimeout(this.recentPaymentsIntervalID)
-      }
-    })
 
     this.startNotificationService()
 
     subscribeOnChats()
-    await Promise.all([
-      fetchRecentInvoices(),
-      fetchRecentTransactions(),
-      fetchRecentPayments(),
-      fetchNodeInfo(),
-    ])
+    await fetchNodeInfo()
   }
-
-  fetchRecentPayments = () =>
-    InteractionManager.runAfterInteractions(() => {
-      const { fetchRecentPayments } = this.props
-      try {
-        fetchRecentPayments()
-        this.recentPaymentsIntervalID = setTimeout(
-          this.fetchRecentPayments,
-          4000,
-        )
-        return
-      } catch (err) {
-        this.recentPaymentsIntervalID = setTimeout(
-          this.fetchRecentPayments,
-          4000,
-        )
-      }
-    })
 
   onPressRequest = () => {
     const { totalBalance } = this.props
@@ -383,10 +335,7 @@ const mapStateToProps = state => {
 }
 
 const mapDispatchToProps = {
-  fetchRecentTransactions,
   fetchNodeInfo,
-  fetchRecentInvoices,
-  fetchRecentPayments,
   subscribeOnChats,
   forceInvoicesRefresh: invoicesRefreshForced,
   forcePaymentsRefresh: paymentsRefreshForced,
