@@ -57,7 +57,6 @@ function* USDRateWatcher() {
 const balanceFetcher = () => {
   Services.balance()
     .then(({ channel_balance, confirmed_balance, pending_channel_balance }) => {
-      console.log(`received balance: ${confirmed_balance}`)
       getStore().dispatch(
         Actions.loadedBalance(
           confirmed_balance,
