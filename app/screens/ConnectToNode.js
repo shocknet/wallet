@@ -30,7 +30,7 @@ import { throttledExchangeKeyPair } from '../store/actions/ConnectionActions'
 const shockBG = require('../assets/images/shock-bg.png')
 
 export const CONNECT_TO_NODE = 'CONNECT_TO_NODE'
-const HOSTING_SERVER = '167.88.11.204:8080'
+const HOSTING_SERVER = 'pool.shock.network'
 
 /**
  * @typedef {object} Params
@@ -152,7 +152,7 @@ class ConnectToNode extends React.PureComponent {
     const { invitationCode, externalURL } = this.state
     try {
       Logger.log('requesting with', invitationCode)
-      const resp = await fetch(`http://${HOSTING_SERVER}/mainnet`, {
+      const resp = await fetch(`https://${HOSTING_SERVER}/mainnet`, {
         headers: {
           Accept: 'application/json',
           Authorization: invitationCode,
