@@ -315,15 +315,7 @@ const styles = StyleSheet.create({
     color: CSS.Colors.BLUE_DARK,
     fontWeight: 'bold',
   },
-  // accordionMenuBtn: {
-  //   width: 45,
-  //   height: 45,
-  //   borderRadius: 100,
-  //   backgroundColor: CSS.Colors.ORANGE,
-  //   alignItems: 'center',
-  //   justifyContent: 'center',
-  //   elevation: 3,
-  // },
+
   accordionMenuBtnDark: {
     width: 45,
     height: 45,

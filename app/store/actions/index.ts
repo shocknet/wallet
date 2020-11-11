@@ -18,6 +18,7 @@ import { PaymentsAction } from './payments'
 import { ChainTXsAction } from './chain-txs'
 import { PostsAction } from './posts'
 import { DebugAction } from './debug'
+import { WalletAction } from './wallet'
 
 export type Action =
   | UsersAction
@@ -37,6 +38,7 @@ export type Action =
   | RehydrateAction
   | PostsAction
   | DebugAction
+  | WalletAction
 
 export const receivedBackfeed = Common.Store.Actions.receivedBackfeed
 export const receivedFeed = Common.Store.Actions.receivedFeed
@@ -64,5 +66,6 @@ export { fetchNodeInfo } from './NodeActions'
 export * from './users'
 export * from './posts'
 export * from './debug'
+export * from './wallet'
 
 export { ChatActions, RequestActions, Follows }

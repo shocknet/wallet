@@ -8,7 +8,6 @@ import {
   TouchableHighlight,
   View,
   ImageBackground,
-  InteractionManager,
   StatusBar,
 } from 'react-native'
 import Logger from 'react-native-file-log'
@@ -25,13 +24,7 @@ import wavesBGDark from '../../assets/images/waves-bg-dark.png'
 import ShockIcon from '../../res/icons'
 import btcConvert from '../../services/convertBitcoin'
 import * as CSS from '../../res/css'
-import { getUSDRate, getWalletBalance } from '../../store/actions/WalletActions'
 import { fetchNodeInfo } from '../../store/actions/NodeActions'
-import {
-  fetchRecentTransactions,
-  fetchRecentPayments,
-  fetchRecentInvoices,
-} from '../../store/actions/HistoryActions'
 import { subscribeOnChats } from '../../store/actions/ChatActions'
 import {
   invoicesRefreshForced,
@@ -61,13 +54,8 @@ import { Color } from 'shock-common/dist/constants'
  * @prop {string|null} totalBalance
  * @prop {number} USDRate
  * @prop {boolean} testnet
- * @prop {() => Promise<void>} fetchRecentTransactions
- * @prop {() => Promise<void>} fetchRecentPayments
- * @prop {() => Promise<void>} fetchRecentInvoices
- * @prop {() => Promise<import('../../store/actions/WalletActions').WalletBalance>} getWalletBalance
  * @prop {() => Promise<import('../../store/actions/NodeActions').GetInfo>} fetchNodeInfo
  * @prop {() => Promise<Schema.Chat[]>} subscribeOnChats
- * @prop {() => Promise<number>} getUSDRate
  * @prop {{notifyDisconnect:boolean, notifyDisconnectAfterSeconds:number}} settings
  * @prop {() => void} forceInvoicesRefresh
  * @prop {boolean} isOnline
@@ -106,12 +94,6 @@ class WalletOverview extends React.PureComponent {
     )),
   }
 
-  /** @type {null|ReturnType<typeof setInterval>} */
-  balanceIntervalID = null
-
-  /** @type {null|ReturnType<typeof setInterval>} */
-  exchangeRateIntervalID = null
-
   didFocus = { remove() {} }
 
   subs = [() => {}]
@@ -122,104 +104,19 @@ class WalletOverview extends React.PureComponent {
     const {
       fetchNodeInfo,
       subscribeOnChats,
-      fetchRecentTransactions,
-      fetchRecentInvoices,
-      navigation,
       forceInvoicesRefresh,
       forcePaymentsRefresh,
-      getMoreFeed,
       forceChainTXsRefresh,
     } = this.props
 
     forcePaymentsRefresh()
     forceInvoicesRefresh()
-    getMoreFeed()
     forceChainTXsRefresh()
-
-    this.didFocus = navigation.addListener('didFocus', () => {
-      this.balanceIntervalID = setTimeout(this.getWalletBalance, 4000)
-      this.exchangeRateIntervalID = setTimeout(this.getUSDRate, 4000)
-      this.recentPaymentsIntervalID = setTimeout(this.fetchRecentPayments, 4000)
-    })
-
-    navigation.addListener('didBlur', () => {
-      if (this.balanceIntervalID) {
-        clearTimeout(this.balanceIntervalID)
-      }
-
-      if (this.exchangeRateIntervalID) {
-        clearTimeout(this.exchangeRateIntervalID)
-      }
-
-      if (this.recentPaymentsIntervalID) {
-        clearTimeout(this.recentPaymentsIntervalID)
-      }
-    })
 
     this.startNotificationService()
 
     subscribeOnChats()
-    await Promise.all([
-      fetchRecentInvoices(),
-      fetchRecentTransactions(),
-      fetchRecentPayments(),
-      fetchNodeInfo(),
-    ])
-  }
-
-  fetchRecentPayments = () =>
-    InteractionManager.runAfterInteractions(() => {
-      const { fetchRecentPayments } = this.props
-      try {
-        fetchRecentPayments()
-        this.recentPaymentsIntervalID = setTimeout(
-          this.fetchRecentPayments,
-          4000,
-        )
-        return
-      } catch (err) {
-        this.recentPaymentsIntervalID = setTimeout(
-          this.fetchRecentPayments,
-          4000,
-        )
-      }
-    })
-
-  getUSDRate = () =>
-    InteractionManager.runAfterInteractions(() => {
-      const { getUSDRate } = this.props
-      try {
-        getUSDRate()
-        this.exchangeRateIntervalID = setTimeout(this.getUSDRate, 4000)
-        return
-      } catch (err) {
-        this.exchangeRateIntervalID = setTimeout(this.getUSDRate, 4000)
-      }
-    })
-
-  getWalletBalance = () =>
-    InteractionManager.runAfterInteractions(() => {
-      const { getWalletBalance } = this.props
-      try {
-        getWalletBalance()
-        this.balanceIntervalID = setTimeout(this.getWalletBalance, 4000)
-        return
-      } catch (err) {
-        this.balanceIntervalID = setTimeout(this.getWalletBalance, 4000)
-      }
-    })
-
-  componentWillUnmount() {
-    if (this.balanceIntervalID) {
-      clearInterval(this.balanceIntervalID)
-    }
-
-    if (this.exchangeRateIntervalID) {
-      clearInterval(this.exchangeRateIntervalID)
-    }
-    //if (!SocketManager.socket?.connected) {
-    //  SocketManager.socket.disconnect()
-    //}
+    await fetchNodeInfo()
   }
 
   onPressRequest = () => {
@@ -438,12 +335,7 @@ const mapStateToProps = state => {
 }
 
 const mapDispatchToProps = {
-  getUSDRate,
-  getWalletBalance,
-  fetchRecentTransactions,
   fetchNodeInfo,
-  fetchRecentInvoices,
-  fetchRecentPayments,
   subscribeOnChats,
   forceInvoicesRefresh: invoicesRefreshForced,
   forcePaymentsRefresh: paymentsRefreshForced,
