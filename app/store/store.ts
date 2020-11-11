@@ -43,6 +43,17 @@ export default () => {
 
   sagaMiddleware.run(rootSaga)
 
+  // Now that polls themsevels (which caused ticks in the store) are dependant
+  // on the ping socket, we need a keep alive tick for when the are no actions
+  // being dispatched making the store tick and therefore the ping saga
+  // realizing the socket died.
+  setInterval(() => {
+    store.dispatch({
+      // @ts-expect-error
+      type: 'keepAlive',
+    })
+  }, 20000)
+
   return { persistor, store }
 }
 
