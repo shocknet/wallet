@@ -1,3 +1,4 @@
+// @ts-nocheck temp
 import React from 'react'
 import { Clipboard, StatusBar, ToastAndroid } from 'react-native'
 import zipObj from 'lodash/zipObject'

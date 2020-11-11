@@ -127,6 +127,7 @@ export default class Chat extends React.PureComponent {
 
   /** @type {State} */
   state = {
+    // @ts-expect-error tmp
     chats: API.Events.currentChats,
     rawInvoiceToDecodedInvoice: {},
     rawInvoiceToPaymentStatus: {},
@@ -565,6 +566,7 @@ export default class Chat extends React.PureComponent {
     this.willBlur = navigation.addListener('willBlur', () => {
       this.isFocused = false
     })
+    // @ts-expect-error tmp
     this.chatsUnsub = API.Events.onChats(this.onChats)
 
     this.updateLastReadMsg()
