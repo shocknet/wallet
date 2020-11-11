@@ -12,12 +12,6 @@ const reducer: Reducer<State, Action> = (state = {}, action) =>
       const { posts } = action.payload
 
       posts.forEach(post => {
-        // Posts can't get edited for now, let's not update unnecessarily
-        // They can be deleted however but should be handled via posts/removed
-        if (draft[post.id]) {
-          return
-        }
-
         draft[post.id] = {
           ...post,
           author:
@@ -32,13 +26,8 @@ const reducer: Reducer<State, Action> = (state = {}, action) =>
       const {
         authorPublicKey,
         id,
-        post: { contentItems, date, status, tags, title },
+        post: { contentItems, date, status, tags, title, tipCounter },
       } = action.payload
-
-      // Posts can't get edited for now, let's not update unnecessarily
-      if (!!draft[id]) {
-        return
-      }
 
       draft[id] = {
         author: authorPublicKey,
@@ -48,6 +37,7 @@ const reducer: Reducer<State, Action> = (state = {}, action) =>
         status,
         tags,
         title,
+        tipCounter,
       }
     }
 
@@ -55,12 +45,8 @@ const reducer: Reducer<State, Action> = (state = {}, action) =>
       const { authorPublicKey, ids, posts } = action.payload
 
       for (let i = 0; i < ids.length; i++) {
-        const { contentItems, date, status, tags, title } = posts[i]
+        const { contentItems, date, status, tags, title, tipCounter } = posts[i]
         const id = ids[i]
-
-        if (draft[id]) {
-          continue
-        }
 
         draft[id] = {
           author: authorPublicKey,
@@ -70,6 +56,7 @@ const reducer: Reducer<State, Action> = (state = {}, action) =>
           status,
           tags,
           title,
+          tipCounter,
         }
       }
     }

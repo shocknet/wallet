@@ -1,7 +1,6 @@
 import { takeEvery, select, all, put, call } from 'redux-saga/effects'
 import Logger from 'react-native-file-log'
 import SocketIO from 'socket.io-client'
-import difference from 'lodash/difference'
 import { Constants, Schema } from 'shock-common'
 import pickBy from 'lodash/pickBy'
 
@@ -52,15 +51,10 @@ const assignSocketToPublicKeys = (publicKeys: string[]) => {
           throw new TypeError(`Expected user.posts to be an object`)
         }
 
-        const existingPosts = Object.keys(getStore().getState().posts)
-
         const postsReceived = Object.keys(
           // filter deleted posts
           pickBy(data, v => v !== null),
         ).filter(k => k !== '_')
-
-        // posts can't get edited for now
-        const newPosts = difference(postsReceived, existingPosts)
 
         const postsDeleted = Object.keys(
           // get deleted posts
@@ -75,7 +69,7 @@ const assignSocketToPublicKeys = (publicKeys: string[]) => {
           }
         }
 
-        for (const postKey of newPosts) {
+        for (const postKey of postsReceived) {
           httpGet<{ data: Schema.RawPost }>(
             `api/gun/otheruser/${publicKey}/load/posts>${postKey}`,
             {},
@@ -84,28 +78,41 @@ const assignSocketToPublicKeys = (publicKeys: string[]) => {
                 return 'not an object'
               }
               if (!Schema.isRawPost(v.data)) {
-                return `id: ${postKey} not a raw post (sometimes expected): ${JSON.stringify(
+                return `id: ${postKey} from author: ${
+                  getStore().getState().users[publicKey].displayName
+                } not a raw post (sometimes expected): ${JSON.stringify(
                   v.data,
                 )}`
               }
               return ''
             },
           )
-            .then(({ data: { contentItems, date, status, tags, title } }) => {
-              getStore().dispatch(
-                Actions.receivedRawPost(
-                  {
-                    contentItems,
-                    date,
-                    status,
-                    tags,
-                    title,
-                  },
-                  postKey,
-                  publicKey,
-                ),
-              )
-            })
+            .then(
+              ({
+                data: { contentItems, date, status, tags, title, tipCounter },
+              }) => {
+                console.log(
+                  `typeof tipCounter: ${typeof tipCounter}  ---   ${tipCounter}`,
+                  `id: ${postKey} from author: ${
+                    getStore().getState().users[publicKey].displayName
+                  }`,
+                )
+                getStore().dispatch(
+                  Actions.receivedRawPost(
+                    {
+                      contentItems,
+                      date,
+                      status,
+                      tags,
+                      title,
+                      tipCounter: tipCounter || 0,
+                    },
+                    postKey,
+                    publicKey,
+                  ),
+                )
+              },
+            )
             .catch(e => {
               Logger.log('Error inside posts.httpGet* ()')
               Logger.log(e.message)
