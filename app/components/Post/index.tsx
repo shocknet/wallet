@@ -12,8 +12,6 @@ import { connect } from 'react-redux'
 import pickBy from 'lodash/pickBy'
 import Carousel from 'react-native-snap-carousel'
 import size from 'lodash/size'
-import isFinite from 'lodash/isFinite'
-import Logger from 'react-native-file-log'
 
 import * as Store from '../../store'
 import * as CSS from '../../res/css'
@@ -37,7 +35,7 @@ interface OwnProps {
 interface StateProps {
   authorPublicKey: string
   contentItems: Record<string, Schema.ContentItem>
-  numOfTips: number
+  tipCounter: number
   showMenuBtn: boolean
   isPinned: boolean
 }
@@ -53,7 +51,6 @@ interface State {
   menuOpen: boolean
   tipPopupOpen: boolean
   showingRibbon: boolean
-  tipAmt: number
 }
 
 type Props = OwnProps & StateProps & DispatchProps
@@ -64,32 +61,24 @@ class Post extends React.PureComponent<Props, State> {
     menuOpen: false,
     tipPopupOpen: false,
     showingRibbon: true,
-    tipAmt: 0,
   }
 
-  tipAmtSocket: null | ReturnType<typeof Services.rifle> = null
+  postSocket: null | ReturnType<typeof Services.rifle> = null
 
   componentDidMount = () => {
     const { authorPublicKey, id } = this.props
-    this.tipAmtSocket = Services.rifle(
-      `${authorPublicKey}::posts>${id}>tipCounter::on`,
+    // TODO: hack, force gun to ask for this data
+    // The data itself will be processed in saga
+    this.postSocket = Services.rifle(
+      `${authorPublicKey}::posts>${id}>contentItems`,
     )
-    this.tipAmtSocket.on('$shock', (tipAmt: unknown) => {
-      if (typeof tipAmt === 'number' && isFinite(tipAmt) && tipAmt >= 0) {
-        this.setState({ tipAmt })
-      } else {
-        Logger.log(
-          `post: ${id} -- got bad tipAmt: ${typeof tipAmt} -- rendered: ${tipAmt}`,
-        )
-      }
-    })
   }
 
   componentWillUnmount = () => {
-    if (this.tipAmtSocket) {
-      this.tipAmtSocket.off('*')
-      this.tipAmtSocket.close()
-      this.tipAmtSocket = null
+    if (this.postSocket) {
+      this.postSocket.off('*')
+      this.postSocket.close()
+      this.postSocket = null
     }
   }
   getMediaItems() {
@@ -142,7 +131,7 @@ class Post extends React.PureComponent<Props, State> {
   }: {
     item: Schema.EmbeddedImage | Schema.EmbeddedVideo
   }) => {
-    const { numOfTips } = this.props
+    const { tipCounter } = this.props
     const { mediaWidth, showingRibbon } = this.state
 
     if (!mediaWidth) {
@@ -166,7 +155,7 @@ class Post extends React.PureComponent<Props, State> {
         {showingRibbon ? (
           <View style={styles.ribbon}>
             <Text style={styles.ribbonText}>
-              {numOfTips} <Text style={styles.ribbonTextBold}>Tips</Text>
+              {tipCounter} <Text style={styles.ribbonTextBold}>Tips</Text>
             </Text>
           </View>
         ) : null}
@@ -362,7 +351,7 @@ const mapState = () => {
       return {
         authorPublicKey: state.auth.gunPublicKey,
         contentItems: {},
-        numOfTips: 0,
+        tipCounter: 0,
         showMenuBtn: false,
         isPinned: false,
       }
@@ -373,9 +362,9 @@ const mapState = () => {
     return {
       authorPublicKey: post.author,
       contentItems: post.contentItems,
-      numOfTips: 0,
       showMenuBtn: myPublicKey === post.author,
       isPinned: post.id === user.pinnedPost,
+      tipCounter: post.tipCounter,
     }
   }
 }
