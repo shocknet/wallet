@@ -25,7 +25,6 @@ import OnboardingScreen, {
 import OnboardingInput from '../components/OnboardingInput'
 import OnboardingBtn from '../components/OnboardingBtn'
 import { throttledExchangeKeyPair } from '../store/actions/ConnectionActions'
-import notificationService from '../../notificationService'
 /** @type {number} */
 // @ts-expect-error
 const shockBG = require('../assets/images/shock-bg.png')
