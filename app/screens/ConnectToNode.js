@@ -152,7 +152,7 @@ class ConnectToNode extends React.PureComponent {
     const { invitationCode, externalURL } = this.state
     try {
       Logger.log('requesting with', invitationCode)
-      const resp = await fetch(`http://${HOSTING_SERVER}/mainnet`, {
+      const resp = await fetch(`https://${HOSTING_SERVER}/mainnet`, {
         headers: {
           Accept: 'application/json',
           Authorization: invitationCode,
