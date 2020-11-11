@@ -1,4 +1,4 @@
-import reverse from 'lodash/reverse'
+// @ts-check
 import { ACTIONS } from '../actions/HistoryActions'
 import * as Wallet from '../../services/wallet'
 
@@ -10,14 +10,7 @@ import * as Wallet from '../../services/wallet'
  * @typedef {object} State
  * @prop {Wallet.Channel[]} channels
  * @prop {Wallet.pendingChannels[]} pendingChannels
- * @prop {object} invoices
  * @prop {Wallet.Peer[]} peers
- * @prop {object} transactions
- * @prop {object} payments
- * @prop {Wallet.Transaction[]} recentTransactions
- * @prop {Wallet.Payment[]} recentPayments
- * @prop {Wallet.Invoice[]} recentInvoices
- * @prop {UnifiedTransaction[]} unifiedTransactions
  */
 // TO DO: typings for data
 /**
@@ -34,29 +27,7 @@ import * as Wallet from '../../services/wallet'
 const INITIAL_STATE = {
   channels: [],
   pendingChannels: [],
-  invoices: {
-    content: [],
-    page: 0,
-    totalPages: 0,
-    totalItems: 0,
-  },
   peers: [],
-  transactions: {
-    content: [],
-    page: 0,
-    totalPages: 0,
-    totalItems: 0,
-  },
-  payments: {
-    content: [],
-    page: 0,
-    totalPages: 0,
-    totalItems: 0,
-  },
-  recentTransactions: [],
-  recentPayments: [],
-  recentInvoices: [],
-  unifiedTransactions: [],
 }
 /**
  * @param {State} state
@@ -87,28 +58,7 @@ const history = (state = INITIAL_STATE, action) => {
         pendingChannels: data,
       }
     }
-    case ACTIONS.LOAD_INVOICES: {
-      const { data } = action
-      if (typeof data !== 'object') {
-        return state
-      }
-      return {
-        ...state,
-        invoices: data,
-      }
-    }
-    case ACTIONS.LOAD_MORE_INVOICES: {
-      const { data } = action
-      const { invoices } = state
-      return {
-        ...state,
-        invoices: {
-          ...data,
-          //@ts-expect-error
-          content: [...invoices.content, ...data.content],
-        },
-      }
-    }
+
     case ACTIONS.LOAD_PEERS: {
       const { data } = action
       if (!Array.isArray(data)) {
@@ -120,194 +70,7 @@ const history = (state = INITIAL_STATE, action) => {
         peers: data,
       }
     }
-    case ACTIONS.LOAD_PAYMENTS: {
-      const { data } = action
-      if (typeof data !== 'object') {
-        return state
-      }
-      return {
-        ...state,
-        payments: data,
-      }
-    }
-    case ACTIONS.LOAD_MORE_PAYMENTS: {
-      const { data } = action
-      const { payments } = state
-      return {
-        ...state,
-        payments: {
-          ...data,
-          //@ts-expect-error
-          content: [...payments.content, ...data.content],
-        },
-      }
-    }
-    case ACTIONS.LOAD_TRANSACTIONS: {
-      const { data } = action
-      if (typeof data !== 'object') {
-        return state
-      }
-      return {
-        ...state,
-        transactions: data,
-      }
-    }
-    case ACTIONS.LOAD_MORE_TRANSACTIONS: {
-      const { data } = action
-      const { transactions } = state
-      return {
-        ...state,
-        transactions: {
-          ...data,
-          //@ts-expect-error
-          content: [...transactions.content, ...data.content],
-        },
-      }
-    }
-    case ACTIONS.LOAD_RECENT_TRANSACTIONS: {
-      /**
-       * @param {Wallet.Invoice | Wallet.Payment | Wallet.Transaction} unifiedTransaction
-       */
-      const { data } = action
 
-      return {
-        ...state,
-        //@ts-expect-error
-        recentTransactions: data.content,
-      }
-    }
-    case ACTIONS.LOAD_RECENT_PAYMENTS: {
-      /**
-       * @param {Wallet.Invoice | Wallet.Payment | Wallet.Transaction} unifiedTransaction
-       */
-      const { data } = action
-
-      return {
-        ...state,
-        //@ts-expect-error
-        recentPayments: data,
-      }
-    }
-    case ACTIONS.LOAD_NEW_RECENT_INVOICE: {
-      const { data } = action
-      if (!Array.isArray(data)) {
-        return state
-      }
-      return {
-        ...state,
-        //@ts-expect-error
-        recentInvoices: [data, ...state.recentInvoices],
-      }
-    }
-    case ACTIONS.UNIFY_TRANSACTIONS: {
-      const filteredTransactions = [
-        ...state.recentTransactions,
-        ...state.recentPayments,
-        ...state.recentInvoices,
-      ].filter(
-        /**
-         * @param {Wallet.Invoice | Wallet.Payment | Wallet.Transaction} unifiedTransaction
-         */
-        unifiedTransaction => {
-          if (Wallet.isInvoice(unifiedTransaction)) {
-            return unifiedTransaction.settled
-          }
-
-          if (Wallet.isPayment(unifiedTransaction)) {
-            return unifiedTransaction.status === 'SUCCEEDED'
-          }
-
-          if (Wallet.isTransaction(unifiedTransaction)) {
-            return true
-          }
-
-          return false
-        },
-      )
-
-      const sortedTransactions = filteredTransactions.sort(
-        /**
-         * @param {Wallet.Invoice | Wallet.Payment | Wallet.Transaction} a
-         * @param {Wallet.Invoice | Wallet.Payment | Wallet.Transaction} b
-         */
-        (a, b) => {
-          const _a = (() => {
-            if (Wallet.isInvoice(a)) {
-              return Number(a.settle_date)
-            }
-
-            if (Wallet.isPayment(a)) {
-              return Number(a.creation_date)
-            }
-
-            if (Wallet.isTransaction(a)) {
-              return Number(a.time_stamp)
-            }
-
-            return 0
-          })()
-
-          const _b = (() => {
-            if (Wallet.isInvoice(b)) {
-              return Number(b.settle_date)
-            }
-
-            if (Wallet.isPayment(b)) {
-              return Number(b.creation_date)
-            }
-
-            if (Wallet.isTransaction(b)) {
-              return Number(b.time_stamp)
-            }
-
-            return 0
-          })()
-
-          return _b - _a
-        },
-      )
-
-      return {
-        ...state,
-        unifiedTransactions: sortedTransactions,
-      }
-    }
-    case ACTIONS.LOAD_NEW_RECENT_TRANSACTION: {
-      /**
-       * @type {{data:import('../../services/wallet').Transaction}}
-       */
-      //@ts-expect-error
-      const { data } = action
-      const { recentTransactions } = state
-      const { tx_hash: txHash } = data
-      /**
-       *
-       * @param {import('../../services/wallet').Transaction} tx
-       */
-      const sameTx = tx => tx.tx_hash === txHash
-      const txIndex = recentTransactions.findIndex(sameTx)
-      const newContent = [...recentTransactions]
-      if (txIndex !== -1) {
-        newContent[txIndex] = data
-      } else {
-        newContent.unshift(data)
-      }
-      return {
-        ...state,
-        recentTransactions: newContent,
-      }
-    }
-    case ACTIONS.LOAD_RECENT_INVOICES: {
-      const { data } = action
-      if (!Array.isArray(data)) {
-        return state
-      }
-      return {
-        ...state,
-        //@ts-expect-error
-        recentInvoices: reverse(data),
-      }
-    }
     default:
       return state
   }
