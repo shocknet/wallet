@@ -34,14 +34,14 @@ const drawerTopItems = [
     iconName: 'solid-wallet',
     screen: WALLET_SETTINGS,
   },
-  {
+  /*{
     name: 'Spending Rules',
-    iconName: 'solid-spending-rule',
+    iconName: 'solid-lightning',
     screen: WALLET_SETTINGS,
-  },
+  },*/
   {
     name: 'Advanced Lightning',
-    iconName: 'solid-lightning',
+    iconName: 'solid-spending-rule',
     screen: ADVANCED_SCREEN,
   },
   {
