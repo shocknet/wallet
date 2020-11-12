@@ -22,10 +22,10 @@ const reducer: Reducer<State, Action> = (state = INITIAL_STATE, action) =>
       const { chats } = action.data
 
       const {
-        entities: { messages },
+        entities: { chatMessages },
       } = Schema.normalizeChats(chats)
 
-      for (const msg of Object.values(messages)) {
+      for (const msg of Object.values(chatMessages)) {
         draft.byId[msg.id] = msg
       }
     }

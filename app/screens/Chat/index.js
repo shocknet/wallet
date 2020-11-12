@@ -4,6 +4,7 @@ import Ion from 'react-native-vector-icons/Ionicons'
 import Logger from 'react-native-file-log'
 import { Schema } from 'shock-common'
 import produce from 'immer'
+import { connect } from 'react-redux'
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}, Params>} Navigation
  */
@@ -59,8 +60,17 @@ const HeaderLeft = React.memo(({ onPress }) => ((
  */
 
 /**
- * @typedef {object} Props
+ * @typedef {object} StateProps
+ * @prop {Schema.Chat[]} chats
+ */
+
+/**
+ * @typedef {object} OwnProps
  * @prop {Navigation} navigation
+ */
+
+/**
+ * @typedef {StateProps & OwnProps} Props
  */
 
 /**
@@ -72,7 +82,6 @@ const HeaderLeft = React.memo(({ onPress }) => ((
 
 /**
  * @typedef {object} State
- * @prop {Schema.Chat[]} chats
  * @prop {string|null} ownPublicKey
  * @prop {Partial<Record<string, PaymentStatus>>} rawInvoiceToPaymentStatus
  * @prop {Partial<Record<string, DecodedInvoice>>} rawInvoiceToDecodedInvoice
@@ -83,12 +92,10 @@ const HeaderLeft = React.memo(({ onPress }) => ((
  * @prop {Record<string, { body: string , timestamp: number }>} socketMessages
  */
 
-// TODO: COMPONENT HERE IS A TEMP FIX
-
 /**
  * @augments React.PureComponent<Props, State>
  */
-export default class Chat extends React.PureComponent {
+class Chat extends React.PureComponent {
   /**
    * @param {import('react-navigation-stack').NavigationStackScreenProps} args
    * @returns {import('react-navigation-stack').NavigationStackOptions}
@@ -127,8 +134,6 @@ export default class Chat extends React.PureComponent {
 
   /** @type {State} */
   state = {
-    // @ts-expect-error tmp
-    chats: API.Events.currentChats,
     rawInvoiceToDecodedInvoice: {},
     rawInvoiceToPaymentStatus: {},
     ownPublicKey: null,
@@ -243,7 +248,7 @@ export default class Chat extends React.PureComponent {
    * representation of it.
    */
   updateInvoicesInTransit() {
-    this.setState(({ invoicesInTransit, chats }) => {
+    this.setState(({ invoicesInTransit }, { chats }) => {
       const theChat = chats.find(
         c => c.id === this.props.navigation.getParam('id'),
       )
@@ -452,10 +457,9 @@ export default class Chat extends React.PureComponent {
   }
 
   /**
-   * @param {never} _
-   * @param {State} prevState
+   * @param {Props} prevProps
    */
-  componentDidUpdate(_, prevState) {
+  componentDidUpdate(prevProps) {
     const { navigation } = this.props
     const recipientDisplayName = this.getRecipientDisplayName()
     const theChat = this.getChat()
@@ -471,7 +475,8 @@ export default class Chat extends React.PureComponent {
       })
     }
 
-    if (prevState.chats !== this.state.chats) {
+    if (prevProps.chats !== this.props.chats) {
+      this.onChats(this.props.chats)
       this.decodeIncomingInvoices()
     }
   }
@@ -566,8 +571,6 @@ export default class Chat extends React.PureComponent {
     this.willBlur = navigation.addListener('willBlur', () => {
       this.isFocused = false
     })
-    // @ts-expect-error tmp
-    this.chatsUnsub = API.Events.onChats(this.onChats)
 
     this.updateLastReadMsg()
     this.decodeIncomingInvoices()
@@ -594,7 +597,6 @@ export default class Chat extends React.PureComponent {
 
   componentWillUnmount() {
     this.mounted = false
-    this.chatsUnsub()
     this.didFocus.remove()
     this.willBlur.remove()
     if (this.otherMsgsSocket) {
@@ -603,8 +605,6 @@ export default class Chat extends React.PureComponent {
       this.otherMsgsSocket = null
     }
   }
-
-  chatsUnsub = () => {}
 
   /**
    * @private
@@ -621,7 +621,6 @@ export default class Chat extends React.PureComponent {
 
     this.setState(
       {
-        chats,
         cachedSentMessages: [],
       },
       () => {
@@ -638,7 +637,7 @@ export default class Chat extends React.PureComponent {
   /** @returns {Schema.Chat|null} */
   getChat() {
     const id = this.props.navigation.getParam('id')
-    const theChat = this.state.chats.find(c => c.id === id)
+    const theChat = this.props.chats.find(c => c.id === id)
 
     if (!theChat) {
       Logger.log(`<Chat />.index -> getChat() -> no chat found. id: ${id}`)
@@ -945,3 +944,15 @@ export default class Chat extends React.PureComponent {
     )
   }
 }
+
+/**
+ * @param {Store.State} state
+ * @returns {StateProps}
+ */
+const mapState = state => ({
+  chats: Store.selectAllChats(state),
+})
+
+const ConnectedChat = connect(mapState)(Chat)
+
+export default ConnectedChat

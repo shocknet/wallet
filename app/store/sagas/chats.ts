@@ -27,12 +27,26 @@ function* chats() {
       socket.on('$shock', (chats: Schema.Chat[]) => {
         const store = getStore()
 
+        const contacts = chats.map(chat => ({
+          pk: chat.recipientPublicKey,
+          avatar: chat.recipientAvatar,
+          displayName: chat.recipientDisplayName,
+        }))
+
         store.dispatch({
           // @ts-expect-error
           type: Actions.ChatActions.ACTIONS.LOAD_CONTACTS,
           // @ts-expect-error
           data: contacts,
         })
+
+        const messages = chats.reduce(
+          (messages, chat) => ({
+            ...messages,
+            [chat.recipientPublicKey]: chat.messages,
+          }),
+          {},
+        )
 
         store.dispatch({
           // @ts-expect-error

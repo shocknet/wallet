@@ -72,3 +72,5 @@ export const Selectors = {
     },
   },
 }
+
+export { connect } from 'react-redux'

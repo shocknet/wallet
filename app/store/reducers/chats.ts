@@ -2,7 +2,6 @@
  * We normalize/denormalize so we don't have to change too much code in the view
  * layer. TODO.
  */
-import produce from 'immer'
 import { Reducer } from 'redux'
 import { Schema } from 'shock-common'
 
@@ -16,17 +15,21 @@ const INITIAL_STATE: State = {
   byId: {},
 }
 
-const reducer: Reducer<State, Action> = (state = INITIAL_STATE, action) =>
-  produce(state, draft => {
-    if (action.type == 'chats/receivedChats') {
-      const { chats } = action.data
+const reducer: Reducer<State, Action> = (state = INITIAL_STATE, action) => {
+  if (action.type === 'chats/receivedChats') {
+    const { chats } = action.data
+    const normalizedChats = Schema.normalizeChats(chats).entities.chats
+    console.log(normalizedChats)
+    const newState: State = { byId: {} }
 
-      for (const [id, chatN] of Object.entries(
-        Schema.normalizeChats(chats).entities.chats,
-      )) {
-        draft.byId[id] = chatN
-      }
+    for (const [id, chatN] of Object.entries(normalizedChats)) {
+      newState.byId[id] = chatN
     }
-  })
+
+    return newState
+  }
+
+  return state
+}
 
 export default reducer
