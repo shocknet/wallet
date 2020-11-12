@@ -225,8 +225,11 @@ export default class Chats extends React.PureComponent {
    * @param {string} encodedShockUser
    */
   sendHR = encodedShockUser => {
-    const pk = encodedShockUser
-
+    let pk = encodedShockUser
+    if (encodedShockUser.startsWith('http')) {
+      const parts = encodedShockUser.split('/')
+      pk = parts[parts.length - 1]
+    }
     if (typeof pk === 'string' && pk.length === 0) {
       Logger.log("typeof pk === 'string' && pk.length === 0")
       return
@@ -285,7 +288,6 @@ export default class Chats extends React.PureComponent {
 
   sendHRToUserFromClipboard = () => {
     this.toggleAddDialog()
-
     Clipboard.getString()
       .then(this.sendHR)
       .catch(e => {
