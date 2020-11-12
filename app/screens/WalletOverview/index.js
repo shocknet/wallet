@@ -13,7 +13,6 @@ import {
 import Logger from 'react-native-file-log'
 
 import { connect } from 'react-redux'
-import { Schema } from 'shock-common'
 // @ts-expect-error
 import bech32 from 'bech32'
 
@@ -25,7 +24,6 @@ import ShockIcon from '../../res/icons'
 import btcConvert from '../../services/convertBitcoin'
 import * as CSS from '../../res/css'
 import { fetchNodeInfo } from '../../store/actions/NodeActions'
-import { subscribeOnChats } from '../../store/actions/ChatActions'
 import {
   invoicesRefreshForced,
   paymentsRefreshForced,
@@ -55,7 +53,6 @@ import { Color } from 'shock-common/dist/constants'
  * @prop {number} USDRate
  * @prop {boolean} testnet
  * @prop {() => Promise<import('../../store/actions/NodeActions').GetInfo>} fetchNodeInfo
- * @prop {() => Promise<Schema.Chat[]>} subscribeOnChats
  * @prop {{notifyDisconnect:boolean, notifyDisconnectAfterSeconds:number}} settings
  * @prop {() => void} forceInvoicesRefresh
  * @prop {boolean} isOnline
@@ -103,7 +100,6 @@ class WalletOverview extends React.PureComponent {
   componentDidMount = async () => {
     const {
       fetchNodeInfo,
-      subscribeOnChats,
       forceInvoicesRefresh,
       forcePaymentsRefresh,
       forceChainTXsRefresh,
@@ -115,7 +111,6 @@ class WalletOverview extends React.PureComponent {
 
     this.startNotificationService()
 
-    subscribeOnChats()
     await fetchNodeInfo()
   }
 
@@ -336,7 +331,6 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = {
   fetchNodeInfo,
-  subscribeOnChats,
   forceInvoicesRefresh: invoicesRefreshForced,
   forcePaymentsRefresh: paymentsRefreshForced,
   getMoreFeed,

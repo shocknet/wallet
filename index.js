@@ -35,9 +35,15 @@ Logger.setTag('ShockWallet')
 Logger.setFileLogEnabled(true)
 Logger.setConsoleLogEnabled(__DEV__)
 Logger.inject((...content) => {
-  const s = getStore()
-  if (s.getState().debug.enabled) {
-    s.dispatch(log(...content))
+  try {
+    const s = getStore()
+    if (s.getState().debug.enabled) {
+      s.dispatch(log(...content))
+    }
+  } catch (e) {
+    if (e.message.indexOf('You may not call') !== 0) {
+      throw e
+    }
   }
 })
 

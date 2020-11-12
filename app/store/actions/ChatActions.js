@@ -1,8 +1,6 @@
 import * as Common from 'shock-common'
 import Logger from 'react-native-file-log'
 
-import * as API from '../../services/contact-api'
-
 export const ACTIONS = {
   LOAD_CONTACTS: 'contacts/load',
   LOAD_MESSAGES: 'messages/load',
@@ -32,7 +30,6 @@ export const ACTIONS = {
  */
 
 /**
- *
  * @typedef {object} Keysend
  * @prop {string} dest
  * @prop {'keysend'} type
@@ -47,68 +44,6 @@ export const ACTIONS = {
  * @prop {'chats/receivedChats'} type
  * @prop {{ chats: Common.Schema.Chat[] }} data
  */
-
-/**
- * Fetches the Node's info
- * @param {((chats: Common.Schema.Chat[]) => void)=} callback
- * @returns {(d: (a: any) => any) => Promise<any>}
- */
-export const subscribeOnChats = callback => async dispatch => {
-  try {
-    await Common.Utils.makePromise((resolve, reject) => {
-      API.Events.onChats(chats => {
-        try {
-          const contacts = chats.map(chat => ({
-            pk: chat.recipientPublicKey,
-            avatar: chat.recipientAvatar,
-            displayName: chat.recipientDisplayName,
-          }))
-
-          const messages = chats.reduce(
-            (messages, chat) => ({
-              ...messages,
-              [chat.recipientPublicKey]: chat.messages,
-            }),
-            {},
-          )
-
-          dispatch({
-            type: ACTIONS.LOAD_CONTACTS,
-            data: contacts,
-          })
-
-          dispatch({
-            type: ACTIONS.LOAD_MESSAGES,
-            data: messages,
-          })
-
-          /** @type {ReceivedChatsAction} */
-          const receivedChatsAction = {
-            type: 'chats/receivedChats',
-            data: {
-              chats,
-            },
-          }
-
-          dispatch(receivedChatsAction)
-
-          if (callback) {
-            callback(chats)
-          }
-
-          resolve(chats)
-        } catch (err) {
-          Logger.log(
-            `Error inside callback to onChats in subscribeOnChats thunk: ${err.message}`,
-          )
-          reject(err)
-        }
-      })
-    })
-  } catch (e) {
-    Logger.log(`Error inside subscribeOnChats thunk: ${e.message}`)
-  }
-}
 
 /**
  * Selects a contact (useful for easily referencing the currently focused contact)

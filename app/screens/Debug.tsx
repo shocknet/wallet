@@ -198,7 +198,6 @@ const styles = {
 }
 
 const mapStateToProps = (state: Store.State): StateProps => {
-  console.log('map state to props called' + JSON.stringify(state.debug))
   try {
     return {
       chatsAmt: Object.keys(state.chat.contacts).length,

@@ -9,6 +9,9 @@ import follows from './follows'
 import ping from './ping'
 import debug from './debug'
 import wallet from './wallet'
+import chats from './chats'
+import sentReqs from './sent-reqs'
+import receivedReqs from './received-reqs'
 
 function* rootSaga() {
   yield all([
@@ -21,6 +24,9 @@ function* rootSaga() {
     call(ping),
     call(debug),
     call(wallet),
+    call(chats),
+    call(sentReqs),
+    call(receivedReqs),
   ])
 }
 

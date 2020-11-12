@@ -1,21 +1,21 @@
 import React from 'react'
 import { Clipboard, StatusBar, ToastAndroid } from 'react-native'
-import zipObj from 'lodash/zipObject'
 import Logger from 'react-native-file-log'
 import { Schema } from 'shock-common'
-import ShockIcon from '../../res/icons'
+import { Color } from 'shock-common/dist/constants'
+import produce from 'immer'
 
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation
  */
 import * as API from '../../services/contact-api'
-import { defaultName } from '../../services/utils'
 import * as Cache from '../../services/cache'
 import * as CSS from '../../res/css'
 import { CHAT_ROUTE } from './../Chat'
+import ShockIcon from '../../res/icons'
+import * as Store from '../../store'
 
 import ChatsView from './View'
-import { Color } from 'shock-common/dist/constants'
 
 export const CHATS_ROUTE = 'CHATS_ROUTE'
 /**
@@ -30,28 +30,41 @@ export const CHATS_ROUTE = 'CHATS_ROUTE'
 const byTimestampFromOldestToNewest = (a, b) => a.timestamp - b.timestamp
 
 /**
- * @typedef {object} Props
+ * @typedef {object} StateProps
+ * @prop {Schema.Chat[]} chats
+ * @prop {Schema.SimpleReceivedRequest[]} receivedRequests
+ * @prop {Schema.SimpleSentRequest[]} sentRequests
+ */
+
+/**
+ * @typedef {object} DispatchProps
+ * @prop {(publicKey: string) => void} onSendRequest
+ */
+
+/**
+ * @typedef {object} OwnProps
  * @prop {Navigation} navigation
+ */
+
+/**
+ * @typedef {StateProps & DispatchProps & OwnProps} Props
  */
 
 /**
  * @typedef {object} State
  * @prop {string|null} acceptingRequest
- * @prop {Schema.Chat[]} chats
  * @prop {Cache.LastReadMsgs} lastReadMsgs
- * @prop {Schema.SimpleReceivedRequest[]} receivedRequests
- * @prop {(Schema.SimpleSentRequest & { state: string|null })[]} sentRequests (If state is sending the request hasn't been acked by API, if it's null it got sent, any other string is an error message)
+ * @prop {Record<string, string|null>} sentRequestsState (If state is
+ * `'sending'` the request hasn't been acked by API, if it's null it got sent,
+ * any other string is an error message)
  * @prop {boolean} showingAddDialog
- *
  * @prop {boolean} scanningUserQR
  */
-
-// TODO: Component vs PureComponent
 
 /**
  * @augments React.PureComponent<Props, State>
  */
-export default class Chats extends React.PureComponent {
+class Chats extends React.PureComponent {
   /**
    * @type {import('react-navigation-tabs').NavigationBottomTabOptions}
    */
@@ -70,23 +83,11 @@ export default class Chats extends React.PureComponent {
   /** @type {State} */
   state = {
     acceptingRequest: null,
-    chats: API.Events.currentChats,
     lastReadMsgs: {},
-    receivedRequests: API.Events.currReceivedReqs(),
-    sentRequests: API.Events.getCurrSentReqs().map(r => ({
-      ...r,
-      state: null,
-    })),
     showingAddDialog: false,
-
     scanningUserQR: false,
+    sentRequestsState: {},
   }
-
-  chatsUnsubscribe = () => {}
-
-  receivedReqsUnsubscribe = () => {}
-
-  sentReqsUnsubscribe = () => {}
 
   onLastReadMsgsUnsub = () => {}
 
@@ -94,47 +95,9 @@ export default class Chats extends React.PureComponent {
     this.onLastReadMsgsUnsub = Cache.onLastReadMsgs(lastReadMsgs => {
       this.setState({ lastReadMsgs })
     })
-
-    this.chatsUnsubscribe = API.Events.onChats(chats => {
-      this.setState({
-        chats,
-      })
-    })
-    this.receivedReqsUnsubscribe = API.Events.onReceivedRequests(
-      receivedRequests => {
-        this.setState({
-          receivedRequests,
-        })
-      },
-    )
-    this.sentReqsUnsubscribe = API.Events.onSentRequests(newReqs => {
-      this.setState(({ sentRequests: oldReqs }) => {
-        const oldReqsMap = zipObj(
-          oldReqs.map(r => r.recipientPublicKey),
-          oldReqs,
-        )
-        const newReqsTransformed = newReqs.map(r => ({ ...r, state: null }))
-        const newReqsMap = zipObj(
-          newReqsTransformed.map(r => r.recipientPublicKey),
-          newReqsTransformed,
-        )
-
-        const finalMap = {
-          ...oldReqsMap,
-          ...newReqsMap,
-        }
-
-        return {
-          sentRequests: Object.values(finalMap),
-        }
-      })
-    })
   }
 
   componentWillUnmount() {
-    this.chatsUnsubscribe()
-    this.receivedReqsUnsubscribe()
-    this.sentReqsUnsubscribe()
     this.onLastReadMsgsUnsub()
   }
 
@@ -145,7 +108,7 @@ export default class Chats extends React.PureComponent {
     // CAST: If user is pressing on a chat, chats are loaded and not null.
     // TS wants the expression to be casted to `unknown` first. Not possible
     // with jsdoc
-    const { chats } = this.state
+    const { chats } = this.props
 
     // CAST: If user is pressing on a chat, that chat exists
     const chat = /** @type {Schema.Chat} */ (chats.find(chat => chat.id === id))
@@ -230,60 +193,45 @@ export default class Chats extends React.PureComponent {
       const parts = encodedShockUser.split('/')
       pk = parts[parts.length - 1]
     }
-    if (typeof pk === 'string' && pk.length === 0) {
-      Logger.log("typeof pk === 'string' && pk.length === 0")
-      return
-    }
 
-    if (this.state.sentRequests.some(r => r.recipientPublicKey === pk)) {
-      ToastAndroid.show('Already sent request to this user', 800)
-    }
+    this.setState(
+      (prevState, { sentRequests }) => {
+        const { sentRequestsState } = prevState
 
-    /** @type {Schema.SimpleSentRequest & { state: string|null}} */
-    const fakeReq = {
-      id: Math.random().toString(),
-      recipientAvatar: null,
-      recipientDisplayName: defaultName(pk),
-      recipientPublicKey: pk,
-      recipientChangedRequestAddress: false,
-      timestamp: Date.now(),
-      state: 'sending',
-    }
+        if (typeof pk === 'string' && pk.length === 0) {
+          Logger.log("typeof pk === 'string' && pk.length === 0")
+          return null
+        }
 
-    this.setState(({ sentRequests }) => ({
-      sentRequests: [...sentRequests, fakeReq],
-    }))
+        if (
+          sentRequests.some(r => r.recipientPublicKey === pk) ||
+          sentRequestsState[pk]
+        ) {
+          ToastAndroid.show('Already sent request to this user', 800)
+        }
 
-    /**
-     * @param {string} publicKey
-     * @param {string} error
-     * @returns {<T extends {recipientPublicKey: string}>(t: T) => (T & { state: string|null }) }
-     */
-    const placeErrorOnPk = (publicKey, error) => sentRequest => ({
-      ...sentRequest,
-      state: sentRequest.recipientPublicKey === publicKey ? error : null,
-    })
-
-    API.Actions.sendHandshakeRequest(pk)
-      .then(() => {
-        this.setState(({ sentRequests }) => ({
-          sentRequests: sentRequests.map(r => {
-            if (r.recipientPublicKey === pk) {
-              return {
-                ...r,
-                state: null,
-              }
-            }
-
-            return r
-          }),
-        }))
-      })
-      .catch(e => {
-        this.setState(({ sentRequests }) => ({
-          sentRequests: sentRequests.map(placeErrorOnPk(pk, e.message)),
-        }))
-      })
+        return produce(prevState, draft => {
+          draft.sentRequestsState[pk] = 'sending'
+        })
+      },
+      () => {
+        API.Actions.sendHandshakeRequest(pk)
+          .then(() => {
+            this.setState(prevState =>
+              produce(prevState, draft => {
+                draft.sentRequestsState[pk] = null
+              }),
+            )
+          })
+          .catch(e => {
+            this.setState(prevState =>
+              produce(prevState, draft => {
+                draft.sentRequestsState[pk] = e.message
+              }),
+            )
+          })
+      },
+    )
   }
 
   sendHRToUserFromClipboard = () => {
@@ -327,16 +275,14 @@ export default class Chats extends React.PureComponent {
   ///
 
   render() {
+    const { chats, receivedRequests, sentRequests } = this.props
+
     const {
       acceptingRequest,
-      chats,
       lastReadMsgs,
-      receivedRequests,
-      sentRequests,
-
       showingAddDialog,
-
       scanningUserQR,
+      sentRequestsState,
     } = this.state
 
     /**
@@ -374,7 +320,10 @@ export default class Chats extends React.PureComponent {
           translucent={false}
         />
         <ChatsView
-          sentRequests={filteredSentRequests}
+          sentRequests={filteredSentRequests.map(sr => ({
+            ...sr,
+            state: sentRequestsState[sr.recipientPublicKey],
+          }))}
           chats={chats}
           onPressChat={this.onPressChat}
           acceptingRequest={!!acceptingRequest}
@@ -397,3 +346,31 @@ export default class Chats extends React.PureComponent {
     )
   }
 }
+
+/**
+ * @param {Store.State} state
+ * @returns {StateProps}
+ */
+const mapState = state => ({
+  chats: Store.selectAllChats(state),
+  receivedRequests: Store.selectAllReceivedReqs(state),
+  sentRequests: Store.selectAllSentReqs(state),
+})
+
+/**
+ * @param {Store.Dispatch} dispatch
+ * @returns {DispatchProps}
+ */
+const mapDispatch = dispatch => ({
+  onSendRequest(pk) {
+    dispatch(
+      Store.receivedSingleUserData({
+        publicKey: pk,
+      }),
+    )
+  },
+})
+
+const ConnectedChats = Store.connect(mapState, mapDispatch)(Chats)
+
+export default ConnectedChats
