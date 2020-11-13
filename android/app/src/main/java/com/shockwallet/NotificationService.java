@@ -105,7 +105,7 @@ public class NotificationService extends Service {
                 String id = last.substring(0,5)+"...";
                 int value = Integer.parseInt(res.getString("amount"));
                 float valueBTC = value / 100000000f;
-                doNotification("Transaction confirmed! "+String.valueOf(valueBTC)+" BTC","",R.drawable.icon,"");
+                doNotification("Transaction confirmed! "+String.valueOf(valueBTC)+" BTC","",R.drawable.icon_notification,"");
             }catch (Exception e){
                 Log.d(TAG,"Tx err"+e.toString());
             }
@@ -124,7 +124,7 @@ public class NotificationService extends Service {
                     return;
                 }
                 
-                doNotification("Payment Received! "+res.getString("value")+" sats","",R.drawable.icon,"");
+                doNotification("Payment Received! "+res.getString("value")+" sats","",R.drawable.icon_notification,"");
             }catch (Exception e){
                 Log.d(TAG,"Inv err"+e.toString());
             }
@@ -366,9 +366,9 @@ public class NotificationService extends Service {
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
         NotificationCompat.Builder notification = new NotificationCompat.Builder(this, DEFAULT_CHANNEL_ID)
-                .setSmallIcon(R.drawable.icon)
+                .setSmallIcon(R.drawable.icon_notification)
                 .setLargeIcon(BitmapFactory.decodeResource(this.getResources(),
-                        R.drawable.icon))
+                        R.drawable.icon_notification))
                 .setContentTitle("Notification service loading")
                 .setContentText("Connecting...")
                 //.setSmallIcon(R.drawable.icon)
@@ -377,9 +377,9 @@ public class NotificationService extends Service {
                 .setGroup(GROUP_KEY_NOTIF)
                 .setGroupSummary(true);
         NotificationCompat.Builder silentNotification = new NotificationCompat.Builder(this, LOW_CHANNEL_ID)
-                .setSmallIcon(R.drawable.icon)
+                .setSmallIcon(R.drawable.icon_notification)
                 .setLargeIcon(BitmapFactory.decodeResource(this.getResources(),
-                        R.drawable.icon))
+                        R.drawable.icon_notification))
                 .setContentTitle("Notification service loading")
                 .setContentText("Connecting...")
                 //.setSmallIcon(R.drawable.icon)
