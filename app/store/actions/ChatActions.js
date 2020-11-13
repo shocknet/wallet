@@ -46,6 +46,12 @@ export const ACTIONS = {
  */
 
 /**
+ * @typedef {object} LoadMessagesAction
+ * @prop {'messages/load'} type
+ * @prop {Record<string, Common.Schema.ChatMessage>} data
+ */
+
+/**
  * Selects a contact (useful for easily referencing the currently focused contact)
  * @param {Contact|BTCAddress|Keysend} contact
  * @returns {import('redux-thunk').ThunkAction<Contact|BTCAddress|Keysend, {}, {}, import('redux').AnyAction>}

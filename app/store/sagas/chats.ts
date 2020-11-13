@@ -49,9 +49,7 @@ function* chats() {
         )
 
         store.dispatch({
-          // @ts-expect-error
-          type: Actions.ChatActions.ACTIONS.LOAD_MESSAGES,
-          // @ts-expect-error
+          type: 'messages/load',
           data: messages,
         })
 

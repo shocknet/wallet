@@ -39,6 +39,7 @@ export type Action =
   | PostsAction
   | DebugAction
   | WalletAction
+  | ChatActions.LoadMessagesAction
 
 export const receivedBackfeed = Common.Store.Actions.receivedBackfeed
 export const receivedFeed = Common.Store.Actions.receivedFeed
