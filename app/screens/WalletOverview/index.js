@@ -9,6 +9,7 @@ import {
   View,
   ImageBackground,
   StatusBar,
+  ToastAndroid,
 } from 'react-native'
 import Logger from 'react-native-file-log'
 
@@ -36,11 +37,13 @@ import notificationService from '../../../notificationService'
 import * as Cache from '../../services/cache'
 import * as Store from '../../store'
 /**
- * @typedef {import('react-navigation').NavigationScreenProp<{}, {}>} Navigation
+ * @typedef {import('react-navigation').NavigationScreenProp<{}, {logoutRequest?:boolean}>} Navigation
  */
 
 import UnifiedTrx from './UnifiedTrx'
 import { Color } from 'shock-common/dist/constants'
+import ShockDialog from '../../components/ShockDialog'
+import { CONNECT_TO_NODE } from '../ConnectToNode'
 
 /**
  * @typedef {ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps} ConnectedRedux
@@ -226,8 +229,26 @@ class WalletOverview extends React.PureComponent {
     )
   }
 
+  /**
+   *
+   * @param {boolean} logout
+   */
+  handleLogout = logout => async () => {
+    this.props.navigation.setParams({ logoutRequest: undefined })
+    if (logout) {
+      try {
+        await Cache.clearAllStorage()
+        ToastAndroid.show('LOGOUT SUCCESSFUL', 800)
+        this.props.navigation.navigate(CONNECT_TO_NODE)
+      } catch (e) {
+        Logger.log('logout error' + e)
+      }
+    }
+  }
+
   render() {
     const { testnet } = this.props
+    const logoutRequest = this.props.navigation.getParam('logoutRequest')
     return (
       <View style={styles.container}>
         <StatusBar
@@ -307,6 +328,15 @@ class WalletOverview extends React.PureComponent {
         >
           <UnifiedTrx />
         </View>
+        <ShockDialog
+          visible={!!logoutRequest}
+          onRequestClose={this.handleLogout(false)}
+          message="Logout?"
+          choiceToHandler={{
+            YES: this.handleLogout(true),
+            NO: this.handleLogout(false),
+          }}
+        />
       </View>
     )
   }

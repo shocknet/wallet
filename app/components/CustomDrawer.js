@@ -17,6 +17,7 @@ import { DEBUG } from '../screens/Debug'
 
 import { Colors } from '../res/css'
 import ShockIcon from '../res/icons'
+import { WALLET_OVERVIEW } from '../screens/WalletOverview'
 
 // import * as ContactAPI from '../services/contact-api'
 
@@ -80,6 +81,10 @@ export default class CustomDrawer extends React.PureComponent {
     this.props.navigation.navigate(LNURL_SCREEN, { clipboardRequest: true })
   }
 
+  logout = () => {
+    this.props.navigation.navigate(WALLET_OVERVIEW, { logoutRequest: true })
+  }
+
   /**
    * @argument {(string)=} screenName
    * @returns {() => void}
@@ -137,7 +142,7 @@ export default class CustomDrawer extends React.PureComponent {
             </TouchableOpacity>
           </View>
           <View style={styles.extraBitDarViewFlexEnd}>
-            <TouchableOpacity onPress={this.moveToClip}>
+            <TouchableOpacity onPress={this.logout}>
               <ShockIcon
                 name="solid-power"
                 color={Colors.BUTTON_BLUE}
