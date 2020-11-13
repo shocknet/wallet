@@ -82,7 +82,7 @@ const keyExtractor = item => item.id
  * @prop {boolean} showingQRScanner
  * @prop {() => void} onRequestCloseQRScanner
  * @prop {(e: { data: string }) => void} onQRRead
- *
+ * @prop {Record<string, Schema.User>} users
  * @prop {string[]} readChatIDs List of chats that do NOT have unread messages.
  */
 
@@ -139,7 +139,9 @@ export default class ChatsView extends React.PureComponent {
    * @returns {React.ReactElement<any> | null}
    */
   chatRenderer = chat => {
-    const { readChatIDs } = this.props
+    const { readChatIDs, users } = this.props
+    const displayName =
+      users[chat.recipientPublicKey].displayName || chat.recipientPublicKey
     const lastMsg = chat.messages.slice().sort(byTimestampFromOldestToNewest)[
       chat.messages.length - 1
     ]
@@ -184,11 +186,7 @@ export default class ChatsView extends React.PureComponent {
                 return lastMsg.body
               })()}
               lowerTextStyle={unread ? styles.boldFont : styles.nearWhiteFont}
-              name={
-                chat.recipientDisplayName === null
-                  ? chat.recipientPublicKey
-                  : chat.recipientDisplayName
-              }
+              name={displayName}
               nameBold={unread}
               onPress={this.onPressChat}
               lastSeenApp={chat.lastSeenApp || 0}
@@ -211,6 +209,11 @@ export default class ChatsView extends React.PureComponent {
    * @returns {React.ReactElement<any>}
    */
   receivedRequestRenderer = receivedRequest => {
+    const { users } = this.props
+    const displayName =
+      users[receivedRequest.requestorPK].displayName ||
+      receivedRequest.requestorPK
+
     return (
       <View style={styles.itemContainer}>
         <View style={styles.userDetailContainer}>
@@ -221,11 +224,7 @@ export default class ChatsView extends React.PureComponent {
             id={receivedRequest.id}
             lowerText="Wants to contact you"
             lowerTextStyle={styles.boldFont}
-            name={
-              receivedRequest.requestorDisplayName === null
-                ? receivedRequest.requestorPK
-                : receivedRequest.requestorDisplayName
-            }
+            name={displayName}
             nameBold
             onPress={this.onPressRequest}
             lastSeenApp={0}
@@ -247,6 +246,11 @@ export default class ChatsView extends React.PureComponent {
    * @returns {React.ReactElement<any>}
    */
   sentRequestRenderer = sentRequest => {
+    const { users } = this.props
+    const displayName =
+      users[sentRequest.recipientPublicKey].displayName ||
+      sentRequest.recipientPublicKey
+
     // @ts-expect-error
     const isSending = sentRequest.state === 'sending'
     const hasError =
@@ -280,11 +284,7 @@ export default class ChatsView extends React.PureComponent {
                 : 'Pending acceptance'
             })()}
             lowerTextStyle={hasError ? styles.redBoldFont : styles.boldFont}
-            name={
-              sentRequest.recipientDisplayName === null
-                ? sentRequest.recipientPublicKey
-                : sentRequest.recipientDisplayName
-            }
+            name={displayName}
             nameBold
             lastSeenApp={0}
             publicKey={sentRequest.recipientPublicKey}

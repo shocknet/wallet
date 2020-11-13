@@ -6,7 +6,7 @@ import { State } from '../reducers'
 import { getMyPublicKey } from './auth'
 import { getFollowedPublicKeys } from './follows'
 
-const getUsers = (state: State) => state.users
+export const getUsers = (state: State) => state.users
 const getPublicKey = (_: State, props: string) => props
 export const getMe = (state: State) =>
   state.users[getMyPublicKey(state)] ||
