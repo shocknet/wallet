@@ -62,6 +62,7 @@ const HeaderLeft = React.memo(({ onPress }) => ((
 /**
  * @typedef {object} StateProps
  * @prop {Schema.Chat[]} chats
+ * @prop {Record<string, Schema.User>} users
  */
 
 /**
@@ -686,12 +687,13 @@ class Chat extends React.PureComponent {
   /** @returns {string|null} */
   getRecipientDisplayName() {
     const theChat = this.getChat()
+    const { users } = this.props
 
     if (!theChat) {
       return null
     }
 
-    return theChat.recipientDisplayName
+    return users[theChat.recipientPublicKey].displayName
   }
 
   /** @returns {boolean} */
@@ -951,6 +953,7 @@ class Chat extends React.PureComponent {
  */
 const mapState = state => ({
   chats: Store.selectAllChats(state),
+  users: Store.getUsers(state),
 })
 
 const ConnectedChat = connect(mapState)(Chat)

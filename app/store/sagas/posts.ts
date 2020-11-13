@@ -91,12 +91,6 @@ const assignSocketToPublicKeys = (publicKeys: string[]) => {
               ({
                 data: { contentItems, date, status, tags, title, tipCounter },
               }) => {
-                console.log(
-                  `typeof tipCounter: ${typeof tipCounter}  ---   ${tipCounter}`,
-                  `id: ${postKey} from author: ${
-                    getStore().getState().users[publicKey].displayName
-                  }`,
-                )
                 getStore().dispatch(
                   Actions.receivedRawPost(
                     {

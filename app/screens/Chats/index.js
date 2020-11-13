@@ -23,17 +23,11 @@ export const CHATS_ROUTE = 'CHATS_ROUTE'
  */
 
 /**
- * @param {{ timestamp: number }} a
- * @param {{ timestamp: number }} b
- * @returns {number}
- */
-const byTimestampFromOldestToNewest = (a, b) => a.timestamp - b.timestamp
-
-/**
  * @typedef {object} StateProps
  * @prop {Schema.Chat[]} chats
  * @prop {Schema.SimpleReceivedRequest[]} receivedRequests
  * @prop {Schema.SimpleSentRequest[]} sentRequests
+ * @prop {Record<string, Schema.User>} users
  */
 
 /**
@@ -112,16 +106,6 @@ class Chats extends React.PureComponent {
 
     // CAST: If user is pressing on a chat, that chat exists
     const chat = /** @type {Schema.Chat} */ (chats.find(chat => chat.id === id))
-
-    const sortedMessages = chat.messages
-      .slice()
-      .sort(byTimestampFromOldestToNewest)
-
-    const lastMsg = sortedMessages[sortedMessages.length - 1]
-
-    if (typeof lastMsg === 'undefined') {
-      throw new TypeError("typeof lastMsg === 'undefined'")
-    }
 
     /** @type {ChatParams} */
     const params = {
@@ -341,6 +325,7 @@ class Chats extends React.PureComponent {
           onQRRead={this.onQRRead}
           onRequestCloseQRScanner={this.toggleContactQRScanner}
           readChatIDs={readChatIDs}
+          users={this.props.users}
         />
       </>
     )
@@ -355,6 +340,7 @@ const mapState = state => ({
   chats: Store.selectAllChats(state),
   receivedRequests: Store.selectAllReceivedReqs(state),
   sentRequests: Store.selectAllSentReqs(state),
+  users: Store.getUsers(state),
 })
 
 /**
