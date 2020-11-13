@@ -31,8 +31,7 @@ import {
   getMoreFeed,
   chainTXsRefreshForced,
 } from '../../store/actions'
-import { SEND_SCREEN } from '../Send'
-import { RECEIVE_SCREEN } from '../Receive'
+import { SEND_SCREEN, RECEIVE_SCREEN, CONNECT_TO_NODE } from '../../routes'
 import notificationService from '../../../notificationService'
 import * as Cache from '../../services/cache'
 import * as Store from '../../store'
@@ -43,7 +42,6 @@ import * as Store from '../../store'
 import UnifiedTrx from './UnifiedTrx'
 import { Color } from 'shock-common/dist/constants'
 import ShockDialog from '../../components/ShockDialog'
-import { CONNECT_TO_NODE } from '../ConnectToNode'
 
 /**
  * @typedef {ReturnType<typeof mapStateToProps> & typeof mapDispatchToProps} ConnectedRedux
@@ -69,8 +67,6 @@ import { CONNECT_TO_NODE } from '../ConnectToNode'
  */
 
 const { height } = Dimensions.get('window')
-
-export const WALLET_OVERVIEW = 'WALLET_OVERVIEW'
 
 /**
  * @augments React.PureComponent<Props, {}, never>

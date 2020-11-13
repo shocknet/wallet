@@ -25,8 +25,6 @@ import * as Routes from '../../routes'
 import Tabs from '../../components/tabs'
 import FollowBtn from '../../components/FollowBtn'
 
-export const MY_PROFILE = 'MY_PROFILE'
-
 const DEFAULT_USER_IMAGE = ''
 
 interface OwnProps {

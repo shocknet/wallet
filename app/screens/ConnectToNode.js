@@ -29,7 +29,6 @@ import { throttledExchangeKeyPair } from '../store/actions/ConnectionActions'
 // @ts-expect-error
 const shockBG = require('../assets/images/shock-bg.png')
 
-export const CONNECT_TO_NODE = 'CONNECT_TO_NODE'
 const HOSTING_SERVER = 'pool.shock.network'
 
 /**

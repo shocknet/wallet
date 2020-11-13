@@ -39,8 +39,7 @@ import {
   resetInvoice,
   decodePaymentRequest,
 } from '../../store/actions/InvoiceActions'
-import { WALLET_OVERVIEW } from '../WalletOverview'
-export const SEND_SCREEN = 'SEND_SCREEN'
+import { WALLET_OVERVIEW } from '../../routes'
 /**
  * @typedef {import('../../services/validators').ExtractedBTCAddress} ExtractedBTCAddress
  * @typedef {import('../../services/validators').ExtractedLNInvoice} ExtractedLNInvoice

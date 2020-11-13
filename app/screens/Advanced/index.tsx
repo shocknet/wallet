@@ -34,7 +34,7 @@ import {
 import { fetchNodeInfo } from '../../store/actions/NodeActions'
 import { disconnectPeer } from '../../services/wallet'
 import * as Store from '../../store'
-import { NODE_INFO } from '../node-info'
+import { NODE_INFO, WALLET_OVERVIEW } from '../../routes'
 
 import AccordionItem from './Accordion'
 import Transaction from './Accordion/Transaction'
@@ -47,10 +47,7 @@ import AddPeerModal from './Modals/AddPeer'
 import CloseChannelModal from './Modals/CloseChannel'
 import ShockDialog from '../../components/ShockDialog'
 import InfoPeerModal from './Modals/infoPeer'
-import { WALLET_OVERVIEW } from '../WalletOverview'
 import { NavigationEventSubscription } from 'react-navigation'
-
-export const ADVANCED_SCREEN = 'ADVANCED_SCREEN'
 
 type Channel = import('../../services/wallet').Channel
 type PendingChannel = import('../../services/wallet').PendingChannel

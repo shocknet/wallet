@@ -14,7 +14,7 @@ import * as Wallet from '../../services/wallet'
 import * as Cache from '../../services/cache'
 import * as CSS from '../../res/css'
 const { Colors } = CSS
-import { SEND_SCREEN } from '../Send'
+import { SEND_SCREEN } from '../../routes'
 import PaymentDialog from '../../components/PaymentDialog'
 import { rifle, get } from '../../services'
 import * as Store from '../../store'
@@ -29,8 +29,6 @@ import ChatView from './View'
  * @typedef {import('./View').SpontPaymentInTransit} SpontPaymentInTransit
  * @typedef {import('./View').InvoiceInTransit & { msgID: string|null }} InvoiceInTransit
  */
-
-export const CHAT_ROUTE = 'CHAT_ROUTE'
 
 const styles = StyleSheet.create({
   backArrow: { marginLeft: 24 },

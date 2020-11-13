@@ -30,8 +30,6 @@ import ShockWebView from '../components/ShockWebView'
 import { CompleteAnyMedia } from '../services/mediaLib'
 import { ThumbnailFile } from '../store/thunks'
 
-export const CREATE_POST_DARK = 'CREATE_POST_DARK'
-
 type Props = {
   navigation: import('react-navigation').NavigationScreenProp<{}, {}>
   mediaLib: import('../store/reducers/mediaLib').State

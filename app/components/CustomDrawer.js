@@ -8,16 +8,18 @@ import {
 } from 'react-native'
 import { DrawerActions } from 'react-navigation-drawer'
 
-import { LNURL_SCREEN } from '../screens/LNURL'
+import {
+  LNURL_SCREEN,
+  ADVANCED_SCREEN,
+  SEED_BACKUP,
+  WALLET_SETTINGS,
+  DEBUG,
+  WALLET_OVERVIEW,
+} from '../routes'
 import Pad from './Pad'
-import { ADVANCED_SCREEN } from '../screens/Advanced'
-import { SEED_BACKUP } from '../screens/SeedBackup'
-import { WALLET_SETTINGS } from '../screens/WalletSettings'
-import { DEBUG } from '../screens/Debug'
 
 import { Colors } from '../res/css'
 import ShockIcon from '../res/icons'
-import { WALLET_OVERVIEW } from '../screens/WalletOverview'
 
 // import * as ContactAPI from '../services/contact-api'
 

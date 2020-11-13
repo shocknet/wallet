@@ -18,12 +18,10 @@ import * as CSS from '../res/css'
 import bech32 from 'bech32'
 import { connect } from 'react-redux'
 import * as Cache from '../services/cache'
-import { WALLET_OVERVIEW } from './WalletOverview'
+import { WALLET_OVERVIEW, SEND_SCREEN } from '../routes'
 import QRScanner from './QRScanner'
 import { fetchPeers } from '../store/actions/HistoryActions'
 import ExtractInfo from '../services/validators'
-import { SEND_SCREEN } from './Send'
-export const LNURL_SCREEN = 'LNURL_SCREEN'
 /**
  * @typedef {object} Params
  * @prop {string=} lnurl

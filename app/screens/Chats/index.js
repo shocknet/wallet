@@ -11,13 +11,12 @@ import produce from 'immer'
 import * as API from '../../services/contact-api'
 import * as Cache from '../../services/cache'
 import * as CSS from '../../res/css'
-import { CHAT_ROUTE } from './../Chat'
+import { CHAT_ROUTE } from '../../routes'
 import ShockIcon from '../../res/icons'
 import * as Store from '../../store'
 
 import ChatsView from './View'
 
-export const CHATS_ROUTE = 'CHATS_ROUTE'
 /**
  * @typedef {import('../Chat').Params} ChatParams
  */

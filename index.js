@@ -24,10 +24,10 @@ import * as Cache from './app/services/cache'
 import * as Encryption from './app/services/encryption'
 import configureStore, { log, getStore } from './app/store'
 import RootStack from './app/navigators/Root'
-import { LNURL_SCREEN } from './app/screens/LNURL'
+import { LNURL_SCREEN, LOGIN } from './app/routes'
 import WithConnWarning from './app/components/WithConnWarning'
 import { hostWasSet } from './app/store/actions'
-import { LOGIN } from './app/screens/Login'
+
 import { DISABLE_ENCRYPTION } from './app/config'
 import Loading from './app/screens/Loading'
 

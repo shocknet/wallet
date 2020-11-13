@@ -16,8 +16,6 @@ import notificationService from '../../notificationService'
 /** @type {number} */
 const shockBG = require('../assets/images/shock-bg.png')
 
-export const ADD_POST_TO_FEED = 'ADD_POST_TO_FEED'
-
 /**
  * @typedef {object} Props
  *
