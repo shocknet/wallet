@@ -20,8 +20,7 @@ import * as Auth from '../../services/auth'
 import * as Cache from '../../services/cache'
 import * as CSS from '../../res/css'
 import * as Wallet from '../../services/wallet'
-import { LOGIN } from '../../screens/Login'
-import { APP } from '../Root'
+import { LOGIN, APP } from '../../routes'
 import Pad from '../../components/Pad'
 import OnboardingScreen, {
   ITEM_SPACING,

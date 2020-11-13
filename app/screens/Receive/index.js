@@ -22,7 +22,6 @@ import { resetInvoice } from '../../store/actions/InvoiceActions'
 import * as CSS from '../../res/css'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 // import InputGroup from '../../components/InputGroup'
-export const RECEIVE_SCREEN = 'RECEIVE_SCREEN'
 
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}, {}>} Navigation

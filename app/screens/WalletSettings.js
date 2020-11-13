@@ -30,8 +30,6 @@ import {
 import Nav from '../components/Nav'
 import InputGroup from '../components/InputGroup'
 
-export const WALLET_SETTINGS = 'WALLET_SETTINGS'
-
 /**
  * @typedef {object} Fees
  * @prop {import('../store/actions/FeesActions').feeLevel} feesLevel

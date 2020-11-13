@@ -32,7 +32,6 @@ import * as Thunks from '../store/thunks'
 import { MediaToUpload, ThumbnailFile } from '../store/thunks/mediaLib'
 import { clearContentUpload } from '../store/actions/mediaLib'
 
-export const PUBLISH_CONTENT_DARK = 'PUBLISH_CONTENT_DARK'
 type FileReady = FilePickerFile & { name: string }
 type Props = {
   navigation: import('react-navigation').NavigationScreenProp<{}, {}>

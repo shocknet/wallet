@@ -15,8 +15,6 @@ import * as CSS from '../res/css'
  * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation
  */
 
-export const LOADING = 'LOADING'
-
 const SHOCK_LOGO_STYLE = { width: 100, height: 100 }
 
 /** @type {number} */

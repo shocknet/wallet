@@ -17,8 +17,6 @@ import * as Services from '../services'
 
 import QR from './WalletOverview/QR'
 
-export const DEBUG = 'DEBUG'
-
 interface OwnProps {}
 
 interface StateProps {

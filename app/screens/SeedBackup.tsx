@@ -17,7 +17,6 @@ import { getStore } from '../store'
 import Nav from '../components/Nav'
 type NodeInfo = import('../services/wallet').NodeInfo
 
-export const SEED_BACKUP = 'SEED_BACKUP'
 type State = {
   nodeInfo: NodeInfo | null
   seedBackup: string | null

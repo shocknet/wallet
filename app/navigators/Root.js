@@ -4,53 +4,43 @@ import { createStackNavigator } from 'react-navigation-stack'
 import { createBottomTabNavigator } from 'react-navigation-tabs'
 import * as CSS from '../res/css'
 
-import Chat, { CHAT_ROUTE } from '../screens/Chat'
-import Chats, { CHATS_ROUTE } from '../screens/Chats'
-import Advanced, { ADVANCED_SCREEN } from '../screens/Advanced'
-import WalletOverview, { WALLET_OVERVIEW } from '../screens/WalletOverview'
-import SeedBackup, { SEED_BACKUP } from '../screens/SeedBackup'
-import WalletSettings, { WALLET_SETTINGS } from '../screens/WalletSettings'
+import Chat from '../screens/Chat'
+import Chats from '../screens/Chats'
+import Advanced from '../screens/Advanced'
+import WalletOverview from '../screens/WalletOverview'
+import SeedBackup from '../screens/SeedBackup'
+import WalletSettings from '../screens/WalletSettings'
 import Feed from '../screens/Feed'
-import AddPostToFeed, { ADD_POST_TO_FEED } from '../screens/AddPostToFeed'
-import PublishContentDark, {
-  PUBLISH_CONTENT_DARK,
-} from '../screens/PublishContentDark'
-import {
-  default as CreatePost,
-  CREATE_POST_DARK as CREATE_POST,
-} from '../screens/CreatePostDark'
+import AddPostToFeed from '../screens/AddPostToFeed'
+import PublishContentDark from '../screens/PublishContentDark'
+import CreatePost from '../screens/CreatePostDark'
 
-import Login, { LOGIN } from '../screens/Login'
+import Login from '../screens/Login'
 
 import MyProfile from '../screens/MyProfile'
-import Loading, { LOADING } from '../screens/Loading'
+import Loading from '../screens/Loading'
 
-import WalletManager, { WALLET_MANAGER } from './WalletManager'
-import ConnectToNode, { CONNECT_TO_NODE } from '../screens/ConnectToNode'
-import SendScreen, { SEND_SCREEN } from '../screens/Send'
-import ReceiveScreen, { RECEIVE_SCREEN } from '../screens/Receive'
-import Debug, { DEBUG } from '../screens/Debug'
+import WalletManager from './WalletManager'
+import ConnectToNode from '../screens/ConnectToNode'
+import SendScreen from '../screens/Send'
+import ReceiveScreen from '../screens/Receive'
+import Debug from '../screens/Debug'
 import UserScreen from '../screens/User'
-import NodeInfo, { NODE_INFO } from '../screens/node-info'
-import LNURL, { LNURL_SCREEN } from '../screens/LNURL'
+import NodeInfo from '../screens/node-info'
+import LNURL from '../screens/LNURL'
 import * as Routes from '../routes'
 
 import CustomDrawer from '../components/CustomDrawer'
 
-export const APP = 'APP'
-export const BOTTOM_NAV = 'BOTTOM_NAV'
-export const WALLET_NAV = 'WALLET_NAV'
-export const WALLET = 'WALLET'
-
 const BottomNav = createBottomTabNavigator(
   {
-    [WALLET_OVERVIEW]: WalletOverview,
-    [CHATS_ROUTE]: Chats,
+    [Routes.WALLET_OVERVIEW]: WalletOverview,
+    [Routes.CHATS_ROUTE]: Chats,
     [Routes.MY_PROFILE]: MyProfile,
     [Routes.FEED]: Feed,
   },
   {
-    initialRouteName: WALLET_OVERVIEW,
+    initialRouteName: Routes.WALLET_OVERVIEW,
     tabBarOptions: {
       allowFontScaling: false,
       showLabel: false,
@@ -74,16 +64,16 @@ const BottomNav = createBottomTabNavigator(
 
 const WalletNav = createStackNavigator(
   {
-    [BOTTOM_NAV]: BottomNav,
-    [SEND_SCREEN]: SendScreen,
-    [RECEIVE_SCREEN]: ReceiveScreen,
+    [Routes.BOTTOM_NAV]: BottomNav,
+    [Routes.SEND_SCREEN]: SendScreen,
+    [Routes.RECEIVE_SCREEN]: ReceiveScreen,
     [Routes.USER]: UserScreen,
-    [DEBUG]: {
+    [Routes.DEBUG]: {
       screen: Debug,
     },
   },
   {
-    initialRouteName: BOTTOM_NAV,
+    initialRouteName: Routes.BOTTOM_NAV,
     defaultNavigationOptions: {
       headerTitleAlign: 'center',
     },
@@ -94,7 +84,6 @@ BottomNav.navigationOptions = {
   header: () => null,
 }
 
-const MAIN_DRAWER = 'MAIN_DRAWER'
 const theme = 'dark'
 
 /** @typedef {import('react-navigation-drawer').NavigationDrawerOptions} NavigationDrawerOptions */
@@ -105,7 +94,7 @@ const theme = 'dark'
 
 /** @type {NavigationRouteConfigMap} */
 const drawerScreens = {
-  [WALLET_NAV]: {
+  [Routes.WALLET_NAV]: {
     screen: WalletNav,
     navigationOptions: {
       title: 'Home',
@@ -117,44 +106,44 @@ const drawerScreens = {
       title: 'Profile',
     },
   },
-  [WALLET_SETTINGS]: {
+  [Routes.WALLET_SETTINGS]: {
     screen: WalletSettings,
     navigationOptions: {
       title: 'Wallet Settings',
     },
   },
-  [ADVANCED_SCREEN]: {
+  [Routes.ADVANCED_SCREEN]: {
     screen: Advanced,
     navigationOptions: {
       title: 'Advanced Lightning',
     },
   },
-  [SEED_BACKUP]: {
+  [Routes.SEED_BACKUP]: {
     screen: SeedBackup,
     navigationOptions: {
       title: 'Seed Backup',
     },
   },
 
-  [ADD_POST_TO_FEED]: {
+  [Routes.ADD_POST_TO_FEED]: {
     screen: AddPostToFeed,
     navigationOptions: {
       title: 'Add Post to Feed',
     },
   },
-  [CREATE_POST]: {
+  [Routes.CREATE_POST]: {
     screen: CreatePost,
     navigationOptions: {
       title: 'Add Post to Feed',
     },
   },
-  [LNURL_SCREEN]: {
+  [Routes.LNURL_SCREEN]: {
     screen: LNURL,
     navigationOptions: {
       title: 'LNURL utils',
     },
   },
-  [PUBLISH_CONTENT_DARK]: {
+  [Routes.PUBLISH_CONTENT_DARK]: {
     screen: PublishContentDark,
     navigationOptions: {
       title: 'Publish Content',
@@ -163,11 +152,11 @@ const drawerScreens = {
 }
 
 if (theme === 'dark') {
-  delete drawerScreens[ADD_POST_TO_FEED]
+  delete drawerScreens[Routes.ADD_POST_TO_FEED]
 }
 
 const MainDrawer = createDrawerNavigator(drawerScreens, {
-  initialRouteName: WALLET_NAV,
+  initialRouteName: Routes.WALLET_NAV,
   drawerPosition: 'right',
   contentComponent: CustomDrawer,
   drawerBackgroundColor: 'transparent',
@@ -184,13 +173,13 @@ MainDrawer.navigationOptions = {
 
 const App = createStackNavigator(
   {
-    [ADVANCED_SCREEN]: Advanced,
-    [CHAT_ROUTE]: Chat,
-    [MAIN_DRAWER]: MainDrawer,
-    [NODE_INFO]: NodeInfo,
+    [Routes.ADVANCED_SCREEN]: Advanced,
+    [Routes.CHAT_ROUTE]: Chat,
+    [Routes.MAIN_DRAWER]: MainDrawer,
+    [Routes.NODE_INFO]: NodeInfo,
   },
   {
-    initialRouteName: MAIN_DRAWER,
+    initialRouteName: Routes.MAIN_DRAWER,
   },
 )
 
@@ -198,20 +187,20 @@ export const AUTH = 'AUTH'
 
 const Auth = createSwitchNavigator(
   {
-    [LOGIN]: Login,
-    [WALLET_MANAGER]: WalletManager,
-    [CONNECT_TO_NODE]: ConnectToNode,
+    [Routes.LOGIN]: Login,
+    [Routes.WALLET_MANAGER]: WalletManager,
+    [Routes.CONNECT_TO_NODE]: ConnectToNode,
   },
   {
-    initialRouteName: CONNECT_TO_NODE,
+    initialRouteName: Routes.CONNECT_TO_NODE,
   },
 )
 
 const MainSwitch = createSwitchNavigator(
   {
     [AUTH]: Auth,
-    [APP]: App,
-    [LOADING]: Loading,
+    [Routes.APP]: App,
+    [Routes.LOADING]: Loading,
   },
   {
     initialRouteName: AUTH,

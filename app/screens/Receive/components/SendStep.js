@@ -29,7 +29,7 @@ import {
 import { resetSelectedContact } from '../../../store/actions/ChatActions'
 import QR from './QR'
 import BitcoinAccepted from '../../../assets/images/bitcoin-accepted.png'
-import { CHATS_ROUTE } from '../../Chats'
+import { CHATS_ROUTE } from '../../../routes'
 
 /**
  * @typedef {ReturnType<typeof mapStateToProps>} ConnectedRedux
