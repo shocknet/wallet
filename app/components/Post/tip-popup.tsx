@@ -30,6 +30,8 @@ interface OwnProps {
 
 interface StateProps {
   authorPublicKey: string
+  absoluteFee: string
+  relativeFee: string
 }
 
 interface DispatchProps {
@@ -85,6 +87,7 @@ class TipPopup extends React.PureComponent<Props, State> {
   }
 
   onSlideToSend = () => {
+    const { absoluteFee, relativeFee } = this.props
     const { tipAmt } = this.state
 
     const asNumber = Number(tipAmt)
@@ -102,7 +105,13 @@ class TipPopup extends React.PureComponent<Props, State> {
         const { authorPublicKey, postID } = this.props
         const { tipAmt } = this.state
 
-        Services.tipPost(authorPublicKey, postID, Number(tipAmt))
+        Services.tipPost(
+          authorPublicKey,
+          postID,
+          Number(tipAmt),
+          absoluteFee,
+          relativeFee,
+        )
           .then(() => {
             this.props.forcePaymentsRefresh()
             if (this.mounted) {
@@ -263,16 +272,21 @@ const sliderIcon = (
 
 const mapState = (state: Store.State, props: OwnProps): StateProps => {
   const post = Store.getPost(state, props.postID)
+  const { absoluteFee, relativeFee } = Store.selectFees(state)
 
   if (!post) {
     Logger.log(`Could not find post via postID in TipPopup->connect`)
     return {
       authorPublicKey: '',
+      absoluteFee,
+      relativeFee,
     }
   }
 
   return {
     authorPublicKey: post.author,
+    absoluteFee,
+    relativeFee,
   }
 }
 

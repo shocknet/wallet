@@ -24,14 +24,7 @@ export const tip = (
 
   dispatch(requestedTip(amount, recipientsPublicKey, memo))
 
-  const relFeeN = Number(relativeFee)
-  const absFeeN = Number(absoluteFee)
-  if (!relFeeN || !absFeeN) {
-    throw new Error('invalid fees provided')
-  }
-  const amountN = Number(amount)
-  const calculatedFeeLimit = Math.floor(amountN * relFeeN + absFeeN)
-  const feeLimit = calculatedFeeLimit > amountN ? amountN : calculatedFeeLimit
+  const feeLimit = Wallet.calculateFeeLimit(amount, absoluteFee, relativeFee)
 
   Wallet.tip(amount, recipientsPublicKey, memo, feeLimit)
     .then(paymentV2 => {

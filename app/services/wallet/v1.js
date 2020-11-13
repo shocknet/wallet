@@ -5,6 +5,8 @@ import { Schema } from 'shock-common'
 import * as Cache from '../cache'
 import * as Utils from '../utils'
 
+import { calculateFeeLimit } from './v2'
+
 /**
  * @typedef {object} Bytes
  * @prop {string} type
@@ -741,13 +743,8 @@ export const sendCoins = async params => {
 export const CAUTION_payInvoice = async request => {
   const { amt, payreq, fees, hideAmount } = request
   const { absoluteFee, relativeFee } = fees
-  const relFeeN = Number(relativeFee)
-  const absFeeN = Number(absoluteFee)
-  if (!relFeeN || !absFeeN) {
-    throw new Error('invalid fees provided')
-  }
-  const calculatedFeeLimit = Math.floor(amt * relFeeN + absFeeN)
-  const feeLimit = calculatedFeeLimit > amt ? amt : calculatedFeeLimit
+  const feeLimit = calculateFeeLimit(amt, absoluteFee, relativeFee)
+
   const endpoint = `/api/lnd/sendpayment`
   Logger.log('Sending payment with a fee limit of ', feeLimit)
   try {
@@ -783,13 +780,7 @@ export const CAUTION_payInvoice = async request => {
 export const payKeysend = async request => {
   const { amt, dest, fees } = request
   const { absoluteFee, relativeFee } = fees
-  const relFeeN = Number(relativeFee)
-  const absFeeN = Number(absoluteFee)
-  if (!relFeeN || !absFeeN) {
-    throw new Error('invalid fees provided')
-  }
-  const calculatedFeeLimit = Math.floor(amt * relFeeN + absFeeN)
-  const feeLimit = calculatedFeeLimit > amt ? amt : calculatedFeeLimit
+  const feeLimit = calculateFeeLimit(amt, absoluteFee, relativeFee)
   const endpoint = `/api/lnd/sendpayment`
   Logger.log('Sending keysend payment with a fee limit of ', feeLimit)
   try {
