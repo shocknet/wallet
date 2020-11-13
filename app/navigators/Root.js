@@ -183,8 +183,6 @@ const App = createStackNavigator(
   },
 )
 
-export const AUTH = 'AUTH'
-
 const Auth = createSwitchNavigator(
   {
     [Routes.LOGIN]: Login,
@@ -198,12 +196,12 @@ const Auth = createSwitchNavigator(
 
 const MainSwitch = createSwitchNavigator(
   {
-    [AUTH]: Auth,
+    [Routes.AUTH]: Auth,
     [Routes.APP]: App,
     [Routes.LOADING]: Loading,
   },
   {
-    initialRouteName: AUTH,
+    initialRouteName: Routes.AUTH,
   },
 )
 
