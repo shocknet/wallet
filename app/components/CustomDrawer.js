@@ -46,7 +46,7 @@ const drawerTopItems = [
   },
   {
     name: 'Seed Backup',
-    iconName: 'solid-help',
+    iconName: 'solid-key',
     screen: SEED_BACKUP,
   },
 ]
