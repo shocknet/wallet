@@ -4,7 +4,6 @@ import { Schema } from 'shock-common'
 import { ToastAndroid } from 'react-native'
 import isFinite from 'lodash/isFinite'
 
-import { getStore } from '../../store'
 import { post } from '../http'
 
 // TODO: Move to common repo
@@ -84,14 +83,6 @@ export const decodeInvoice = async ({
   }
 
   try {
-    const { decodedInvoices } = getStore().getState()
-    const maybeDecoded = decodedInvoices[payReq]
-    if (maybeDecoded) {
-      return Promise.resolve({
-        decodedRequest: maybeDecoded,
-      })
-    }
-
     // a request is already in process
     if (inProcessToAwaiters.has(payReq)) {
       const awaiter = {
@@ -121,14 +112,6 @@ export const decodeInvoice = async ({
       Logger.log(msg)
       throw new Error(`API returned malformed data.`)
     }
-
-    getStore().dispatch({
-      type: 'invoice/load',
-      data: {
-        ...data.decodedRequest,
-        payment_request: payReq,
-      },
-    })
 
     if (inProcessToAwaiters.has(payReq)) {
       const awaiters = inProcessToAwaiters.get(payReq)!
