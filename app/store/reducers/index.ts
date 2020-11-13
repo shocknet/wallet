@@ -1,3 +1,5 @@
+import Logger from 'react-native-file-log'
+
 import HistoryReducer from './HistoryReducer'
 import WalletReducer from './WalletReducer'
 import NodeReducer from './NodeReducer'
@@ -5,7 +7,7 @@ import ChatReducer from './ChatReducer'
 import InvoiceReducer from './InvoiceReducer'
 import ConnectionReducer from './ConnectionReducer'
 import FeesReducer from './FeesReducer'
-import UsersReducer, * as Users from './UsersReducer'
+import UsersReducer from './UsersReducer'
 import FollowsReducer from './follows'
 import SettingsReducer from './SettingsReducer'
 import paymentsV2s from './paymentV2s'
@@ -18,6 +20,10 @@ import invoicesAdded from './invoices-added'
 import chainTXs from './chain-txs'
 import posts from './posts'
 import debug from './debug'
+import chats from './chats'
+import sentReqs from './sent-reqs'
+import receivedReqs from './received-reqs'
+import messages from './messages'
 
 const rootReducer = {
   auth,
@@ -40,22 +46,27 @@ const rootReducer = {
   invoicesAdded,
   chainTXs,
   debug,
+  chats,
+  sentReqs,
+  receivedReqs,
+  messages,
 }
 
-/**
- * @typedef {{ [K in keyof rootReducer]: ReturnType<typeof rootReducer[K]> }} State
- */
+for (const [key, reducer] of Object.entries(rootReducer)) {
+  // @ts-expect-error
+  rootReducer[key] = (state: unknown, action: unknown) => {
+    try {
+      // @ts-expect-error
+      return reducer(state, action)
+    } catch (e) {
+      Logger.log(`Error inside ${key} reducer -> ${e.message}`)
+      return state
+    }
+  }
+}
 
-/**
- * @param {State} state
- */
-export const selectAllUsers = state => Users.selectAllUsers(state.users)
-
-/**
- * @param {State} state
- * @param {{ publicKey: string }} props
- */
-export const selectUser = (state, { publicKey }) =>
-  Users.selectUser(state.users, { publicKey })
+export type State = {
+  [K in keyof typeof rootReducer]: ReturnType<typeof rootReducer[K]>
+}
 
 export default rootReducer

@@ -97,14 +97,18 @@ function* fetchLatestInvoices(action: Actions.Action) {
 }
 
 function* batchDecodeInvoices(action: Actions.InvoicesBatchDecodeReqAction) {
-  const { payReqs } = action.data
+  try {
+    const { payReqs } = action.data
 
-  const decoded: Schema.InvoiceWhenDecoded[] = yield call(
-    batchDecodePayReqs,
-    payReqs,
-  )
+    const decoded: Schema.InvoiceWhenDecoded[] = yield call(
+      batchDecodePayReqs,
+      payReqs,
+    )
 
-  yield put(Actions.invoicesBatchDecodeRes(payReqs, decoded))
+    yield put(Actions.invoicesBatchDecodeRes(payReqs, decoded))
+  } catch (e) {
+    Logger.log(`Error inside batchDecodeInvoices* () -> ${e.message}`)
+  }
 }
 
 function* rootSaga() {

@@ -19,6 +19,7 @@ import Big from 'big.js'
 import { connect } from 'react-redux'
 import Logger from 'react-native-file-log'
 import Modal from 'react-native-modalbox'
+import * as Common from 'shock-common'
 
 import wavesBGDark from '../../assets/images/waves-bg-dark.png'
 import * as CSS from '../../res/css'
@@ -27,11 +28,7 @@ import Nav from '../../components/Nav'
 import {
   fetchChannels,
   fetchPendingChannels,
-  fetchInvoices,
-  fetchPayments,
   fetchPeers,
-  fetchTransactions,
-  fetchRecentTransactions,
   fetchHistory,
 } from '../../store/actions/HistoryActions'
 import { fetchNodeInfo } from '../../store/actions/NodeActions'
@@ -231,7 +228,6 @@ class AdvancedScreen extends React.PureComponent<Props, State> {
     if (USDRate !== null) {
       const parsedConfirmedBalance = new Big(confirmedBalance)
       const parsedChannelBalance = new Big(channelBalance)
-      //@ts-expect-error
       const parsedUSDRate = new Big(USDRate)
       const satoshiUnit = new Big(0.00000001)
       const confirmedBalanceUSD = parsedConfirmedBalance
@@ -701,12 +697,11 @@ class AdvancedScreen extends React.PureComponent<Props, State> {
     this.setState({ modalLoading: false })
   }
 
-  transactionKeyExtractor = (
-    transaction: import('../../services/wallet').Transaction,
-  ) => transaction.tx_hash
+  transactionKeyExtractor = (transaction: Common.Schema.ChainTransaction) =>
+    transaction.tx_hash
 
   render() {
-    const { node, wallet, history } = this.props
+    const { node, wallet, history, chainTXs } = this.props
     const {
       accordions,
       peerURI,
@@ -887,7 +882,7 @@ class AdvancedScreen extends React.PureComponent<Props, State> {
             />
             <AccordionItem
               fetchNextPage={this.fetchNextPage('transactions')}
-              data={history.recentTransactions}
+              data={chainTXs}
               Item={Transaction}
               title="Transactions"
               open={accordions.transactions}
@@ -1000,21 +995,22 @@ class AdvancedScreen extends React.PureComponent<Props, State> {
   }
 }
 
-const mapStateToProps = ({ history, node, wallet, fees }: Store.State) => ({
-  history,
-  node,
-  wallet,
-  fees,
-})
+const mapStateToProps = (state: Store.State) => {
+  const { history, node, wallet, fees } = state
+
+  return {
+    history,
+    node,
+    wallet,
+    fees,
+    chainTXs: Store.getLatestChainTransactions(state),
+  }
+}
 
 const mapDispatchToProps = {
   fetchChannels,
   fetchPendingChannels,
-  fetchInvoices,
-  fetchPayments,
   fetchPeers,
-  fetchTransactions,
-  fetchRecentTransactions,
   fetchHistory,
   fetchNodeInfo,
 }

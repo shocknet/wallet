@@ -15,11 +15,11 @@ import React from 'react'
 
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import Ionicons from 'react-native-vector-icons/Ionicons'
-import moment from 'moment'
 import { Schema } from 'shock-common'
 import { connect } from 'react-redux'
 import Entypo from 'react-native-vector-icons/Entypo'
 import isFinite from 'lodash/isFinite'
+import moment from 'moment'
 
 import { ConnectedShockAvatar } from '../../components/ShockAvatar'
 import * as CSS from '../../res/css'
@@ -28,6 +28,7 @@ import Pad from '../../components/Pad'
 import * as Store from '../../store'
 import { Tip } from '../../schema'
 import * as Services from '../../services'
+import TimeText from '../../components/time-text'
 
 const OUTBOUND_INDICATOR_RADIUS = 20
 
@@ -72,7 +73,6 @@ export class UnifiedTransaction extends React.PureComponent<Props> {
       return <Text>{err}</Text>
     }
 
-    const formattedTimestamp = moment(timestamp).fromNow()
     const convertedBalance = (
       Math.round(
         btcConvert(value.toString(), 'Satoshi', 'BTC') * USDRate * 100,
@@ -138,7 +138,7 @@ export class UnifiedTransaction extends React.PureComponent<Props> {
           </Text>
         </View>
         <View style={styles.valuesContainer}>
-          <Text style={styles.timestamp}>{formattedTimestamp}</Text>
+          <TimeText style={styles.timestamp}>{timestamp}</TimeText>
           <Text style={styles.value}>
             {(() => {
               if (status === 'sent') {
@@ -222,7 +222,7 @@ const makeMapStateToProps = () => {
           asChainTX.time_stamp ||
           moment.now().toString()
 
-        return Services.normalizeTimestamp(Number(t))
+        return Services.normalizeTimestampToMs(Number(t))
       })()
 
       const value = Math.abs(

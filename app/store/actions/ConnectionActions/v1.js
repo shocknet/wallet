@@ -44,28 +44,33 @@ let exchangingKeypair = null
  * @returns {Promise<PublicKey>}
  */
 const generateKey = async (tag, size = 2048, retries = 0) => {
-  if (retries >= 5) {
-    throw new Error('Unable to generate a key')
+  try {
+    if (retries >= 5) {
+      throw new Error('Unable to generate a key')
+    }
+    const keypairExists = await RSAKeychain.keyExists(tag)
+
+    if (keypairExists) {
+      return { public: await RSAKeychain.getPublicKey(tag) }
+    }
+
+    const keyPair = await RSAKeychain.generateKeys(tag, size)
+
+    if (!keyPair.public) {
+      return generateKey(tag, size, retries + 1)
+    }
+
+    Logger.log('[ENCRYPTION] New key generated')
+    Logger.log('[ENCRYPTION] New Keypair', {
+      publicKey: keyPair.public,
+      tag,
+    })
+
+    return keyPair
+  } catch (e) {
+    Logger.log(`Error inside generateKey thunk: ${e.message}`)
+    throw e
   }
-  const keypairExists = await RSAKeychain.keyExists(tag)
-
-  if (keypairExists) {
-    return { public: await RSAKeychain.getPublicKey(tag) }
-  }
-
-  const keyPair = await RSAKeychain.generateKeys(tag, size)
-
-  if (!keyPair.public) {
-    return generateKey(tag, size, retries + 1)
-  }
-
-  Logger.log('[ENCRYPTION] New key generated')
-  Logger.log('[ENCRYPTION] New Keypair', {
-    publicKey: keyPair.public,
-    tag,
-  })
-
-  return keyPair
 }
 
 /**
@@ -156,6 +161,7 @@ export const throttledExchangeKeyPair = keypairDetails => async (
 
     return result
   } catch (err) {
+    Logger.log(`Error inside throttledExchangeKeyPair -> ${err.message}`)
     exchangingKeypair = null
     throw err
   }

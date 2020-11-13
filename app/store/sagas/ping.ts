@@ -41,7 +41,7 @@ function* ping() {
       socket = null
 
       // force next tick
-      yield put({ type: Math.random().toString() })
+      yield put({ type: 'keepAlive' })
     }
 
     if (token && !socket) {

@@ -7,8 +7,6 @@ import { Schema } from 'shock-common'
 import Http from 'axios'
 import { ToastAndroid } from 'react-native'
 
-import * as Events from './events'
-
 /**
  * @param {string} requestID
  * @returns {Promise<void>}
@@ -171,26 +169,9 @@ export const sendPayment = async (recipientPub, amount, memo, fees) => {
  */
 export const disconnect = async pub => {
   try {
-    const chatIdx = Events.currentChats.findIndex(
-      c => c.recipientPublicKey === pub,
-    )
-
-    /** @type {Schema.Chat[]} */
-    let deletedChat = []
-
-    // it's fine if it doesn't exist in our cache
-    if (chatIdx !== -1) {
-      const currChats = Events.getCurrChats()
-      deletedChat = currChats.splice(chatIdx, 1)
-      Events.setChats(currChats)
-    }
-
     const res = await Http.delete(`api/gun/chats/${pub}`)
 
     if (res.status !== 200) {
-      if (deletedChat.length) {
-        Events.setChats([...Events.getCurrChats(), deletedChat[0]])
-      }
       throw new Error(res.data.errorMessage || 'Unknown Error')
     }
   } catch (e) {

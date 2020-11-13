@@ -10,7 +10,7 @@ function* debug(action: Action) {
 
     // check not a log action else infinite recursion will happen
     if (state.debug.enabled && action.type !== 'debug/log') {
-      Logger.log(JSON.stringify(action))
+      Logger.log(JSON.stringify(action.type))
     }
   } catch (err) {
     Logger.log('Error inside debug* ()')

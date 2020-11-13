@@ -686,6 +686,7 @@ class LNURL extends React.PureComponent {
     this.setState({
       scanQR: false,
     })
+    this.props.navigation.navigate(WALLET_OVERVIEW)
   }
 
   render() {

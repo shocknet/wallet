@@ -1,4 +1,7 @@
-import { ACTIONS } from '../actions/WalletActions'
+/**
+ * @typedef {import('../actions').Action} Action
+ */
+
 import Big from 'big.js'
 /**
  * @typedef {object} State
@@ -7,12 +10,6 @@ import Big from 'big.js'
  * @prop {string|null} USDRate
  * @prop {string} totalBalance
  * @prop {string} pendingChannelBalance
- */
-
-/**
- * @typedef {object} Action
- * @prop {string} type
- * @prop {State} data
  */
 
 /** @type {State} */
@@ -31,7 +28,7 @@ const INITIAL_STATE = {
  */
 const wallet = (state = INITIAL_STATE, action) => {
   switch (action.type) {
-    case ACTIONS.LOAD_WALLET_BALANCE: {
+    case 'balance/load': {
       const {
         channelBalance,
         confirmedBalance,
@@ -50,7 +47,7 @@ const wallet = (state = INITIAL_STATE, action) => {
         pendingChannelBalance,
       }
     }
-    case ACTIONS.SET_USD_RATE: {
+    case 'usdRate/load': {
       const { data } = action
 
       return {

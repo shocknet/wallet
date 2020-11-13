@@ -5,7 +5,6 @@ import {
   TouchableOpacity,
   ScrollView,
   Text,
-  ToastAndroid,
 } from 'react-native'
 import { DrawerActions } from 'react-navigation-drawer'
 
@@ -15,7 +14,6 @@ import { ADVANCED_SCREEN } from '../screens/Advanced'
 import { SEED_BACKUP } from '../screens/SeedBackup'
 import { WALLET_SETTINGS } from '../screens/WalletSettings'
 import { DEBUG } from '../screens/Debug'
-import * as Store from '../store'
 
 import { Colors } from '../res/css'
 import ShockIcon from '../res/icons'
@@ -36,14 +34,14 @@ const drawerTopItems = [
     iconName: 'solid-wallet',
     screen: WALLET_SETTINGS,
   },
-  {
+  /*{
     name: 'Spending Rules',
-    iconName: 'solid-spending-rule',
+    iconName: 'solid-lightning',
     screen: WALLET_SETTINGS,
-  },
+  },*/
   {
     name: 'Advanced Lightning',
-    iconName: 'solid-lightning',
+    iconName: 'solid-spending-rule',
     screen: ADVANCED_SCREEN,
   },
   {
@@ -91,12 +89,6 @@ export default class CustomDrawer extends React.PureComponent {
 
     if (!screenName) {
       return
-    }
-
-    if (screenName === DEBUG) {
-      const store = Store.getStore()
-      store.dispatch(Store.enableDebug())
-      ToastAndroid.show('Debug mode enabled', 800)
     }
 
     navigation.navigate(screenName)

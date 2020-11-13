@@ -1,16 +1,14 @@
 import React from 'react'
 import { View, Text, StyleSheet, Clipboard, ToastAndroid } from 'react-native'
-import Moment from 'moment'
 import EntypoIcons from 'react-native-vector-icons/Entypo'
+import * as Common from 'shock-common'
 
 import * as CSS from '../../../res/css'
-/**
- * @typedef {import('../../../services/wallet').Transaction} ITransaction
- */
+import TimeText from '../../../components/time-text'
 
 /**
  * @typedef {object} Props
- * @prop {ITransaction} data
+ * @prop {Common.Schema.ChainTransaction} data
  */
 
 /**
@@ -55,7 +53,7 @@ const _Transaction = ({ data }) => ((
         </Text>
         <Text style={styles.textWhite}>
           Payment{' '}
-          {parseInt(data.num_confirmations, 10) === 0 ? (
+          {data.num_confirmations === 0 ? (
             <EntypoIcons name="clock" color="red" size={10} />
           ) : null}
         </Text>
@@ -71,9 +69,9 @@ const _Transaction = ({ data }) => ((
       >
         {data.amount}
       </Text>
-      <Text style={styles.transactionTime}>
-        {Moment.utc(parseInt(data.time_stamp, 10) * 1000).fromNow()}
-      </Text>
+      <TimeText style={styles.transactionTime}>
+        {Number(data.time_stamp)}
+      </TimeText>
     </View>
   </View>
 ))
