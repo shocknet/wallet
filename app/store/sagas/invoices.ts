@@ -68,6 +68,17 @@ function* fetchLatestInvoices(action: Actions.Action) {
       return
     }
 
+    if (action.type === 'messages/load') {
+      const { data } = action
+      const bodies = Object.values(data).map(m => m.body)
+      const invoices = bodies
+        .filter(b => b.startsWith('$$__SHOCKWALLET__INVOICE__'))
+        .map(b => b.slice('$$__SHOCKWALLET__INVOICE__'.length))
+
+      yield put(Actions.invoicesBatchDecodeReq(invoices))
+      return
+    }
+
     if (action.type !== 'invoicesRefreshForced') {
       const newIsOnline = Selectors.isOnline(state)
       const wentOnline = !oldIsOnline && newIsOnline
