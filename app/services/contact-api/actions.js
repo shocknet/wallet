@@ -7,6 +7,8 @@ import { Schema } from 'shock-common'
 import Http from 'axios'
 import { ToastAndroid } from 'react-native'
 
+import { calculateFeeLimit } from '../wallet'
+
 /**
  * @param {string} requestID
  * @returns {Promise<void>}
@@ -134,14 +136,8 @@ export const sendReqWithInitialMsg = async (recipientPublicKey, initialMsg) => {
  */
 export const sendPayment = async (recipientPub, amount, memo, fees) => {
   const { absoluteFee, relativeFee } = fees
-  const relFeeN = Number(relativeFee)
-  const absFeeN = Number(absoluteFee)
-  if (!relFeeN || !absFeeN) {
-    throw new Error('invalid fees provided')
-  }
   const amountN = Number(amount)
-  const calculatedFeeLimit = Math.floor(amountN * relFeeN + absFeeN)
-  const feeLimit = calculatedFeeLimit > amountN ? amountN : calculatedFeeLimit
+  const feeLimit = calculateFeeLimit(amountN, absoluteFee, relativeFee)
 
   const sessionUuid = Date.now().toString()
   const endpoint = `/api/gun/sendpayment`

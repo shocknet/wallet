@@ -6,7 +6,7 @@ import AsyncStorage from '@react-native-community/async-storage'
 import Http from 'axios'
 import fromPairs from 'lodash/fromPairs'
 
-import { AUTH } from '../navigators/Root'
+import { AUTH } from '../routes'
 import { getStore } from '../store'
 import * as Actions from '../store/actions'
 

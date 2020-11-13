@@ -63,3 +63,5 @@ export const WALLET_NAV = 'WALLET_NAV'
 export const WALLET = 'WALLET'
 
 export const LOADING = 'LOADING'
+
+export const AUTH = 'AUTH'

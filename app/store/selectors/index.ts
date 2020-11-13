@@ -12,6 +12,7 @@ export * from './auth'
 export * from './posts'
 export * from './follows'
 export * from './contact'
+export * from './wallet'
 
 /**
  * For use inside sagas, allows typing of the return value from the select
