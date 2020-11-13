@@ -26,7 +26,7 @@ import configureStore, { log, getStore } from './app/store'
 import RootStack from './app/navigators/Root'
 import { LNURL_SCREEN, LOGIN } from './app/routes'
 import WithConnWarning from './app/components/WithConnWarning'
-import { hostWasSet } from './app/store/actions'
+import { hostWasSet, tokenDidInvalidate } from './app/store/actions'
 
 import { DISABLE_ENCRYPTION } from './app/config'
 import Loading from './app/screens/Loading'
@@ -451,7 +451,9 @@ Http.interceptors.response.use(
         ) {
           const addr = await Cache.getNodeURL()
           await Cache.writeStoredAuthData(null)
+          store.dispatch(tokenDidInvalidate())
           await Cache.writeNodeURLOrIP(addr)
+          store.dispatch(hostWasSet(addr || ''))
           NavigationService.navigate(LOGIN)
         } else {
           await Cache.writeStoredAuthData(null)

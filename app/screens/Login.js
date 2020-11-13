@@ -201,13 +201,16 @@ export class Login extends React.PureComponent {
       },
       () => {
         Auth.unlockWallet(aliasToUse, this.state.pass)
-          .then(res => {
-            Cache.writeStoredAuthData({
+          .then(async res => {
+            await Cache.writeStoredAuthData({
               alias: aliasToUse,
               publicKey: res.publicKey,
               token: res.token,
             })
 
+            return res
+          })
+          .then(res => {
             this.props.dispatch(
               Actions.authed({
                 alias: aliasToUse,

@@ -41,6 +41,8 @@ interface StateProps {
 interface DispatchProps {
   enableDebug(): void
   disableDebug(): void
+  tokenDidInvalidate(): void
+  hostWasSet(h: ''): void
 }
 
 type Props = OwnProps & StateProps & DispatchProps
@@ -88,6 +90,8 @@ class Debug extends React.PureComponent<Props, Record<string, any>> {
 
   clearAuthData = () => {
     Cache.writeStoredAuthData(null)
+    this.props.tokenDidInvalidate()
+    this.props.hostWasSet('')
   }
 
   generateNewHandshakeNode = () => {
@@ -221,6 +225,8 @@ const mapStateToProps = (state: Store.State): StateProps => {
 const mapDispatch = {
   disableDebug: Store.disableDebug,
   enableDebug: Store.enableDebug,
+  tokenDidInvalidate: Store.tokenDidInvalidate,
+  hostWasSet: Store.hostWasSet,
 }
 
 export default connect(
