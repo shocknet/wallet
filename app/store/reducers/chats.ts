@@ -18,14 +18,9 @@ const INITIAL_STATE: State = {
 const reducer: Reducer<State, Action> = (state = INITIAL_STATE, action) => {
   if (action.type === 'chats/receivedChats') {
     const { chats } = action.data
-    const normalizedChats = Schema.normalizeChats(chats).entities.chats || {}
-    const newState: State = { byId: {} }
-
-    for (const [id, chatN] of Object.entries(normalizedChats)) {
-      newState.byId[id] = chatN
+    return {
+      byId: Schema.normalizeChats(chats).entities.chats || {},
     }
-
-    return newState
   }
 
   return state
