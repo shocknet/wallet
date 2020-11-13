@@ -12,6 +12,7 @@ import { connect } from 'react-redux'
 import pickBy from 'lodash/pickBy'
 import Carousel from 'react-native-snap-carousel'
 import size from 'lodash/size'
+import Logger from 'react-native-file-log'
 
 import * as Store from '../../store'
 import * as CSS from '../../res/css'
@@ -70,8 +71,12 @@ class Post extends React.PureComponent<Props, State> {
     // TODO: hack, force gun to ask for this data
     // The data itself will be processed in saga
     this.postSocket = Services.rifle(
-      `${authorPublicKey}::posts>${id}>contentItems`,
+      `${authorPublicKey}::posts>${id}>contentItems::map.on`,
     )
+
+    this.postSocket.on('$error', (e: string) => {
+      Logger.log(`Error inside post contentItems socket: ${e}`)
+    })
   }
 
   componentWillUnmount = () => {
