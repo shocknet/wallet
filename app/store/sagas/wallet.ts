@@ -38,7 +38,7 @@ const USDRateFetcher = () => {
 function* USDRateWatcher() {
   try {
     const state = Selectors.getStateRoot(yield select())
-    const isReady = Selectors.isOnline(state) && Selectors.isAuth(state)
+    const isReady = Selectors.isReady(state)
 
     if (isReady && !USDRateTimeoutID) {
       USDRateTimeoutID = setTimeout(USDRateFetcher, USD_RATE_INTERVAL_TIME)
@@ -83,7 +83,7 @@ const balanceFetcher = () => {
 function* balanceWatcher() {
   try {
     const state = Selectors.getStateRoot(yield select())
-    const isReady = Selectors.isOnline(state) && Selectors.isAuth(state)
+    const isReady = Selectors.isReady(state)
 
     if (isReady && !balanceTimeoutID) {
       balanceTimeoutID = setTimeout(balanceFetcher, BALANCE_INTERVAL_TIME)

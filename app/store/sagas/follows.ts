@@ -14,7 +14,7 @@ let socket: ReturnType<typeof SocketIO> | null = null
 function* follows() {
   try {
     const state = Selectors.getStateRoot(yield select())
-    const isReady = Selectors.isOnline(state) && Selectors.isAuth(state)
+    const isReady = Selectors.isReady(state)
 
     if (isReady && !socket) {
       socket = rifle('$user::follows::map.on')

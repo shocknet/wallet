@@ -17,7 +17,7 @@ const sockets: Record<string, ReturnType<typeof SocketIO>> = {}
 function* posts() {
   try {
     const state = Selectors.getStateRoot(yield select())
-    const isReady = Selectors.isOnline(state) && Selectors.isAuth(state)
+    const isReady = Selectors.isReady(state)
     const allPublicKeys = Selectors.getAllPublicKeys(state)
 
     if (isReady) {

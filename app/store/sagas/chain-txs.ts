@@ -18,7 +18,7 @@ let socket: ReturnType<typeof SocketIO> | null = null
 function* chainTXsSocket() {
   try {
     const state = Selectors.getStateRoot(yield select())
-    const isReady = Selectors.isOnline(state) && Selectors.isAuth(state)
+    const isReady = Selectors.isReady(state)
 
     if (isReady && !socket) {
       socket = rod('lightning', 'subscribeTransactions', {

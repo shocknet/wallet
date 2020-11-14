@@ -1,4 +1,5 @@
 import { Store } from 'redux'
+
 import { Action } from '../actions'
 import { State } from '../reducers'
 
