@@ -82,7 +82,7 @@ export default class SeedBackup extends React.PureComponent<Props, State> {
           <Nav
             style={styles.nav}
             backButton
-            title="Wallet Settings"
+            title="Seed Backup"
             navigation={this.props.navigation}
           />
           <View style={xStyles.container}>
@@ -100,7 +100,7 @@ export default class SeedBackup extends React.PureComponent<Props, State> {
         <Nav
           style={styles.nav}
           backButton
-          title="Wallet Settings"
+          title="Seed Backup"
           navigation={this.props.navigation}
         />
         <View style={xStyles.container}>
