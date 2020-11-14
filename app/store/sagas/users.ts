@@ -7,7 +7,7 @@ import size from 'lodash/size'
 import * as Actions from '../actions'
 import * as Selectors from '../selectors'
 import { rifle } from '../../services'
-import { getStore } from '../store'
+import { getStore } from './common'
 
 const sockets: Record<string, ReturnType<typeof SocketIO>> = {}
 

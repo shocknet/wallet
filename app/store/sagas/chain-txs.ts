@@ -10,7 +10,8 @@ import SocketIO from 'socket.io-client'
 import * as Actions from '../actions'
 import * as Selectors from '../selectors'
 import { post, rod } from '../../services'
-import { getStore } from '../store'
+
+import { getStore } from './common'
 
 let socket: ReturnType<typeof SocketIO> | null = null
 

@@ -7,7 +7,7 @@ import pickBy from 'lodash/pickBy'
 import * as Actions from '../actions'
 import * as Selectors from '../selectors'
 import { rifle, get as httpGet, post as httpPost } from '../../services'
-import { getStore } from '../store'
+import { getStore } from './common'
 
 /**
  * Maps public key to posts socket.

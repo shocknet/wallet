@@ -11,7 +11,8 @@ import {
   rod,
 } from '../../services'
 import * as Selectors from '../selectors'
-import { getStore } from '../store'
+
+import { getStore } from './common'
 
 let socket: ReturnType<typeof SocketIO> | null = null
 

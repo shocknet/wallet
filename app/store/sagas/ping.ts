@@ -5,7 +5,7 @@ import { Constants } from 'shock-common'
 
 import * as Actions from '../actions'
 import * as Selectors from '../selectors'
-import { getStore } from '../store'
+import { getStore } from './common'
 
 let socket: ReturnType<typeof SocketIO> | null = null
 

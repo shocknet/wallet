@@ -8,8 +8,8 @@ import thunk from 'redux-thunk'
 
 import reducers, { State } from './reducers'
 import { Action as _Action } from './actions'
-
 import rootSaga from './sagas'
+import { _setStore } from './sagas/common'
 
 const sagaMiddleware = createSagaMiddleware()
 
@@ -40,6 +40,8 @@ export default () => {
   store = createStore(persistedReducers, applyMiddleware(thunk, sagaMiddleware))
 
   const persistor = persistStore(store)
+
+  _setStore(store)
 
   sagaMiddleware.run(rootSaga)
 
