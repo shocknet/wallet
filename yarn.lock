@@ -8707,9 +8707,9 @@ shellwords@^0.1.1:
   resolved "https://registry.yarnpkg.com/shellwords/-/shellwords-0.1.1.tgz#d6b9181c1a48d397324c84871efbcfc73fc0654b"
 
 shock-common@17.x.x:
-  version "17.0.2"
-  resolved "https://registry.yarnpkg.com/shock-common/-/shock-common-17.0.2.tgz#d5164977171006b55430a758810cb40a511dd45f"
-  integrity sha512-QcuOge6YvqEqX4RccfZOnqCCcdIoO613sKNE55SVmL1IMj5ps7YCtw69iP4kTsGJPpKPKGx8CQPRSC8qNMCinA==
+  version "17.1.0"
+  resolved "https://registry.yarnpkg.com/shock-common/-/shock-common-17.1.0.tgz#7a6311444e0c445bb025be3b336a7928c213f4b2"
+  integrity sha512-/+6PPTkyZh7l/1Y53EsyBScH1woNr65GSgOKWXFUabE/jpF+zmvfoSet/yihiFYMfqtPXBm5odnAFM03hwXhWA==
   dependencies:
     immer "^6.0.6"
     lodash "^4.17.19"
