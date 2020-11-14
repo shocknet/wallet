@@ -1,6 +1,6 @@
 import { takeEvery, call, put, select } from 'redux-saga/effects'
 import Logger from 'react-native-file-log'
-import { Schema } from 'shock-common'
+import { Schema, Constants } from 'shock-common'
 import { default as SocketIO } from 'socket.io-client'
 
 import * as Actions from '../actions'
@@ -41,6 +41,12 @@ function* invoicesSocket() {
         if (state.auth.token) {
           store.dispatch(Actions.receivedSingleInvoice(invoice))
         }
+      })
+
+      socket.on(Constants.ErrorCode.NOT_AUTH, () => {
+        getStore().dispatch(Actions.tokenDidInvalidate())
+        socket && socket.off('*')
+        socket && socket.close()
       })
 
       socket.on('$error', (err: unknown) => {

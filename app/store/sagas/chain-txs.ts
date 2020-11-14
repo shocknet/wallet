@@ -4,6 +4,7 @@ import {
   GetTransactionsRequest,
   TransactionDetails,
   Schema,
+  Constants,
 } from 'shock-common'
 import SocketIO from 'socket.io-client'
 
@@ -42,6 +43,12 @@ function* chainTXsSocket() {
         if (state.auth.token) {
           store.dispatch(Actions.receivedSingleChainTX(chainTX))
         }
+      })
+
+      socket.on(Constants.ErrorCode.NOT_AUTH, () => {
+        getStore().dispatch(Actions.tokenDidInvalidate())
+        socket && socket.off('*')
+        socket && socket.close()
       })
 
       socket.on('$error', (err: unknown) => {

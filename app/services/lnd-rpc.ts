@@ -1,10 +1,6 @@
 import { default as SocketIO } from 'socket.io-client'
-import { Constants } from 'shock-common'
 
 import Logger from 'react-native-file-log'
-
-import { getStore } from '../store'
-import { tokenDidInvalidate } from '../store/actions'
 
 export const rod = (
   host: string,
@@ -18,12 +14,6 @@ export const rod = (
       method,
       args: JSON.stringify(args),
     },
-  })
-
-  socket.on(Constants.ErrorCode.NOT_AUTH, () => {
-    getStore().dispatch(tokenDidInvalidate())
-    socket.off('*')
-    socket.close()
   })
 
   const handleError = (err: unknown): void => {
