@@ -26,7 +26,7 @@ interface StateProps {
   ownPostsAmt: number
   feedPostsAmt: number
   followsAmt: number
-
+  host: string
   debugModeEnabled: boolean
 
   online: boolean
@@ -56,8 +56,9 @@ class Debug extends React.PureComponent<Props, Record<string, any>> {
 
   componentDidMount() {
     this.mounted = true
+    const { host } = this.props
 
-    const s = Services.rifle(`$user::currentHandshakeAddress::on`)
+    const s = Services.rifle(host, `$user::currentHandshakeAddress::on`)
 
     s.on('$shock', (data: string) => {
       this.setState({
@@ -200,6 +201,8 @@ const styles = {
 }
 
 const mapStateToProps = (state: Store.State): StateProps => {
+  const host = Store.selectHost(state)
+
   try {
     return {
       chatsAmt: Object.keys(state.chat.contacts).length,
@@ -213,6 +216,7 @@ const mapStateToProps = (state: Store.State): StateProps => {
       online: Store.isOnline(state),
       debugModeEnabled: state.debug.enabled,
       err: '',
+      host,
     }
   } catch (e) {
     // @ts-expect-error

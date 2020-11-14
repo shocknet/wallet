@@ -5,6 +5,7 @@ import { Schema } from 'shock-common'
 
 import * as Actions from '../actions'
 import * as Selectors from '../selectors'
+
 import { getStore } from './common'
 
 let socket: ReturnType<typeof SocketIO> | null = null
@@ -13,9 +14,7 @@ function* receivedReqs() {
   try {
     const state = Selectors.getStateRoot(yield select())
     const isReady = Selectors.isReady(state)
-    const {
-      auth: { host },
-    } = state
+    const host = Selectors.selectHost(state)
 
     if (isReady && !socket) {
       socket = SocketIO(`http://${host}/receivedReqs`, {

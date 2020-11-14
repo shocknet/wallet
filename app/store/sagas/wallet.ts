@@ -5,6 +5,7 @@ import * as Common from 'shock-common'
 import * as Actions from '../actions'
 import * as Services from '../../services'
 import * as Selectors from '../selectors'
+
 import { getStore } from './common'
 
 let USDRateTimeoutID: ReturnType<typeof setTimeout> | null = null

@@ -39,6 +39,7 @@ interface StateProps {
   tipCounter: number
   showMenuBtn: boolean
   isPinned: boolean
+  host: string
 }
 
 interface DispatchProps {
@@ -67,10 +68,11 @@ class Post extends React.PureComponent<Props, State> {
   postSocket: null | ReturnType<typeof Services.rifle> = null
 
   componentDidMount = () => {
-    const { authorPublicKey, id } = this.props
+    const { authorPublicKey, id, host } = this.props
     // TODO: hack, force gun to ask for this data
     // The data itself will be processed in saga
     this.postSocket = Services.rifle(
+      host,
       `${authorPublicKey}::posts>${id}>contentItems::map.on`,
     )
 
@@ -351,6 +353,7 @@ const mapState = () => {
   return (state: Store.State, ownProps: OwnProps): StateProps => {
     const post = Store.getPost(state, ownProps.id)
     const myPublicKey = Store.getMyPublicKey(state)
+    const host = Store.selectHost(state)
 
     if (!post) {
       return {
@@ -359,6 +362,7 @@ const mapState = () => {
         tipCounter: 0,
         showMenuBtn: false,
         isPinned: false,
+        host,
       }
     }
 
@@ -370,6 +374,7 @@ const mapState = () => {
       showMenuBtn: myPublicKey === post.author,
       isPinned: post.id === user.pinnedPost,
       tipCounter: post.tipCounter,
+      host,
     }
   }
 }

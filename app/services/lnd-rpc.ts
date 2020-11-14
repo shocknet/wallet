@@ -2,19 +2,17 @@ import { default as SocketIO } from 'socket.io-client'
 import { Constants } from 'shock-common'
 
 import Logger from 'react-native-file-log'
+
 import { getStore } from '../store'
 import { tokenDidInvalidate } from '../store/actions'
 
 export const rod = (
+  host: string,
   service: string,
   method: string,
   args: Record<string, unknown>,
 ): ReturnType<typeof SocketIO> => {
-  const {
-    auth: { host: nodeURL },
-  } = getStore().getState()
-
-  const socket = SocketIO(`http://${nodeURL}/lndstreaming`, {
+  const socket = SocketIO(`http://${host}/lndstreaming`, {
     query: {
       service,
       method,

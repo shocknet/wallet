@@ -15,9 +15,10 @@ function* follows() {
   try {
     const state = Selectors.getStateRoot(yield select())
     const isReady = Selectors.isReady(state)
+    const host = Selectors.selectHost(state)
 
     if (isReady && !socket) {
-      socket = rifle('$user::follows::map.on')
+      socket = rifle(host, '$user::follows::map.on')
 
       socket.on('$shock', dataHandler)
 

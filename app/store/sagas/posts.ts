@@ -7,6 +7,7 @@ import pickBy from 'lodash/pickBy'
 import * as Actions from '../actions'
 import * as Selectors from '../selectors'
 import { rifle, get as httpGet, post as httpPost } from '../../services'
+
 import { getStore } from './common'
 
 /**
@@ -19,9 +20,10 @@ function* posts() {
     const state = Selectors.getStateRoot(yield select())
     const isReady = Selectors.isReady(state)
     const allPublicKeys = Selectors.getAllPublicKeys(state)
+    const host = Selectors.selectHost(state)
 
     if (isReady) {
-      assignSocketToPublicKeys(allPublicKeys)
+      assignSocketToPublicKeys(allPublicKeys, host)
     }
 
     if (!isReady) {
@@ -37,13 +39,13 @@ function* posts() {
   }
 }
 
-const assignSocketToPublicKeys = (publicKeys: string[]) => {
+const assignSocketToPublicKeys = (publicKeys: string[], host: string) => {
   for (const publicKey of publicKeys) {
     if (sockets[publicKey]) {
       continue
     }
     // TODO: send existing posts to RPC so it doesn't send repeat data.
-    sockets[publicKey] = rifle(`${publicKey}::posts::on`)
+    sockets[publicKey] = rifle(host, `${publicKey}::posts::on`)
 
     sockets[publicKey].on('$shock', (data: unknown) => {
       try {

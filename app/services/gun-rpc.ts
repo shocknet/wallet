@@ -25,14 +25,11 @@ import { tokenDidInvalidate } from '../store/actions'
  * @param publicKeyForDecryption
  */
 export const rifle = (
+  host: string,
   query: string,
   publicKeyForDecryption?: string,
 ): ReturnType<typeof SocketIO> => {
-  const {
-    auth: { host: nodeURL },
-  } = getStore().getState()
-
-  const socket = SocketIO(`http://${nodeURL}/gun`, {
+  const socket = SocketIO(`http://${host}/gun`, {
     query: {
       $shock: query,
       publicKeyForDecryption,

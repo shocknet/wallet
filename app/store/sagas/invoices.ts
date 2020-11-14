@@ -20,9 +20,10 @@ function* invoicesSocket() {
   try {
     const state = Selectors.getStateRoot(yield select())
     const isReady = Selectors.isReady(state)
+    const host = Selectors.selectHost(state)
 
     if (isReady && !socket) {
-      socket = rod('lightning', 'subscribeInvoices', {})
+      socket = rod(host, 'lightning', 'subscribeInvoices', {})
 
       socket.on('data', (invoice: unknown) => {
         if (!Schema.isInvoiceWhenListed(invoice)) {

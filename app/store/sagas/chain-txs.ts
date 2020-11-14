@@ -19,9 +19,10 @@ function* chainTXsSocket() {
   try {
     const state = Selectors.getStateRoot(yield select())
     const isReady = Selectors.isReady(state)
+    const host = Selectors.selectHost(state)
 
     if (isReady && !socket) {
-      socket = rod('lightning', 'subscribeTransactions', {
+      socket = rod(host, 'lightning', 'subscribeTransactions', {
         end_height: -1,
       })
 
