@@ -1,8 +1,4 @@
 import { default as SocketIO } from 'socket.io-client'
-import { Constants } from 'shock-common'
-
-import { getStore } from '../store'
-import { tokenDidInvalidate } from '../store/actions'
 
 /**
  * Returns a socket wired up to the given query. Use `.on('$shock')` for values.
@@ -35,12 +31,6 @@ export const rifle = (
       $shock: query,
       publicKeyForDecryption,
     },
-  })
-
-  socket.on(Constants.ErrorCode.NOT_AUTH, () => {
-    getStore().dispatch(tokenDidInvalidate())
-    socket.off('*')
-    socket.close()
   })
 
   return socket
