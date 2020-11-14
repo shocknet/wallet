@@ -10,7 +10,7 @@ import {
 import Entypo from 'react-native-vector-icons/Entypo'
 import { connect } from 'react-redux'
 import Logger from 'react-native-file-log'
-import Http from 'axios'
+//import Http from 'axios'
 
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation
@@ -33,6 +33,7 @@ import OnboardingBtn from '../../components/OnboardingBtn'
 import FlexCenter from '../../components/FlexCenter'
 import * as Store from '../../store'
 import { DEFAULT_FOLLOWS } from '../../config'
+import { post } from '../../services/http'
 export const CREATE_WALLET_OR_ALIAS = 'CREATE_WALLET_OR_ALIAS'
 
 /**
@@ -263,7 +264,7 @@ class CreateWalletOrAlias extends React.PureComponent {
           }
         })
 
-        return Http.post(`api/gun/put`, {
+        return post(`api/gun/put`, {
           path: '$user>follows',
           value: defaultFollows,
         })
