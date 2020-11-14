@@ -44,8 +44,12 @@ const assignSocketToPublicKeys = (publicKeys: string[], host: string) => {
     if (sockets[publicKey]) {
       continue
     }
+
     // TODO: send existing posts to RPC so it doesn't send repeat data.
     sockets[publicKey] = rifle(host, `${publicKey}::posts::on`)
+
+    // Will not handle NOT_AUTH event here, enough sockets probably handle that
+    // already and this is a multi socket saga will probably make app eat paint.
 
     sockets[publicKey].on('$shock', (data: unknown) => {
       try {

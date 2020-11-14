@@ -1,7 +1,7 @@
 import { takeEvery, select } from 'redux-saga/effects'
 import Logger from 'react-native-file-log'
 import SocketIO from 'socket.io-client'
-import { Schema } from 'shock-common'
+import { Schema, Constants } from 'shock-common'
 
 import * as Actions from '../actions'
 import * as Selectors from '../selectors'
@@ -21,6 +21,12 @@ function* follows() {
       socket = rifle(host, '$user::follows::map.on')
 
       socket.on('$shock', dataHandler)
+
+      socket.on(Constants.ErrorCode.NOT_AUTH, () => {
+        getStore().dispatch(Actions.tokenDidInvalidate())
+        socket && socket.off('*')
+        socket && socket.close()
+      })
 
       socket.on('$error', (err: string) => {
         Logger.log('Error inside follows* ()')

@@ -2,7 +2,7 @@ import React from 'react'
 import { ToastAndroid, StyleSheet, StatusBar } from 'react-native'
 import Ion from 'react-native-vector-icons/Ionicons'
 import Logger from 'react-native-file-log'
-import { Schema } from 'shock-common'
+import { Schema, Constants } from 'shock-common'
 import produce from 'immer'
 import { connect } from 'react-redux'
 /**
@@ -65,12 +65,17 @@ const HeaderLeft = React.memo(({ onPress }) => ((
  */
 
 /**
+ * @typedef {object} DispatchProps
+ * @prop {() => void} tokenDidInvalidate
+ */
+
+/**
  * @typedef {object} OwnProps
  * @prop {Navigation} navigation
  */
 
 /**
- * @typedef {StateProps & OwnProps} Props
+ * @typedef {StateProps & DispatchProps & OwnProps} Props
  */
 
 /**
@@ -457,6 +462,8 @@ class Chat extends React.PureComponent {
       return
     }
 
+    // wont handle NOT_AUTH here, this socket is just a temp HACK anyways.
+
     this.otherMsgsSocket = rifle(
       `${recipientPublicKey}::outgoings>${incomingID}>messages::map.on`,
       recipientPublicKey,
@@ -486,6 +493,12 @@ class Chat extends React.PureComponent {
         }
       },
     )
+
+    this.otherMsgsSocket.on(Constants.ErrorCode.NOT_AUTH, () => {
+      this.props.tokenDidInvalidate()
+      this.otherMsgsSocket && this.otherMsgsSocket.off('*')
+      this.otherMsgsSocket && this.otherMsgsSocket.close()
+    })
   }
 
   async componentDidMount() {

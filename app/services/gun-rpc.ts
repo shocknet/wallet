@@ -6,6 +6,7 @@ import { tokenDidInvalidate } from '../store/actions'
 
 /**
  * Returns a socket wired up to the given query. Use `.on('$shock')` for values.
+ * Please do not forget to listen to the NOT_AUTH event and react accordingly.
  * Query example:
  * ```js
  * rifle(`$user::Profile>displayName::on`)

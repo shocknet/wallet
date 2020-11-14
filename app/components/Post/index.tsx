@@ -7,7 +7,7 @@ import {
   TouchableWithoutFeedback,
   ToastAndroid,
 } from 'react-native'
-import { Schema } from 'shock-common'
+import { Schema, Constants } from 'shock-common'
 import { connect } from 'react-redux'
 import pickBy from 'lodash/pickBy'
 import Carousel from 'react-native-snap-carousel'
@@ -46,6 +46,7 @@ interface DispatchProps {
   pin(): void
   remove(): void
   unpin(): void
+  tokenDidInvalidate(): void
 }
 
 interface State {
@@ -75,6 +76,12 @@ class Post extends React.PureComponent<Props, State> {
       host,
       `${authorPublicKey}::posts>${id}>contentItems::map.on`,
     )
+
+    this.postSocket.on(Constants.ErrorCode.NOT_AUTH, () => {
+      this.props.tokenDidInvalidate()
+      this.postSocket && this.postSocket.off('*')
+      this.postSocket && this.postSocket.close()
+    })
 
     this.postSocket.on('$error', (e: string) => {
       Logger.log(`Error inside post contentItems socket: ${e}`)
@@ -391,6 +398,9 @@ const mapDispatch = (
   },
   remove() {
     dispatch(Store.requestedPostRemoval(id))
+  },
+  tokenDidInvalidate() {
+    dispatch(Store.tokenDidInvalidate())
   },
 })
 

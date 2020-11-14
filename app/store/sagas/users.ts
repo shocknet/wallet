@@ -88,6 +88,9 @@ const assignSocketsToPublicKeysIfNeeded = (
       }
     })
 
+    // Will not handle NOT_AUTH event here, enough sockets probably handle that
+    // already and this is a multi socket saga will probably make app eat paint.
+
     sockets[normalSocketName].on('$error', (err: unknown) => {
       if (err === Constants.ErrorCode.NOT_AUTH) {
         getStore().dispatch(Actions.tokenDidInvalidate())
