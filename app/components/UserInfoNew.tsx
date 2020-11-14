@@ -4,11 +4,12 @@ import { connect } from 'react-redux'
 import Fontisto from 'react-native-vector-icons/Fontisto'
 import Octicons from 'react-native-vector-icons/Octicons'
 
-import * as CSS from '../../res/css'
-import { ConnectedShockAvatar } from '../ShockAvatar'
-import * as Store from '../../store'
-import Pad from '../Pad'
-import TimeText from '../time-text'
+import * as CSS from '../res/css'
+import * as Store from '../store'
+
+import Pad from './Pad'
+import TimeText from './time-text'
+import { ConnectedShockAvatar } from './ShockAvatar'
 
 interface OwnProps {
   postID: string

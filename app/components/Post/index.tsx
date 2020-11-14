@@ -24,7 +24,7 @@ import Dialog from '../ShockDialog'
 import ShockIcon from '../../assets/images/shockB.svg'
 import * as Services from '../../services'
 
-import UserInfo from './UserInfoNew'
+import UserInfo from '../UserInfoNew'
 import TipPopup from './tip-popup'
 
 interface OwnProps {
