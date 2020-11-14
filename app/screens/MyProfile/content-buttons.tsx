@@ -8,8 +8,7 @@ import OfferProduct from '../../assets/images/profile/offer-product.svg'
 import OfferService from '../../assets/images/profile/offer-service.svg'
 import PublishContent from '../../assets/images/profile/publish-content.svg'
 import CreatePost from '../../assets/images/profile/create-post.svg'
-import { PUBLISH_CONTENT_DARK } from '../../screens/PublishContentDark'
-import { CREATE_POST_DARK as CREATE_POST } from '../CreatePostDark'
+import { PUBLISH_CONTENT_DARK, CREATE_POST } from '../../routes'
 
 type Navigation = NavigationScreenProp<{}>
 

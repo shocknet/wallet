@@ -17,8 +17,6 @@ import * as Services from '../services'
 
 import QR from './WalletOverview/QR'
 
-export const DEBUG = 'DEBUG'
-
 interface OwnProps {}
 
 interface StateProps {
@@ -28,7 +26,7 @@ interface StateProps {
   ownPostsAmt: number
   feedPostsAmt: number
   followsAmt: number
-
+  host: string
   debugModeEnabled: boolean
 
   online: boolean
@@ -43,6 +41,8 @@ interface StateProps {
 interface DispatchProps {
   enableDebug(): void
   disableDebug(): void
+  tokenDidInvalidate(): void
+  hostWasSet(h: ''): void
 }
 
 type Props = OwnProps & StateProps & DispatchProps
@@ -56,8 +56,9 @@ class Debug extends React.PureComponent<Props, Record<string, any>> {
 
   componentDidMount() {
     this.mounted = true
+    const { host } = this.props
 
-    const s = Services.rifle(`$user::currentHandshakeAddress::on`)
+    const s = Services.rifle(host, `$user::currentHandshakeAddress::on`)
 
     s.on('$shock', (data: string) => {
       this.setState({
@@ -90,6 +91,8 @@ class Debug extends React.PureComponent<Props, Record<string, any>> {
 
   clearAuthData = () => {
     Cache.writeStoredAuthData(null)
+    this.props.tokenDidInvalidate()
+    this.props.hostWasSet('')
   }
 
   generateNewHandshakeNode = () => {
@@ -198,7 +201,8 @@ const styles = {
 }
 
 const mapStateToProps = (state: Store.State): StateProps => {
-  console.log('map state to props called' + JSON.stringify(state.debug))
+  const host = Store.selectHost(state)
+
   try {
     return {
       chatsAmt: Object.keys(state.chat.contacts).length,
@@ -212,6 +216,7 @@ const mapStateToProps = (state: Store.State): StateProps => {
       online: Store.isOnline(state),
       debugModeEnabled: state.debug.enabled,
       err: '',
+      host,
     }
   } catch (e) {
     // @ts-expect-error
@@ -224,6 +229,8 @@ const mapStateToProps = (state: Store.State): StateProps => {
 const mapDispatch = {
   disableDebug: Store.disableDebug,
   enableDebug: Store.enableDebug,
+  tokenDidInvalidate: Store.tokenDidInvalidate,
+  hostWasSet: Store.hostWasSet,
 }
 
 export default connect(

@@ -5,7 +5,7 @@ import { Constants } from 'shock-common'
 
 import * as Actions from '../actions'
 import * as Selectors from '../selectors'
-import { getStore } from '../store'
+import { getStore } from './common'
 
 let socket: ReturnType<typeof SocketIO> | null = null
 
@@ -41,7 +41,7 @@ function* ping() {
       socket = null
 
       // force next tick
-      yield put({ type: Math.random().toString() })
+      yield put({ type: 'keepAlive' })
     }
 
     if (token && !socket) {

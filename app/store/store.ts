@@ -8,8 +8,8 @@ import thunk from 'redux-thunk'
 
 import reducers, { State } from './reducers'
 import { Action as _Action } from './actions'
-
 import rootSaga from './sagas'
+import { _setStore } from './sagas/common'
 
 const sagaMiddleware = createSagaMiddleware()
 
@@ -41,7 +41,20 @@ export default () => {
 
   const persistor = persistStore(store)
 
+  _setStore(store)
+
   sagaMiddleware.run(rootSaga)
+
+  // Now that polls themsevels (which caused ticks in the store) are dependant
+  // on the ping socket, we need a keep alive tick for when the are no actions
+  // being dispatched making the store tick and therefore the ping saga
+  // realizing the socket died.
+  setInterval(() => {
+    store.dispatch({
+      // @ts-expect-error
+      type: 'keepAlive',
+    })
+  }, 20000)
 
   return { persistor, store }
 }
@@ -61,3 +74,5 @@ export const Selectors = {
     },
   },
 }
+
+export { connect } from 'react-redux'

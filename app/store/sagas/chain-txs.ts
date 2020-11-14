@@ -4,23 +4,26 @@ import {
   GetTransactionsRequest,
   TransactionDetails,
   Schema,
+  Constants,
 } from 'shock-common'
 import SocketIO from 'socket.io-client'
 
 import * as Actions from '../actions'
 import * as Selectors from '../selectors'
 import { post, rod } from '../../services'
-import { getStore } from '../store'
+
+import { getStore } from './common'
 
 let socket: ReturnType<typeof SocketIO> | null = null
 
 function* chainTXsSocket() {
   try {
     const state = Selectors.getStateRoot(yield select())
-    const isReady = Selectors.isOnline(state) && Selectors.isAuth(state)
+    const isReady = Selectors.isReady(state)
+    const host = Selectors.selectHost(state)
 
     if (isReady && !socket) {
-      socket = rod('lightning', 'subscribeTransactions', {
+      socket = rod(host, 'lightning', 'subscribeTransactions', {
         end_height: -1,
       })
 
@@ -40,6 +43,12 @@ function* chainTXsSocket() {
         if (state.auth.token) {
           store.dispatch(Actions.receivedSingleChainTX(chainTX))
         }
+      })
+
+      socket.on(Constants.ErrorCode.NOT_AUTH, () => {
+        getStore().dispatch(Actions.tokenDidInvalidate())
+        socket && socket.off('*')
+        socket && socket.close()
       })
 
       socket.on('$error', (err: unknown) => {

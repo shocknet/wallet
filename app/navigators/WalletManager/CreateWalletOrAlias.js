@@ -21,8 +21,7 @@ import * as Auth from '../../services/auth'
 import * as Cache from '../../services/cache'
 import * as CSS from '../../res/css'
 import * as Wallet from '../../services/wallet'
-import { LOGIN } from '../../screens/Login'
-import { APP } from '../Root'
+import { LOGIN, APP } from '../../routes'
 import Pad from '../../components/Pad'
 import OnboardingScreen, {
   ITEM_SPACING,
@@ -32,14 +31,14 @@ import OnboardingScreen, {
 import OnboardingInput from '../../components/OnboardingInput'
 import OnboardingBtn from '../../components/OnboardingBtn'
 import FlexCenter from '../../components/FlexCenter'
-import { throttledExchangeKeyPair } from '../../store/actions/ConnectionActions'
+import * as Store from '../../store'
 import { DEFAULT_FOLLOWS } from '../../config'
-
 export const CREATE_WALLET_OR_ALIAS = 'CREATE_WALLET_OR_ALIAS'
 
 /**
  * @typedef {object} Props
  * @prop {Navigation} navigation
+ * @prop {typeof Store.authed} authed
  */
 
 /**
@@ -189,13 +188,22 @@ class CreateWalletOrAlias extends React.PureComponent {
       },
       () => {
         Auth.createWallet(alias, pass)
-          .then(({ publicKey, token }) =>
-            Cache.writeStoredAuthData({
+          .then(async ({ publicKey, token }) => {
+            await Cache.writeStoredAuthData({
               alias: this.state.alias,
               publicKey,
               token,
-            }),
-          )
+            })
+
+            return { alias: this.state.alias, publicKey, token }
+          })
+          .then(({ alias, publicKey, token }) => {
+            this.props.authed({
+              alias,
+              gunPublicKey: publicKey,
+              token,
+            })
+          })
           .then(() => this.props.navigation.navigate(APP))
           .catch(e => {
             this.setState({
@@ -221,13 +229,22 @@ class CreateWalletOrAlias extends React.PureComponent {
     })
 
     Auth.newGUNAlias(alias, pass)
-      .then(({ publicKey, token }) =>
-        Cache.writeStoredAuthData({
+      .then(async ({ publicKey, token }) => {
+        await Cache.writeStoredAuthData({
           alias,
           publicKey,
           token,
-        }),
-      )
+        })
+
+        return { alias, publicKey, token }
+      })
+      .then(({ alias, publicKey, token }) => {
+        this.props.authed({
+          alias,
+          gunPublicKey: publicKey,
+          token,
+        })
+      })
       .then(() => {
         this.setState({
           creatingAlias: false,
@@ -421,7 +438,7 @@ class CreateWalletOrAlias extends React.PureComponent {
 const mapStateToProps = ({ connection }) => ({ connection })
 
 const mapDispatchToProps = {
-  throttledExchangeKeyPair,
+  authed: Store.authed,
 }
 
 export default connect(

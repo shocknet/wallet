@@ -24,10 +24,10 @@ import * as Cache from './app/services/cache'
 import * as Encryption from './app/services/encryption'
 import configureStore, { log, getStore } from './app/store'
 import RootStack from './app/navigators/Root'
-import { LNURL_SCREEN } from './app/screens/LNURL'
+import { LNURL_SCREEN, LOGIN } from './app/routes'
 import WithConnWarning from './app/components/WithConnWarning'
-import { hostWasSet } from './app/store/actions'
-import { LOGIN } from './app/screens/Login'
+import { hostWasSet, tokenDidInvalidate } from './app/store/actions'
+
 import { DISABLE_ENCRYPTION } from './app/config'
 import Loading from './app/screens/Loading'
 
@@ -35,9 +35,15 @@ Logger.setTag('ShockWallet')
 Logger.setFileLogEnabled(true)
 Logger.setConsoleLogEnabled(__DEV__)
 Logger.inject((...content) => {
-  const s = getStore()
-  if (s.getState().debug.enabled) {
-    s.dispatch(log(...content))
+  try {
+    const s = getStore()
+    if (s.getState().debug.enabled) {
+      s.dispatch(log(...content))
+    }
+  } catch (e) {
+    if (e.message.indexOf('You may not call') !== 0) {
+      throw e
+    }
   }
 })
 
@@ -445,7 +451,9 @@ Http.interceptors.response.use(
         ) {
           const addr = await Cache.getNodeURL()
           await Cache.writeStoredAuthData(null)
+          store.dispatch(tokenDidInvalidate())
           await Cache.writeNodeURLOrIP(addr)
+          store.dispatch(hostWasSet(addr || ''))
           NavigationService.navigate(LOGIN)
         } else {
           await Cache.writeStoredAuthData(null)

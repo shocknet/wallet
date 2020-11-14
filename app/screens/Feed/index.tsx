@@ -23,7 +23,7 @@ import ShockIconWhite from '../../assets/images/shockW.svg'
 import ShockIconBlue from '../../assets/images/shockB.svg'
 import { ConnectedShockAvatar } from '../../components/ShockAvatar'
 import AddonIcon from '../../assets/images/feed/addon.svg'
-import { CREATE_POST_DARK } from '../CreatePostDark'
+import { CREATE_POST } from '../../routes'
 import Pad from '../../components/Pad'
 import * as Store from '../../store'
 
@@ -86,7 +86,7 @@ class Feed extends React.PureComponent<Props, State> {
     )
   }
 
-  onPressMyAvatar = () => this.props.navigation.navigate(CREATE_POST_DARK)
+  onPressMyAvatar = () => this.props.navigation.navigate(CREATE_POST)
 
   renderMe = () => {
     const { publicKey } = this.props

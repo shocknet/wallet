@@ -6,9 +6,7 @@ import AsyncStorage from '@react-native-community/async-storage'
 import Http from 'axios'
 import fromPairs from 'lodash/fromPairs'
 
-import { AUTH } from '../navigators/Root'
-import { getStore } from '../store'
-import * as Actions from '../store/actions'
+import { AUTH } from '../routes'
 
 import * as Navigation from './navigation'
 import * as Utils from './utils'
@@ -152,10 +150,6 @@ export const onAuth = cb => authListeners.add(cb)
 export const writeStoredAuthData = async authData => {
   if (authData === null) {
     Navigation.navigate(AUTH)
-
-    getStore().dispatch(Actions.tokenDidInvalidate())
-    getStore().dispatch(Actions.hostWasSet(''))
-
     return AsyncStorage.removeItem(STORED_AUTH_DATA).then(() => {
       authListeners.forEach(l => l())
     })
@@ -208,15 +202,6 @@ export const writeStoredAuthData = async authData => {
     authData,
     nodeIP: nodeURL.split(':')[0],
   }
-
-  getStore().dispatch(Actions.hostWasSet(nodeURL))
-  getStore().dispatch(
-    Actions.authed({
-      alias: authData.alias,
-      gunPublicKey: authData.publicKey,
-      token: authData.token,
-    }),
-  )
 
   await Promise.all([
     writeCachedAlias(authData.alias),

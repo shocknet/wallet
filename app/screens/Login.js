@@ -12,7 +12,7 @@ import * as Cache from '../services/cache'
 import * as Auth from '../services/auth'
 import * as CSS from '../res/css'
 import ShockDialog from '../components/ShockDialog'
-import { APP } from '../navigators/Root'
+import { APP } from '../routes'
 import { CREATE_WALLET_OR_ALIAS } from '../navigators/WalletManager/CreateWalletOrAlias'
 import * as Wallet from '../services/wallet'
 import OnboardingScreen, {
@@ -25,8 +25,6 @@ import Pad from '../components/Pad'
 import OnboardingInput from '../components/OnboardingInput'
 import OnboardingBtn from '../components/OnboardingBtn'
 import * as Actions from '../store/actions'
-
-export const LOGIN = 'LOGIN'
 
 /** @type {number} */
 // @ts-expect-error
@@ -203,13 +201,16 @@ export class Login extends React.PureComponent {
       },
       () => {
         Auth.unlockWallet(aliasToUse, this.state.pass)
-          .then(res => {
-            Cache.writeStoredAuthData({
+          .then(async res => {
+            await Cache.writeStoredAuthData({
               alias: aliasToUse,
               publicKey: res.publicKey,
               token: res.token,
             })
 
+            return res
+          })
+          .then(res => {
             this.props.dispatch(
               Actions.authed({
                 alias: aliasToUse,

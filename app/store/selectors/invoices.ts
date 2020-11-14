@@ -14,7 +14,7 @@ interface HasPayReq {
 
 const getInvoicesAdded = (state: State) => state.invoicesAdded
 const getInvoicesListed = (state: State) => state.invoicesListed
-const getInvoicesDecoded = (state: State) => state.decodedInvoices
+export const getInvoicesDecoded = (state: State) => state.decodedInvoices
 const getPayReq = (_: State, props: HasPayReq) => props.payReq
 
 export const makeGetInvoice = () =>

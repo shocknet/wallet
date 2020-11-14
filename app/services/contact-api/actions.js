@@ -7,7 +7,7 @@ import { Schema } from 'shock-common'
 import Http from 'axios'
 import { ToastAndroid } from 'react-native'
 
-import * as Events from './events'
+import { calculateFeeLimit } from '../wallet'
 
 /**
  * @param {string} requestID
@@ -136,14 +136,8 @@ export const sendReqWithInitialMsg = async (recipientPublicKey, initialMsg) => {
  */
 export const sendPayment = async (recipientPub, amount, memo, fees) => {
   const { absoluteFee, relativeFee } = fees
-  const relFeeN = Number(relativeFee)
-  const absFeeN = Number(absoluteFee)
-  if (!relFeeN || !absFeeN) {
-    throw new Error('invalid fees provided')
-  }
   const amountN = Number(amount)
-  const calculatedFeeLimit = Math.floor(amountN * relFeeN + absFeeN)
-  const feeLimit = calculatedFeeLimit > amountN ? amountN : calculatedFeeLimit
+  const feeLimit = calculateFeeLimit(amountN, absoluteFee, relativeFee)
 
   const sessionUuid = Date.now().toString()
   const endpoint = `/api/gun/sendpayment`
@@ -171,26 +165,9 @@ export const sendPayment = async (recipientPub, amount, memo, fees) => {
  */
 export const disconnect = async pub => {
   try {
-    const chatIdx = Events.currentChats.findIndex(
-      c => c.recipientPublicKey === pub,
-    )
-
-    /** @type {Schema.Chat[]} */
-    let deletedChat = []
-
-    // it's fine if it doesn't exist in our cache
-    if (chatIdx !== -1) {
-      const currChats = Events.getCurrChats()
-      deletedChat = currChats.splice(chatIdx, 1)
-      Events.setChats(currChats)
-    }
-
     const res = await Http.delete(`api/gun/chats/${pub}`)
 
     if (res.status !== 200) {
-      if (deletedChat.length) {
-        Events.setChats([...Events.getCurrChats(), deletedChat[0]])
-      }
       throw new Error(res.data.errorMessage || 'Unknown Error')
     }
   } catch (e) {

@@ -5,7 +5,8 @@ import * as Common from 'shock-common'
 import * as Actions from '../actions'
 import * as Services from '../../services'
 import * as Selectors from '../selectors'
-import { getStore } from '../store'
+
+import { getStore } from './common'
 
 let USDRateTimeoutID: ReturnType<typeof setTimeout> | null = null
 const USD_RATE_INTERVAL_TIME = 15000
@@ -38,7 +39,7 @@ const USDRateFetcher = () => {
 function* USDRateWatcher() {
   try {
     const state = Selectors.getStateRoot(yield select())
-    const isReady = Selectors.isOnline(state) && Selectors.isAuth(state)
+    const isReady = Selectors.isReady(state)
 
     if (isReady && !USDRateTimeoutID) {
       USDRateTimeoutID = setTimeout(USDRateFetcher, USD_RATE_INTERVAL_TIME)
@@ -83,7 +84,7 @@ const balanceFetcher = () => {
 function* balanceWatcher() {
   try {
     const state = Selectors.getStateRoot(yield select())
-    const isReady = Selectors.isOnline(state) && Selectors.isAuth(state)
+    const isReady = Selectors.isReady(state)
 
     if (isReady && !balanceTimeoutID) {
       balanceTimeoutID = setTimeout(balanceFetcher, BALANCE_INTERVAL_TIME)

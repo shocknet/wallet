@@ -59,6 +59,11 @@ import com.squareup.okhttp.RequestBody;
 import com.squareup.okhttp.Callback;
 import com.squareup.okhttp.Call;
 import com.squareup.okhttp.Response;
+import android.app.ActivityManager;
+import android.app.ActivityManager.RunningAppProcessInfo;
+import java.util.List;
+import android.widget.Toast;
+
 public class NotificationService extends Service {
     private enum ReqTypeEnum {
         ExchangeKeys
@@ -111,7 +116,7 @@ public class NotificationService extends Service {
                 } else {
                     finalVal = res.getString("amount")+" sats";
                 }
-                doNotification("Transaction confirmed! "+finalVal,"",R.drawable.icon,"");
+                doNotification("Transaction confirmed! "+finalVal,"",R.drawable.icon_notification,"");
             }catch (Exception e){
                 Log.d(TAG,"Tx err"+e.toString());
             }
@@ -130,7 +135,7 @@ public class NotificationService extends Service {
                     return;
                 }
                 
-                doNotification("Payment Received! "+res.getString("value")+" sats","",R.drawable.icon,"");
+                doNotification("Payment Received! "+res.getString("value")+" sats","",R.drawable.icon_notification,"");
             }catch (Exception e){
                 Log.d(TAG,"Inv err"+e.toString());
             }
@@ -267,6 +272,16 @@ public class NotificationService extends Service {
         }
     };
     private void doNotification(String title,String result,int bigIcon, String icon64){
+        if(isApplicationInForeground()){
+            this.handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    // Do your stuff here related to UI, e.g. show toast
+                    Toast.makeText(getApplicationContext(), title, Toast.LENGTH_SHORT).show();
+                }
+            }); 
+            return;
+        }
         /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             int importance = NotificationManager.IMPORTANCE_DEFAULT;
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "Shock_notify", importance);
@@ -372,9 +387,9 @@ public class NotificationService extends Service {
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
         NotificationCompat.Builder notification = new NotificationCompat.Builder(this, DEFAULT_CHANNEL_ID)
-                .setSmallIcon(R.drawable.icon)
+                .setSmallIcon(R.drawable.icon_notification)
                 .setLargeIcon(BitmapFactory.decodeResource(this.getResources(),
-                        R.drawable.icon))
+                        R.drawable.icon_notification))
                 .setContentTitle("Notification service loading")
                 .setContentText("Connecting...")
                 //.setSmallIcon(R.drawable.icon)
@@ -383,9 +398,9 @@ public class NotificationService extends Service {
                 .setGroup(GROUP_KEY_NOTIF)
                 .setGroupSummary(true);
         NotificationCompat.Builder silentNotification = new NotificationCompat.Builder(this, LOW_CHANNEL_ID)
-                .setSmallIcon(R.drawable.icon)
+                .setSmallIcon(R.drawable.icon_notification)
                 .setLargeIcon(BitmapFactory.decodeResource(this.getResources(),
-                        R.drawable.icon))
+                        R.drawable.icon_notification))
                 .setContentTitle("Notification service loading")
                 .setContentText("Connecting...")
                 //.setSmallIcon(R.drawable.icon)
@@ -501,6 +516,22 @@ public class NotificationService extends Service {
             }
         });
     }
+    private boolean isApplicationInForeground() {
+    ActivityManager activityManager = (ActivityManager) this.getSystemService(ACTIVITY_SERVICE);
+    List<RunningAppProcessInfo> processInfos = activityManager.getRunningAppProcesses();
+    if (processInfos != null) {
+        for (RunningAppProcessInfo processInfo : processInfos) {
+            if (processInfo.processName.equals(getApplication().getPackageName())) {
+                if (processInfo.importance == RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
+                    for (String d : processInfo.pkgList) {
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+    return false;
+}
     private void createDeviceId(){
         byte[] p1 = new byte[4];
         byte[] p2 = new byte[2];

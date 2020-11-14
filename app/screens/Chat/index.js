@@ -2,8 +2,9 @@ import React from 'react'
 import { ToastAndroid, StyleSheet, StatusBar } from 'react-native'
 import Ion from 'react-native-vector-icons/Ionicons'
 import Logger from 'react-native-file-log'
-import { Schema } from 'shock-common'
+import { Schema, Constants } from 'shock-common'
 import produce from 'immer'
+import { connect } from 'react-redux'
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}, Params>} Navigation
  */
@@ -13,7 +14,7 @@ import * as Wallet from '../../services/wallet'
 import * as Cache from '../../services/cache'
 import * as CSS from '../../res/css'
 const { Colors } = CSS
-import { SEND_SCREEN } from '../Send'
+import { SEND_SCREEN } from '../../routes'
 import PaymentDialog from '../../components/PaymentDialog'
 import { rifle, get } from '../../services'
 import * as Store from '../../store'
@@ -28,8 +29,6 @@ import ChatView from './View'
  * @typedef {import('./View').SpontPaymentInTransit} SpontPaymentInTransit
  * @typedef {import('./View').InvoiceInTransit & { msgID: string|null }} InvoiceInTransit
  */
-
-export const CHAT_ROUTE = 'CHAT_ROUTE'
 
 const styles = StyleSheet.create({
   backArrow: { marginLeft: 24 },
@@ -59,23 +58,30 @@ const HeaderLeft = React.memo(({ onPress }) => ((
  */
 
 /**
- * @typedef {object} Props
+ * @typedef {object} StateProps
+ * @prop {Schema.Chat[]} chats
+ * @prop {Record<string, Schema.User>} users
+ * @prop {Partial<Record<string, Schema.InvoiceWhenDecoded>>} rawInvoiceToDecodedInvoice
+ */
+
+/**
+ * @typedef {object} DispatchProps
+ * @prop {() => void} tokenDidInvalidate
+ */
+
+/**
+ * @typedef {object} OwnProps
  * @prop {Navigation} navigation
  */
 
 /**
- * Both outgoing and incoming invoices.
- * @typedef {object} DecodedInvoice
- * @prop {number} amount
- * @prop {number} expiryDate UNIX time.
+ * @typedef {StateProps & DispatchProps & OwnProps} Props
  */
 
 /**
  * @typedef {object} State
- * @prop {Schema.Chat[]} chats
  * @prop {string|null} ownPublicKey
  * @prop {Partial<Record<string, PaymentStatus>>} rawInvoiceToPaymentStatus
- * @prop {Partial<Record<string, DecodedInvoice>>} rawInvoiceToDecodedInvoice
  * @prop {Schema.ChatMessage[]} cachedSentMessages Messages that were *just*
  * sent but might have not appeared on the onChats() event yet.
  * @prop {Record<string, SpontPaymentInTransit>} spontPaymentsInTransit
@@ -83,12 +89,10 @@ const HeaderLeft = React.memo(({ onPress }) => ((
  * @prop {Record<string, { body: string , timestamp: number }>} socketMessages
  */
 
-// TODO: COMPONENT HERE IS A TEMP FIX
-
 /**
  * @augments React.PureComponent<Props, State>
  */
-export default class Chat extends React.PureComponent {
+class Chat extends React.PureComponent {
   /**
    * @param {import('react-navigation-stack').NavigationStackScreenProps} args
    * @returns {import('react-navigation-stack').NavigationStackOptions}
@@ -127,8 +131,6 @@ export default class Chat extends React.PureComponent {
 
   /** @type {State} */
   state = {
-    chats: API.Events.currentChats,
-    rawInvoiceToDecodedInvoice: {},
     rawInvoiceToPaymentStatus: {},
     ownPublicKey: null,
     cachedSentMessages: [],
@@ -242,7 +244,7 @@ export default class Chat extends React.PureComponent {
    * representation of it.
    */
   updateInvoicesInTransit() {
-    this.setState(({ invoicesInTransit, chats }) => {
+    this.setState(({ invoicesInTransit }, { chats }) => {
       const theChat = chats.find(
         c => c.id === this.props.navigation.getParam('id'),
       )
@@ -275,46 +277,6 @@ export default class Chat extends React.PureComponent {
     current && current.open()
   }
 
-  decodeIncomingInvoices() {
-    const rawIncomingInvoices = this.getMessages()
-      .filter(m => !m.outgoing)
-      .filter(m => m.body.indexOf('$$__SHOCKWALLET__INVOICE__') === 0)
-      .map(m => m.body.slice('$$__SHOCKWALLET__INVOICE__'.length))
-
-    const notDecoded = rawIncomingInvoices.filter(
-      i => !this.state.rawInvoiceToDecodedInvoice[i],
-    )
-
-    notDecoded.forEach(rawInvoice => {
-      Wallet.decodeInvoice({
-        payReq: rawInvoice,
-      })
-        .then(res => {
-          const decodedInvoice = res.decodedRequest
-
-          if (!this.mounted) {
-            return
-          }
-
-          this.setState(({ rawInvoiceToDecodedInvoice }) => ({
-            rawInvoiceToDecodedInvoice: {
-              ...rawInvoiceToDecodedInvoice,
-              [rawInvoice]: {
-                amount: Number(decodedInvoice.num_satoshis),
-                expiryDate:
-                  Number(decodedInvoice.timestamp) +
-                  Number(decodedInvoice.expiry) * 1000,
-              },
-            },
-          }))
-        })
-        .catch(err => {
-          ToastAndroid.show(err.message, 800)
-          Logger.log(err.message)
-        })
-    })
-  }
-
   async fetchOutgoingInvoicesAndUpdateInfo() {
     const { content: invoices } = await Wallet.listInvoices({
       itemsPerPage: 1000,
@@ -326,10 +288,7 @@ export default class Chat extends React.PureComponent {
     }
 
     this.setState(
-      ({
-        rawInvoiceToDecodedInvoice: oldRawInvoiceToDecodedInvoice,
-        rawInvoiceToPaymentStatus: oldRawInvoiceToPaymentStatus,
-      }) => {
+      ({ rawInvoiceToPaymentStatus: oldRawInvoiceToPaymentStatus }) => {
         const rawOutgoingInvoices = this.getMessages()
           .filter(m => m.outgoing)
           .filter(m => m.body.indexOf('$$__SHOCKWALLET__INVOICE__') === 0)
@@ -348,22 +307,7 @@ export default class Chat extends React.PureComponent {
             : 'UNPAID'
         })
 
-        /** @type {State['rawInvoiceToDecodedInvoice']} */
-        const rawInvoiceToDecodedInvoice = {}
-
-        outgoingInvoices.forEach(invoice => {
-          rawInvoiceToDecodedInvoice[invoice.payment_request] = {
-            amount: Number(invoice.value),
-            expiryDate:
-              Number(invoice.creation_date) + Number(invoice.expiry) * 1000,
-          }
-        })
-
         return {
-          rawInvoiceToDecodedInvoice: {
-            ...oldRawInvoiceToDecodedInvoice,
-            ...rawInvoiceToDecodedInvoice,
-          },
           rawInvoiceToPaymentStatus: {
             ...oldRawInvoiceToPaymentStatus,
             ...rawInvoiceToPaymentStatus,
@@ -451,10 +395,9 @@ export default class Chat extends React.PureComponent {
   }
 
   /**
-   * @param {never} _
-   * @param {State} prevState
+   * @param {Props} prevProps
    */
-  componentDidUpdate(_, prevState) {
+  componentDidUpdate(prevProps) {
     const { navigation } = this.props
     const recipientDisplayName = this.getRecipientDisplayName()
     const theChat = this.getChat()
@@ -470,8 +413,8 @@ export default class Chat extends React.PureComponent {
       })
     }
 
-    if (prevState.chats !== this.state.chats) {
-      this.decodeIncomingInvoices()
+    if (prevProps.chats !== this.props.chats) {
+      this.onChats(this.props.chats)
     }
   }
 
@@ -519,6 +462,8 @@ export default class Chat extends React.PureComponent {
       return
     }
 
+    // wont handle NOT_AUTH here, this socket is just a temp HACK anyways.
+
     this.otherMsgsSocket = rifle(
       `${recipientPublicKey}::outgoings>${incomingID}>messages::map.on`,
       recipientPublicKey,
@@ -548,6 +493,12 @@ export default class Chat extends React.PureComponent {
         }
       },
     )
+
+    this.otherMsgsSocket.on(Constants.ErrorCode.NOT_AUTH, () => {
+      this.props.tokenDidInvalidate()
+      this.otherMsgsSocket && this.otherMsgsSocket.off('*')
+      this.otherMsgsSocket && this.otherMsgsSocket.close()
+    })
   }
 
   async componentDidMount() {
@@ -565,10 +516,8 @@ export default class Chat extends React.PureComponent {
     this.willBlur = navigation.addListener('willBlur', () => {
       this.isFocused = false
     })
-    this.chatsUnsub = API.Events.onChats(this.onChats)
 
     this.updateLastReadMsg()
-    this.decodeIncomingInvoices()
     this.fetchOutgoingInvoicesAndUpdateInfo()
     this.fetchPaymentsAndUpdatePaymentStatus()
     this.updateSpontPaymentsInTransit()
@@ -592,7 +541,6 @@ export default class Chat extends React.PureComponent {
 
   componentWillUnmount() {
     this.mounted = false
-    this.chatsUnsub()
     this.didFocus.remove()
     this.willBlur.remove()
     if (this.otherMsgsSocket) {
@@ -601,8 +549,6 @@ export default class Chat extends React.PureComponent {
       this.otherMsgsSocket = null
     }
   }
-
-  chatsUnsub = () => {}
 
   /**
    * @private
@@ -619,12 +565,10 @@ export default class Chat extends React.PureComponent {
 
     this.setState(
       {
-        chats,
         cachedSentMessages: [],
       },
       () => {
         this.updateLastReadMsg()
-        this.decodeIncomingInvoices()
         this.fetchOutgoingInvoicesAndUpdateInfo()
         this.fetchPaymentsAndUpdatePaymentStatus()
         this.updateSpontPaymentsInTransit()
@@ -636,7 +580,7 @@ export default class Chat extends React.PureComponent {
   /** @returns {Schema.Chat|null} */
   getChat() {
     const id = this.props.navigation.getParam('id')
-    const theChat = this.state.chats.find(c => c.id === id)
+    const theChat = this.props.chats.find(c => c.id === id)
 
     if (!theChat) {
       Logger.log(`<Chat />.index -> getChat() -> no chat found. id: ${id}`)
@@ -685,12 +629,13 @@ export default class Chat extends React.PureComponent {
   /** @returns {string|null} */
   getRecipientDisplayName() {
     const theChat = this.getChat()
+    const { users } = this.props
 
     if (!theChat) {
       return null
     }
 
-    return theChat.recipientDisplayName
+    return users[theChat.recipientPublicKey].displayName
   }
 
   /** @returns {boolean} */
@@ -830,11 +775,8 @@ export default class Chat extends React.PureComponent {
   }
 
   render() {
-    const {
-      ownPublicKey,
-      rawInvoiceToDecodedInvoice,
-      rawInvoiceToPaymentStatus,
-    } = this.state
+    const { rawInvoiceToDecodedInvoice } = this.props
+    const { ownPublicKey, rawInvoiceToPaymentStatus } = this.state
     const recipientDisplayName = this.getRecipientDisplayName()
 
     const messages = this.getMessages()
@@ -860,7 +802,9 @@ export default class Chat extends React.PureComponent {
           break
         }
 
-        o[msg.id] = /** @type {DecodedInvoice} */ (decoded).amount
+        o[msg.id] = Number(
+          /** @type {Schema.InvoiceWhenDecoded} */ (decoded).num_satoshis,
+        )
       }
 
       return o
@@ -879,7 +823,9 @@ export default class Chat extends React.PureComponent {
           break
         }
 
-        o[msg.id] = /** @type {DecodedInvoice} */ (decoded).expiryDate
+        o[msg.id] = Number(
+          /** @type {Schema.InvoiceWhenDecoded} */ (decoded).expiry || 0,
+        )
       }
 
       return o
@@ -943,3 +889,17 @@ export default class Chat extends React.PureComponent {
     )
   }
 }
+
+/**
+ * @param {Store.State} state
+ * @returns {StateProps}
+ */
+const mapState = state => ({
+  chats: Store.selectAllChats(state),
+  users: Store.getUsers(state),
+  rawInvoiceToDecodedInvoice: Store.getInvoicesDecoded(state),
+})
+
+const ConnectedChat = connect(mapState)(Chat)
+
+export default ConnectedChat

@@ -2,7 +2,7 @@
  * @prettier
  */
 import React from 'react'
-import { Text, View, Linking } from 'react-native'
+import { Text, View, Linking, ActivityIndicator } from 'react-native'
 import { connect } from 'react-redux'
 import Logger from 'react-native-file-log'
 import InAppBrowser from 'react-native-inappbrowser-reborn'
@@ -29,7 +29,6 @@ import { throttledExchangeKeyPair } from '../store/actions/ConnectionActions'
 // @ts-expect-error
 const shockBG = require('../assets/images/shock-bg.png')
 
-export const CONNECT_TO_NODE = 'CONNECT_TO_NODE'
 const HOSTING_SERVER = 'pool.shock.network'
 
 /**
@@ -59,6 +58,7 @@ const HOSTING_SERVER = 'pool.shock.network'
  * @prop {boolean} scanningQR
  * @prop {boolean} isUsingInvitation
  * @prop {string} invitationCode
+ * @prop {boolean} loading
  */
 
 /** @type {State} */
@@ -71,6 +71,7 @@ const DEFAULT_STATE = {
   scanningQR: false,
   isUsingInvitation: false,
   invitationCode: '',
+  loading: false,
 }
 
 /**
@@ -151,6 +152,7 @@ class ConnectToNode extends React.PureComponent {
   onPressConnectViaInvite = async () => {
     const { invitationCode, externalURL } = this.state
     try {
+      this.setState({ loading: true })
       Logger.log('requesting with', invitationCode)
       const resp = await fetch(`https://${HOSTING_SERVER}/mainnet`, {
         headers: {
@@ -163,6 +165,7 @@ class ConnectToNode extends React.PureComponent {
         this.setState({ nodeURL: (await resp.json()).data.address })
     } catch (error) {
       Logger.log(error)
+      this.setState({ loading: false })
     }
 
     setTimeout(() => {
@@ -175,12 +178,14 @@ class ConnectToNode extends React.PureComponent {
             try {
               Logger.log('received response', this.state.nodeURL)
               await this.connectURL(this.state.nodeURL)
+              this.setState({ loading: false })
             } catch (err) {
               try {
                 Logger.log(
                   'CONNECTURL FAILED, TRYING ONCE MORE TIME, ERR: ' +
                     err.message,
                 )
+                this.setState({ loading: false })
                 await this.connectURL(externalURL)
               } catch (err) {
                 this.mounted &&
@@ -318,6 +323,23 @@ class ConnectToNode extends React.PureComponent {
       }))
   }
 
+  /**
+   *
+   * @param {boolean} wasBadPing
+   * @param {string|null} err
+   */
+
+  renderInviteButton = (wasBadPing, err) => {
+    return this.state.loading ? (
+      <ActivityIndicator />
+    ) : (
+      <OnboardingBtn
+        onPress={this.onPressConnectViaInvite}
+        title={wasBadPing || err ? 'Continue' : 'Create and Connect'}
+      />
+    )
+  }
+
   render() {
     const {
       checkingCacheForNodeURL,
@@ -376,10 +398,7 @@ class ConnectToNode extends React.PureComponent {
         {!(wasBadPing || !!err) && (
           <>
             {isUsingInvitation ? (
-              <OnboardingBtn
-                onPress={this.onPressConnectViaInvite}
-                title={wasBadPing || err ? 'Continue' : 'Create and Connect'}
-              />
+              this.renderInviteButton(wasBadPing, err)
             ) : (
               <OnboardingBtn
                 disabled={!isValidIP(nodeURL) || pinging}

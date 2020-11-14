@@ -20,6 +20,10 @@ import invoicesAdded from './invoices-added'
 import chainTXs from './chain-txs'
 import posts from './posts'
 import debug from './debug'
+import chats from './chats'
+import sentReqs from './sent-reqs'
+import receivedReqs from './received-reqs'
+import messages from './messages'
 
 const rootReducer = {
   auth,
@@ -42,6 +46,10 @@ const rootReducer = {
   invoicesAdded,
   chainTXs,
   debug,
+  chats,
+  sentReqs,
+  receivedReqs,
+  messages,
 }
 
 for (const [key, reducer] of Object.entries(rootReducer)) {

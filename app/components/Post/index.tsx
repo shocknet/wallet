@@ -7,11 +7,12 @@ import {
   TouchableWithoutFeedback,
   ToastAndroid,
 } from 'react-native'
-import { Schema } from 'shock-common'
+import { Schema, Constants } from 'shock-common'
 import { connect } from 'react-redux'
 import pickBy from 'lodash/pickBy'
 import Carousel from 'react-native-snap-carousel'
 import size from 'lodash/size'
+import Logger from 'react-native-file-log'
 
 import * as Store from '../../store'
 import * as CSS from '../../res/css'
@@ -38,12 +39,14 @@ interface StateProps {
   tipCounter: number
   showMenuBtn: boolean
   isPinned: boolean
+  host: string
 }
 
 interface DispatchProps {
   pin(): void
   remove(): void
   unpin(): void
+  tokenDidInvalidate(): void
 }
 
 interface State {
@@ -66,12 +69,23 @@ class Post extends React.PureComponent<Props, State> {
   postSocket: null | ReturnType<typeof Services.rifle> = null
 
   componentDidMount = () => {
-    const { authorPublicKey, id } = this.props
+    const { authorPublicKey, id, host } = this.props
     // TODO: hack, force gun to ask for this data
     // The data itself will be processed in saga
     this.postSocket = Services.rifle(
-      `${authorPublicKey}::posts>${id}>contentItems`,
+      host,
+      `${authorPublicKey}::posts>${id}>contentItems::map.on`,
     )
+
+    this.postSocket.on(Constants.ErrorCode.NOT_AUTH, () => {
+      this.props.tokenDidInvalidate()
+      this.postSocket && this.postSocket.off('*')
+      this.postSocket && this.postSocket.close()
+    })
+
+    this.postSocket.on('$error', (e: string) => {
+      Logger.log(`Error inside post contentItems socket: ${e}`)
+    })
   }
 
   componentWillUnmount = () => {
@@ -346,6 +360,7 @@ const mapState = () => {
   return (state: Store.State, ownProps: OwnProps): StateProps => {
     const post = Store.getPost(state, ownProps.id)
     const myPublicKey = Store.getMyPublicKey(state)
+    const host = Store.selectHost(state)
 
     if (!post) {
       return {
@@ -354,6 +369,7 @@ const mapState = () => {
         tipCounter: 0,
         showMenuBtn: false,
         isPinned: false,
+        host,
       }
     }
 
@@ -365,6 +381,7 @@ const mapState = () => {
       showMenuBtn: myPublicKey === post.author,
       isPinned: post.id === user.pinnedPost,
       tipCounter: post.tipCounter,
+      host,
     }
   }
 }
@@ -381,6 +398,9 @@ const mapDispatch = (
   },
   remove() {
     dispatch(Store.requestedPostRemoval(id))
+  },
+  tokenDidInvalidate() {
+    dispatch(Store.tokenDidInvalidate())
   },
 })
 

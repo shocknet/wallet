@@ -7,7 +7,8 @@ import pickBy from 'lodash/pickBy'
 import * as Actions from '../actions'
 import * as Selectors from '../selectors'
 import { rifle, get as httpGet, post as httpPost } from '../../services'
-import { getStore } from '../store'
+
+import { getStore } from './common'
 
 /**
  * Maps public key to posts socket.
@@ -17,11 +18,12 @@ const sockets: Record<string, ReturnType<typeof SocketIO>> = {}
 function* posts() {
   try {
     const state = Selectors.getStateRoot(yield select())
-    const isReady = Selectors.isOnline(state) && Selectors.isAuth(state)
+    const isReady = Selectors.isReady(state)
     const allPublicKeys = Selectors.getAllPublicKeys(state)
+    const host = Selectors.selectHost(state)
 
     if (isReady) {
-      assignSocketToPublicKeys(allPublicKeys)
+      assignSocketToPublicKeys(allPublicKeys, host)
     }
 
     if (!isReady) {
@@ -37,13 +39,17 @@ function* posts() {
   }
 }
 
-const assignSocketToPublicKeys = (publicKeys: string[]) => {
+const assignSocketToPublicKeys = (publicKeys: string[], host: string) => {
   for (const publicKey of publicKeys) {
     if (sockets[publicKey]) {
       continue
     }
+
     // TODO: send existing posts to RPC so it doesn't send repeat data.
-    sockets[publicKey] = rifle(`${publicKey}::posts::on`)
+    sockets[publicKey] = rifle(host, `${publicKey}::posts::on`)
+
+    // Will not handle NOT_AUTH event here, enough sockets probably handle that
+    // already and this is a multi socket saga will probably make app eat paint.
 
     sockets[publicKey].on('$shock', (data: unknown) => {
       try {
@@ -91,12 +97,6 @@ const assignSocketToPublicKeys = (publicKeys: string[]) => {
               ({
                 data: { contentItems, date, status, tags, title, tipCounter },
               }) => {
-                console.log(
-                  `typeof tipCounter: ${typeof tipCounter}  ---   ${tipCounter}`,
-                  `id: ${postKey} from author: ${
-                    getStore().getState().users[publicKey].displayName
-                  }`,
-                )
                 getStore().dispatch(
                   Actions.receivedRawPost(
                     {

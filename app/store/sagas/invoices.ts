@@ -1,6 +1,6 @@
 import { takeEvery, call, put, select } from 'redux-saga/effects'
 import Logger from 'react-native-file-log'
-import { Schema } from 'shock-common'
+import { Schema, Constants } from 'shock-common'
 import { default as SocketIO } from 'socket.io-client'
 
 import * as Actions from '../actions'
@@ -11,17 +11,19 @@ import {
   rod,
 } from '../../services'
 import * as Selectors from '../selectors'
-import { getStore } from '../store'
+
+import { getStore } from './common'
 
 let socket: ReturnType<typeof SocketIO> | null = null
 
 function* invoicesSocket() {
   try {
     const state = Selectors.getStateRoot(yield select())
-    const isReady = Selectors.isOnline(state) && Selectors.isAuth(state)
+    const isReady = Selectors.isReady(state)
+    const host = Selectors.selectHost(state)
 
     if (isReady && !socket) {
-      socket = rod('lightning', 'subscribeInvoices', {})
+      socket = rod(host, 'lightning', 'subscribeInvoices', {})
 
       socket.on('data', (invoice: unknown) => {
         if (!Schema.isInvoiceWhenListed(invoice)) {
@@ -39,6 +41,12 @@ function* invoicesSocket() {
         if (state.auth.token) {
           store.dispatch(Actions.receivedSingleInvoice(invoice))
         }
+      })
+
+      socket.on(Constants.ErrorCode.NOT_AUTH, () => {
+        getStore().dispatch(Actions.tokenDidInvalidate())
+        socket && socket.off('*')
+        socket && socket.close()
       })
 
       socket.on('$error', (err: unknown) => {
@@ -65,6 +73,17 @@ function* fetchLatestInvoices(action: Actions.Action) {
       // unauthenticated is equivalent to disconnected from the server (no
       // interactions whatsoever).
       oldIsOnline = false
+      return
+    }
+
+    if (action.type === 'messages/load') {
+      const { data } = action
+      const bodies = Object.values(data).map(m => m.body)
+      const invoices = bodies
+        .filter(b => b.startsWith('$$__SHOCKWALLET__INVOICE__'))
+        .map(b => b.slice('$$__SHOCKWALLET__INVOICE__'.length))
+
+      yield put(Actions.invoicesBatchDecodeReq(invoices))
       return
     }
 

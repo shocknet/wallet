@@ -2,10 +2,9 @@ import Http from 'axios'
 import Logger from 'react-native-file-log'
 import { Schema } from 'shock-common'
 import { ToastAndroid } from 'react-native'
+import isFinite from 'lodash/isFinite'
 
-import { getStore } from '../../store'
 import { post } from '../http'
-import * as Store from '../../store'
 
 // TODO: Move to common repo
 interface ErrResponse {
@@ -84,14 +83,6 @@ export const decodeInvoice = async ({
   }
 
   try {
-    const { decodedInvoices } = getStore().getState()
-    const maybeDecoded = decodedInvoices[payReq]
-    if (maybeDecoded) {
-      return Promise.resolve({
-        decodedRequest: maybeDecoded,
-      })
-    }
-
     // a request is already in process
     if (inProcessToAwaiters.has(payReq)) {
       const awaiter = {
@@ -121,14 +112,6 @@ export const decodeInvoice = async ({
       Logger.log(msg)
       throw new Error(`API returned malformed data.`)
     }
-
-    getStore().dispatch({
-      type: 'invoice/load',
-      data: {
-        ...data.decodedRequest,
-        payment_request: payReq,
-      },
-    })
 
     if (inProcessToAwaiters.has(payReq)) {
       const awaiters = inProcessToAwaiters.get(payReq)!
@@ -178,23 +161,36 @@ export const batchDecodePayReqs = async (
   return res.map(r => r.decodedRequest)
 }
 
+export const calculateFeeLimit = (
+  amt: number,
+  absoluteFee: string,
+  relativeFee: string,
+): number => {
+  const relFeeN = Number(relativeFee)
+  const absFeeN = Number(absoluteFee)
+  if (!isFinite(relFeeN) || !isFinite(absFeeN)) {
+    throw new Error('invalid fees provided')
+  }
+  if (amt <= 0) {
+    throw new Error('invalid amt provided (0 or less)')
+  }
+  if (!isFinite(amt)) {
+    throw new Error('invalid amt provided')
+  }
+  const calculatedFeeLimit = Math.floor(amt * relFeeN + absFeeN)
+  const feeLimit = calculatedFeeLimit > amt ? amt : calculatedFeeLimit
+
+  return feeLimit
+}
+
 export const tipPost = async (
   to: string,
   postID: string,
   amt: number,
+  absoluteFee: string,
+  relativeFee: string,
 ): Promise<void> => {
-  const {
-    fees: { absoluteFee, relativeFee },
-  } = Store.getStore().getState()
-
-  const relFeeN = Number(relativeFee)
-  const absFeeN = Number(absoluteFee)
-  if (!relFeeN || !absFeeN) {
-    throw new Error('invalid fees provided')
-  }
-  const amountN = amt
-  const calculatedFeeLimit = Math.floor(amountN * relFeeN + absFeeN)
-  const feeLimit = calculatedFeeLimit > amountN ? amountN : calculatedFeeLimit
+  const feeLimit = calculateFeeLimit(amt, absoluteFee, relativeFee)
 
   await post('api/lnd/unifiedTrx', {
     type: 'post',

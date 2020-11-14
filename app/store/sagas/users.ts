@@ -7,18 +7,20 @@ import size from 'lodash/size'
 import * as Actions from '../actions'
 import * as Selectors from '../selectors'
 import { rifle } from '../../services'
-import { getStore } from '../store'
+
+import { getStore } from './common'
 
 const sockets: Record<string, ReturnType<typeof SocketIO>> = {}
 
 function* users() {
   try {
     const state = Selectors.getStateRoot(yield select())
-    const isReady = Selectors.isOnline(state) && Selectors.isAuth(state)
+    const isReady = Selectors.isReady(state)
     const allPublicKeys = Selectors.getAllPublicKeys(state)
+    const host = Selectors.selectHost(state)
 
     if (isReady) {
-      assignSocketsToPublicKeysIfNeeded(allPublicKeys)
+      assignSocketsToPublicKeysIfNeeded(allPublicKeys, host)
     }
 
     if (!isReady && size(sockets)) {
@@ -46,7 +48,10 @@ function* users() {
   }
 }
 
-const assignSocketsToPublicKeysIfNeeded = (publicKeys: string[]) => {
+const assignSocketsToPublicKeysIfNeeded = (
+  publicKeys: string[],
+  host: string,
+) => {
   for (const publicKey of publicKeys) {
     const normalSocketName = 'normal' + publicKey
     const binarySocketName = 'binary' + publicKey
@@ -63,7 +68,7 @@ const assignSocketsToPublicKeysIfNeeded = (publicKeys: string[]) => {
       )
     }
 
-    sockets[normalSocketName] = rifle(`${publicKey}::Profile::on`)
+    sockets[normalSocketName] = rifle(host, `${publicKey}::Profile::on`)
 
     sockets[normalSocketName].on('$shock', (data: any) => {
       try {
@@ -83,6 +88,9 @@ const assignSocketsToPublicKeysIfNeeded = (publicKeys: string[]) => {
       }
     })
 
+    // Will not handle NOT_AUTH event here, enough sockets probably handle that
+    // already and this is a multi socket saga will probably make app eat paint.
+
     sockets[normalSocketName].on('$error', (err: unknown) => {
       if (err === Constants.ErrorCode.NOT_AUTH) {
         getStore().dispatch(Actions.tokenDidInvalidate())
@@ -92,7 +100,10 @@ const assignSocketsToPublicKeysIfNeeded = (publicKeys: string[]) => {
       Logger.log(err)
     })
 
-    sockets[binarySocketName] = rifle(`${publicKey}::profileBinary::map.on`)
+    sockets[binarySocketName] = rifle(
+      host,
+      `${publicKey}::profileBinary::map.on`,
+    )
 
     sockets[binarySocketName].on('$shock', (data: any, key: string) => {
       try {
