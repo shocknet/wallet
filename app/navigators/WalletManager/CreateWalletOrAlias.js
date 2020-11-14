@@ -10,7 +10,6 @@ import {
 import Entypo from 'react-native-vector-icons/Entypo'
 import { connect } from 'react-redux'
 import Logger from 'react-native-file-log'
-//import Http from 'axios'
 
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation
