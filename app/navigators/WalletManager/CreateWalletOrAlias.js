@@ -10,6 +10,7 @@ import {
 import Entypo from 'react-native-vector-icons/Entypo'
 import { connect } from 'react-redux'
 import Logger from 'react-native-file-log'
+//import Http from 'axios'
 
 /**
  * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation
@@ -31,7 +32,8 @@ import OnboardingInput from '../../components/OnboardingInput'
 import OnboardingBtn from '../../components/OnboardingBtn'
 import FlexCenter from '../../components/FlexCenter'
 import * as Store from '../../store'
-
+import { DEFAULT_FOLLOWS } from '../../config'
+import { post } from '../../services/http'
 export const CREATE_WALLET_OR_ALIAS = 'CREATE_WALLET_OR_ALIAS'
 
 /**
@@ -248,9 +250,26 @@ class CreateWalletOrAlias extends React.PureComponent {
         this.setState({
           creatingAlias: false,
         })
+        if (DEFAULT_FOLLOWS.length === 0) {
+          this.props.navigation.goBack()
+          return
+        }
+        /** @type {Record<string,import('shock-common').Schema.Follow>} */
+        const defaultFollows = {}
+        DEFAULT_FOLLOWS.forEach(follow => {
+          defaultFollows[follow] = {
+            private: false,
+            status: 'ok',
+            user: follow,
+          }
+        })
 
-        this.props.navigation.goBack()
+        return post(`api/gun/put`, {
+          path: '$user>follows',
+          value: defaultFollows,
+        })
       })
+      .then(() => this.props.navigation.goBack())
       .catch(err => {
         this.setState({
           creatingAlias: false,
