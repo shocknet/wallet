@@ -170,7 +170,13 @@ class LNURL extends React.PureComponent {
     try {
       const alreadyPeer = this.props.history.peers.find(samePeer)
       if (!alreadyPeer) {
-        await addPeer(uri)
+        try {
+          await addPeer(uri)
+        } catch (e) {
+          if (!e.toString().contains('already connected to peer')) {
+            throw new Error(e)
+          }
+        }
       }
       const node = await nodeInfo()
       //Logger.log(node)
