@@ -65,3 +65,5 @@ export const WALLET = 'WALLET'
 export const LOADING = 'LOADING'
 
 export const AUTH = 'AUTH'
+
+export const MOONPAY_SCREEN = 'MOONPAY_SCREEN'

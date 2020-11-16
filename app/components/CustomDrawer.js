@@ -15,6 +15,7 @@ import {
   WALLET_SETTINGS,
   DEBUG,
   WALLET_OVERVIEW,
+  MOONPAY_SCREEN,
 } from '../routes'
 import Pad from './Pad'
 
@@ -64,6 +65,7 @@ const drawerBottomItems = [
   {
     name: 'Buy Bitcoin',
     iconName: 'solid-help',
+    screen: MOONPAY_SCREEN,
   },
 ]
 

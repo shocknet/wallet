@@ -31,6 +31,7 @@ import LNURL from '../screens/LNURL'
 import * as Routes from '../routes'
 
 import CustomDrawer from '../components/CustomDrawer'
+import MoonPay from '../screens/MoonPay'
 
 const BottomNav = createBottomTabNavigator(
   {
@@ -141,6 +142,12 @@ const drawerScreens = {
     screen: LNURL,
     navigationOptions: {
       title: 'LNURL utils',
+    },
+  },
+  [Routes.MOONPAY_SCREEN]: {
+    screen: MoonPay,
+    navigationOptions: {
+      title: 'Moonpay',
     },
   },
   [Routes.PUBLISH_CONTENT_DARK]: {
