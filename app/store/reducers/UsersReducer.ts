@@ -5,7 +5,7 @@ import Logger from 'react-native-file-log'
 
 import { Action } from '../actions'
 
-type State = Record<string, Schema.User>
+export type State = Record<string, Schema.User>
 
 const INITIAL_STATE = {} as State
 
