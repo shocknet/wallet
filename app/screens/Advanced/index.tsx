@@ -201,13 +201,10 @@ class AdvancedScreen extends React.PureComponent<Props, State> {
         keyboardHeight: 0,
       })
     })
-    this.didPageFocus = this.props.navigation.addListener(
-      'didFocus',
-      () => {
-        this.props.fetchPendingChannels()
-        this.props.fetchChannels()
-      },
-    )
+    this.didPageFocus = this.props.navigation.addListener('didFocus', () => {
+      this.props.fetchPendingChannels()
+      this.props.fetchChannels()
+    })
   }
 
   componentWillUnmount() {
