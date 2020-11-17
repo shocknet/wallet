@@ -3,6 +3,7 @@ import Logger from 'react-native-file-log'
 import SocketIO from 'socket.io-client'
 import { Constants, Schema } from 'shock-common'
 import pickBy from 'lodash/pickBy'
+import size from 'lodash/size'
 
 import * as Actions from '../actions'
 import * as Selectors from '../selectors'
@@ -67,12 +68,10 @@ const assignSocketToPublicKeys = (publicKeys: string[], host: string) => {
           pickBy(data, v => v == null),
         ).filter(k => k !== '_')
 
-        for (const postKey of postsDeleted) {
+        if (size(postsDeleted)) {
           const store = getStore()
-          const { posts } = store.getState()
-          if (!!posts[postKey]) {
-            store.dispatch(Actions.postRemoved(postKey))
-          }
+
+          store.dispatch(Actions.postsRemovedSeveral(postsDeleted))
         }
 
         for (const postKey of postsReceived) {

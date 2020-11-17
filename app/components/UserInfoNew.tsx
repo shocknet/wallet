@@ -14,6 +14,7 @@ import { ConnectedShockAvatar } from './ShockAvatar'
 interface OwnProps {
   postID: string
   onPressMenuIcon?(): void
+  smaller?: boolean
 }
 
 interface StateProps {
@@ -25,18 +26,22 @@ interface StateProps {
 
 interface DispatchProps {}
 
-type Props = OwnProps & StateProps & DispatchProps
+export type Props = OwnProps & StateProps & DispatchProps
 
-const UserInfoNew: React.FC<Props> = ({
+export const UserInfoNew: React.FC<Props> = ({
   authorDisplayName,
   authorPublicKey,
   date,
   onPressMenuIcon,
   showPin,
+  smaller,
 }) => (
   <View style={CSS.styles.rowCenteredSpaceBetween}>
     <View style={styles.userAndDate}>
-      <ConnectedShockAvatar height={56} publicKey={authorPublicKey} />
+      <ConnectedShockAvatar
+        height={smaller ? 32 : 56}
+        publicKey={authorPublicKey}
+      />
 
       <Pad amount={10} insideRow />
 

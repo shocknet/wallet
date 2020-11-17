@@ -24,6 +24,7 @@ import chats from './chats'
 import sentReqs from './sent-reqs'
 import receivedReqs from './received-reqs'
 import messages from './messages'
+import sharedPosts from './shared-posts'
 
 const rootReducer = {
   auth,
@@ -50,6 +51,7 @@ const rootReducer = {
   sentReqs,
   receivedReqs,
   messages,
+  sharedPosts,
 }
 
 for (const [key, reducer] of Object.entries(rootReducer)) {
