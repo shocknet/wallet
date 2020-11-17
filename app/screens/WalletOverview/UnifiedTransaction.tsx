@@ -319,8 +319,25 @@ const makeMapStateToProps = () => {
           }
         }
 
-        // is payment
-        return 'sent'
+        if (isPayment) {
+          if (asPayment.status === 'FAILED') {
+            return 'err'
+          }
+
+          if (asPayment.status === 'IN_FLIGHT') {
+            return 'process'
+          }
+
+          if (asPayment.status === 'SUCCEEDED') {
+            return 'sent'
+          }
+
+          if (asPayment.status === 'UNKNOWN') {
+            return 'err'
+          }
+        }
+
+        return 'err'
       })()
 
       return {
