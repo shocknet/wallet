@@ -1,7 +1,7 @@
 import { takeEvery, call, put, select } from 'redux-saga/effects'
 import Logger from 'react-native-file-log'
 import { Schema, Constants } from 'shock-common'
-import { default as SocketIO } from 'socket.io-client'
+import { io as SocketIO } from 'socket.io-client'
 
 import * as Actions from '../actions'
 import {

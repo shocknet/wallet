@@ -1,4 +1,4 @@
-import { default as SocketIO } from 'socket.io-client'
+import { io as SocketIO } from 'socket.io-client'
 
 /**
  * Returns a socket wired up to the given query. Use `.on('$shock')` for values.

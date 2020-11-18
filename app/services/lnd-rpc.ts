@@ -1,4 +1,4 @@
-import { default as SocketIO } from 'socket.io-client'
+import { io as SocketIO } from 'socket.io-client'
 
 import Logger from 'react-native-file-log'
 

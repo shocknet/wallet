@@ -6,7 +6,7 @@ import {
   Schema,
   Constants,
 } from 'shock-common'
-import SocketIO from 'socket.io-client'
+import { io as SocketIO } from 'socket.io-client'
 
 import * as Actions from '../actions'
 import * as Selectors from '../selectors'
