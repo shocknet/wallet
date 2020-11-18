@@ -80,6 +80,8 @@ function* fetchLatestInvoices(action: Actions.Action) {
       const { data } = action
       const bodies = Object.values(data).map(m => m.body)
       const invoices = bodies
+        // we got a weird bug going on where messages com in as undefined
+        .filter(b => typeof b === 'string')
         .filter(b => b.startsWith('$$__SHOCKWALLET__INVOICE__'))
         .map(b => b.slice('$$__SHOCKWALLET__INVOICE__'.length))
 
