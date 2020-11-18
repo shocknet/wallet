@@ -31,6 +31,10 @@ function* ping() {
         query: {
           token,
         },
+        reconnection: true,
+        reconnectionDelay: 500,
+        reconnectionAttempts: Infinity,
+        transports: ['websocket'],
       })
 
       socket.on('shockping', () => {

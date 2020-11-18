@@ -315,7 +315,7 @@ Http.interceptors.request.use(async config => {
  */
 const decryptResponse = async response => {
   try {
-    // const decryptionTime = Date.now()
+    const decryptionTime = Date.now()
     const { connection } = store.getState()
     const path = url.parse(response?.config.url).pathname
     // Logger.log('[ENCRYPTION] Decrypting Path:', path)
@@ -348,7 +348,7 @@ const decryptResponse = async response => {
         key: decryptedKey,
         iv: response.data.iv,
       })
-      // Logger.log(`[HTTP] Decrypted data in: ${Date.now() - decryptionTime}ms`)
+      Logger.log(`[HTTP] Decrypted data in: ${Date.now() - decryptionTime}ms`)
       const decryptedResponse = {
         ...response,
         data: JSON.parse(decryptedData),
