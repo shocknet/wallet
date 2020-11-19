@@ -1051,7 +1051,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   amountInput: {
-    width: '60%',
+    width: '50%',
     marginBottom: 0,
   },
   amountSelect: {
