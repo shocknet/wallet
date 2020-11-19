@@ -17,7 +17,8 @@ export * from './follows'
 export * from './contact'
 export * from './wallet'
 
-export const isReady = (state: State) => isOnline(state) && isAuth(state)
+export const isReady = (state: State) =>
+  isOnline(state) && isAuth(state) && !!state.auth.host
 
 /**
  * For use inside sagas, allows typing of the return value from the select
