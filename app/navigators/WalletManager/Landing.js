@@ -65,7 +65,6 @@ export default class CreateWallet extends React.PureComponent {
         )
       } else {
         getStore().dispatch(Actions.tokenDidInvalidate())
-        getStore().dispatch(Actions.hostWasSet(''))
       }
       Logger.log('GETTING WALLET STATUS')
       const walletStatus = await Wallet.walletStatus()
