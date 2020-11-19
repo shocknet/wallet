@@ -15,7 +15,7 @@ function* ping() {
       auth: { token, host },
     } = Selectors.getStateRoot(yield select())
 
-    if (!token && socket) {
+    if ((!token || !host) && socket) {
       Logger.log(`Will kill ping socket because of token invalidation`)
       socket!.off('*')
       socket!.close()
@@ -25,7 +25,7 @@ function* ping() {
       yield put({ type: 'keepAlive' })
     }
 
-    if (token && !socket) {
+    if (token && host && !socket) {
       Logger.log(`Will try to connect ping socket`)
       socket = SocketIO(`http://${host}/shockping`, {
         query: {
