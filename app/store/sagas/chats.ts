@@ -20,7 +20,7 @@ function* chats() {
 
     if (isReady && !socket) {
       socket = SocketIO(`http://${host}/chats`, {
-        query: {
+        auth: {
           token: state.auth.token,
         },
       })

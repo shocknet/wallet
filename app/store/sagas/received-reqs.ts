@@ -18,7 +18,7 @@ function* receivedReqs() {
 
     if (isReady && !socket) {
       socket = SocketIO(`http://${host}/receivedReqs`, {
-        query: {
+        auth: {
           token: state.auth.token,
         },
       })

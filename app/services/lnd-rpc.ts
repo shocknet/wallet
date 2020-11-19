@@ -9,7 +9,7 @@ export const rod = (
   args: Record<string, unknown>,
 ): ReturnType<typeof SocketIO> => {
   const socket = SocketIO(`http://${host}/lndstreaming`, {
-    query: {
+    auth: {
       service,
       method,
       args: JSON.stringify(args),

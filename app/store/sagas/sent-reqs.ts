@@ -20,7 +20,7 @@ function* sentReqs() {
 
     if (isReady && !socket) {
       socket = SocketIO(`http://${host}/sentReqs`, {
-        query: {
+        auth: {
           token: state.auth.token,
         },
       })

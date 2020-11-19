@@ -27,7 +27,7 @@ export const rifle = (
   publicKeyForDecryption?: string,
 ): ReturnType<typeof SocketIO> => {
   const socket = SocketIO(`http://${host}/gun`, {
-    query: {
+    auth: {
       $shock: query,
       publicKeyForDecryption,
     },

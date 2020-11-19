@@ -28,7 +28,7 @@ function* ping() {
     if (token && !socket) {
       Logger.log(`Will try to connect ping socket`)
       socket = SocketIO(`http://${host}/shockping`, {
-        query: {
+        auth: {
           token,
         },
         reconnection: true,
