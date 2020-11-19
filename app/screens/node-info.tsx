@@ -1,5 +1,5 @@
 import React from 'react'
-import { View, Text, ScrollView, StyleSheet } from 'react-native'
+import { View, Text, StyleSheet } from 'react-native'
 import { NavigationEvents } from 'react-navigation'
 import { connect } from 'react-redux'
 import { StackNavigationOptions } from 'react-navigation-stack/lib/typescript/src/vendor/types'
@@ -11,6 +11,8 @@ import {
   headerStyle,
   headerTitleStyle,
   headerBackImage,
+  ScrollViewContainer,
+  PAD_BETWEEN_ITEMS,
 } from '../components/settings'
 import { NodeInfo as INodeInfo } from '../schema'
 import * as Actions from '../store/actions'
@@ -52,7 +54,6 @@ class NodeInfo extends React.PureComponent<Props> {
   }
 
   render() {
-    const PAD_AMT = 48
     const {
       synced_to_chain,
       synced_to_graph,
@@ -66,10 +67,7 @@ class NodeInfo extends React.PureComponent<Props> {
     return (
       <>
         <NavigationEvents onWillFocus={this.props.fetch} />
-        <ScrollView
-          style={CSS.styles.flex}
-          contentContainerStyle={styles.container}
-        >
+        <ScrollViewContainer>
           <View style={styles.smallDataContainer}>
             <SmallData
               title="Synced to Chain"
@@ -87,7 +85,7 @@ class NodeInfo extends React.PureComponent<Props> {
             />
           </View>
 
-          <Pad amount={PAD_AMT} />
+          <Pad amount={PAD_BETWEEN_ITEMS} />
 
           <View style={styles.smallDataContainer}>
             <SmallData
@@ -101,7 +99,7 @@ class NodeInfo extends React.PureComponent<Props> {
             />
           </View>
 
-          <Pad amount={PAD_AMT} />
+          <Pad amount={PAD_BETWEEN_ITEMS} />
 
           <SettingOrData
             title="Lightning PubKey"
@@ -109,7 +107,7 @@ class NodeInfo extends React.PureComponent<Props> {
             rightSide="copy"
           />
 
-          <Pad amount={PAD_AMT} />
+          <Pad amount={PAD_BETWEEN_ITEMS} />
 
           <SettingOrData
             title="Uris"
@@ -117,7 +115,7 @@ class NodeInfo extends React.PureComponent<Props> {
             rightSide="copy"
           />
 
-          <Pad amount={PAD_AMT} />
+          <Pad amount={PAD_BETWEEN_ITEMS} />
 
           <SettingOrData
             title="LND Version"
@@ -125,26 +123,19 @@ class NodeInfo extends React.PureComponent<Props> {
             rightSide="copy"
           />
 
-          <Pad amount={PAD_AMT} />
+          <Pad amount={PAD_BETWEEN_ITEMS} />
 
           <Text style={styles.footer}>
             <Text style={styles.warning}>Warning: </Text> Consult documentation
             before use.
           </Text>
-        </ScrollView>
+        </ScrollViewContainer>
       </>
     )
   }
 }
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: CSS.Colors.DARK_MODE_BACKGROUND_DARK,
-    flex: 1,
-    paddingHorizontal: 40,
-    paddingTop: 40,
-  },
-
   smallDataContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
