@@ -181,6 +181,7 @@ class ConnectToNode extends React.PureComponent {
             wasBadPing: true,
             loading: false,
           })
+        return
       }
       Logger.log('Connecting to node, attempts left:' + attempts)
       setTimeout(async () => {
