@@ -8706,10 +8706,10 @@ shellwords@^0.1.1:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/shellwords/-/shellwords-0.1.1.tgz#d6b9181c1a48d397324c84871efbcfc73fc0654b"
 
-shock-common@17.x.x:
-  version "17.1.1"
-  resolved "https://registry.yarnpkg.com/shock-common/-/shock-common-17.1.1.tgz#3d7e79f8f8990520898ea133d4244f4bf2a8fe0a"
-  integrity sha512-hlltOp3kGo5C69QacOnRQy0crTpd18+cwsyNUfQnPOJul0pUdxKRlDIWoSOr2cDIXHXSxVKO5FR//igDuCEFLQ==
+shock-common@21.x.x:
+  version "21.0.0"
+  resolved "https://registry.yarnpkg.com/shock-common/-/shock-common-21.0.0.tgz#786a81631e675aa0747c4c38770b04b7909ec3da"
+  integrity sha512-loJvrHXaDPmXFe+omHCmVh0PZSHNrjyCXkm4iB5SAjqCENAnOivDmHJfW8TY7OnIN4YHE/Dxaqw2DFjIvfPmFw==
   dependencies:
     immer "^6.0.6"
     lodash "^4.17.19"

@@ -234,7 +234,6 @@ Http.interceptors.request.use(async config => {
       config.headers.common['shock-cache-hash'] = cachedData.hash
     }
 
-    const authToken = await getAuthorizationToken(config)
     if (
       connection.APIPublicKey &&
       !nonEncryptedRoutes.includes(path) &&
@@ -242,6 +241,7 @@ Http.interceptors.request.use(async config => {
       !DISABLE_ENCRYPTION
     ) {
       const stringifiedData = config.data ? JSON.stringify(config.data) : ''
+      const authToken = await getAuthorizationToken(config)
       const {
         encryptedData,
         encryptedKey,
@@ -273,34 +273,10 @@ Http.interceptors.request.use(async config => {
     }
 
     if (DISABLE_ENCRYPTION && !config.headers.common.Authorization) {
+      const authToken = await getAuthorizationToken(config)
       // eslint-disable-next-line require-atomic-updates
       config.headers.common.Authorization = `Bearer ${authToken}`
     }
-
-    // Logging for Network requests
-    // try {
-    //   if (config) {
-    //     const method = config.method ? config.method.toUpperCase() : 'common'
-    //     Logger.log('Config:', config)
-    //     Logger.log(`---> ${method} ${config.url}`)
-    //     Logger.log(
-    //       'Headers:',
-    //       config.headers
-    //         ? JSON.stringify({
-    //             ...config.headers.common,
-    //             ...config.headers[method],
-    //           })
-    //         : 'N/A',
-    //     )
-    //     Logger.log(
-    //       'Params:',
-    //       config.params ? JSON.stringify(config.params) : 'N/A',
-    //     )
-    //     Logger.log('Body:', config.data ? JSON.stringify(config.data) : 'N/A')
-    //   }
-    // } catch (err) {
-    //   Logger.log(err)
-    // }
 
     return config
   } catch (err) {

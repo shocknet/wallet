@@ -48,6 +48,7 @@ import * as CSS from '../../res/css'
  * @prop {(paymentRequest: string) => DecodeResponse} decodePaymentRequest
  * @prop {(() => void)=} startDecoding
  * @prop {{ contacts: import('../../store/actions/ChatActions').Contact[] }} chat
+ * @prop {import('../../store/reducers/UsersReducer').State} users
  */
 
 /**
@@ -189,9 +190,25 @@ class ContactsSearch extends PureComponent {
   filterContacts = () => {
     const { value, chat } = this.props
     const { contacts } = chat
-    return contacts.filter(contact =>
-      contact.displayName.toLowerCase().includes(value.toLowerCase()),
-    )
+    /** @type import('../../store/actions/ChatActions').Contact[] */
+    const filtered = []
+    contacts.forEach(contact => {
+      const uInfo = this.props.users[contact.pk]
+
+      if (!uInfo || !uInfo.displayName) {
+        return
+      }
+      if (!uInfo.displayName.toLowerCase().includes(value.toLowerCase())) {
+        return
+      }
+      filtered.push({
+        displayName: uInfo.displayName,
+        avatar: uInfo.avatar ? uInfo.avatar : '',
+        pk: contact.pk,
+        type: 'contact',
+      })
+    })
+    return filtered
   }
 
   /**
@@ -215,7 +232,6 @@ class ContactsSearch extends PureComponent {
     if (enabledFeatures.includes('keysend') && this.isLnPubKey()) {
       return [{ dest: value, type: 'keysend' }, ...filteredContacts]
     }
-
     return filteredContacts
   }
 
@@ -295,7 +311,7 @@ class ContactsSearch extends PureComponent {
 }
 
 /** @param {import('../../store/reducers/index').default} state */
-const mapStateToProps = ({ chat }) => ({ chat })
+const mapStateToProps = ({ chat, users }) => ({ chat, users })
 
 const mapDispatchToProps = {
   selectContact,

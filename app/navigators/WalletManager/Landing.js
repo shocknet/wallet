@@ -65,15 +65,18 @@ export default class CreateWallet extends React.PureComponent {
         )
       } else {
         getStore().dispatch(Actions.tokenDidInvalidate())
-        getStore().dispatch(Actions.hostWasSet(''))
       }
-      Logger.log('GETTING WALLET STATUS')
-      const walletStatus = await Wallet.walletStatus()
+
       Logger.log('FETCHING NODE URL')
       const nodeURL = await Cache.getNodeURL()
       if (nodeURL === null) {
-        throw new Error('NODE URL IS NULL BEFORE IS_GUN_AUTH')
+        throw new Error('NODE URL IS NULL BEFORE GUN STATUS AND IS_GUN_AUTH')
       }
+      getStore().dispatch(Actions.hostWasSet(nodeURL))
+
+      Logger.log('GETTING WALLET STATUS')
+      const walletStatus = await Wallet.walletStatus()
+
       Logger.log('GETTING IS_GUN_AUTH')
       const isGunAuth = await Auth.isGunAuthed()
 
