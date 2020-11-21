@@ -2,17 +2,24 @@ import React from 'react'
 import {
   View,
   ToastAndroid,
+  ActivityIndicator,
 } from 'react-native'
+import Logger from 'react-native-file-log'
 
 import WebView from 'react-native-webview'
+import Pad from '../components/Pad'
 import * as Wallet from '../services/wallet'
 
 type CompleteWebView = WebView & { postMessage: (message: string) => void }
 
+const signingServiceUrl = 'http://192.168.0.187:3008/sign'
+const apiPubKey = 'pk_test_HudfmyQTH3A1bHaq4SKrRiNgRoAYOir7'
+
 class MoonPay extends React.PureComponent {
 
   state = {
-    uri:""
+    uri:"",
+    loading:true
   }
 
   webview: CompleteWebView | null = null
@@ -24,17 +31,44 @@ class MoonPay extends React.PureComponent {
   componentDidMount(){
     Wallet.newAddress(true)
     .then(address => {
-      ToastAndroid.show(address,900)
-      this.setState({
-        uri:`https://buy-staging.moonpay.io/?apiKey=pk_test_HudfmyQTH3A1bHaq4SKrRiNgRoAYOir7&currencyCode=btc&walletAddress=${address}`
-      })
+        const originalUrl =`https://buy-staging.moonpay.io/?apiKey=${apiPubKey}&currencyCode=btc&walletAddress=${address}`
+        return fetch(signingServiceUrl,{
+          method: 'post',
+          headers: {
+            "Content-type": "application/json"
+          },
+          body:JSON.stringify({originalUrl})
+        })
+        .then(res => res.json())
+        .then(json =>{
+          if(json.urlWithSignature){
+            this.setState({
+              uri:json.urlWithSignature,
+              loading:false
+            })
+            Logger.log("MOONPAY SIGNATURE DONE"+json.urlWithSignature)
+
+          }
+        })
+        .catch(e => {
+          this.setState({loading:false})
+          ToastAndroid.show('Error generating MoonPay signature',800)
+          Logger.log('Error generating MoonPay signature')
+          Logger.log(e)
+        })
     })
 
   }
 
   render() {
-    const {uri} = this.state
+    const {uri,loading} = this.state
+    if(loading){
+      return <View style={{height:"100%",width:"100%"}}>
+      <ActivityIndicator/>
+    </View>
+    }
     return <View style={{height:"100%",width:"100%"}}>
+      <Pad amount={40}/>
       <WebView 
       ref={this.assignRef}
       style={{height:"100%",width:"100%"}}
