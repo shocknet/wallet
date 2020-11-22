@@ -12,7 +12,7 @@ import * as Wallet from '../services/wallet'
 
 type CompleteWebView = WebView & { postMessage: (message: string) => void }
 
-const signingServiceUrl = 'http://192.168.0.187:3008/sign'
+const signingServiceUrl = 'https://moon-sign.shock.network/sign'
 const apiPubKey = 'pk_test_HudfmyQTH3A1bHaq4SKrRiNgRoAYOir7'
 
 class MoonPay extends React.PureComponent {
