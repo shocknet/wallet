@@ -1,37 +1,39 @@
-import * as Common from 'shock-common'
 import produce from 'immer'
 import { Reducer } from 'redux'
+import { Schema } from 'shock-common'
 
 import { Action } from '../actions'
 
-type State = Record<string, Common.Schema.SharedPost>
+/**
+ * Key is original post id + public key of the user sharing it.
+ */
+type State = Record<string, Schema.SharedPost>
 
 const reducer: Reducer<State, Action> = (state = {}, action) =>
   produce(state, draft => {
     if (action.type === 'sharedPosts/received') {
       const {
         originalAuthor,
-        originalDate,
         originalPostID,
-        shareID,
-        sharedBy,
         shareDate,
+        sharedBy,
       } = action.payload
+
+      const shareID = sharedBy + originalPostID
 
       draft[shareID] = {
         originalAuthor,
-        originalDate,
         originalPostID,
-        shareID,
-        sharedBy,
         shareDate,
+        sharedBy,
+        shareID,
       }
     }
 
     if (action.type === 'sharedPosts/removed') {
-      const { id } = action.payload
+      const { shareID } = action.payload
 
-      delete draft[id]
+      delete draft[shareID]
     }
   })
 
