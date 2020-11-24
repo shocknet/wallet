@@ -35,6 +35,12 @@ const reducer: Reducer<State, Action> = (state = {}, action) =>
 
       delete draft[shareID]
     }
+
+    if (action.type === 'sharedPosts/removedSeveral') {
+      const { shareIDs } = action.payload
+
+      shareIDs.forEach(shareID => delete draft[shareID])
+    }
   })
 
 export default reducer

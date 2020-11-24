@@ -1,11 +1,14 @@
 import React from 'react'
-import { View } from 'react-native'
+import { ToastAndroid, View } from 'react-native'
 import { connect } from 'react-redux'
+import Logger from 'react-native-file-log'
 
 import * as Store from '../store'
+import * as Services from '../services'
 
-import { UserInfoNew as PostHeader } from './UserInfoNew'
+import PostHeader from './post-header'
 import Post from './Post'
+import Dialog from './ShockDialog'
 
 interface OwnProps {
   shareID: string
@@ -18,62 +21,118 @@ interface StateProps {
   sharedByPubkey: string
   isOwn: boolean
   postID: string
+  originalAuthorPublicKey: string
+  originalAuthorDisplayName: string | null
+  originalPostDate: number
 }
 
 interface DispatchProps {}
 
 type Props = OwnProps & StateProps & DispatchProps
 
-class SharedPost extends React.PureComponent<Props> {
-  onPressMenuIcon = () => {
-    console.warn(Math.random())
+interface State {
+  menuOpen: boolean
+}
+
+class SharedPost extends React.PureComponent<Props, State> {
+  state: State = {
+    menuOpen: false,
+  }
+
+  toggleMenu = () => {
+    this.setState(({ menuOpen }) => ({
+      menuOpen: !menuOpen,
+    }))
+  }
+
+  menuChoicesIfOwn = {
+    unshare: () => {
+      const { postID } = this.props
+
+      Services.post(`api/gun/put`, {
+        path: `$user>sharedPosts>${postID}`,
+        value: null,
+      }).catch(e => {
+        Logger.log(`Could not unshare post ${postID} -> ${e.message}`)
+        ToastAndroid.show(`Could not unshare post`, ToastAndroid.LONG)
+      })
+
+      this.toggleMenu()
+    },
   }
 
   render() {
     const {
       shareDate,
-      shareID,
       sharedByDisplayName,
       sharedByPubkey,
       isOwn,
       postID,
+      hideTopBorder,
     } = this.props
 
     return (
-      <View>
-        <PostHeader
-          authorDisplayName={sharedByDisplayName}
-          authorPublicKey={sharedByPubkey}
-          date={shareDate}
-          postID={shareID}
-          showPin={false}
-          onPressMenuIcon={isOwn ? this.onPressMenuIcon : undefined}
-        />
+      <>
+        <View>
+          <PostHeader
+            authorDisplayName={sharedByDisplayName}
+            authorPublicKey={sharedByPubkey}
+            timestamp={shareDate}
+            onPressMenuIcon={isOwn ? this.toggleMenu : undefined}
+            pad
+            showTopBorder={!hideTopBorder}
+          />
 
-        <Post
-          hideTopBorder
-          id={postID}
-          showTipBtn={!isOwn}
-          hideShareBtn={isOwn}
+          <Post hideTopBorder id={postID} hideMenuBtn smallerHeader />
+        </View>
+
+        <Dialog
+          onRequestClose={this.toggleMenu}
+          visible={this.state.menuOpen}
+          choiceToHandler={this.menuChoicesIfOwn}
         />
-      </View>
+      </>
     )
   }
 }
 
 const mapState = (state: Store.State, ownProps: OwnProps): StateProps => {
-  const { originalPostID, sharedBy, shareDate } = Store.selectSharedPost(
-    state,
-    ownProps.shareID,
-  )
-  const sharer = Store.selectUser(state, sharedBy)
+  const {
+    originalAuthor,
+    originalPostID,
+    shareDate,
+    sharedBy,
+  } = Store.selectSharedPost(state, ownProps.shareID)
   const myPubkey = Store.getMyPublicKey(state)
+  const { displayName: sharedByDisplayName } = Store.selectUser(state, sharedBy)
+  const { displayName: originalAuthorDisplayName } = Store.selectUser(
+    state,
+    sharedBy,
+  )
+  const post = Store.getPost(state, originalPostID)
+  const isOwn = myPubkey === sharedBy
+
+  if (!post) {
+    return {
+      isOwn,
+      originalAuthorDisplayName: originalAuthorDisplayName || 'Loading...',
+      originalAuthorPublicKey: originalAuthor,
+      originalPostDate: Date.now(),
+      postID: originalPostID,
+      shareDate,
+      sharedByDisplayName: sharedByDisplayName || 'Loading...',
+      sharedByPubkey: sharedBy,
+    }
+  }
 
   return {
-    isOwn: myPubkey === sharedBy,
-    shareDate,
-    sharedByDisplayName: sharer.displayName || 'Shock User',
+    isOwn,
+    originalAuthorDisplayName: originalAuthorDisplayName || 'Loading...',
+    originalAuthorPublicKey: originalAuthor,
+    originalPostDate: post.date,
     postID: originalPostID,
+    shareDate,
+    sharedByDisplayName: sharedByDisplayName || 'Loading...',
     sharedByPubkey: sharedBy,
   }
 }

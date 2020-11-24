@@ -1,5 +1,5 @@
 import { createSelector } from 'reselect'
-import { Schema } from 'shock-common'
+import * as Common from 'shock-common'
 
 import { State } from '../reducers'
 
@@ -8,9 +8,11 @@ import { getFollowedPublicKeys } from './follows'
 import { makeGetUser } from './users'
 import { selectAllSharedPosts } from './shared-posts'
 
+const { isSharedPost } = Common.Schema
+
 export const getPosts = (state: State) => state.posts
 
-export const getPost = (state: State, id: string): Schema.PostN | null =>
+export const getPost = (state: State, id: string): Common.Schema.PostN | null =>
   state.posts[id] || null
 
 const getPublicKey = (_: State, publicKey: string) => publicKey
@@ -24,7 +26,7 @@ export const makeGetPostsForPublicKey = () => {
     ReturnType<typeof getPosts>,
     ReturnType<typeof getPublicKey>,
     ReturnType<typeof getUser>,
-    Schema.PostN[] // Return type
+    Common.Schema.PostN[] // Return type
   >(
     getPosts,
     getPublicKey,
@@ -53,7 +55,7 @@ export const getPostsFromFollowed = createSelector<
   State,
   ReturnType<typeof getPosts>,
   ReturnType<typeof getFollowedPublicKeys>,
-  Schema.PostN[] // Return type
+  Common.Schema.PostN[] // Return type
 >(
   getPosts,
   getFollowedPublicKeys,
@@ -68,7 +70,7 @@ export const getOwnPosts = createSelector<
   State,
   ReturnType<typeof getPosts>,
   ReturnType<typeof getMyPublicKey>,
-  Schema.PostN[]
+  Common.Schema.PostN[]
 >(
   getPosts,
   getMyPublicKey,
@@ -83,8 +85,8 @@ export const getOwnPostsAndOwnShared = createSelector(
     const allPosts = [...ownPosts, ...Object.values(allSharedPosts)]
 
     allPosts.sort((a, b) => {
-      let dateA = Schema.isSharedPost(a) ? a.shareDate : a.date
-      let dateB = Schema.isSharedPost(b) ? b.shareDate : b.date
+      let dateA = isSharedPost(a) ? a.shareDate : a.date
+      let dateB = isSharedPost(b) ? b.shareDate : b.date
 
       return dateB - dateA
     })
@@ -101,7 +103,7 @@ export const makeGetPostsAndSharedForPublicKey = () => {
     ReturnType<typeof selectAllSharedPosts>,
     ReturnType<typeof getPublicKey>,
     ReturnType<typeof getUser>,
-    (Schema.PostN | Schema.SharedPost)[] // Return type
+    (Common.Schema.PostN | Common.Schema.SharedPost)[] // Return type
   >(
     getPosts,
     selectAllSharedPosts,
@@ -119,16 +121,16 @@ export const makeGetPostsAndSharedForPublicKey = () => {
       const mixed = [...sharedByThisPublicKey, ...postsByThisPublicKey]
 
       mixed.sort((a, b) => {
-        let dateA = Schema.isSharedPost(a) ? a.shareDate : a.date
-        let dateB = Schema.isSharedPost(b) ? b.shareDate : b.date
+        let dateA = isSharedPost(a) ? a.shareDate : a.date
+        let dateB = isSharedPost(b) ? b.shareDate : b.date
 
         return dateB - dateA
       })
 
       if (user.pinnedPost) {
         const idx = mixed.findIndex(p => {
-          const post = p as Schema.PostN
-          post.id && post.id === user.pinnedPost
+          const post = p as Common.Schema.PostN
+          return post.id && post.id === user.pinnedPost
         })
         if (idx > 0) {
           const [pinned] = mixed.splice(idx, 1)

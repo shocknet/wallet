@@ -23,26 +23,27 @@ import Share from '../../assets/images/share.svg'
 import Dialog from '../ShockDialog'
 import ShockIcon from '../../assets/images/shockB.svg'
 import * as Services from '../../services'
-import UserInfo from '../UserInfoNew'
+import PostHeader from '../post-header'
 
 import TipPopup from './tip-popup'
 
 interface OwnProps {
   id: string
-  showTipBtn?: boolean
   hideTopBorder?: boolean
-  hideShareBtn?: boolean
+  showShareBtn?: boolean
+  hideMenuBtn?: boolean
+  smallerHeader?: boolean
 }
 
 interface StateProps {
   authorPublicKey: string
   contentItems: Record<string, Schema.ContentItem>
   tipCounter: number
-  showMenuBtn: boolean
   isPinned: boolean
   host: string
   date: number
-  isShared: boolean
+  authorDisplayName: string
+  showTipBtn: boolean
 }
 
 interface DispatchProps {
@@ -57,7 +58,6 @@ interface State {
   menuOpen: boolean
   tipPopupOpen: boolean
   showingRibbon: boolean
-  sharing: boolean
 }
 
 type Props = OwnProps & StateProps & DispatchProps
@@ -68,7 +68,6 @@ class Post extends React.PureComponent<Props, State> {
     menuOpen: false,
     tipPopupOpen: false,
     showingRibbon: true,
-    sharing: false,
   }
 
   postSocket: null | ReturnType<typeof Services.rifle> = null
@@ -105,6 +104,7 @@ class Post extends React.PureComponent<Props, State> {
       this.postSocket = null
     }
   }
+
   getMediaItems() {
     const { contentItems } = this.props
 
@@ -188,37 +188,19 @@ class Post extends React.PureComponent<Props, State> {
   }
 
   onPressShare = () => {
-    this.setState(
-      {
-        sharing: true,
-      },
-      () => {
-        const { authorPublicKey, date, id } = this.props
+    const { id, authorPublicKey } = this.props
 
-        const newShare: Schema.SharedPostRaw = {
-          originalAuthor: authorPublicKey,
-          originalDate: date,
-          originalPostID: id,
-          shareDate: Date.now(),
-        }
+    const sharedPostRaw: Schema.SharedPostRaw = {
+      originalAuthor: authorPublicKey,
+      shareDate: Date.now(),
+    }
 
-        Services.post(`api/gun/put`, {
-          path: '$user>sharedPosts',
-          value: newShare,
-        })
-          .then(() => {
-            if (this.mounted) {
-              this.setState({
-                sharing: false,
-              })
-            }
-          })
-          .catch(e => {
-            ToastAndroid.show(`Could not share post: ${e.message}`, 800)
-          })
-      },
-    )
-    ToastAndroid.show('Coming soon!', ToastAndroid.LONG)
+    Services.post(`api/gun/put`, {
+      path: `$user>sharedPosts>${id}`,
+      value: sharedPostRaw,
+    })
+
+    ToastAndroid.show('Shared', ToastAndroid.LONG)
   }
 
   toggleMenu = () => {
@@ -260,8 +242,11 @@ class Post extends React.PureComponent<Props, State> {
       showTipBtn,
       isPinned,
       hideTopBorder,
-      hideShareBtn,
-      isShared,
+      authorPublicKey,
+      authorDisplayName,
+      smallerHeader,
+      date,
+      showShareBtn,
     } = this.props
     const { mediaWidth, tipPopupOpen } = this.state
 
@@ -288,12 +273,14 @@ class Post extends React.PureComponent<Props, State> {
           }
           onLayout={this.onLayout}
         >
-          <UserInfo
-            postID={id}
+          <PostHeader
+            authorDisplayName={authorDisplayName}
             onPressMenuIcon={
-              this.props.showMenuBtn ? this.toggleMenu : undefined
+              this.props.hideMenuBtn ? undefined : this.toggleMenu
             }
-            smaller={isShared}
+            smaller={smallerHeader}
+            authorPublicKey={authorPublicKey}
+            timestamp={date}
           />
           <Pad amount={12} />
           {/* TODO: https://github.com/kashishgrover/react-native-see-more-inline/issues/3 */}
@@ -328,10 +315,12 @@ class Post extends React.PureComponent<Props, State> {
               </TouchableWithoutFeedback>
             </View>
 
-            {hideShareBtn ? null : (
+            {showShareBtn ? (
               <TouchableWithoutFeedback onPress={this.onPressShare}>
                 <Share size={16} />
               </TouchableWithoutFeedback>
+            ) : (
+              <View />
             )}
           </View>
         </View>
@@ -407,7 +396,6 @@ const styles = StyleSheet.create({
 
 const mapState = () => {
   const getUser = Store.makeGetUser()
-  const selectIsShared = Store.makeSelectIsShared()
 
   return (state: Store.State, ownProps: OwnProps): StateProps => {
     const post = Store.getPost(state, ownProps.id)
@@ -419,25 +407,25 @@ const mapState = () => {
         authorPublicKey: state.auth.gunPublicKey,
         contentItems: {},
         tipCounter: 0,
-        showMenuBtn: false,
         isPinned: false,
         host,
         date: Date.now(),
-        isShared: false,
+        authorDisplayName: 'User',
+        showTipBtn: false,
       }
     }
 
     const user = getUser(state, post.author)
 
     return {
-      authorPublicKey: post.author,
+      authorDisplayName: user.displayName || user.publicKey,
+      authorPublicKey: user.publicKey,
       contentItems: post.contentItems,
-      showMenuBtn: myPublicKey === post.author,
-      isPinned: post.id === user.pinnedPost,
-      tipCounter: post.tipCounter,
-      host,
       date: post.date,
-      isShared: selectIsShared(state, post.id),
+      host,
+      isPinned: post.id === user.pinnedPost,
+      showTipBtn: post.author !== myPublicKey,
+      tipCounter: post.tipCounter,
     }
   }
 }
