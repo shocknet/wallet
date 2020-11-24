@@ -73,7 +73,7 @@ class User extends React.PureComponent<Props, State> {
   renderItem = ({ item }: ListRenderItemInfo<Common.Schema.PostBase>) => {
     return (
       <View>
-        <Post id={item.id} showTipBtn />
+        <Post id={item.id} showShareBtn hideMenuBtn />
         <Pad amount={12} />
       </View>
     )

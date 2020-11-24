@@ -23,23 +23,27 @@ import Share from '../../assets/images/share.svg'
 import Dialog from '../ShockDialog'
 import ShockIcon from '../../assets/images/shockB.svg'
 import * as Services from '../../services'
+import PostHeader from '../post-header'
 
-import UserInfo from './UserInfoNew'
 import TipPopup from './tip-popup'
 
 interface OwnProps {
   id: string
-  showTipBtn?: boolean
   hideTopBorder?: boolean
+  showShareBtn?: boolean
+  hideMenuBtn?: boolean
+  smallerHeader?: boolean
 }
 
 interface StateProps {
   authorPublicKey: string
   contentItems: Record<string, Schema.ContentItem>
   tipCounter: number
-  showMenuBtn: boolean
   isPinned: boolean
   host: string
+  date: number
+  authorDisplayName: string
+  showTipBtn: boolean
 }
 
 interface DispatchProps {
@@ -68,7 +72,10 @@ class Post extends React.PureComponent<Props, State> {
 
   postSocket: null | ReturnType<typeof Services.rifle> = null
 
+  mounted = false
+
   componentDidMount = () => {
+    this.mounted = true
     const { authorPublicKey, id, host } = this.props
     // TODO: hack, force gun to ask for this data
     // The data itself will be processed in saga
@@ -89,12 +96,15 @@ class Post extends React.PureComponent<Props, State> {
   }
 
   componentWillUnmount = () => {
+    this.mounted = true
+
     if (this.postSocket) {
       this.postSocket.off('*')
       this.postSocket.close()
       this.postSocket = null
     }
   }
+
   getMediaItems() {
     const { contentItems } = this.props
 
@@ -178,7 +188,19 @@ class Post extends React.PureComponent<Props, State> {
   }
 
   onPressShare = () => {
-    ToastAndroid.show('Coming soon!', ToastAndroid.LONG)
+    const { id, authorPublicKey } = this.props
+
+    const sharedPostRaw: Schema.SharedPostRaw = {
+      originalAuthor: authorPublicKey,
+      shareDate: Date.now(),
+    }
+
+    Services.post(`api/gun/put`, {
+      path: `$user>sharedPosts>${id}`,
+      value: sharedPostRaw,
+    })
+
+    ToastAndroid.show('Shared', ToastAndroid.LONG)
   }
 
   toggleMenu = () => {
@@ -214,7 +236,18 @@ class Post extends React.PureComponent<Props, State> {
   }
 
   render() {
-    const { id, contentItems, showTipBtn, isPinned, hideTopBorder } = this.props
+    const {
+      id,
+      contentItems,
+      showTipBtn,
+      isPinned,
+      hideTopBorder,
+      authorPublicKey,
+      authorDisplayName,
+      smallerHeader,
+      date,
+      showShareBtn,
+    } = this.props
     const { mediaWidth, tipPopupOpen } = this.state
 
     const paragraphs = pickBy(
@@ -240,11 +273,14 @@ class Post extends React.PureComponent<Props, State> {
           }
           onLayout={this.onLayout}
         >
-          <UserInfo
-            postID={id}
+          <PostHeader
+            authorDisplayName={authorDisplayName}
             onPressMenuIcon={
-              this.props.showMenuBtn ? this.toggleMenu : undefined
+              this.props.hideMenuBtn ? undefined : this.toggleMenu
             }
+            smaller={smallerHeader}
+            authorPublicKey={authorPublicKey}
+            timestamp={date}
           />
           <Pad amount={12} />
           {/* TODO: https://github.com/kashishgrover/react-native-see-more-inline/issues/3 */}
@@ -279,9 +315,13 @@ class Post extends React.PureComponent<Props, State> {
               </TouchableWithoutFeedback>
             </View>
 
-            <TouchableWithoutFeedback onPress={this.onPressShare}>
-              <Share size={16} />
-            </TouchableWithoutFeedback>
+            {showShareBtn ? (
+              <TouchableWithoutFeedback onPress={this.onPressShare}>
+                <Share size={16} />
+              </TouchableWithoutFeedback>
+            ) : (
+              <View />
+            )}
           </View>
         </View>
 
@@ -367,21 +407,25 @@ const mapState = () => {
         authorPublicKey: state.auth.gunPublicKey,
         contentItems: {},
         tipCounter: 0,
-        showMenuBtn: false,
         isPinned: false,
         host,
+        date: Date.now(),
+        authorDisplayName: 'User',
+        showTipBtn: false,
       }
     }
 
     const user = getUser(state, post.author)
 
     return {
-      authorPublicKey: post.author,
+      authorDisplayName: user.displayName || user.publicKey,
+      authorPublicKey: user.publicKey,
       contentItems: post.contentItems,
-      showMenuBtn: myPublicKey === post.author,
-      isPinned: post.id === user.pinnedPost,
-      tipCounter: post.tipCounter,
+      date: post.date,
       host,
+      isPinned: post.id === user.pinnedPost,
+      showTipBtn: post.author !== myPublicKey,
+      tipCounter: post.tipCounter,
     }
   }
 }

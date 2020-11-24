@@ -1,4 +1,5 @@
 import { Store } from 'redux'
+import { put as origPut } from 'redux-saga/effects'
 
 import { Action } from '../actions'
 import { State } from '../reducers'
@@ -17,3 +18,5 @@ export const _setStore = (store: ShockStore) => {
 }
 
 export const getStore = () => currStore
+
+export const put = (action: Action) => origPut<Action>(action)

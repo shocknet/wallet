@@ -27,6 +27,9 @@ export const makeGetUser = () =>
     },
   )
 
+export const selectUser = (state: State, publicKey: string) =>
+  state.users[publicKey]
+
 export const getAllOtherPublicKeys = createSelector<
   State,
   State['users'],

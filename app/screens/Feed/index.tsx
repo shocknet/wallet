@@ -80,7 +80,12 @@ class Feed extends React.PureComponent<Props, State> {
 
     return (
       <View>
-        <Post id={item.id} showTipBtn hideTopBorder={index === 1} />
+        <Post
+          id={item.id}
+          hideTopBorder={index === 1}
+          showShareBtn
+          hideMenuBtn
+        />
         <Pad amount={12} />
       </View>
     )

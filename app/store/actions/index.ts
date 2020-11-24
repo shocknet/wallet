@@ -19,6 +19,7 @@ import { ChainTXsAction } from './chain-txs'
 import { PostsAction } from './posts'
 import { DebugAction } from './debug'
 import { WalletAction } from './wallet'
+import { SharedPostsAction } from './shared-posts'
 
 export type Action =
   | UsersAction
@@ -40,6 +41,7 @@ export type Action =
   | DebugAction
   | WalletAction
   | ChatActions.LoadMessagesAction
+  | SharedPostsAction
 
 export const receivedBackfeed = Common.Store.Actions.receivedBackfeed
 export const receivedFeed = Common.Store.Actions.receivedFeed
@@ -68,5 +70,6 @@ export * from './users'
 export * from './posts'
 export * from './debug'
 export * from './wallet'
+export * from './shared-posts'
 
 export { ChatActions, RequestActions, Follows }

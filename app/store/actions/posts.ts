@@ -71,6 +71,15 @@ export const requestedPostUnpin = createAction('posts/requestedUnpin')
 
 export const unpinnedPost = createAction('posts/unpinned')
 
+export const postsRemovedSeveral = createAction(
+  'posts/removedSeveral',
+  (postsIDs: string[]) => ({
+    payload: {
+      postsIDs,
+    },
+  }),
+)
+
 export type PostsAction =
   | ReturnType<typeof receivedPosts>
   | ReturnType<typeof receivedRawPost>
@@ -81,3 +90,4 @@ export type PostsAction =
   | ReturnType<typeof postRemoved>
   | ReturnType<typeof requestedPostUnpin>
   | ReturnType<typeof unpinnedPost>
+  | ReturnType<typeof postsRemovedSeveral>
