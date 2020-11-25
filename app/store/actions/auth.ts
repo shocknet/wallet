@@ -1,3 +1,5 @@
+import { createAction } from '@reduxjs/toolkit'
+
 export const authed = (data: {
   alias: string
   token: string
@@ -8,10 +10,7 @@ export const authed = (data: {
     data,
   } as const)
 
-export const tokenDidInvalidate = () =>
-  ({
-    type: 'tokenDidInvalidate',
-  } as const)
+export const tokenDidInvalidate = createAction('tokenDidInvalidate')
 
 export const hostWasSet = (host: string) =>
   ({
