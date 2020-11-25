@@ -1,4 +1,4 @@
-import { eventChannel, END, EventChannel } from 'redux-saga'
+import { eventChannel, END, EventChannel, buffers } from 'redux-saga'
 import {
   takeEvery,
   select,
@@ -112,7 +112,7 @@ function createSocketChannel(
       socket.off('*')
       socket.close()
     }
-  })
+  }, buffers.expanding(10))
 }
 
 function* handlePublicKeySocket(chan: EventChannel<RelevantAction>) {
@@ -170,6 +170,7 @@ function* watchSharedPosts() {
 
         yield cancel(task)
       }
+      publicKeysWithSockets.clear()
     }
   } catch (e) {
     Logger.log(`Error inside watchSharedPosts*()`)
