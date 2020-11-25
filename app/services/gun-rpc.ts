@@ -26,12 +26,19 @@ export const rifle = (
   query: string,
   publicKeyForDecryption?: string,
 ): ReturnType<typeof SocketIO> => {
-  const socket = SocketIO(`http://${host}/gun`, {
+  const opts = {
     query: {
       $shock: query,
-      publicKeyForDecryption,
     },
-  })
+  }
+
+  if (publicKeyForDecryption) {
+    // else "undefined" string will arrive at server 💩
+    // @ts-expect-error
+    opts.publicKeyForDecryption = publicKeyForDecryption
+  }
+
+  const socket = SocketIO(`http://${host}/gun`, opts)
 
   return socket
 }
