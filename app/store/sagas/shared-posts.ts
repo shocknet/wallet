@@ -35,14 +35,10 @@ const handleShockEvent = (
       pickBy(data, v => v !== null),
     ).filter(k => k !== '_')
 
-    console.log(sharedPostsReceived)
-
     const sharedPostsDeleted = Object.keys(
       // get deleted sharedPosts
       pickBy(data, v => v == null),
     ).filter(k => k !== '_')
-
-    console.log(sharedPostsDeleted)
 
     if (size(sharedPostsDeleted)) {
       emit(
