@@ -9,13 +9,17 @@ import Logger from 'react-native-file-log'
 import WebView from 'react-native-webview'
 import Pad from '../components/Pad'
 import * as Wallet from '../services/wallet'
+import Nav from '../components/Nav'
 
 type CompleteWebView = WebView & { postMessage: (message: string) => void }
 
 const signingServiceUrl = 'https://moon-sign.shock.network/sign'
 const apiPubKey = 'pk_test_HudfmyQTH3A1bHaq4SKrRiNgRoAYOir7'
 
-class MoonPay extends React.PureComponent {
+type Props = {
+  navigation: import('react-navigation').NavigationScreenProp<{}, {}>
+}
+class MoonPay extends React.PureComponent<Props> {
 
   state = {
     uri:"",
@@ -68,7 +72,13 @@ class MoonPay extends React.PureComponent {
     </View>
     }
     return <View style={{height:"100%",width:"100%"}}>
-      <Pad amount={40}/>
+      <Pad amount={30}/>
+      <Nav
+        light
+        backButton
+        title="Buy Bitcoin"
+        navigation={this.props.navigation}
+      />
       <WebView 
       ref={this.assignRef}
       style={{height:"100%",width:"100%"}}

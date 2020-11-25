@@ -26,6 +26,7 @@ interface OwnProps {
   showAvatar?: boolean
   navigation?: Navigation
   onPressAvatar?: () => void
+  light?:boolean
 }
 
 type Props = DispatchProps & StateProps & OwnProps
@@ -40,6 +41,7 @@ const Nav: React.FC<Props> = React.memo(
     onPressAvatar,
     isOnline,
     publicKey,
+    light,
   }) => {
     const goBack = () => {
       if (navigation) {
@@ -49,14 +51,13 @@ const Nav: React.FC<Props> = React.memo(
       return null
     }
 
-    const theme = 'dark'
 
     return (
       <SafeAreaView style={[navStyles.container, style]}>
         {backButton ? (
           <Ionicons
             name="ios-arrow-round-back"
-            color={Colors.TEXT_WHITE}
+            color={light ? 'black' : Colors.TEXT_WHITE}
             size={40}
             style={navStyles.navMenu}
             // eslint-disable-next-line react/jsx-no-bind
@@ -73,7 +74,7 @@ const Nav: React.FC<Props> = React.memo(
           </View>
         )}
         <Text
-          style={theme === 'dark' ? navStyles.navTitleDark : navStyles.navTitle}
+          style={light ? navStyles.navTitle : navStyles.navTitleDark}
         >
           {title ? title.toUpperCase() : ''}
         </Text>
@@ -104,9 +105,9 @@ const navStyles = StyleSheet.create({
     backgroundColor: Colors.TRANSPARENT,
   },
   navTitle: {
-    fontSize: 13,
+    fontSize: 20,
     fontFamily: 'Montserrat-700',
-    color: Colors.TEXT_WHITE,
+    color: 'black',
   },
   navTitleDark: {
     fontSize: 20,
