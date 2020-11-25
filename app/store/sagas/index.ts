@@ -13,6 +13,7 @@ import chats from './chats'
 import sentReqs from './sent-reqs'
 import receivedReqs from './received-reqs'
 import sharedPosts from './shared-posts'
+import auth from './auth'
 
 function* rootSaga() {
   yield all([
@@ -29,6 +30,7 @@ function* rootSaga() {
     call(sentReqs),
     call(receivedReqs),
     call(sharedPosts),
+    call(auth),
   ])
 }
 
