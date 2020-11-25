@@ -14,7 +14,7 @@ import Nav from '../components/Nav'
 type CompleteWebView = WebView & { postMessage: (message: string) => void }
 
 const signingServiceUrl = 'https://moon-sign.shock.network/sign'
-const apiPubKey = 'pk_test_HudfmyQTH3A1bHaq4SKrRiNgRoAYOir7'
+const apiPubKey = 'pk_test_C8jSPDtsKQqXwP7nkScpqZI5tsaOiQPH'
 
 type Props = {
   navigation: import('react-navigation').NavigationScreenProp<{}, {}>
