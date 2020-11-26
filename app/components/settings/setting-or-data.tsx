@@ -1,5 +1,5 @@
 import React from 'react'
-import { View, Text, StyleSheet } from 'react-native'
+import { View, Text, StyleSheet, TouchableWithoutFeedback } from 'react-native'
 
 import * as CSS from '../../res/css'
 import Pad from '../Pad'
@@ -7,37 +7,44 @@ import Pad from '../Pad'
 import Icon, { IconName } from './icon'
 
 export interface SettingOrDataProps {
+  onPress?(): void
   subtitle?: string
   title: string
-
   rightSide?: IconName | 'input'
 }
 
 class _SettingOrData extends React.PureComponent<SettingOrDataProps> {
+  onPress = () => {
+    const { onPress } = this.props
+
+    onPress && onPress()
+  }
   render() {
     const { subtitle, title, rightSide } = this.props
 
     return (
-      <View style={styles.container}>
-        <View style={styles.titleAndSubtitleContainer}>
-          <Text style={styles.title}>{title}</Text>
+      <TouchableWithoutFeedback onPress={this.onPress}>
+        <View style={styles.container}>
+          <View style={styles.titleAndSubtitleContainer}>
+            <Text style={styles.title}>{title}</Text>
 
-          <Pad amount={8} />
+            <Pad amount={8} />
 
-          <Text style={subtitle ? styles.subtitle : styles.subtitleHidden}>
-            {subtitle || 'Lorem ipsumDolor Lorem ipsumDolor'}
-          </Text>
+            <Text style={subtitle ? styles.subtitle : styles.subtitleHidden}>
+              {subtitle || 'Lorem ipsumDolor Lorem ipsumDolor'}
+            </Text>
+          </View>
+
+          {rightSide &&
+            (() => {
+              if (rightSide === 'input') {
+                return null
+              }
+
+              return <Icon name={rightSide} />
+            })()}
         </View>
-
-        {rightSide &&
-          (() => {
-            if (rightSide === 'input') {
-              return null
-            }
-
-            return <Icon name={rightSide} />
-          })()}
-      </View>
+      </TouchableWithoutFeedback>
     )
   }
 }

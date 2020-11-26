@@ -38,7 +38,7 @@ import TapCopy from '../../assets/images/profile/tapcopy.svg'
 import ShockIcon from '../../res/icons'
 import * as Store from '../../store'
 import { post } from '../../services'
-
+import SharedPost from '../../components/shared-post'
 import {
   activityIndicatorSmall,
   activityIndicatorLarge,
@@ -64,7 +64,7 @@ interface StateProps {
   displayName: string | null
   bio: string | null
 
-  posts: Common.Schema.PostN[]
+  posts: Array<Common.Schema.PostN | Common.Schema.SharedPost>
 }
 
 interface DispatchProps {}
@@ -281,7 +281,18 @@ class MyProfile extends React.PureComponent<Props, State> {
     }))
   }
 
-  renderItem = ({ item }: ListRenderItemInfo<Common.Schema.PostN>) => {
+  renderItem = ({
+    item,
+  }: ListRenderItemInfo<Common.Schema.PostN | Common.Schema.SharedPost>) => {
+    if (Common.Schema.isSharedPost(item)) {
+      return (
+        <View>
+          <SharedPost shareID={item.shareID} />
+          <Pad amount={12} />
+        </View>
+      )
+    }
+
     return (
       <View>
         <Post id={item.id} />
@@ -290,9 +301,15 @@ class MyProfile extends React.PureComponent<Props, State> {
     )
   }
 
-  keyExtractor = (item: Common.Schema.PostN | string) => {
+  keyExtractor = (
+    item: Common.Schema.PostN | Common.Schema.SharedPost | string,
+  ) => {
     if (typeof item === 'string') {
       return 'userdata'
+    }
+
+    if (Common.Schema.isSharedPost(item)) {
+      return item.shareID
     }
 
     return item.id
@@ -575,7 +592,7 @@ const listFooter = <Pad amount={75} />
 
 const makeMapStateToProps = () => {
   const getUser = Store.makeGetUser()
-  const getPostsForPublicKey = Store.makeGetPostsForPublicKey()
+  const getPostsForPublicKey = Store.makeGetPostsAndSharedForPublicKey()
 
   return (state: Store.State): StateProps => {
     const user = getUser(state, state.auth.gunPublicKey)

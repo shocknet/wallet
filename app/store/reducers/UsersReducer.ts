@@ -103,6 +103,15 @@ const reducer: Reducer<State, Action> = (
           }
         })
 
+      case 'sharedPosts/received':
+        return produce(state, draft => {
+          const { originalAuthor: publicKey } = action.payload
+
+          if (!draft[publicKey]) {
+            draft[publicKey] = Schema.createEmptyUser(publicKey)
+          }
+        })
+
       default:
         return state
     }
