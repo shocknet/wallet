@@ -1,125 +1,151 @@
 import React from 'react'
-import {
-  Clipboard,
-  ScrollView,
-  Button,
-  Text,
-  ToastAndroid,
-  View,
-} from 'react-native'
+import { View, Text, ToastAndroid } from 'react-native'
+import { NavigationEvents } from 'react-navigation'
 import { connect } from 'react-redux'
-import uuid from 'uuid/v1'
+import { StackNavigationOptions } from 'react-navigation-stack/lib/typescript/src/vendor/types'
+import * as FS from 'react-native-fs'
+import Share from 'react-native-share'
 
 import * as CSS from '../res/css'
-import * as Cache from '../services/cache'
+import {
+  SettingOrData,
+  headerStyle,
+  headerTitleStyle,
+  headerBackImage,
+  ScrollViewContainer,
+  PAD_BETWEEN_ITEMS,
+} from '../components/settings'
+
+import Pad from '../components/Pad'
 import * as Store from '../store'
 import * as Services from '../services'
-
-import QR from './WalletOverview/QR'
 
 interface OwnProps {}
 
 interface StateProps {
-  chatsAmt: number
-  sentReqsAmt: number
-  receivedReqsAmt: number
-  ownPostsAmt: number
-  feedPostsAmt: number
-  followsAmt: number
-  host: string
+  err?: string
   debugModeEnabled: boolean
-
-  online: boolean
-
-  token: string
-
-  deviceID: string
-
-  err: string
 }
 
 interface DispatchProps {
   enableDebug(): void
   disableDebug(): void
-  tokenDidInvalidate(): void
-  hostWasSet(h: ''): void
 }
 
 type Props = OwnProps & StateProps & DispatchProps
 
-class Debug extends React.PureComponent<Props, Record<string, any>> {
-  state: Record<string, any> = {}
+interface State {
+  sharingWalletLog: boolean
+  sharingAPILog: boolean
+}
+
+class Debug extends React.PureComponent<Props, State> {
+  static navigationOptions: StackNavigationOptions = {
+    title: 'Debug',
+    headerStyle,
+    headerTitleAlign: 'center',
+    headerTitleStyle,
+    headerBackImage,
+  }
+
+  state: State = {
+    sharingAPILog: false,
+    sharingWalletLog: false,
+  }
 
   mounted = false
 
-  subs = [() => {}]
-
   componentDidMount() {
     this.mounted = true
-    const { host } = this.props
-
-    const s = Services.rifle(host, `$user::currentHandshakeAddress::on`)
-
-    s.on('$shock', (data: string) => {
-      this.setState({
-        handshakeAddr: data,
-      })
-    })
-
-    this.subs.push(() => {
-      s.off('*')
-      s.close()
-    })
-
-    this.props.enableDebug()
-    ToastAndroid.show('Debug mode enabled', 800)
   }
 
   componentWillUnmount() {
     this.mounted = false
   }
 
-  copyDeviceID = () => {
-    Clipboard.setString(this.props.deviceID)
-    ToastAndroid.show('Copied', 800)
-  }
-
-  copyToken = () => {
-    Clipboard.setString(this.props.token)
-    ToastAndroid.show('Copied', 800)
-  }
-
-  clearAuthData = () => {
-    Cache.writeStoredAuthData(null)
-    this.props.tokenDidInvalidate()
-    this.props.hostWasSet('')
-  }
-
-  generateNewHandshakeNode = () => {
-    Services.post(`api/gun/put`, {
-      body: `$user>currentHandshakeAddress`,
-      value: uuid(),
-    })
+  enableDebugMode = () => {
+    this.props.enableDebug()
+    ToastAndroid.show('Debug mode enabled', 800)
   }
 
   disableDebugMode = () => {
     this.props.disableDebug()
   }
 
+  toggleDebugMode = () => {
+    if (this.props.debugModeEnabled) {
+      this.disableDebugMode()
+    } else {
+      this.enableDebugMode()
+    }
+  }
+
+  shareWalletLog = async () => {
+    ToastAndroid.show('Coming soon', ToastAndroid.LONG)
+    // try {
+    //   this.setState({
+    //     sharingWalletLog: true,
+    //   })
+
+    //   console.log('beforeeee')
+
+    //   const files = await Logger.listAllLogFiles()
+
+    //   console.log(files)
+
+    //   this.setState({
+    //     sharingWalletLog: false,
+    //   })
+    // } catch (e) {}
+  }
+
+  shareAPILog = async () => {
+    try {
+      this.setState({
+        sharingAPILog: true,
+      })
+
+      interface Res {
+        dailyRotateFile: Array<{
+          message: string
+          level: string
+        }>
+      }
+
+      const { dailyRotateFile: lines } = await Services.get<Res>('api/log')
+
+      const path = FS.DocumentDirectoryPath + '/shock-api-log-export.txt'
+
+      const txt = lines.map(l => JSON.stringify(l)).join('\n')
+
+      FS.writeFile(path, txt)
+
+      Share.open({
+        type: 'plain/text',
+        url: 'file://' + path,
+      })
+
+      this.setState({
+        sharingAPILog: false,
+      })
+    } catch (e) {
+      ToastAndroid.show(
+        `Could not share API log: ${e.message}`,
+        ToastAndroid.LONG,
+      )
+    }
+  }
+
+  dismissSpinners = () => {
+    this.setState({
+      sharingAPILog: false,
+      sharingWalletLog: false,
+    })
+  }
+
   render() {
-    const {
-      err,
-      chatsAmt,
-      deviceID,
-      feedPostsAmt,
-      followsAmt,
-      online,
-      ownPostsAmt,
-      receivedReqsAmt,
-      sentReqsAmt,
-      token,
-      debugModeEnabled,
-    } = this.props
+    const { err, debugModeEnabled } = this.props
+    const { sharingAPILog, sharingWalletLog } = this.state
 
     if (err) {
       return (
@@ -129,94 +155,50 @@ class Debug extends React.PureComponent<Props, Record<string, any>> {
       )
     }
 
-    const { handshakeAddr } = this.state
-
     return (
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={CSS.styles.alignItemsCenter}
-      >
-        <Text>A random Number: {Math.random().toString()}</Text>
-        <Button title="Disable " onPress={this.disableDebugMode} />
-        {debugModeEnabled ? (
-          <Text>Debug Mode Enabled</Text>
-        ) : (
-          <Text>Debug Mode Disabled</Text>
-        )}
-
-        <Text>Canary Socket Status:</Text>
-        <Text>{online ? 'Connected' : 'Disconnected'}</Text>
-
-        <Text>Current Handshake Address:</Text>
-        <Text>{handshakeAddr}</Text>
-
-        <Text>Current Chats:</Text>
-        <Text>{chatsAmt}</Text>
-
-        <Text>Current Sent reqs:</Text>
-        <Text>{sentReqsAmt}</Text>
-
-        <Text>Current Received reqs:</Text>
-        <Text>{receivedReqsAmt}</Text>
-
-        <Text>Feed posts:</Text>
-        <Text>{feedPostsAmt}</Text>
-
-        <Text>Follows:</Text>
-        <Text>{followsAmt}</Text>
-
-        <Text>Own Posts:</Text>
-        <Text>{ownPostsAmt}</Text>
-
-        <Text>Device ID:</Text>
-        <Text>{deviceID}</Text>
-
-        <Text>Token:</Text>
-        <Text>{token}</Text>
-
-        <Button title="Clear ALL Data" onPress={Cache.clearAllStorage} />
-
-        <Button title="Clear AUTH Data" onPress={this.clearAuthData} />
-
-        <Button
-          title="Copy device id to clipboard"
-          onPress={this.copyDeviceID}
+      <>
+        <NavigationEvents
+          onDidFocus={this.enableDebugMode}
+          onDidBlur={this.dismissSpinners}
         />
 
-        <Button title="Copy token to clipboard" onPress={this.copyToken} />
+        <ScrollViewContainer>
+          <SettingOrData
+            onPress={this.toggleDebugMode}
+            title="Debug Mode Enabled"
+            subtitle="Logs become more verbose"
+            rightSide={
+              debugModeEnabled ? 'checkbox-active' : 'checkbox-passive'
+            }
+          />
 
-        <Button
-          title="New Handshake Address"
-          onPress={this.generateNewHandshakeNode}
-        />
+          <Pad amount={PAD_BETWEEN_ITEMS} />
 
-        <QR size={256} logoToShow="shock" value={`${this.state.pk}`} />
-      </ScrollView>
+          <SettingOrData
+            onPress={this.shareWalletLog}
+            title="Share Log"
+            subtitle="Share as text file"
+            rightSide={sharingWalletLog ? 'spinner' : 'copy'}
+          />
+
+          <Pad amount={PAD_BETWEEN_ITEMS} />
+
+          <SettingOrData
+            onPress={this.shareAPILog}
+            title="Share API Log"
+            subtitle="Downloads logs for the last hour from node and shares as text file"
+            rightSide={sharingAPILog ? 'spinner' : 'copy'}
+          />
+        </ScrollViewContainer>
+      </>
     )
   }
 }
 
-const styles = {
-  container: [CSS.styles.flex],
-}
-
 const mapStateToProps = (state: Store.State): StateProps => {
-  const host = Store.selectHost(state)
-
   try {
     return {
-      chatsAmt: Object.keys(state.chat.contacts).length,
-      deviceID: state.connection.deviceId,
-      feedPostsAmt: Store.getPostsFromFollowed(state).length,
-      followsAmt: Store.getFollowedPublicKeys(state).length,
-      ownPostsAmt: Store.getOwnPosts(state).length,
-      receivedReqsAmt: -1,
-      sentReqsAmt: -1,
-      token: state.auth.token,
-      online: Store.isOnline(state),
       debugModeEnabled: state.debug.enabled,
-      err: '',
-      host,
     }
   } catch (e) {
     // @ts-expect-error
@@ -229,8 +211,6 @@ const mapStateToProps = (state: Store.State): StateProps => {
 const mapDispatch = {
   disableDebug: Store.disableDebug,
   enableDebug: Store.enableDebug,
-  tokenDidInvalidate: Store.tokenDidInvalidate,
-  hostWasSet: Store.hostWasSet,
 }
 
 export default connect(
