@@ -12,6 +12,7 @@ import {
   ToastAndroid,
 } from 'react-native'
 import Logger from 'react-native-file-log'
+import { NavigationEvents } from 'react-navigation'
 
 import { connect } from 'react-redux'
 // @ts-expect-error
@@ -96,7 +97,7 @@ class WalletOverview extends React.PureComponent {
 
   theme = 'dark'
 
-  componentDidMount = async () => {
+  componentDidFocus = async () => {
     const {
       fetchNodeInfo,
       forceInvoicesRefresh,
@@ -246,94 +247,98 @@ class WalletOverview extends React.PureComponent {
     const { testnet } = this.props
     const logoutRequest = this.props.navigation.getParam('logoutRequest')
     return (
-      <View style={styles.container}>
-        <StatusBar
-          translucent
-          backgroundColor="transparent"
-          barStyle="light-content"
-        />
-        <ImageBackground
-          source={this.theme === 'dark' ? wavesBGDark : wavesBG}
-          resizeMode="cover"
-          style={styles.overview}
-        >
-          <Nav title="" showAvatar />
-          {this.renderBalance()}
+      <>
+        <NavigationEvents onDidFocus={this.componentDidFocus} />
 
-          {testnet ? (
-            <Text style={styles.networkNotice}>
-              You are using Testnet network
-            </Text>
-          ) : null}
+        <View style={styles.container}>
+          <StatusBar
+            translucent
+            backgroundColor="transparent"
+            barStyle="light-content"
+          />
+          <ImageBackground
+            source={this.theme === 'dark' ? wavesBGDark : wavesBG}
+            resizeMode="cover"
+            style={styles.overview}
+          >
+            <Nav title="" showAvatar />
+            {this.renderBalance()}
+
+            {testnet ? (
+              <Text style={styles.networkNotice}>
+                You are using Testnet network
+              </Text>
+            ) : null}
+            <View
+              style={
+                this.theme === 'dark'
+                  ? styles.actionButtonsDark
+                  : styles.actionButtons
+              }
+            >
+              <TouchableHighlight
+                underlayColor="transparent"
+                onPress={this.onPressSend}
+                style={
+                  this.theme === 'dark'
+                    ? styles.actionButtonDark1
+                    : styles.actionButton
+                }
+              >
+                <Text
+                  style={
+                    this.theme === 'dark'
+                      ? styles.actionButtonTextDark1
+                      : styles.actionButtonText
+                  }
+                >
+                  Send
+                </Text>
+              </TouchableHighlight>
+              <TouchableHighlight
+                underlayColor="transparent"
+                onPress={this.onPressRequest}
+                style={
+                  this.theme === 'dark'
+                    ? [styles.actionButtonDark2, { backgroundColor: '#4285B9' }]
+                    : [
+                        styles.actionButton,
+                        { backgroundColor: CSS.Colors.FUN_BLUE },
+                      ]
+                }
+              >
+                <Text
+                  style={
+                    this.theme === 'dark'
+                      ? styles.actionButtonTextDark2
+                      : styles.actionButtonText
+                  }
+                >
+                  Request
+                </Text>
+              </TouchableHighlight>
+            </View>
+          </ImageBackground>
           <View
             style={
               this.theme === 'dark'
-                ? styles.actionButtonsDark
-                : styles.actionButtons
+                ? styles.trxContainerDark
+                : styles.trxContainer
             }
           >
-            <TouchableHighlight
-              underlayColor="transparent"
-              onPress={this.onPressSend}
-              style={
-                this.theme === 'dark'
-                  ? styles.actionButtonDark1
-                  : styles.actionButton
-              }
-            >
-              <Text
-                style={
-                  this.theme === 'dark'
-                    ? styles.actionButtonTextDark1
-                    : styles.actionButtonText
-                }
-              >
-                Send
-              </Text>
-            </TouchableHighlight>
-            <TouchableHighlight
-              underlayColor="transparent"
-              onPress={this.onPressRequest}
-              style={
-                this.theme === 'dark'
-                  ? [styles.actionButtonDark2, { backgroundColor: '#4285B9' }]
-                  : [
-                      styles.actionButton,
-                      { backgroundColor: CSS.Colors.FUN_BLUE },
-                    ]
-              }
-            >
-              <Text
-                style={
-                  this.theme === 'dark'
-                    ? styles.actionButtonTextDark2
-                    : styles.actionButtonText
-                }
-              >
-                Request
-              </Text>
-            </TouchableHighlight>
+            <UnifiedTrx />
           </View>
-        </ImageBackground>
-        <View
-          style={
-            this.theme === 'dark'
-              ? styles.trxContainerDark
-              : styles.trxContainer
-          }
-        >
-          <UnifiedTrx />
+          <ShockDialog
+            visible={!!logoutRequest}
+            onRequestClose={this.handleLogout(false)}
+            message="Logout?"
+            choiceToHandler={{
+              YES: this.handleLogout(true),
+              NO: this.handleLogout(false),
+            }}
+          />
         </View>
-        <ShockDialog
-          visible={!!logoutRequest}
-          onRequestClose={this.handleLogout(false)}
-          message="Logout?"
-          choiceToHandler={{
-            YES: this.handleLogout(true),
-            NO: this.handleLogout(false),
-          }}
-        />
-      </View>
+      </>
     )
   }
 }
