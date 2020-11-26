@@ -14,10 +14,17 @@ interface Props {
    */
   slim?: boolean
   title: string
+  disabled?: boolean
 }
 
-const SpaceBtn: React.FC<Props> = ({ iconLeft, onPress, title, slim }) => (
-  <TouchableOpacity onPress={onPress}>
+const SpaceBtn: React.FC<Props> = ({
+  iconLeft,
+  onPress,
+  title,
+  slim,
+  disabled,
+}) => (
+  <TouchableOpacity disabled={disabled} onPress={onPress}>
     <View style={slim ? styles.containerSlim : styles.container}>
       {iconLeft === 'bolt' && (
         <>
