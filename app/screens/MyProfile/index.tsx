@@ -63,7 +63,7 @@ interface StateProps {
   avatar: string | null
   displayName: string | null
   bio: string | null
-
+  publicKey: string
   posts: Array<Common.Schema.PostN | Common.Schema.SharedPost>
 }
 
@@ -474,6 +474,7 @@ class MyProfile extends React.PureComponent<Props, State> {
           <MetaConfigModal
             toggleModal={this.onPressMetaConfigModal}
             isModalVisible={this.state.showMetaConfigModal}
+            publicKey={this.props.publicKey}
           />
         </View>
 
@@ -603,6 +604,7 @@ const makeMapStateToProps = () => {
       displayName: user.displayName,
       headerImage: user.header,
       posts: getPostsForPublicKey(state, state.auth.gunPublicKey),
+      publicKey: state.auth.gunPublicKey,
     }
   }
 }

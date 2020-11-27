@@ -46,10 +46,18 @@ function MetaConfigModal(props: any) {
                 <Text style={styles.caption}>Brand Config</Text>
               </View>
               <Pad amount={40} />
+
               <InputGroup
                 label="Webtorrent Seed"
                 value=""
                 placeholder="https://satoshi.watch/users_pubkey"
+              />
+
+              <InputGroup
+                label="Web Client"
+                value=""
+                isWebClientPicker
+                publicKey={props.publicKey}
               />
             </View>
 
