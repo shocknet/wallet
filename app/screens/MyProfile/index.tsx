@@ -436,32 +436,36 @@ class MyProfile extends React.PureComponent<Props, State> {
             backdropTransitionOutTiming={600}
             onBackdropPress={this.onPressShowMyQrCodeModal}
           >
-            <View style={styles.container}>
-              <TouchableOpacity onPress={this.copyDataToClipboard}>
-                {authData === null ? (
-                  activityIndicatorLarge
-                ) : (
-                  <QR
-                    size={180}
-                    logoToShow="shock-new"
-                    value={`${authData.publicKey}`}
-                  />
-                )}
-              </TouchableOpacity>
-              <Pad amount={10} />
-              <Text style={styles.bodyTextQrModal}>
-                Other users can scan this QR to contact you.
-              </Text>
+            <View style={styles.qrViewModal}>
+              <View style={styles.subContainerDark}>
+                <React.Fragment>
+                  <TouchableOpacity onPress={this.copyDataToClipboard}>
+                    {authData === null ? (
+                      activityIndicatorLarge
+                    ) : (
+                      <QR
+                        size={180}
+                        logoToShow="shock-new"
+                        value={`${authData.publicKey}`}
+                      />
+                    )}
+                  </TouchableOpacity>
+                  <Pad amount={10} />
+                  <Text style={styles.bodyTextQrModal}>
+                    Other users can scan this QR to contact you.
+                  </Text>
 
-              <TouchableOpacity
-                style={styles.tapButtonQrModal}
-                onPress={this.copyDataToClipboard}
-              >
-                <TapCopy size={30} />
-                <Text style={styles.tapButtonQrModalText}>
-                  Copy link to clipboard
-                </Text>
-              </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.tapButtonQrModal}
+                    onPress={this.copyDataToClipboard}
+                  >
+                    <TapCopy size={30} />
+                    <Text style={styles.tapButtonQrModalText}>
+                      Copy link to clipboard
+                    </Text>
+                  </TouchableOpacity>
+                </React.Fragment>
+              </View>
             </View>
           </Modal>
         </View>
