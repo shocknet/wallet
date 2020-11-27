@@ -122,7 +122,7 @@
     "safe-buffer": "^5.0.0",
     "scheduler": "0.16.1",
     "shock-common": "latest",
-    "socket.io-client": "2.1.1",
+    "socket.io-client": "3.0.3",
     "stream-browserify": "^1.0.0",
     "string_decoder": "~0.10.25",
     "timers-browserify": "^1.0.1",
