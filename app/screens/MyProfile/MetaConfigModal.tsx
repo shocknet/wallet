@@ -49,7 +49,6 @@ function MetaConfigModal(props: any) {
               <InputGroup
                 label="Webtorrent Seed"
                 value=""
-                // onChange={}
                 placeholder="https://satoshi.watch/users_pubkey"
               />
             </View>
