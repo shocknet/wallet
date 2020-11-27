@@ -1,6 +1,5 @@
 import React from 'react'
 import {
-  ScrollView,
   StatusBar,
   StyleSheet,
   Text,
@@ -14,67 +13,48 @@ import Pad from '../../components/Pad'
 import InputGroup from '../../components/InputGroup'
 import ArrowLeft from '../../assets/images/arrow-left.svg'
 
-export default function MetaConfigModal(props: any) {
+function MetaConfigModal(props: any) {
   return (
-    <View style={{ flex: 1 }}>
-      <Modal
-        isVisible={props.isModalVisible}
-        backdropColor="#16191C"
-        backdropOpacity={0.94}
-        animationIn="zoomInDown"
-        animationOut="zoomOutUp"
-        animationInTiming={600}
-        animationOutTiming={600}
-        backdropTransitionInTiming={600}
-        backdropTransitionOutTiming={600}
-        onBackdropPress={props.toggleModal}
-      >
-        <ScrollView>
-          <StatusBar
-            translucent
-            backgroundColor="rgba(22, 25, 28, .94)"
-            barStyle="light-content"
-          />
-          <View style={styles.subContainerDark}>
-            <View style={styles.backButton}>
-              <TouchableOpacity onPress={props.toggleModal}>
-                <ArrowLeft size={19} />
-              </TouchableOpacity>
-            </View>
+    <>
+      <StatusBar
+        translucent
+        backgroundColor="rgba(22, 25, 28, .94)"
+        barStyle="light-content"
+      />
+
+      <View style={CSS.styles.flex}>
+        <Modal
+          isVisible={props.isModalVisible}
+          backdropColor="#16191C"
+          backdropOpacity={0.94}
+          animationIn="zoomInDown"
+          animationOut="zoomOutUp"
+          animationInTiming={600}
+          animationOutTiming={600}
+          backdropTransitionInTiming={600}
+          backdropTransitionOutTiming={600}
+          onBackdropPress={props.toggleModal}
+        >
+          <View style={styles.container}>
             <View>
-              <Text style={styles.caption}>Meta</Text>
+              <View style={styles.backButton}>
+                <TouchableOpacity onPress={props.toggleModal}>
+                  <ArrowLeft size={19} />
+                </TouchableOpacity>
+              </View>
+              <View>
+                <Text style={styles.caption}>Brand Config</Text>
+              </View>
+              <Pad amount={40} />
+              <InputGroup
+                label="Webtorrent Seed"
+                value=""
+                // onChange={}
+                placeholder="https://satoshi.watch/users_pubkey"
+              />
             </View>
-            <Pad amount={40} />
-            <TouchableOpacity style={styles.touchableOpacity}>
-              <Text style={styles.touchableButton}>Offer Shipping_to Geo</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.touchableOpacity}>
-              <Text style={styles.touchableButton}>Physical Location_ Geo</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.touchableOpacity}>
-              <Text style={styles.touchableButton}>Service to Geo</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.touchableOpacity}>
-              <Text style={styles.touchableButton}>Hours</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.touchableOpacity}>
-              <Text style={styles.touchableButton}>Security</Text>
-            </TouchableOpacity>
-            <InputGroup
-              label="Web"
-              value=""
-              // onChange={}
-              style={{ marginBottom: 20 }}
-              placeholder="https://satoshi.watch/users_pubkey"
-            />
-            <InputGroup
-              label="Torrent Seed"
-              value=""
-              // onChange={}
-              style={{ marginBottom: 20 }}
-              placeholder="gun_uid_of_service |or| self-hosted"
-            />
-            <View style={styles.actionButtonsDark}>
+
+            <View style={CSS.styles.rowCenteredSpaceBetween}>
               <TouchableHighlight
                 underlayColor="transparent"
                 onPress={props.onPressCancel}
@@ -91,15 +71,16 @@ export default function MetaConfigModal(props: any) {
               </TouchableHighlight>
             </View>
           </View>
-        </ScrollView>
-      </Modal>
-    </View>
+        </Modal>
+      </View>
+    </>
   )
 }
 
 const styles = StyleSheet.create({
-  subContainerDark: {
-    flexDirection: 'column',
+  container: {
+    flex: 1,
+    justifyContent: 'space-between',
   },
   backButton: {
     alignItems: 'flex-start',
@@ -162,3 +143,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 })
+
+const MemoizedMetaConfigModal = React.memo(MetaConfigModal)
+
+export default MemoizedMetaConfigModal
