@@ -121,7 +121,7 @@
     "reselect": "^4.0.0",
     "safe-buffer": "^5.0.0",
     "scheduler": "0.16.1",
-    "shock-common": "23.x.x",
+    "shock-common": "latest",
     "socket.io-client": "2.1.1",
     "stream-browserify": "^1.0.0",
     "string_decoder": "~0.10.25",
