@@ -40,6 +40,7 @@ import {
   decodePaymentRequest,
 } from '../../store/actions/InvoiceActions'
 import { WALLET_OVERVIEW } from '../../routes'
+import LNURLPayModal from '../Advanced/Modals/LNURLPayModal'
 /**
  * @typedef {import('../../services/validators').ExtractedBTCAddress} ExtractedBTCAddress
  * @typedef {import('../../services/validators').ExtractedLNInvoice} ExtractedLNInvoice
@@ -55,6 +56,7 @@ import { WALLET_OVERVIEW } from '../../routes'
  * @typedef {object} Params
  * @prop {boolean|undefined} isRedirect
  * @prop {ExtractedBTCAddress|(ExtractedLNInvoice & FromChat)|ExtractedKeysend} data
+ * @prop {import('../Advanced/Modals/LNURLPayModal').LNURLdataType} LNURLPay
  */
 
 /**
@@ -626,6 +628,18 @@ class SendScreen extends React.PureComponent {
     }
   }
 
+  closeLNURLPayModal = () => {
+    this.props.navigation.setParams({ LNURLPay: undefined })
+  }
+
+  /**
+   *
+   * @param {string} request
+   */
+  handleLNURLPay = request => {
+    this.props.decodePaymentRequest(request)
+  }
+
   render() {
     const {
       description,
@@ -659,6 +673,7 @@ class SendScreen extends React.PureComponent {
         </View>
       )
     }
+    const LNURLPay = this.props.navigation.getParam('LNURLPay')
 
     return (
       <ImageBackground
@@ -906,6 +921,12 @@ class SendScreen extends React.PureComponent {
 
           {this.renderSlideToSendButton()}
         </View>
+        <LNURLPayModal
+          LNURLdata={LNURLPay}
+          onClose={this.closeLNURLPayModal}
+          visible={!!LNURLPay}
+          payData={this.handleLNURLPay}
+        />
       </ImageBackground>
     )
   }

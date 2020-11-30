@@ -48,6 +48,8 @@ import CloseChannelModal from './Modals/CloseChannel'
 import ShockDialog from '../../components/ShockDialog'
 import InfoPeerModal from './Modals/infoPeer'
 import { NavigationEventSubscription } from 'react-navigation'
+import LNURLChannelModal from './Modals/LNURLChannelModal'
+import LNURLWithdrawModal from './Modals/LNURLWithdrawModal'
 
 type Channel = import('../../services/wallet').Channel
 type PendingChannel = import('../../services/wallet').PendingChannel
@@ -96,7 +98,12 @@ interface PageToFetch {
   reset?: boolean
 }
 
-type Navigation = import('react-navigation').NavigationScreenProp<{}>
+type Params = {
+  LNURLChannel?: import('./Modals/LNURLChannelModal').LNURLdataType
+  LNURLWithdraw?: import('./Modals/LNURLWithdrawModal').LNURLdataType
+}
+
+type Navigation = import('react-navigation').NavigationScreenProp<{}, Params>
 interface TmpProps {
   fetchChannels: () => void
   fetchPendingChannels: () => void
@@ -594,6 +601,13 @@ class AdvancedScreen extends React.PureComponent<Props, State> {
     })
   }
 
+  closeLNURLChannelModal = () => {
+    this.props.navigation.setParams({ LNURLChannel: undefined })
+  }
+  closeLNURLWithdrawModal = () => {
+    this.props.navigation.setParams({ LNURLWithdraw: undefined })
+  }
+
   confirmCloseChoices = {
     Confirm: this.confirmedCloseChannel,
     'Go Back': this.closeCloseChannelDialog,
@@ -719,6 +733,9 @@ class AdvancedScreen extends React.PureComponent<Props, State> {
       refreshingChannels,
       refreshingTransactions,
     } = this.state
+
+    const LNURLChannel = this.props.navigation.getParam('LNURLChannel')
+    const LNURLWithdraw = this.props.navigation.getParam('LNURLWithdraw')
 
     //Logger.log(history.channels)
     Logger.log(channelPublicKey)
@@ -981,6 +998,18 @@ class AdvancedScreen extends React.PureComponent<Props, State> {
           submit={this.closeInfoPeer}
           error={err}
         />
+
+        <LNURLChannelModal
+          LNURLdata={LNURLChannel}
+          onClose={this.closeLNURLChannelModal}
+          visible={!!LNURLChannel}
+        />
+        <LNURLWithdrawModal
+          LNURLdata={LNURLWithdraw}
+          onClose={this.closeLNURLWithdrawModal}
+          visible={!!LNURLWithdraw}
+        />
+
         <ShockDialog
           choiceToHandler={this.confirmCloseChoices}
           onRequestClose={this.closeCloseChannelDialog}

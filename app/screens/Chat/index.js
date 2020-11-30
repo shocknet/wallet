@@ -700,6 +700,7 @@ class Chat extends React.PureComponent {
     const dName = this.getRecipientDisplayName()
 
     /** @type {SendScreenParams} */
+    //@ts-expect-error
     const params = {
       isRedirect: true,
       data: {
