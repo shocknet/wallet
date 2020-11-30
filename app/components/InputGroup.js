@@ -1,18 +1,8 @@
 import React, { PureComponent } from 'react'
-import {
-  StyleSheet,
-  Text,
-  View,
-  TextInput,
-  ToastAndroid,
-  ,
-} from 'react-native'
+import { StyleSheet, Text, View, TextInput } from 'react-native'
 import Ionicons from 'react-native-vector-icons/Ionicons'
-import * as Common from 'shock-common'
 
 import * as CSS from '../res/css'
-import * as Services from '../services'
-
 
 /**
  * @typedef {object} Props
@@ -30,8 +20,6 @@ import * as Services from '../services'
  * @prop {(import('react-native').KeyboardType)=} type
  */
 
-
-
 /**
  * @augments PureComponent<Props>
  */
@@ -40,17 +28,11 @@ class InputGroup extends PureComponent {
 
   mounted = false
 
-  
-  
-
   async componentDidMount() {}
 
   componentWillUnmount() {
     this.mounted = false
   }
-
-  
-  
 
   render() {
     const {
@@ -158,38 +140,6 @@ const styles = StyleSheet.create({
   multilineInput: {
     height: '100%',
     textAlignVertical: 'top',
-  },
-  dropdownContainer: {
-    height: 33,
-    width: '40%',
-  },
-  dropdown: {
-    backgroundColor: '#001220',
-    borderTopLeftRadius: 0,
-    borderTopRightRadius: 0,
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
-    borderColor: '#4285B9',
-    borderWidth: 1,
-  },
-  dropdownItem: {
-    justifyContent: 'flex-start',
-  },
-  dropdownDropdown: {
-    backgroundColor: '#001220',
-    borderTopLeftRadius: 0,
-    borderTopRightRadius: 0,
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
-    marginTop: -34,
-    borderColor: '#4285B9',
-    borderWidth: 1,
-  },
-  dropdownLabel: {
-    color: '#BBB8B8',
-    fontFamily: 'Montserrat-600',
-    textAlignVertical: 'center',
-    fontSize: 12,
   },
 })
 

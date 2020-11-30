@@ -21,6 +21,7 @@ import * as Services from '../../services'
 
 interface MetaConfigModalState {
   webClientPrefix: Common.WebClientPrefix | null
+  webTorrentSeed: string | null
 }
 
 export default class MetaConfigModal extends React.PureComponent<
@@ -29,13 +30,19 @@ export default class MetaConfigModal extends React.PureComponent<
 > {
   mounted = true
 
-  async componentDidMount() {
-    this.mounted = true
+  state: MetaConfigModalState = {
+    webClientPrefix: null,
+    webTorrentSeed: null,
+  }
 
+  setupWebClientPrefix = async () => {
     try {
-      const webClientPrefix = await Services.get(
-        'api/gun/user/once/webClientPrefix',
+      const { data: webClientPrefix } = await Services.get<{ data: unknown }>(
+        'api/gun/user/once/Profile>webClientPrefix',
       )
+      if (!this.mounted) {
+        return
+      }
 
       if (typeof webClientPrefix === 'string') {
         this.setState({
@@ -43,7 +50,7 @@ export default class MetaConfigModal extends React.PureComponent<
         })
       } else {
         await Services.post(`api/gun/put`, {
-          path: '$user>webClientPrefix',
+          path: '$user>Profile>webClientPrefix',
           value: availableDropdownItems[0].value,
         })
 
@@ -56,19 +63,65 @@ export default class MetaConfigModal extends React.PureComponent<
         })
       }
     } catch (e) {
-      if (this.mounted) {
-        ToastAndroid.show(
-          `Could not fetch web client prefix:${e.message}, will retry...`,
-          ToastAndroid.LONG,
-        )
-      }
+      ToastAndroid.show(
+        `Could not fetch web client prefix:${e.message}, will retry...`,
+        ToastAndroid.LONG,
+      )
 
       setTimeout(() => {
         if (this.mounted) {
-          this.componentDidMount()
+          this.setupWebClientPrefix()
         }
       }, 4000)
     }
+  }
+
+  setupWebTorrentSeed = async () => {
+    try {
+      const { data: webTorrentSeed } = await Services.get<{ data: unknown }>(
+        'api/gun/user/once/webTorrentSeed',
+      )
+      if (!this.mounted) {
+        return
+      }
+
+      if (typeof webTorrentSeed === 'string') {
+        this.setState({
+          webTorrentSeed: webTorrentSeed,
+        })
+      } else {
+        await Services.post(`api/gun/put`, {
+          path: '$user>webTorrentSeed',
+          value: 'https://webtorrent.shock.network',
+        })
+
+        if (!this.mounted) {
+          return
+        }
+
+        this.setState({
+          webTorrentSeed: 'https://webtorrent.shock.network',
+        })
+      }
+    } catch (e) {
+      ToastAndroid.show(
+        `Could not fetch web torrent seed:${e.message}, will retry...`,
+        ToastAndroid.LONG,
+      )
+
+      setTimeout(() => {
+        if (this.mounted) {
+          this.setupWebTorrentSeed()
+        }
+      }, 4000)
+    }
+  }
+
+  async componentDidMount() {
+    this.mounted = true
+
+    this.setupWebClientPrefix()
+    this.setupWebTorrentSeed()
   }
 
   componentWillUnmount() {
@@ -83,11 +136,18 @@ export default class MetaConfigModal extends React.PureComponent<
     })
   }
 
+  onChangeWebTorrentSeed = (webTorrentSeed: string) => {
+    this.setState({
+      webTorrentSeed,
+    })
+  }
+
   onSave = () => {
-    const { webClientPrefix } = this.state
+    const { webClientPrefix, webTorrentSeed } = this.state
+    const { toggleModal } = this.props
 
     Services.post(`api/gun/put`, {
-      path: '$user>webClientPrefix',
+      path: '$user>Profile>webClientPrefix',
       value: webClientPrefix,
     }).catch(e => {
       ToastAndroid.show(
@@ -95,10 +155,23 @@ export default class MetaConfigModal extends React.PureComponent<
         ToastAndroid.LONG,
       )
     })
+
+    Services.post(`api/gun/put`, {
+      path: '$user>webTorrentSeed',
+      value: webTorrentSeed,
+    }).catch(e => {
+      ToastAndroid.show(
+        `Could not save web torrent seed URL -> ${e.message}`,
+        ToastAndroid.LONG,
+      )
+    })
+
+    toggleModal()
   }
 
   render() {
     const { props } = this
+    const { webClientPrefix, webTorrentSeed } = this.state
 
     return (
       <>
@@ -133,19 +206,19 @@ export default class MetaConfigModal extends React.PureComponent<
                 </View>
                 <Pad amount={40} />
 
-                <View
-                  style={
-                    disabled
-                      ? styles.webClientPrefixPickerDisabled
-                      : styles.webClientPrefixPicker
-                  }
-                >
-                  {webClientPrefix === null ? (
-                    <ActivityIndicator
-                      color={CSS.Colors.DARK_MODE_CYAN}
-                      size="small"
-                    />
-                  ) : (
+                {webClientPrefix === null ? (
+                  <ActivityIndicator
+                    color={CSS.Colors.DARK_MODE_CYAN}
+                    size="small"
+                  />
+                ) : (
+                  <View
+                    style={
+                      webClientPrefix === null
+                        ? styles.webClientPrefixPickerDisabled
+                        : styles.webClientPrefixPicker
+                    }
+                  >
                     <DropDownPicker
                       items={availableDropdownItems}
                       defaultValue={webClientPrefix}
@@ -157,27 +230,31 @@ export default class MetaConfigModal extends React.PureComponent<
                       labelStyle={styles.dropdownLabel}
                       arrowColor="#B2B2B2"
                     />
-                  )}
 
-                  <Pad amount={12} insideRow />
+                    <Pad amount={12} insideRow />
 
-                  <Text style={styles.slash}>/</Text>
+                    <Text style={styles.slash}>/</Text>
 
-                  <Pad amount={12} insideRow />
+                    <Pad amount={12} insideRow />
 
-                  <Text
-                    style={styles.publicKey}
-                    ellipsizeMode="tail"
-                    numberOfLines={1}
-                  >
-                    {this.props.publicKey}
-                  </Text>
-                </View>
+                    <Text
+                      style={styles.publicKey}
+                      ellipsizeMode="tail"
+                      numberOfLines={1}
+                    >
+                      {this.props.publicKey}
+                    </Text>
+                  </View>
+                )}
+
+                <Pad amount={40} />
 
                 <InputGroup
                   label="Webtorrent Seed"
-                  value=""
-                  placeholder="https://satoshi.watch/users_pubkey"
+                  value={webTorrentSeed ?? ''}
+                  placeholder={webTorrentSeed === null ? 'Loading...' : ''}
+                  disabled={webTorrentSeed === null}
+                  onChange={this.onChangeWebTorrentSeed}
                 />
               </View>
 
@@ -191,8 +268,8 @@ export default class MetaConfigModal extends React.PureComponent<
                 </TouchableHighlight>
                 <TouchableHighlight
                   underlayColor="transparent"
-                  onPress={props.onPressSave}
-                  style={[styles.actionButtonDark2]}
+                  onPress={this.onSave}
+                  style={styles.actionButtonDark2}
                 >
                   <Text style={styles.actionButtonTextDark2}>Save</Text>
                 </TouchableHighlight>
@@ -303,5 +380,37 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: CSS.Colors.DARK_MODE_TEXT_GRAY,
     flexShrink: 2,
+  },
+  dropdownContainer: {
+    height: 33,
+    width: '40%',
+  },
+  dropdown: {
+    backgroundColor: '#001220',
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+    borderColor: '#4285B9',
+    borderWidth: 1,
+  },
+  dropdownItem: {
+    justifyContent: 'flex-start',
+  },
+  dropdownDropdown: {
+    backgroundColor: '#001220',
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+    marginTop: -34,
+    borderColor: '#4285B9',
+    borderWidth: 1,
+  },
+  dropdownLabel: {
+    color: '#BBB8B8',
+    fontFamily: 'Montserrat-600',
+    textAlignVertical: 'center',
+    fontSize: 12,
   },
 })
