@@ -1,12 +1,18 @@
 import React, { PureComponent } from 'react'
-import { StyleSheet, Text, View, TextInput, ToastAndroid } from 'react-native'
+import {
+  StyleSheet,
+  Text,
+  View,
+  TextInput,
+  ToastAndroid,
+  ,
+} from 'react-native'
 import Ionicons from 'react-native-vector-icons/Ionicons'
-import DropDownPicker from 'react-native-dropdown-picker'
 import * as Common from 'shock-common'
-import { NavigationEvents } from 'react-navigation'
 
 import * as CSS from '../res/css'
 import * as Services from '../services'
+
 
 /**
  * @typedef {object} Props
@@ -22,68 +28,29 @@ import * as Services from '../services'
  * @prop {(object)=} labelStyle
  * @prop {(any)=} reactRef
  * @prop {(import('react-native').KeyboardType)=} type
- * @prop {boolean=} isWebClientPicker
- * @prop {string=} publicKey
  */
 
-/**
- * @typedef {object} State
- * @prop {Common.WebClientPrefix | 'loading'} webClientPrefix
- */
+
 
 /**
- * @augments PureComponent<Props, State, never>
+ * @augments PureComponent<Props>
  */
 class InputGroup extends PureComponent {
   theme = 'dark'
 
-  focused = false
+  mounted = false
 
-  /** @type {State} */
-  state = {
-    webClientPrefix: 'loading',
+  
+  
+
+  async componentDidMount() {}
+
+  componentWillUnmount() {
+    this.mounted = false
   }
 
-  didFocus = () => {
-    this.focused = true
-
-    Services.get('api/gun/user/once/webClientPrefix')
-      .then(webClientPrefix => {
-        if (typeof webClientPrefix === 'string') {
-          this.setState({
-            // eslint-disable-next-line object-shorthand
-            webClientPrefix: /** @type {Common.WebClientPrefix} */ (webClientPrefix),
-          })
-        }
-      })
-      .catch(e => {
-        if (this.focused) {
-          ToastAndroid.show(
-            `Could not fetch web client prefix:${e.message}, will retry...`,
-            ToastAndroid.LONG,
-          )
-        }
-
-        setTimeout(() => {
-          if (this.focused) {
-            this.didFocus()
-          }
-        }, 2000)
-      })
-  }
-
-  willBlur = () => {
-    this.focused = false
-  }
-
-  /**
-   * @type {React.ComponentProps<typeof import('react-native-dropdown-picker').default>['onChangeItem']}
-   */
-  onChangeWebClientPrefix = ({ value: prefix }) => {
-    this.setState({
-      webClientPrefix: prefix,
-    })
-  }
+  
+  
 
   render() {
     const {
@@ -99,108 +66,51 @@ class InputGroup extends PureComponent {
       labelStyle,
       reactRef,
       type = 'default',
-      isWebClientPicker,
-      publicKey,
     } = this.props
-    const { webClientPrefix } = this.state
 
     return (
-      <>
-        <NavigationEvents
-          onDidFocus={this.didFocus}
-          onWillBlur={this.willBlur}
-        />
+      <View
+        style={[
+          styles.inputGroup,
+          style,
+          disabled ? styles.disabledContainer : null,
+        ]}
+      >
+        {label ? (
+          <Text
+            style={[
+              this.theme === 'dark' ? styles.labelDark : styles.label,
+              labelStyle,
+            ]}
+          >
+            {label}
+          </Text>
+        ) : null}
 
         <View
           style={[
-            styles.inputGroup,
-            style,
-            disabled ? styles.disabledContainer : null,
+            styles.inputContainerDark,
+            inputStyle,
+            disabled ? styles.disabledInput : null,
           ]}
         >
-          {label ? (
-            <Text
-              style={[
-                this.theme === 'dark' ? styles.labelDark : styles.label,
-                labelStyle,
-              ]}
-            >
-              {label}
-            </Text>
-          ) : null}
-
-          {!isWebClientPicker && (
-            <View
-              style={[
-                styles.inputContainerDark,
-                inputStyle,
-                disabled ? styles.disabledInput : null,
-              ]}
-            >
-              {icon ? <Ionicons name={icon} color="#CBC5C5" size={22} /> : null}
-              <TextInput
-                style={[
-                  styles.inputDark,
-                  multiline ? styles.multilineInput : null,
-                ]}
-                ref={reactRef}
-                keyboardType={type}
-                value={value}
-                editable={!disabled}
-                multiline={multiline}
-                placeholder={placeholder}
-                onChangeText={onChange}
-                placeholderTextColor="rgba(255, 255, 255, 0.6)"
-              />
-            </View>
-          )}
-
-          {!!isWebClientPicker && (
-            <View
-              style={[
-                styles.inputContainerDark,
-                inputStyle,
-                disabled ? styles.disabledInput : null,
-              ]}
-            >
-              <DropDownPicker
-                items={availableDropdownItems}
-                defaultValue="loading"
-                containerStyle={styles.dropdownContainer}
-                style={styles.dropdown}
-                itemStyle={styles.dropdownItem}
-                dropDownStyle={styles.dropdownDropdown}
-                onChangeItem={this.onChangeWebClientPrefix}
-                labelStyle={styles.dropdownLabel}
-                arrowColor="#B2B2B2"
-                disabled={webClientPrefix === 'loading'}
-              />
-
-              <Text>/</Text>
-
-              <Text>{this.props.publicKey}</Text>
-            </View>
-          )}
+          {icon ? <Ionicons name={icon} color="#CBC5C5" size={22} /> : null}
+          <TextInput
+            style={[styles.inputDark, multiline ? styles.multilineInput : null]}
+            ref={reactRef}
+            keyboardType={type}
+            value={value}
+            editable={!disabled}
+            multiline={multiline}
+            placeholder={placeholder}
+            onChangeText={onChange}
+            placeholderTextColor="rgba(255, 255, 255, 0.6)"
+          />
         </View>
-      </>
+      </View>
     )
   }
 }
-
-const availableDropdownItems = [
-  {
-    label: 'https://shock.pub',
-    value: 'https://shock.pub',
-  },
-  {
-    label: 'https://lightning.page',
-    value: 'https://lightning.page',
-  },
-  {
-    label: 'https://satoshi.watch',
-    value: 'https://satoshi.watch',
-  },
-]
 
 const styles = StyleSheet.create({
   inputGroup: {
