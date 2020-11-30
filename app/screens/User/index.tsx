@@ -168,7 +168,9 @@ class User extends React.PureComponent<Props, State> {
                 </Animated.View>
               </View>
 
-              <FollowBtn publicKey={publicKey} />
+              <View style={styles.followBtnWrapper}>
+                <FollowBtn publicKey={publicKey} />
+              </View>
             </Animated.View>
           </Animated.View>
 
@@ -243,6 +245,7 @@ const styles = StyleSheet.create({
     marginLeft: 20,
     paddingTop: 55,
   },
+  followBtnWrapper: { width: 100 },
 })
 
 const TABS = ['Wall', 'Items', 'Product']

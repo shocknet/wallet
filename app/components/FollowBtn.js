@@ -1,10 +1,12 @@
 import React from 'react'
-import { Button } from 'react-native-elements'
 import { connect } from 'react-redux'
 import * as Common from 'shock-common'
+
 import * as Store from '../store'
 import * as Actions from '../store/actions'
 import * as Thunks from '../store/thunks'
+
+import SpaceBtn from './space-btn'
 
 /**
  * @typedef {object} StateProps
@@ -44,7 +46,7 @@ export const FollowBtn = React.memo(
     })()
 
     return ((
-      <Button
+      <SpaceBtn
         // eslint-disable-next-line react/jsx-no-bind
         onPress={() => {
           switch (state) {

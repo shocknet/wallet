@@ -96,6 +96,14 @@ const reducer = (state: State = INITIAL_STATE, action: Action) => {
         draft.currentPreview = createEmptyMedia()
       })
     }
+    case 'mediaLib/seedServerURLSet': {
+      return produce(state, draft => {
+        const {
+          payload: { seedServerURL },
+        } = action
+        draft.seedServerUrl = seedServerURL
+      })
+    }
     default: {
       return state
     }

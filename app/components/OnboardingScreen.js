@@ -13,9 +13,15 @@ import {
 // @ts-expect-error
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scrollview'
 import Ionicons from 'react-native-vector-icons/Ionicons'
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
+import { withNavigation } from 'react-navigation'
+/**
+ * @typedef {import('react-navigation').NavigationScreenProp<{}>} Navigation
+ */
 
 import * as CSS from '../res/css'
 import * as RES from '../res'
+import * as Routes from '../routes'
 
 import Pad from './Pad'
 import FlexCenter from './FlexCenter'
@@ -28,85 +34,111 @@ import FlexCenter from './FlexCenter'
  * @prop {(() => void | null | boolean)=} onPressBack Hack needed for the
  * transparent header until we upgrade react-navigation. If provided a back
  * arrow will be shown.
+ * @prop {Navigation=} navigation
  */
 
 const theme = 'dark'
 
-export default /** @type {React.FC<Props>} */ (React.memo(
-  ({ centerContent, children, loading, onPressBack }) => (
-    <>
-      <StatusBar
-        translucent
-        backgroundColor="transparent"
-        barStyle="light-content"
-      />
+/**
+ * @type {React.FC<Props>}
+ */
+const OnboardingScreen = ({
+  centerContent,
+  children,
+  loading,
+  onPressBack,
+  navigation,
+}) => ((
+  <>
+    <StatusBar
+      translucent
+      backgroundColor="transparent"
+      barStyle="light-content"
+    />
 
-      <ImageBackground
-        resizeMode="cover"
-        resizeMethod="scale"
-        source={theme === 'dark' ? RES.shockBGDark : RES.shockBG}
-        style={styles.container}
-      >
-        <View style={CSS.styles.width100}>
-          <Pad amount={48} />
-          {/* ensure the logo always appears on the same place regardless of content */}
+    <ImageBackground
+      resizeMode="cover"
+      resizeMethod="scale"
+      source={theme === 'dark' ? RES.shockBGDark : RES.shockBG}
+      style={styles.container}
+    >
+      <View style={CSS.styles.width100}>
+        <Pad amount={48} />
+        {/* ensure the logo always appears on the same place regardless of content */}
 
-          {theme === 'dark' ? (
-            <View style={xStyles.logo}>
-              <View style={styles.shockLogoContainerDark}>
-                <Image style={styles.shockLogoDark} source={RES.newLogoDark} />
-              </View>
-              <Pad amount={12} />
+        {theme === 'dark' ? (
+          <View style={xStyles.logo}>
+            <View style={styles.shockLogoContainerDark}>
+              <Image style={styles.shockLogoDark} source={RES.newLogoDark} />
             </View>
-          ) : (
-            <View style={xStyles.logo}>
-              <View style={styles.shockLogoContainer}>
-                <Image style={styles.shockLogo} source={RES.newLogo} />
-              </View>
-              <Pad amount={12} />
-              {/* S H O C K W A L L E T*/}
-              <Text style={xStyles.logoText}>SHOCKWALLET</Text>)
-            </View>
-          )}
-        </View>
-
-        {centerContent ? (
-          <FlexCenter>
-            {loading ? (
-              <ActivityIndicator size="large" />
-            ) : (
-              <View style={xStyles.content}>
-                {loading ? <ActivityIndicator size="large" /> : children}
-              </View>
-            )}
-          </FlexCenter>
-        ) : loading ? (
-          <View style={xStyles.content}>
-            <ActivityIndicator size="large" color="white" />
+            <Pad amount={12} />
           </View>
         ) : (
-          <KeyboardAwareScrollView
-            contentContainerStyle={xStyles.keyboardAwareContent}
-            style={CSS.styles.width70}
-          >
-            {children}
-          </KeyboardAwareScrollView>
+          <View style={xStyles.logo}>
+            <View style={styles.shockLogoContainer}>
+              <Image style={styles.shockLogo} source={RES.newLogo} />
+            </View>
+            <Pad amount={12} />
+            {/* S H O C K W A L L E T*/}
+            <Text style={xStyles.logoText}>SHOCKWALLET</Text>)
+          </View>
         )}
+      </View>
 
-        {typeof onPressBack === 'function' && (
-          <Ionicons
-            suppressHighlighting
-            color="white"
-            name="ios-arrow-round-back"
-            size={48}
-            onPress={onPressBack}
-            style={styles.headerBackImage}
-          />
-        )}
-      </ImageBackground>
-    </>
-  ),
+      {centerContent ? (
+        <FlexCenter>
+          {loading ? (
+            <ActivityIndicator size="large" />
+          ) : (
+            <View style={xStyles.content}>
+              {loading ? <ActivityIndicator size="large" /> : children}
+            </View>
+          )}
+        </FlexCenter>
+      ) : loading ? (
+        <View style={xStyles.content}>
+          <ActivityIndicator size="large" color="white" />
+        </View>
+      ) : (
+        <KeyboardAwareScrollView
+          contentContainerStyle={xStyles.keyboardAwareContent}
+          style={CSS.styles.width70}
+        >
+          {children}
+        </KeyboardAwareScrollView>
+      )}
+
+      {typeof onPressBack === 'function' && (
+        <Ionicons
+          suppressHighlighting
+          color="white"
+          name="ios-arrow-round-back"
+          size={48}
+          onPress={onPressBack}
+          style={styles.headerBackImage}
+        />
+      )}
+
+      <MaterialCommunityIcons
+        name="help-rhombus-outline"
+        color={CSS.Colors.DARK_MODE_CYAN}
+        style={styles.helpIcon}
+        size={48}
+        onPress={() => {
+          navigation && navigation.navigate(Routes.DEBUG)
+        }}
+      />
+    </ImageBackground>
+  </>
 ))
+
+// @ts-ignore
+const WithNavigationOnboardingScreen = withNavigation(OnboardingScreen)
+
+/**
+ * @type {React.FC<Props>}
+ */
+const MemoizedOnboardingScreen = React.memo(WithNavigationOnboardingScreen)
 
 /**
  * Spacing (for <Pad />) between items.
@@ -178,6 +210,12 @@ const styles = StyleSheet.create({
      */
     letterSpacing: RENDERED_LOGO_TEXT_WIDTH / LETTERS_IN_SHOCKWALLET / 4,
   },
+
+  helpIcon: {
+    position: 'absolute',
+    right: 20,
+    bottom: 20,
+  },
 })
 
 const xStyles = {
@@ -236,3 +274,5 @@ export const stackNavConfigMixin = {
   //   },
   // }),
 }
+
+export default MemoizedOnboardingScreen
