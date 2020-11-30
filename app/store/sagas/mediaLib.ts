@@ -16,9 +16,10 @@ function* mediaLib() {
     const state = Selectors.getStateRoot(yield select())
     const isReady = Selectors.isReady(state)
     const host = Selectors.selectHost(state)
+    const myPublicKey = Selectors.getMyPublicKey(state)
 
     if (isReady && !socket) {
-      socket = rifle(host, '$user::webTorrentSeed::on')
+      socket = rifle(host, '$user::webTorrentSeed::on', myPublicKey)
 
       socket.on('$shock', dataHandler)
 

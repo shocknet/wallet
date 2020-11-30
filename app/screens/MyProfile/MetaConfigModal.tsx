@@ -80,6 +80,9 @@ export default class MetaConfigModal extends React.PureComponent<
     try {
       const { data: webTorrentSeed } = await Services.get<{ data: unknown }>(
         'api/gun/user/once/webTorrentSeed',
+        {
+          'public-key-for-decryption': this.props.publicKey,
+        },
       )
       if (!this.mounted) {
         return
@@ -92,7 +95,10 @@ export default class MetaConfigModal extends React.PureComponent<
       } else {
         await Services.post(`api/gun/put`, {
           path: '$user>webTorrentSeed',
-          value: 'https://webtorrent.shock.network',
+          value: {
+            $$__ENCRYPT__FOR: this.props.publicKey,
+            value: 'https://webtorrent.shock.network',
+          },
         })
 
         if (!this.mounted) {
@@ -158,7 +164,10 @@ export default class MetaConfigModal extends React.PureComponent<
 
     Services.post(`api/gun/put`, {
       path: '$user>webTorrentSeed',
-      value: webTorrentSeed,
+      value: {
+        $$__ENCRYPT__FOR: this.props.publicKey,
+        value: webTorrentSeed,
+      },
     }).catch(e => {
       ToastAndroid.show(
         `Could not save web torrent seed URL -> ${e.message}`,
