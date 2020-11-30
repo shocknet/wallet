@@ -71,5 +71,6 @@ export * from './posts'
 export * from './debug'
 export * from './wallet'
 export * from './shared-posts'
+export * from './mediaLib'
 
 export { ChatActions, RequestActions, Follows }

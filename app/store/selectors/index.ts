@@ -17,6 +17,7 @@ export * from './follows'
 export * from './contact'
 export * from './wallet'
 export * from './shared-posts'
+export * from './mediaLib'
 
 export const isReady = (state: State) =>
   isOnline(state) && isAuth(state) && !!state.auth.host

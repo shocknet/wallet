@@ -1,3 +1,5 @@
+import { createAction } from '@reduxjs/toolkit'
+
 import { CompleteAnyMedia } from '../../services/mediaLib'
 import { ThumbnailFile } from '../thunks'
 
@@ -42,15 +44,6 @@ export type ContentUploadErrorAction = {
 export type ClearContentUploadAction = {
   type: 'mediaLib/clearContentUpload'
 }
-export type MediaLibAction =
-  | BeganContentUploadAction
-  | GotLocalIDAction
-  | BeganPreviewUploadAction
-  | BeganMediaUploadAction
-  | BeganMetadataUploadAction
-  | FinishedContentUploadAction
-  | ContentUploadErrorAction
-  | ClearContentUploadAction
 
 export const beganContentUpload = (): BeganContentUploadAction => ({
   type: 'mediaLib/beganContentUpload',
@@ -114,3 +107,23 @@ export const contentUploadError = (
 export const clearContentUpload = (): ClearContentUploadAction => ({
   type: 'mediaLib/clearContentUpload',
 })
+
+export const seedServerURLSet = createAction(
+  'mediaLib/seedServerURLSet',
+  (seedServerURL: string) => ({
+    payload: {
+      seedServerURL,
+    },
+  }),
+)
+
+export type MediaLibAction =
+  | BeganContentUploadAction
+  | GotLocalIDAction
+  | BeganPreviewUploadAction
+  | BeganMediaUploadAction
+  | BeganMetadataUploadAction
+  | FinishedContentUploadAction
+  | ContentUploadErrorAction
+  | ClearContentUploadAction
+  | ReturnType<typeof seedServerURLSet>

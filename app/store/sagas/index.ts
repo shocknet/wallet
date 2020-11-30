@@ -14,6 +14,7 @@ import sentReqs from './sent-reqs'
 import receivedReqs from './received-reqs'
 import sharedPosts from './shared-posts'
 import auth from './auth'
+import mediaLib from './mediaLib'
 
 function* rootSaga() {
   yield all([
@@ -31,6 +32,7 @@ function* rootSaga() {
     call(receivedReqs),
     call(sharedPosts),
     call(auth),
+    call(mediaLib),
   ])
 }
 
