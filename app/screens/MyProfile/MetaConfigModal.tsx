@@ -260,7 +260,7 @@ export default class MetaConfigModal extends React.PureComponent<
 
                 <InputGroup
                   label="Webtorrent Seed"
-                  value={webTorrentSeed ?? ''}
+                  value={webTorrentSeed === null ? '' : webTorrentSeed}
                   placeholder={webTorrentSeed === null ? 'Loading...' : ''}
                   disabled={webTorrentSeed === null}
                   onChange={this.onChangeWebTorrentSeed}
