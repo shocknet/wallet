@@ -63,11 +63,6 @@ class Debug extends React.PureComponent<Props, State> {
     this.mounted = false
   }
 
-  enableDebugMode = () => {
-    this.props.enableDebug()
-    ToastAndroid.show('Debug mode enabled', 800)
-  }
-
   disableDebugMode = () => {
     this.props.disableDebug()
   }
@@ -76,7 +71,7 @@ class Debug extends React.PureComponent<Props, State> {
     if (this.props.debugModeEnabled) {
       this.disableDebugMode()
     } else {
-      this.enableDebugMode()
+      this.props.enableDebug()
     }
   }
 
@@ -157,10 +152,7 @@ class Debug extends React.PureComponent<Props, State> {
 
     return (
       <>
-        <NavigationEvents
-          onDidFocus={this.enableDebugMode}
-          onDidBlur={this.dismissSpinners}
-        />
+        <NavigationEvents onDidBlur={this.dismissSpinners} />
 
         <ScrollViewContainer>
           <SettingOrData

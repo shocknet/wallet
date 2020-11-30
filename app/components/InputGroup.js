@@ -1,14 +1,5 @@
-/**
- * @format
- */
 import React, { PureComponent } from 'react'
-import {
-  // Clipboard,
-  StyleSheet,
-  Text,
-  View,
-  TextInput,
-} from 'react-native'
+import { StyleSheet, Text, View, TextInput } from 'react-native'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 
 import * as CSS from '../res/css'
@@ -30,12 +21,18 @@ import * as CSS from '../res/css'
  */
 
 /**
- * @augments PureComponent<Props, {}, never>
+ * @augments PureComponent<Props>
  */
 class InputGroup extends PureComponent {
-  state = {}
-
   theme = 'dark'
+
+  mounted = false
+
+  async componentDidMount() {}
+
+  componentWillUnmount() {
+    this.mounted = false
+  }
 
   render() {
     const {
@@ -52,6 +49,7 @@ class InputGroup extends PureComponent {
       reactRef,
       type = 'default',
     } = this.props
+
     return (
       <View
         style={[
@@ -71,59 +69,30 @@ class InputGroup extends PureComponent {
           </Text>
         ) : null}
 
-        {this.theme === 'dark' && (
-          <View
-            style={[
-              styles.inputContainerDark,
-              inputStyle,
-              disabled ? styles.disabledInput : null,
-            ]}
-          >
-            {icon ? <Ionicons name={icon} color="#CBC5C5" size={22} /> : null}
-            <TextInput
-              style={[
-                styles.inputDark,
-                multiline ? styles.multilineInput : null,
-              ]}
-              ref={reactRef}
-              keyboardType={type}
-              value={value}
-              editable={!disabled}
-              multiline={multiline}
-              placeholder={placeholder}
-              onChangeText={onChange}
-              placeholderTextColor="rgba(255, 255, 255, 0.6)"
-            />
-          </View>
-        )}
-
-        {this.theme !== 'dark' && (
-          <View
-            style={[
-              styles.inputContainer,
-              inputStyle,
-              disabled ? styles.disabledInput : null,
-            ]}
-          >
-            {icon ? <Ionicons name={icon} color="#CBC5C5" size={22} /> : null}
-            <TextInput
-              ref={reactRef}
-              style={[styles.input, multiline ? styles.multilineInput : null]}
-              keyboardType={type}
-              value={value}
-              editable={!disabled}
-              multiline={multiline}
-              placeholder={placeholder}
-              onChangeText={onChange}
-            />
-          </View>
-        )}
+        <View
+          style={[
+            styles.inputContainerDark,
+            inputStyle,
+            disabled ? styles.disabledInput : null,
+          ]}
+        >
+          {icon ? <Ionicons name={icon} color="#CBC5C5" size={22} /> : null}
+          <TextInput
+            style={[styles.inputDark, multiline ? styles.multilineInput : null]}
+            ref={reactRef}
+            keyboardType={type}
+            value={value}
+            editable={!disabled}
+            multiline={multiline}
+            placeholder={placeholder}
+            onChangeText={onChange}
+            placeholderTextColor="rgba(255, 255, 255, 0.6)"
+          />
+        </View>
       </View>
     )
   }
 }
-
-export default InputGroup
 
 const styles = StyleSheet.create({
   inputGroup: {
@@ -145,16 +114,6 @@ const styles = StyleSheet.create({
   disabledContainer: {
     opacity: 0.7,
   },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '100%',
-    height: 45,
-    paddingHorizontal: 13,
-    borderRadius: 100,
-    backgroundColor: CSS.Colors.BACKGROUND_LIGHTEST_WHITE,
-    elevation: 4,
-  },
   inputContainerDark: {
     flexDirection: 'row-reverse',
     alignItems: 'center',
@@ -171,12 +130,6 @@ const styles = StyleSheet.create({
   disabledInput: {
     elevation: 0,
   },
-  input: {
-    flex: 1,
-    fontFamily: 'Montserrat-600',
-    textAlignVertical: 'center',
-    fontSize: 12,
-  },
   inputDark: {
     flex: 1,
     fontFamily: 'Montserrat-600',
@@ -189,3 +142,5 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
 })
+
+export default InputGroup

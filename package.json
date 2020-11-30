@@ -16,7 +16,8 @@
     "build:debug": "rimraf APK-DEBUG.apk && rimraf android/app/src/main/assets/index.android.bundle && cd android && ./gradlew clean && cd .. && react-native bundle --platform android --dev true --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res && cd android && ./gradlew assembleDebug && cd .. && cp-cli android/app/build/outputs/apk/debug/app-debug.apk APK-DEBUG.apk && yarn build:debug:cleanup",
     "build:release": "rimraf APK-RELEASE.apk && cd android && ./gradlew clean && ./gradlew assembleRelease && cd ../ && cp-cli ./android/app/build/outputs/apk/release/app-release.apk ./APK-RELEASE.apk",
     "build": "yarn run build:debug && yarn build:release",
-    "build:release:delete-bad-res": "find android/app/src/main/res/drawable-* -type f -not -name 'launch_screen.png' -delete"
+    "build:release:delete-bad-res": "find android/app/src/main/res/drawable-* -type f -not -name 'launch_screen.png' -delete",
+    "clean:linux": "watchman watch-del-all && rm -rf /tmp/metro-bundler-cache-* && rm -rf /tmp/haste-map-react-native-packager-* && rm -rf node_modules && yarn cache:clean && yarn install && cd android && ./gradlew clean && cd .."
   },
   "dependencies": {
     "@react-native-community/async-storage": "^1.12.1",
