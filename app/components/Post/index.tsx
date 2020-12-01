@@ -58,6 +58,7 @@ interface State {
   menuOpen: boolean
   tipPopupOpen: boolean
   showingRibbon: boolean
+  shareMenuOpen: boolean
 }
 
 type Props = OwnProps & StateProps & DispatchProps
@@ -68,6 +69,7 @@ class Post extends React.PureComponent<Props, State> {
     menuOpen: false,
     tipPopupOpen: false,
     showingRibbon: true,
+    shareMenuOpen: false,
   }
 
   postSocket: null | ReturnType<typeof Services.rifle> = null
@@ -187,7 +189,7 @@ class Post extends React.PureComponent<Props, State> {
     )
   }
 
-  onPressShare = () => {
+  confirmShare = () => {
     const { id, authorPublicKey } = this.props
 
     const sharedPostRaw: Schema.SharedPostRaw = {
@@ -205,6 +207,20 @@ class Post extends React.PureComponent<Props, State> {
     })
 
     ToastAndroid.show('Shared', ToastAndroid.LONG)
+  }
+
+  toggleShareMenu = () => {
+    this.setState(({ shareMenuOpen }) => ({
+      shareMenuOpen: !shareMenuOpen,
+    }))
+  }
+
+  shareMenuChoices = {
+    Ok: () => {
+      this.confirmShare()
+      this.toggleShareMenu()
+    },
+    Cancel: this.toggleShareMenu,
   }
 
   toggleMenu = () => {
@@ -320,7 +336,7 @@ class Post extends React.PureComponent<Props, State> {
             </View>
 
             {showShareBtn ? (
-              <TouchableWithoutFeedback onPress={this.onPressShare}>
+              <TouchableWithoutFeedback onPress={this.toggleShareMenu}>
                 <Share size={16} />
               </TouchableWithoutFeedback>
             ) : (
@@ -341,6 +357,13 @@ class Post extends React.PureComponent<Props, State> {
           onRequestClose={this.toggleTipPopup}
           postID={id}
           visible={tipPopupOpen}
+        />
+
+        <Dialog
+          onRequestClose={this.toggleShareMenu}
+          visible={this.state.shareMenuOpen}
+          choiceToHandler={this.shareMenuChoices}
+          message="Share this post to your page?"
         />
       </>
     )
