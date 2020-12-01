@@ -44,6 +44,7 @@ interface StateProps {
   date: number
   authorDisplayName: string
   showTipBtn: boolean
+  hideShareBtn: boolean
 }
 
 interface DispatchProps {
@@ -267,6 +268,7 @@ class Post extends React.PureComponent<Props, State> {
       smallerHeader,
       date,
       showShareBtn,
+      hideShareBtn,
     } = this.props
     const { mediaWidth, tipPopupOpen } = this.state
 
@@ -335,13 +337,17 @@ class Post extends React.PureComponent<Props, State> {
               </TouchableWithoutFeedback>
             </View>
 
-            {showShareBtn ? (
+            <View
+              style={
+                showShareBtn && !hideShareBtn
+                  ? undefined
+                  : CSS.styles.opacityZero
+              }
+            >
               <TouchableWithoutFeedback onPress={this.toggleShareMenu}>
                 <Share size={16} />
               </TouchableWithoutFeedback>
-            ) : (
-              <View />
-            )}
+            </View>
           </View>
         </View>
 
@@ -439,6 +445,7 @@ const mapState = () => {
         date: Date.now(),
         authorDisplayName: 'User',
         showTipBtn: false,
+        hideShareBtn: true,
       }
     }
 
@@ -453,6 +460,7 @@ const mapState = () => {
       isPinned: post.id === user.pinnedPost,
       showTipBtn: post.author !== myPublicKey,
       tipCounter: post.tipCounter,
+      hideShareBtn: Store.selectIsSharedByMe(state, post.id),
     }
   }
 }
