@@ -198,6 +198,10 @@ class Post extends React.PureComponent<Props, State> {
     Services.post(`api/gun/put`, {
       path: `$user>sharedPosts>${id}`,
       value: sharedPostRaw,
+    }).catch(e => {
+      Logger.log(`Could not share post: ${id}`)
+      Logger.log(e)
+      ToastAndroid.show(`Could not share -> ${e.message}`, ToastAndroid.LONG)
     })
 
     ToastAndroid.show('Shared', ToastAndroid.LONG)
