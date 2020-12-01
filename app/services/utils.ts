@@ -46,32 +46,6 @@ export const getQueryParams = (
  */
 export const defaultName = (pub: string): string => 'anon' + pub.slice(0, 8)
 
-/**
- * @param ip
- */
-export const isValidIP = (ip: string): boolean => {
-  const sections = ip.split('.')
-
-  if (sections.length !== 4) return false
-
-  return sections.every(
-    s => Number.isInteger(Number(s)) && s.length <= 3 && s.length > 0,
-  )
-}
-
-/**
- * @param url
- */
-export const isValidURL = (url: string): boolean => {
-  const [ip, port] = url.split(':')
-
-  if (!port) {
-    return isValidIP(ip)
-  }
-
-  return isValidIP(ip) && port.length <= 5
-}
-
 export const SET_LAST_SEEN_APP_INTERVAL = 15000
 
 /**

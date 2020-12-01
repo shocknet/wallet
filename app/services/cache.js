@@ -1,7 +1,3 @@
-/**
- * @format
- */
-
 import AsyncStorage from '@react-native-community/async-storage'
 import Http from 'axios'
 import fromPairs from 'lodash/fromPairs'
@@ -9,7 +5,6 @@ import fromPairs from 'lodash/fromPairs'
 import { AUTH } from '../routes'
 
 import * as Navigation from './navigation'
-import * as Utils from './utils'
 /**
  * @typedef {object} AuthData
  * @prop {string} alias
@@ -64,10 +59,6 @@ export const writeNodeURLOrIP = async urlOrIP => {
     !port.split('').every(c => '0123456789'.split('').includes(c))
   ) {
     throw new TypeError('writeNodeURLOrIP() -> invalid port supplied')
-  }
-
-  if (!Utils.isValidIP(ip)) {
-    throw new TypeError('writeNodeURLOrIP() -> invalid IP supplied')
   }
 
   const storedAD = await getStoredAuthData()
