@@ -13,7 +13,6 @@ import InAppBrowser from 'react-native-inappbrowser-reborn'
 import * as CSS from '../res/css'
 import * as Cache from '../services/cache'
 import * as Conn from '../services/connection'
-import { isValidURL as isValidIP } from '../services/utils'
 import Pad from '../components/Pad'
 import QRScanner from './QRScanner'
 import { WALLET_MANAGER } from '../navigators/WalletManager'
@@ -401,7 +400,7 @@ class ConnectToNode extends React.PureComponent {
               this.renderInviteButton(wasBadPing, err)
             ) : (
               <OnboardingBtn
-                disabled={!isValidIP(nodeURL) || pinging}
+                disabled={pinging}
                 onPress={
                   wasBadPing || err ? this.onPressTryAgain : this.onPressConnect
                 }
