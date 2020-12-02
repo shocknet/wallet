@@ -11,6 +11,7 @@ export interface SettingOrDataProps {
   subtitle?: string
   title: string
   rightSide?: IconName | 'input'
+  disabled?: boolean
 }
 
 class _SettingOrData extends React.PureComponent<SettingOrDataProps> {
@@ -20,10 +21,10 @@ class _SettingOrData extends React.PureComponent<SettingOrDataProps> {
     onPress && onPress()
   }
   render() {
-    const { subtitle, title, rightSide } = this.props
+    const { subtitle, title, rightSide, disabled } = this.props
 
     return (
-      <TouchableWithoutFeedback onPress={this.onPress}>
+      <TouchableWithoutFeedback onPress={this.onPress} disabled={disabled}>
         <View style={styles.container}>
           <View style={styles.titleAndSubtitleContainer}>
             <Text style={styles.title}>{title}</Text>
