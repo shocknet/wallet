@@ -44,6 +44,7 @@ interface StateProps {
   date: number
   authorDisplayName: string
   showTipBtn: boolean
+  hideShareBtn: boolean
 }
 
 interface DispatchProps {
@@ -58,6 +59,7 @@ interface State {
   menuOpen: boolean
   tipPopupOpen: boolean
   showingRibbon: boolean
+  shareMenuOpen: boolean
 }
 
 type Props = OwnProps & StateProps & DispatchProps
@@ -68,6 +70,7 @@ class Post extends React.PureComponent<Props, State> {
     menuOpen: false,
     tipPopupOpen: false,
     showingRibbon: true,
+    shareMenuOpen: false,
   }
 
   postSocket: null | ReturnType<typeof Services.rifle> = null
@@ -187,7 +190,7 @@ class Post extends React.PureComponent<Props, State> {
     )
   }
 
-  onPressShare = () => {
+  confirmShare = () => {
     const { id, authorPublicKey } = this.props
 
     const sharedPostRaw: Schema.SharedPostRaw = {
@@ -198,9 +201,27 @@ class Post extends React.PureComponent<Props, State> {
     Services.post(`api/gun/put`, {
       path: `$user>sharedPosts>${id}`,
       value: sharedPostRaw,
+    }).catch(e => {
+      Logger.log(`Could not share post: ${id}`)
+      Logger.log(e)
+      ToastAndroid.show(`Could not share -> ${e.message}`, ToastAndroid.LONG)
     })
 
     ToastAndroid.show('Shared', ToastAndroid.LONG)
+  }
+
+  toggleShareMenu = () => {
+    this.setState(({ shareMenuOpen }) => ({
+      shareMenuOpen: !shareMenuOpen,
+    }))
+  }
+
+  shareMenuChoices = {
+    Ok: () => {
+      this.confirmShare()
+      this.toggleShareMenu()
+    },
+    Cancel: this.toggleShareMenu,
   }
 
   toggleMenu = () => {
@@ -247,6 +268,7 @@ class Post extends React.PureComponent<Props, State> {
       smallerHeader,
       date,
       showShareBtn,
+      hideShareBtn,
     } = this.props
     const { mediaWidth, tipPopupOpen } = this.state
 
@@ -315,13 +337,17 @@ class Post extends React.PureComponent<Props, State> {
               </TouchableWithoutFeedback>
             </View>
 
-            {showShareBtn ? (
-              <TouchableWithoutFeedback onPress={this.onPressShare}>
+            <View
+              style={
+                showShareBtn && !hideShareBtn
+                  ? undefined
+                  : CSS.styles.opacityZero
+              }
+            >
+              <TouchableWithoutFeedback onPress={this.toggleShareMenu}>
                 <Share size={16} />
               </TouchableWithoutFeedback>
-            ) : (
-              <View />
-            )}
+            </View>
           </View>
         </View>
 
@@ -337,6 +363,13 @@ class Post extends React.PureComponent<Props, State> {
           onRequestClose={this.toggleTipPopup}
           postID={id}
           visible={tipPopupOpen}
+        />
+
+        <Dialog
+          onRequestClose={this.toggleShareMenu}
+          visible={this.state.shareMenuOpen}
+          choiceToHandler={this.shareMenuChoices}
+          message="Share this post to your page?"
         />
       </>
     )
@@ -412,6 +445,7 @@ const mapState = () => {
         date: Date.now(),
         authorDisplayName: 'User',
         showTipBtn: false,
+        hideShareBtn: true,
       }
     }
 
@@ -426,6 +460,7 @@ const mapState = () => {
       isPinned: post.id === user.pinnedPost,
       showTipBtn: post.author !== myPublicKey,
       tipCounter: post.tipCounter,
+      hideShareBtn: Store.selectIsSharedByMe(state, post.id),
     }
   }
 }

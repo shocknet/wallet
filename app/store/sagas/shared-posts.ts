@@ -1,15 +1,7 @@
-import { eventChannel, END, EventChannel, buffers } from 'redux-saga'
-import {
-  takeEvery,
-  select,
-  fork,
-  cancelled,
-  call,
-  take,
-  cancel,
-} from 'redux-saga/effects'
+import { takeEvery, select, all } from 'redux-saga/effects'
 import Logger from 'react-native-file-log'
-import * as Common from 'shock-common'
+import SocketIO from 'socket.io-client'
+import { Constants, Schema } from 'shock-common'
 import pickBy from 'lodash/pickBy'
 import size from 'lodash/size'
 
@@ -17,122 +9,14 @@ import * as Actions from '../actions'
 import * as Selectors from '../selectors'
 import { rifle, get as httpGet } from '../../services'
 
-import { YieldReturn, put } from './common'
+import { getStore } from './common'
 
-type RelevantAction = Actions.SharedPostsAction | Actions.AuthAction | END
+/**
+ * Maps public key to shared posts socket.
+ */
+const sockets: Record<string, ReturnType<typeof SocketIO>> = {}
 
-const handleShockEvent = (
-  emit: (a: RelevantAction) => void,
-  publicKey: string,
-) => (data: unknown) => {
-  try {
-    if (!Common.Schema.isObj(data)) {
-      throw new TypeError(`Expected user.sharedPosts to be an object`)
-    }
-
-    const sharedPostsReceived = Object.keys(
-      // filter deleted sharedPosts
-      pickBy(data, v => v !== null),
-    ).filter(k => k !== '_')
-
-    const sharedPostsDeleted = Object.keys(
-      // get deleted sharedPosts
-      pickBy(data, v => v == null),
-    ).filter(k => k !== '_')
-
-    if (size(sharedPostsDeleted)) {
-      emit(
-        Actions.removedSeveralSharedPosts(
-          sharedPostsDeleted.map(id => publicKey + id),
-        ),
-      )
-    }
-
-    // TODO: change to one load()
-    for (const sharedPostKey of sharedPostsReceived) {
-      httpGet<{ data: Common.Schema.SharedPostRaw }>(
-        `api/gun/otheruser/${publicKey}/load/sharedPosts>${sharedPostKey}`,
-        {},
-        v => {
-          if (!Common.Schema.isObj(v)) {
-            return 'not an object'
-          }
-          if (!Common.Schema.isSharedPostRaw(v.data)) {
-            return `id: ${sharedPostKey} from author: ${publicKey} not a raw shared post (sometimes expected): ${JSON.stringify(
-              v.data,
-            )}`
-          }
-          return ''
-        },
-      )
-        .then(({ data: { originalAuthor, shareDate } }) => {
-          emit(
-            Actions.receivedSharedPost(
-              originalAuthor,
-              sharedPostKey,
-              publicKey,
-              shareDate,
-            ),
-          )
-        })
-        .catch(e => {
-          Logger.log('Error inside sharedPosts*.httpGet ()')
-          Logger.log(e.message)
-        })
-    }
-  } catch (err) {
-    Logger.log('Error inside sharedPosts* ()')
-    Logger.log(err.message)
-  }
-}
-
-function createSocketChannel(
-  publicKey: string,
-  host: string,
-): EventChannel<RelevantAction> {
-  return eventChannel<RelevantAction>(emit => {
-    const socket = rifle(host, `${publicKey}::sharedPosts::on`)
-
-    socket.on('$shock', handleShockEvent(emit, publicKey))
-
-    socket.on(Common.Constants.ErrorCode.NOT_AUTH, () => {
-      emit(Actions.tokenDidInvalidate())
-    })
-
-    socket.on('$error', (err: unknown) => {
-      if (err === Common.Constants.ErrorCode.NOT_AUTH) {
-        emit(Actions.tokenDidInvalidate())
-        return
-      }
-      Logger.log('Error inside sharedPosts* ()')
-      Logger.log(err)
-    })
-
-    return () => {
-      socket.off('*')
-      socket.close()
-    }
-  }, buffers.expanding(10))
-}
-
-function* handlePublicKeySocket(chan: EventChannel<RelevantAction>) {
-  try {
-    const action: RelevantAction = yield take(chan)
-
-    if (action.type !== '@@redux-saga/CHANNEL_END') {
-      yield put(action)
-    }
-  } finally {
-    if (yield cancelled()) {
-      chan.close()
-    }
-  }
-}
-
-const publicKeysWithSockets = new Set<string>()
-const tasks: any[] = []
-
-function* watchSharedPosts() {
+function* sharedPosts() {
   try {
     const state = Selectors.getStateRoot(yield select())
     const isReady = Selectors.isReady(state)
@@ -140,46 +24,115 @@ function* watchSharedPosts() {
     const host = Selectors.selectHost(state)
 
     if (isReady) {
-      const publicKeysWithoutSocket = allPublicKeys.filter(
-        pk => !publicKeysWithSockets.has(pk),
-      )
-
-      for (const publicKey of publicKeysWithoutSocket) {
-        console.log(
-          `creating shared posts socket for pubulic key: ${publicKey}`,
-        )
-        const channel: YieldReturn<typeof createSocketChannel> = yield call(
-          createSocketChannel,
-          publicKey,
-          host,
-        )
-
-        const task: YieldReturn<typeof fork> = yield fork(
-          handlePublicKeySocket,
-          channel,
-        )
-
-        tasks.push(task)
-        publicKeysWithSockets.add(publicKey)
-      }
+      assignSocketToPublicKeys(allPublicKeys, host)
     }
 
     if (!isReady) {
-      while (tasks.length) {
-        const task = tasks.pop()
-
-        yield cancel(task)
+      for (const [publicKey, socket] of Object.entries(sockets)) {
+        socket.off('*')
+        socket.close()
+        delete sockets[publicKey]
       }
-      publicKeysWithSockets.clear()
     }
-  } catch (e) {
-    Logger.log(`Error inside watchSharedPosts*()`)
-    Logger.log(e)
+  } catch (err) {
+    Logger.log('Error inside sharedPosts* ()')
+    Logger.log(err.message)
+  }
+}
+
+const assignSocketToPublicKeys = (publicKeys: string[], host: string) => {
+  for (const publicKey of publicKeys) {
+    if (sockets[publicKey]) {
+      continue
+    }
+
+    // TODO: send existing posts to RPC so it doesn't send repeat data.
+    sockets[publicKey] = rifle(host, `${publicKey}::sharedPosts::on`)
+
+    // Will not handle NOT_AUTH event here, enough sockets probably handle that
+    // already and this is a multi socket saga will probably make app eat paint.
+
+    sockets[publicKey].on('$shock', (data: unknown) => {
+      try {
+        if (!Schema.isObj(data)) {
+          throw new TypeError(`Expected user.sharedPosts to be an object`)
+        }
+
+        const postsReceived = Object.keys(
+          // filter deleted posts
+          pickBy(data, v => v !== null),
+        ).filter(k => k !== '_')
+
+        const postsDeleted = Object.keys(
+          // get deleted posts
+          pickBy(data, v => v == null),
+        ).filter(k => k !== '_')
+
+        if (size(postsDeleted)) {
+          const store = getStore()
+          store.dispatch(
+            Actions.removedSeveralSharedPosts(
+              postsDeleted.map(postID => publicKey + postID),
+            ),
+          )
+        }
+
+        for (const postKey of postsReceived) {
+          httpGet<{ data: Schema.SharedPostRaw }>(
+            `api/gun/otheruser/${publicKey}/load/sharedPosts>${postKey}`,
+            {},
+            v => {
+              if (!Schema.isObj(v)) {
+                return 'not an object'
+              }
+              if (!Schema.isSharedPostRaw(v.data)) {
+                return `id: ${postKey} from author: ${getStore().getState()
+                  .users[publicKey].displayName ||
+                  publicKey} not a raw shared post (sometimes expected): ${JSON.stringify(
+                  v.data,
+                )}`
+              }
+              return ''
+            },
+          )
+            .then(({ data: { originalAuthor, shareDate } }) => {
+              getStore().dispatch(
+                Actions.receivedSharedPost(
+                  originalAuthor,
+                  postKey,
+                  publicKey,
+                  shareDate,
+                ),
+              )
+            })
+            .catch(e => {
+              Logger.log('Error inside sharedPosts.httpGet* ()')
+              Logger.log(e.message)
+            })
+        }
+      } catch (err) {
+        Logger.log('Error inside sharedPosts* ()')
+        Logger.log(err.message)
+      }
+    })
+
+    sockets[publicKey].on(Constants.ErrorCode.NOT_AUTH, () => {
+      getStore().dispatch(Actions.tokenDidInvalidate())
+    })
+
+    sockets[publicKey].on('$error', (err: unknown) => {
+      if (err === Constants.ErrorCode.NOT_AUTH) {
+        getStore().dispatch(Actions.tokenDidInvalidate())
+        return
+      }
+      Logger.log('Error inside sharedPosts* ()')
+      Logger.log(err)
+    })
   }
 }
 
 function* rootSaga() {
-  yield takeEvery('*', watchSharedPosts)
+  yield all([takeEvery('*', sharedPosts)])
 }
 
 export default rootSaga
