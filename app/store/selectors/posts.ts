@@ -8,7 +8,17 @@ import { getFollowedPublicKeys } from './follows'
 import { makeGetUser } from './users'
 import { selectAllSharedPosts } from './shared-posts'
 
-const { isSharedPost } = Common.Schema
+const { isSharedPost } = Common
+
+const sortSharesAndPostsFromNewest = (
+  a: Common.PostN | Common.SharedPost,
+  b: Common.PostN | Common.SharedPost,
+) => {
+  let dateA = isSharedPost(a) ? a.shareDate : a.date
+  let dateB = isSharedPost(b) ? b.shareDate : b.date
+
+  return dateB - dateA
+}
 
 export const getPosts = (state: State) => state.posts
 
@@ -84,12 +94,9 @@ export const getOwnPostsAndOwnShared = createSelector(
   (ownPosts, allSharedPosts) => {
     const allPosts = [...ownPosts, ...Object.values(allSharedPosts)]
 
-    allPosts.sort((a, b) => {
-      let dateA = isSharedPost(a) ? a.shareDate : a.date
-      let dateB = isSharedPost(b) ? b.shareDate : b.date
+    allPosts.sort(sortSharesAndPostsFromNewest)
 
-      return dateB - dateA
-    })
+    return allPosts
   },
 )
 
@@ -120,12 +127,7 @@ export const makeGetPostsAndSharedForPublicKey = () => {
 
       const mixed = [...sharedByThisPublicKey, ...postsByThisPublicKey]
 
-      mixed.sort((a, b) => {
-        let dateA = isSharedPost(a) ? a.shareDate : a.date
-        let dateB = isSharedPost(b) ? b.shareDate : b.date
-
-        return dateB - dateA
-      })
+      mixed.sort(sortSharesAndPostsFromNewest)
 
       if (user.pinnedPost) {
         const idx = mixed.findIndex(p => {
