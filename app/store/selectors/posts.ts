@@ -76,6 +76,19 @@ export const getPostsFromFollowed = createSelector<
   },
 )
 
+export const selectPostsAndSharesFromFollowed = createSelector(
+  getPostsFromFollowed,
+  selectAllSharedPosts,
+  getFollowedPublicKeys,
+
+  (posts, shares, publicKeys) => {
+    return [
+      ...posts,
+      ...Object.values(shares).filter(s => publicKeys.includes(s.sharedBy)),
+    ].sort(sortSharesAndPostsFromNewest)
+  },
+)
+
 export const getOwnPosts = createSelector<
   State,
   ReturnType<typeof getPosts>,
