@@ -24,6 +24,7 @@ import * as Store from '../../store'
 import * as Routes from '../../routes'
 import Tabs from '../../components/tabs'
 import FollowBtn from '../../components/FollowBtn'
+import SharedPost from '../../components/shared-post'
 
 const DEFAULT_USER_IMAGE = ''
 
@@ -36,7 +37,7 @@ interface StateProps {
   header: string | null
   displayName: string | null
   bio: string | null
-  posts: Common.Schema.PostN[]
+  posts: Array<Common.PostN | Common.SharedPost>
 }
 
 interface DispatchProps {}
@@ -70,7 +71,17 @@ class User extends React.PureComponent<Props, State> {
     numOfPages: 0,
   }
 
-  renderItem = ({ item }: ListRenderItemInfo<Common.Schema.PostBase>) => {
+  renderItem = ({
+    item,
+  }: ListRenderItemInfo<Common.PostN | Common.SharedPost>) => {
+    if (Common.isSharedPost(item)) {
+      return (
+        <View>
+          <SharedPost shareID={item.shareID} />
+          <Pad amount={12} />
+        </View>
+      )
+    }
     return (
       <View>
         <Post id={item.id} showShareBtn hideMenuBtn />
@@ -252,7 +263,7 @@ const TABS = ['Wall', 'Items', 'Product']
 
 const makeMapStateToProps = () => {
   const getUser = Store.makeGetUser()
-  const getPostsForPublicKey = Store.makeGetPostsForPublicKey()
+  const getPostsForPublicKey = Store.makeGetPostsAndSharedForPublicKey()
 
   return (state: Store.State, { navigation }: OwnProps): StateProps => {
     const publicKey = navigation.getParam('publicKey')
@@ -269,7 +280,11 @@ const makeMapStateToProps = () => {
   }
 }
 
-const keyExtractor = (item: Common.Schema.PostBase) => {
+const keyExtractor = (item: Common.PostN | Common.SharedPost) => {
+  if (Common.isSharedPost(item)) {
+    return item.shareID
+  }
+
   return item.id
 }
 

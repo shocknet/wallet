@@ -26,6 +26,7 @@ import AddonIcon from '../../assets/images/feed/addon.svg'
 import { CREATE_POST } from '../../routes'
 import Pad from '../../components/Pad'
 import * as Store from '../../store'
+import SharedPost from '../../components/shared-post'
 
 type Navigation = NavigationScreenProp<{}, Routes.UserParams>
 
@@ -34,7 +35,7 @@ interface OwnProps {
 }
 
 interface StateProps {
-  posts: Common.Schema.PostN[]
+  posts: Array<Common.PostN | Common.SharedPost>
   usersFollowed: string[]
   publicKey: string
 }
@@ -44,7 +45,7 @@ interface DispatchProps {}
 type Props = StateProps & DispatchProps & OwnProps
 
 interface State {
-  data: [string, ...Common.Schema.PostN[]]
+  data: [string, ...Array<Common.PostN | Common.SharedPost>]
 }
 
 class Feed extends React.PureComponent<Props, State> {
@@ -73,9 +74,18 @@ class Feed extends React.PureComponent<Props, State> {
   renderItem = ({
     item,
     index,
-  }: ListRenderItemInfo<Common.Schema.PostN | string>) => {
+  }: ListRenderItemInfo<Common.PostN | Common.SharedPost | string>) => {
     if (typeof item === 'string') {
       return tabs
+    }
+
+    if (Common.isSharedPost(item)) {
+      return (
+        <View>
+          <SharedPost shareID={item.shareID} />
+          <Pad amount={12} />
+        </View>
+      )
     }
 
     return (
@@ -154,9 +164,16 @@ class Feed extends React.PureComponent<Props, State> {
   }
 }
 
-const keyExtractor = (item: Common.Schema.PostN | string) => {
-  // @ts-expect-error
-  return item.id || item
+const keyExtractor = (item: Common.PostN | Common.SharedPost | string) => {
+  if (typeof item === 'string') {
+    return item
+  }
+
+  if (Common.isSharedPost(item)) {
+    return item.shareID
+  }
+
+  return item.id
 }
 
 const PersonSeparator = React.memo(() => <Pad amount={16} insideRow />)
@@ -167,7 +184,7 @@ const TABS = ['Feed']
 
 const mapStateToProps = (state: Reducers.State): StateProps => {
   const publicKey = Store.getMyPublicKey(state)
-  const posts = Store.getPostsFromFollowed(state)
+  const posts = Store.selectPostsAndSharesFromFollowed(state)
 
   return {
     posts,
