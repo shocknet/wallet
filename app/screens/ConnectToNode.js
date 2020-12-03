@@ -149,7 +149,7 @@ class ConnectToNode extends React.PureComponent {
 
   /** @private */
   onPressConnectViaInvite = async () => {
-    const { invitationCode, externalURL } = this.state
+    const { invitationCode } = this.state
     try {
       this.setState({ loading: true })
       Logger.log('requesting with', invitationCode)
@@ -166,37 +166,39 @@ class ConnectToNode extends React.PureComponent {
       Logger.log(error)
       this.setState({ loading: false })
     }
+    /**
+     *
+     * @param {number} attempts
+     * @param {number} seconds
+     */
+    const attemptConnectIn = (attempts, seconds) => {
+      if (attempts === 0) {
+        Logger.log('Connecting to node, no attempts left, raising error')
+        this.mounted &&
+          this.setState({
+            pinging: false,
+            wasBadPing: true,
+            loading: false,
+          })
+        return
+      }
+      Logger.log('Connecting to node, attempts left:' + attempts)
+      setTimeout(async () => {
+        try {
+          Logger.log('connecting to', this.state.nodeURL)
+          await this.connectURL(this.state.nodeURL)
+          this.setState({ loading: false })
+        } catch (err) {
+          Logger.log('Failed connection attempt:' + attempts)
+          attemptConnectIn(attempts - 1, seconds * 2)
+        }
+      }, seconds)
+    }
 
-    setTimeout(() => {
-      this.mounted &&
-        this.setState(
-          {
-            pinging: true,
-          },
-          async () => {
-            try {
-              Logger.log('received response', this.state.nodeURL)
-              await this.connectURL(this.state.nodeURL)
-              this.setState({ loading: false })
-            } catch (err) {
-              try {
-                Logger.log(
-                  'CONNECTURL FAILED, TRYING ONCE MORE TIME, ERR: ' +
-                    err.message,
-                )
-                this.setState({ loading: false })
-                await this.connectURL(externalURL)
-              } catch (err) {
-                this.mounted &&
-                  this.setState({
-                    pinging: false,
-                    wasBadPing: true,
-                  })
-              }
-            }
-          },
-        )
-    }, 5000)
+    this.setState({
+      pinging: true,
+    })
+    attemptConnectIn(6, 2) //2,4,8,16,32,64, after 126 seconds, assume the node is unreachable
   }
 
   /**
