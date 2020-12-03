@@ -26,7 +26,7 @@ const reducer: Reducer<State, Action> = (state = {}, action) =>
       const {
         authorPublicKey,
         id,
-        post: { contentItems, date, status, tags, title, tipCounter },
+        post: { contentItems, date, status, tags, title },
       } = action.payload
 
       draft[id] = {
@@ -37,7 +37,7 @@ const reducer: Reducer<State, Action> = (state = {}, action) =>
         status,
         tags,
         title,
-        tipCounter,
+        tipCounter: 0,
       }
     }
 
@@ -45,7 +45,7 @@ const reducer: Reducer<State, Action> = (state = {}, action) =>
       const { authorPublicKey, ids, posts } = action.payload
 
       for (let i = 0; i < ids.length; i++) {
-        const { contentItems, date, status, tags, title, tipCounter } = posts[i]
+        const { contentItems, date, status, tags, title } = posts[i]
         const id = ids[i]
 
         draft[id] = {
@@ -56,7 +56,7 @@ const reducer: Reducer<State, Action> = (state = {}, action) =>
           status,
           tags,
           title,
-          tipCounter,
+          tipCounter: 0,
         }
       }
     }
