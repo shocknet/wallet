@@ -37,7 +37,7 @@ const reducer: Reducer<State, Action> = (state = {}, action) =>
         status,
         tags,
         title,
-        tipCounter: 0,
+        tipCounter: (draft[id] && draft[id].tipCounter) || 0,
       }
     }
 
@@ -56,7 +56,7 @@ const reducer: Reducer<State, Action> = (state = {}, action) =>
           status,
           tags,
           title,
-          tipCounter: 0,
+          tipCounter: (draft[id] && draft[id].tipCounter) || 0,
         }
       }
     }
