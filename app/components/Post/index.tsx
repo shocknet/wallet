@@ -52,6 +52,7 @@ interface DispatchProps {
   remove(): void
   unpin(): void
   tokenDidInvalidate(): void
+  postWasTipped(): void
 }
 
 interface State {
@@ -74,6 +75,7 @@ class Post extends React.PureComponent<Props, State> {
   }
 
   postSocket: null | ReturnType<typeof Services.rifle> = null
+  tipCountSocket: null | ReturnType<typeof Services.rifle> = null
 
   mounted = false
 
@@ -88,13 +90,30 @@ class Post extends React.PureComponent<Props, State> {
     )
 
     this.postSocket.on(Constants.ErrorCode.NOT_AUTH, () => {
-      this.props.tokenDidInvalidate()
-      this.postSocket && this.postSocket.off('*')
-      this.postSocket && this.postSocket.close()
+      if (this.mounted) {
+        this.props.tokenDidInvalidate()
+        this.postSocket && this.postSocket.off('*')
+        this.postSocket && this.postSocket.close()
+      }
     })
 
     this.postSocket.on('$error', (e: string) => {
       Logger.log(`Error inside post contentItems socket: ${e}`)
+    })
+
+    this.tipCountSocket = Services.rifle(
+      host,
+      `${authorPublicKey}::postToTipCount>${id}::map.once`,
+    )
+
+    this.tipCountSocket.on('$shock', () => {
+      if (this.mounted) {
+        this.props.postWasTipped()
+      }
+    })
+
+    this.postSocket.on('$error', (e: string) => {
+      Logger.log(`Error inside post tip count socket: ${e}`)
     })
   }
 
@@ -105,6 +124,12 @@ class Post extends React.PureComponent<Props, State> {
       this.postSocket.off('*')
       this.postSocket.close()
       this.postSocket = null
+    }
+
+    if (this.tipCountSocket) {
+      this.tipCountSocket.off('*')
+      this.tipCountSocket.close()
+      this.tipCountSocket = null
     }
   }
 
@@ -480,6 +505,9 @@ const mapDispatch = (
   },
   tokenDidInvalidate() {
     dispatch(Store.tokenDidInvalidate())
+  },
+  postWasTipped() {
+    dispatch(Store.postWasTipped(id))
   },
 })
 
