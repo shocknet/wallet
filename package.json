@@ -59,7 +59,7 @@
     "opencollective-postinstall": "^2.0.2",
     "path-browserify": "0.0.0",
     "process": "^0.11.0",
-    "punycode": "^1.2.4",
+    "punycode": "^2.1.1",
     "querystring-es3": "~0.2.0",
     "ramda": "^0.27.0",
     "react": "16.9.0",
