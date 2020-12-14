@@ -16,4 +16,4 @@ export default class ShockWallet extends React.PureComponent {
   }
 }
 
-RN.AppRegistry.registerComponent('shockwallet', ShockWallet)
+RN.AppRegistry.registerComponent('shockwallet', () => ShockWallet)
