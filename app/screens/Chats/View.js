@@ -140,8 +140,12 @@ export default class ChatsView extends React.PureComponent {
    */
   chatRenderer = chat => {
     const { readChatIDs, users } = this.props
-    const displayName =
+    const botDisplayName = chat.recipientPublicKey.startsWith('bot-')
+      ? chat.recipientDisplayName
+      : null
+    const userDisplayName =
       users[chat.recipientPublicKey].displayName || chat.recipientPublicKey
+    const displayName = botDisplayName || userDisplayName
     const lastMsg = chat.messages.slice().sort(byTimestampFromOldestToNewest)[
       chat.messages.length - 1
     ]

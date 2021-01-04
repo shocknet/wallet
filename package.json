@@ -17,7 +17,8 @@
     "build:release": "rimraf APK-RELEASE.apk && cd android && ./gradlew clean && ./gradlew assembleRelease && cd ../ && cp-cli ./android/app/build/outputs/apk/release/app-release.apk ./APK-RELEASE.apk",
     "build": "yarn run build:debug && yarn build:release",
     "build:release:delete-bad-res": "find android/app/src/main/res/drawable-* -type f -not -name 'launch_screen.png' -delete",
-    "clean:linux": "watchman watch-del-all && rm -rf /tmp/metro-bundler-cache-* && rm -rf /tmp/haste-map-react-native-packager-* && rm -rf node_modules && yarn cache clean && yarn install && cd android && ./gradlew clean && cd .."
+    "clean:linux": "watchman watch-del-all && rm -rf /tmp/metro-bundler-cache-* && rm -rf /tmp/haste-map-react-native-packager-* && rm -rf node_modules && yarn cache clean && yarn install && cd android && ./gradlew clean && cd ..",
+    "clean:mac": "watchman watch-del-all && rm -rf node_modules && yarn cache clean && yarn install && cd android && ./gradlew clean && cd .."
   },
   "dependencies": {
     "@react-native-community/async-storage": "^1.12.1",
@@ -122,7 +123,7 @@
     "reselect": "^4.0.0",
     "safe-buffer": "^5.0.0",
     "scheduler": "0.16.1",
-    "shock-common": "latest",
+    "shock-common": "^26.0.0",
     "socket.io-client": "2.1.1",
     "stream-browserify": "^1.0.0",
     "string_decoder": "~0.10.25",

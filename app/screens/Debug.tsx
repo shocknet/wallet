@@ -1,5 +1,5 @@
 import React from 'react'
-import { View, Text, ToastAndroid } from 'react-native'
+import { View, Text, ToastAndroid, Clipboard } from 'react-native'
 import { NavigationEvents } from 'react-navigation'
 import { connect } from 'react-redux'
 import { StackNavigationOptions } from 'react-navigation-stack/lib/typescript/src/vendor/types'
@@ -19,6 +19,7 @@ import {
 import Pad from '../components/Pad'
 import * as Store from '../store'
 import * as Services from '../services'
+import * as Routes from '../routes'
 
 interface OwnProps {}
 
@@ -37,6 +38,7 @@ type Props = OwnProps & StateProps & DispatchProps
 interface State {
   sharingWalletLog: boolean
   sharingAPILog: boolean
+  goingToPubkey: boolean
 }
 
 class Debug extends React.PureComponent<Props, State> {
@@ -51,6 +53,7 @@ class Debug extends React.PureComponent<Props, State> {
   state: State = {
     sharingAPILog: false,
     sharingWalletLog: false,
+    goingToPubkey: false,
   }
 
   mounted = false
@@ -94,6 +97,30 @@ class Debug extends React.PureComponent<Props, State> {
     // } catch (e) {}
   }
 
+  goToPubkey = async () => {
+    try {
+      this.setState({
+        goingToPubkey: true,
+      })
+
+      const params: Routes.UserParams = {
+        publicKey: await Clipboard.getString(),
+      }
+
+      if (!this.mounted) {
+        return
+      }
+
+      this.setState({
+        goingToPubkey: false,
+      })
+
+      Services.navigate(Routes.USER, params)
+    } catch (e) {
+      ToastAndroid.show(e.message, ToastAndroid.LONG)
+    }
+  }
+
   shareAPILog = async () => {
     try {
       this.setState({
@@ -135,12 +162,13 @@ class Debug extends React.PureComponent<Props, State> {
     this.setState({
       sharingAPILog: false,
       sharingWalletLog: false,
+      goingToPubkey: false,
     })
   }
 
   render() {
     const { err, debugModeEnabled } = this.props
-    const { sharingAPILog, sharingWalletLog } = this.state
+    const { sharingAPILog, sharingWalletLog, goingToPubkey } = this.state
 
     if (err) {
       return (
@@ -180,6 +208,15 @@ class Debug extends React.PureComponent<Props, State> {
             title="Share API Log"
             subtitle="Downloads logs for the last hour from node and shares as text file"
             rightSide={sharingAPILog ? 'spinner' : 'copy'}
+          />
+
+          <Pad amount={PAD_BETWEEN_ITEMS} />
+
+          <SettingOrData
+            onPress={this.goToPubkey}
+            title="Go to public key"
+            subtitle="Visits profile of public key found in clipboard"
+            rightSide={goingToPubkey ? 'spinner' : undefined}
           />
         </ScrollViewContainer>
       </>

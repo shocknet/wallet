@@ -92,26 +92,21 @@ const assignSocketToPublicKeys = (publicKeys: string[], host: string) => {
               return ''
             },
           )
-            .then(
-              ({
-                data: { contentItems, date, status, tags, title, tipCounter },
-              }) => {
-                getStore().dispatch(
-                  Actions.receivedRawPost(
-                    {
-                      contentItems,
-                      date,
-                      status,
-                      tags,
-                      title,
-                      tipCounter: tipCounter || 0,
-                    },
-                    postKey,
-                    publicKey,
-                  ),
-                )
-              },
-            )
+            .then(({ data: { contentItems, date, status, tags, title } }) => {
+              getStore().dispatch(
+                Actions.receivedRawPost(
+                  {
+                    contentItems,
+                    date,
+                    status,
+                    tags,
+                    title,
+                  },
+                  postKey,
+                  publicKey,
+                ),
+              )
+            })
             .catch(e => {
               Logger.log('Error inside posts.httpGet* ()')
               Logger.log(e.message)
