@@ -1,4 +1,5 @@
 import Logger from 'react-native-file-log'
+import { memo, MemoExoticComponent, FunctionComponent } from 'react'
 
 // Record<string, string|number|boolean> could have been used for params but
 // typescript complains on param bodies with optional parameters.
@@ -81,4 +82,20 @@ export function normalizeTimestampToMs(timestamp: number): number {
   Logger.log('normalizeTimestamp() -> could not interpret timestamp')
 
   return Number(t)
+}
+
+export const betterReactMemo = <P = Record<string, unknown>>(
+  component: FunctionComponent<P>,
+): MemoExoticComponent<FunctionComponent<P>> => {
+  const MemoizedComponent = memo(component)
+
+  if (component.displayName) {
+    MemoizedComponent.displayName = 'Memoized' + component.displayName
+  }
+
+  // @ts-expect-error Not supported according to the typings but needed in some
+  // cases.
+  MemoizedComponent.propTypes = component.propTypes
+
+  return MemoizedComponent
 }
