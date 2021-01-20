@@ -47,7 +47,7 @@
     "exponential-backoff": "^2.1.1",
     "gun": "^0.2019.612",
     "https-browserify": "~0.0.0",
-    "immer": "^6.0.3",
+    "immer": "^8.0.1",
     "inherits": "^2.0.1",
     "jetifier": "^1.6.4",
     "js-lnurl": "0.0.8",
