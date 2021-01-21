@@ -15,6 +15,7 @@ import {
   WALLET_SETTINGS,
   DEBUG,
   WALLET_OVERVIEW,
+  TEST_COORDINATES,
 } from '../routes'
 import Pad from './Pad'
 
@@ -51,6 +52,11 @@ const drawerTopItems = [
     name: 'Seed Backup',
     iconName: 'solid-key',
     screen: SEED_BACKUP,
+  },
+  {
+    name: 'Coordinates test',
+    iconName: 'solid-key',
+    screen: TEST_COORDINATES,
   },
 ]
 

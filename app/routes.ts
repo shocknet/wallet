@@ -65,3 +65,6 @@ export const WALLET = 'WALLET'
 export const LOADING = 'LOADING'
 
 export const AUTH = 'AUTH'
+
+
+export const TEST_COORDINATES = 'TEST_COORDINATES'

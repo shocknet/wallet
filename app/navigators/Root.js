@@ -9,6 +9,7 @@ import Chats from '../screens/Chats'
 import Advanced from '../screens/Advanced'
 import WalletOverview from '../screens/WalletOverview'
 import SeedBackup from '../screens/SeedBackup'
+import CoordinateTest from '../screens/coordinateTests'
 import WalletSettings from '../screens/WalletSettings'
 import Feed from '../screens/Feed'
 import AddPostToFeed from '../screens/AddPostToFeed'
@@ -116,6 +117,12 @@ const drawerScreens = {
     screen: Advanced,
     navigationOptions: {
       title: 'Advanced Lightning',
+    },
+  },
+  [Routes.TEST_COORDINATES]: {
+    screen: CoordinateTest,
+    navigationOptions: {
+      title: 'coordinate test',
     },
   },
   [Routes.SEED_BACKUP]: {
