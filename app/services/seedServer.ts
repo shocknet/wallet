@@ -1,5 +1,6 @@
 import { generateRandomBytes } from './encryption'
 import ImagePicker from 'react-native-image-crop-picker'
+import {Image} from 'react-native-image-crop-picker'
 import { FilePickerFile } from 'react-native-file-picker'
 import notificationService from '../../notificationService'
 
@@ -25,11 +26,21 @@ export const enrollToken = async (
   throw new Error('enroll token res NOT ok')
 }
 
+export interface PickedFile {
+  name: string
+  fileName: string
+  type: string
+  uri: string
+  path: string
+  width: number
+  height: number
+}
+
 export const pickFile = async (
   contentType?: 'photo' | 'video' | 'mixed',
   otherOptions?: object,
 ): Promise<
-  FilePickerFile & { width: number; height: number; name: string }
+  PickedFile
 > => {
   const type = contentType ? contentType : 'video'
   const vid: {
@@ -53,15 +64,7 @@ export const pickFile = async (
   if (!name) {
     throw new Error('no name found for file')
   }
-  const vidReady: {
-    name: string
-    fileName: string
-    type: string
-    uri: string
-    path: string
-    width: number
-    height: number
-  } = {
+  const vidReady: PickedFile = {
     name: name,
     fileName: name,
     type: vid.mime,
@@ -72,6 +75,41 @@ export const pickFile = async (
   }
   //throw new Error("AAAAAH")
   return vidReady
+}
+export const pickFiles = async (
+  contentType?: 'photo' | 'video' | 'mixed',
+  maxFiles?:number,
+  otherOptions?: object,
+): Promise<
+  PickedFile[]
+> => {
+  const type = contentType ? contentType : 'video'
+  const vids = await ImagePicker.openPicker({
+    mediaType: type,
+    multiple:true,
+    maxFiles,
+    ...otherOptions,
+  }) as Image[]
+  const vidsready:PickedFile[] = []
+  vids.forEach(vid => {
+    const name = vid.path.split('/').pop()
+    if (!name) {
+      throw new Error('no name found for file')
+    }
+    const vidReady: PickedFile = {
+      name:name,
+      fileName: name,
+      type: vid.mime,
+      uri: vid.path,
+      path: vid.path,
+      height: vid.height,
+      width: vid.width,
+    }
+    vidsready.push(vidReady)
+  })
+  
+  //throw new Error("AAAAAH")
+  return vidsready
 }
 export interface TorrentFile {
   name: string
@@ -90,13 +128,13 @@ interface TorrentFileRes {
 export const putFile = async (
   serviceUrl: string,
   token: string,
-  files: FilePickerFile[],
+  files: PickedFile[],
   extraInfo: string = '',
   comment: string = '',
 ): Promise<TorrentFile> => {
   const formData = new FormData()
   files.forEach(file => {
-    const fileComplete: FilePickerFile & { name: string } = {
+    const fileComplete: PickedFile = {
       ...file,
       name: file.fileName,
     }
