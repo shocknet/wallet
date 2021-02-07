@@ -54,10 +54,7 @@ export const writeNodeURLOrIP = async urlOrIP => {
     ;[ip, port] = urlOrIP.split(':')
   }
 
-  if (
-    port.length < 4 ||
-    !port.split('').every(c => '0123456789'.split('').includes(c))
-  ) {
+  if (!port.split('').every(c => '0123456789'.split('').includes(c))) {
     throw new TypeError('writeNodeURLOrIP() -> invalid port supplied')
   }
 

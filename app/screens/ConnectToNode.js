@@ -283,12 +283,26 @@ class ConnectToNode extends React.PureComponent {
   onQRRead = data => {
     if (data && typeof data === 'object') {
       const { internalIP, externalIP, walletPort } = data
+      let finalInternalIP = internalIP
+      let finalExternalIP = externalIP
+      if (internalIP.startsWith('http://')) {
+        finalInternalIP = internalIP.replace('http://', '')
+      }
+      if (internalIP.startsWith('https://')) {
+        finalInternalIP = internalIP.replace('https://', '')
+      }
+      if (externalIP.startsWith('http://')) {
+        finalExternalIP = externalIP.replace('http://', '')
+      }
+      if (externalIP.startsWith('https://')) {
+        finalExternalIP = externalIP.replace('https://', '')
+      }
       this.mounted &&
         this.setState(
           {
             scanningQR: false,
-            nodeURL: internalIP + ':' + walletPort,
-            externalURL: `${externalIP}:${walletPort}`,
+            nodeURL: finalInternalIP + ':' + walletPort,
+            externalURL: `${finalExternalIP}:${walletPort}`,
           },
           () => {
             this.onPressConnect()
